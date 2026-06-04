@@ -68,7 +68,7 @@ export default async function SeoArticleDetailPage({
                     href="/seo"
                     className="text-sm text-muted-foreground hover:underline"
                 >
-                    ← Back to SEO
+                    Back to SEO
                 </Link>
                 <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                     <h1 className="text-2xl font-semibold md:text-3xl">
@@ -139,7 +139,7 @@ export default async function SeoArticleDetailPage({
                             name="assignee"
                             defaultValue={article.assignee || "none"}
                         >
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>

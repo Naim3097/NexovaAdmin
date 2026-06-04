@@ -92,7 +92,7 @@ export default async function SeoPage() {
                     <div className="space-y-1.5">
                         <Label className="text-sm">Assignee</Label>
                         <Select name="assignee" defaultValue="none">
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>

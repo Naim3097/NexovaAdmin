@@ -22,7 +22,7 @@ export default async function AgencyProfilePage() {
                     href="/settings"
                     className="text-sm text-muted-foreground hover:underline"
                 >
-                    ← Back to settings
+                    Back to settings
                 </Link>
                 <h1 className="mt-2 text-2xl font-semibold md:text-3xl">
                     Agency profile

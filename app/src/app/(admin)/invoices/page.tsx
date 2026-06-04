@@ -87,7 +87,7 @@ export default async function InvoicesPage() {
                     <div className="space-y-1.5">
                         <Label className="text-sm">Project (optional)</Label>
                         <Select name="projectId" defaultValue="none">
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>

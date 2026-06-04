@@ -55,7 +55,7 @@ export default async function InvoicePrintPage({
                     href={`/invoices/${inv.id}`}
                     className="text-sm text-muted-foreground hover:underline"
                 >
-                    ← Back to invoice
+                    Back to invoice
                 </Link>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span>Tip: use your browser&apos;s &ldquo;Print&rdquo; → &ldquo;Save as PDF&rdquo; for a clean export.</span>

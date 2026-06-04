@@ -47,7 +47,7 @@ export default async function WorkflowEditPage({
                     href="/settings/workflows"
                     className="text-sm text-muted-foreground hover:underline"
                 >
-                    ← All workflows
+                    All workflows
                 </Link>
                 <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                     <h1 className="text-2xl font-semibold md:text-3xl">

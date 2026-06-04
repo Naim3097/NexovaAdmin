@@ -40,7 +40,7 @@ export function InviteForm({ roles }: { roles: readonly string[] }) {
                     <div className="space-y-1.5">
                         <Label className="text-sm">Role</Label>
                         <Select name="role" defaultValue="Other">
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>

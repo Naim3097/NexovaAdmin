@@ -52,7 +52,7 @@ export default async function ContentDetailPage({
                     href="/content"
                     className="text-sm text-muted-foreground hover:underline"
                 >
-                    ← Back to content
+                    Back to content
                 </Link>
                 <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                     <h1 className="text-2xl font-semibold md:text-3xl">
@@ -130,7 +130,7 @@ export default async function ContentDetailPage({
                             name="projectId"
                             defaultValue={post.projectId ?? "none"}
                         >
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -149,7 +149,7 @@ export default async function ContentDetailPage({
                             name="assignee"
                             defaultValue={post.assignee || "none"}
                         >
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -165,7 +165,7 @@ export default async function ContentDetailPage({
                     <div className="space-y-1.5">
                         <Label className="text-sm">Platform</Label>
                         <Select name="platform" defaultValue={post.platform}>
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -180,7 +180,7 @@ export default async function ContentDetailPage({
                     <div className="space-y-1.5">
                         <Label className="text-sm">Type</Label>
                         <Select name="type" defaultValue={post.type}>
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>

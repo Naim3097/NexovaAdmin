@@ -34,7 +34,7 @@ export default async function ServiceDetailPage({
                     href="/settings/services"
                     className="text-xs text-muted-foreground hover:underline"
                 >
-                    ← Services
+                    Services
                 </Link>
                 <h1 className="mt-1 text-2xl font-semibold md:text-3xl">
                     {s.name}
@@ -54,7 +54,7 @@ export default async function ServiceDetailPage({
                     <div className="space-y-1.5">
                         <Label className="text-sm">Category</Label>
                         <Select name="category" defaultValue={s.category}>
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>

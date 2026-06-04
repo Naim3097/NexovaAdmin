@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { listLeads } from "@/lib/data/leads";
 import { listSubmissions } from "@/lib/data/onboarding";
 import { listProjects } from "@/lib/data/projects";
@@ -175,7 +174,7 @@ export default async function DashboardPage() {
                         href="/activity"
                         className="text-xs text-muted-foreground hover:underline"
                     >
-                        View all →
+                        View all
                     </Link>
                 </CardHeader>
                 <CardContent>
@@ -184,38 +183,36 @@ export default async function DashboardPage() {
                             Nothing has happened yet.
                         </p>
                     ) : (
-                        <ul className="divide-y text-sm">
+                        <ul className="divide-y">
                             {recentActivity.map((e) => (
                                 <li
                                     key={e.id}
-                                    className="flex items-start justify-between gap-3 py-2"
+                                    className="flex items-baseline gap-3 py-2.5"
                                 >
+                                    <span className="w-16 shrink-0 text-[11px] uppercase tracking-wider text-muted-foreground/70">
+                                        {e.kind.split(".")[0]}
+                                    </span>
                                     <div className="min-w-0 flex-1">
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <Badge variant="outline">
-                                                {e.kind}
-                                            </Badge>
-                                            <Link
-                                                href={e.href}
-                                                className="truncate hover:underline"
-                                            >
-                                                {e.title}
-                                            </Link>
-                                        </div>
+                                        <Link
+                                            href={e.href}
+                                            className="block truncate text-sm font-medium hover:text-primary"
+                                        >
+                                            {e.title}
+                                        </Link>
                                         {e.detail ? (
                                             <p className="truncate text-xs text-muted-foreground">
                                                 {e.detail}
                                             </p>
                                         ) : null}
                                     </div>
-                                    <span className="shrink-0 text-xs text-muted-foreground">
+                                    <time className="shrink-0 text-xs tabular-nums text-muted-foreground">
                                         {new Date(e.at).toLocaleString(undefined, {
                                             month: "short",
                                             day: "numeric",
                                             hour: "2-digit",
                                             minute: "2-digit",
                                         })}
-                                    </span>
+                                    </time>
                                 </li>
                             ))}
                         </ul>

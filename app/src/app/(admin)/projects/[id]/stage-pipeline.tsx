@@ -97,7 +97,7 @@ export function StagePipeline({
                     <form action={advanceStageAction}>
                         <input type="hidden" name="id" value={projectId} />
                         <Button type="submit" size="sm">
-                            Complete “{stages[activeIdx].label}” →
+                            Complete “{stages[activeIdx].label}”
                         </Button>
                     </form>
                 ) : null}

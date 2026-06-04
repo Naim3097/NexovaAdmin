@@ -24,7 +24,7 @@ export default async function SettingsClientsPage() {
                     href="/settings"
                     className="text-xs text-muted-foreground hover:underline"
                 >
-                    ← Settings
+                    Settings
                 </Link>
                 <h1 className="mt-1 text-2xl font-semibold md:text-3xl">Clients</h1>
                 <p className="text-sm text-muted-foreground">
@@ -46,7 +46,7 @@ export default async function SettingsClientsPage() {
                     <div className="space-y-1.5">
                         <Label className="text-sm">Status</Label>
                         <Select name="status" defaultValue="prospect">
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>

@@ -14,7 +14,7 @@ export default async function WorkflowsSettingsPage() {
                     href="/settings"
                     className="text-sm text-muted-foreground hover:underline"
                 >
-                    ← Settings
+                    Settings
                 </Link>
                 <h1 className="mt-2 text-2xl font-semibold md:text-3xl">
                     Delivery workflows

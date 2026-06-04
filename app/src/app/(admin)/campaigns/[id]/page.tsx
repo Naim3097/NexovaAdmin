@@ -75,7 +75,7 @@ export default async function CampaignDetailPage({
                     href="/campaigns"
                     className="text-sm text-muted-foreground hover:underline"
                 >
-                    ← Back to campaigns
+                    Back to campaigns
                 </Link>
                 <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                     <h1 className="text-2xl font-semibold md:text-3xl">
@@ -232,7 +232,7 @@ export default async function CampaignDetailPage({
                     <div className="space-y-1.5">
                         <Label className="text-sm">Platform</Label>
                         <Select name="platform" defaultValue={campaign.platform}>
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -250,7 +250,7 @@ export default async function CampaignDetailPage({
                             name="objective"
                             defaultValue={campaign.objective}
                         >
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -265,7 +265,7 @@ export default async function CampaignDetailPage({
                     <div className="space-y-1.5">
                         <Label className="text-sm">Status</Label>
                         <Select name="status" defaultValue={campaign.status}>
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -293,7 +293,7 @@ export default async function CampaignDetailPage({
                             name="feeModel"
                             defaultValue={campaign.feeModel}
                         >
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>

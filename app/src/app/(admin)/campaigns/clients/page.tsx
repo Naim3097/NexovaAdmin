@@ -79,7 +79,7 @@ export default async function CampaignsByClientPage() {
                     href="/campaigns"
                     className="text-sm text-muted-foreground hover:underline"
                 >
-                    ← Back to campaigns
+                    Back to campaigns
                 </Link>
                 <h1 className="mt-2 text-2xl font-semibold md:text-3xl">
                     Campaigns by client

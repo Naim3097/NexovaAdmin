@@ -31,7 +31,7 @@ export default async function ProjectsPage() {
                     href="/projects/board"
                     className="text-sm font-medium underline"
                 >
-                    Open board view →
+                    Open board view
                 </Link>
             </div>
 
@@ -50,7 +50,7 @@ export default async function ProjectsPage() {
                 <div className="space-y-1.5">
                     <Label className="text-sm">Service</Label>
                     <Select name="serviceCategory" defaultValue="website">
-                        <SelectTrigger className="h-11 md:w-40">
+                        <SelectTrigger className="h-10 md:w-40">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>

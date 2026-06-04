@@ -122,7 +122,7 @@ export default async function ReportsPage({
                             size: "sm",
                         })}
                     >
-                        Client monthly report →
+                        Client monthly report
                     </Link>
                 </div>
             </div>

@@ -65,7 +65,7 @@ export default async function InvoiceDetailPage({
                     href="/invoices"
                     className="text-sm text-muted-foreground hover:underline"
                 >
-                    ← Back to invoices
+                    Back to invoices
                 </Link>
                 <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                     <h1 className="text-2xl font-semibold md:text-3xl">
@@ -83,7 +83,7 @@ export default async function InvoiceDetailPage({
                             rel="noopener"
                             className="text-sm text-muted-foreground hover:underline"
                         >
-                            Print / PDF →
+                            Print / PDF
                         </Link>
                     </div>
                 </div>
@@ -305,7 +305,7 @@ export default async function InvoiceDetailPage({
                             name="projectId"
                             defaultValue={inv.projectId ?? "none"}
                         >
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>

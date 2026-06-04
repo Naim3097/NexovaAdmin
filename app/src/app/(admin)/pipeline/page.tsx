@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { LEAD_STATUSES, listLeads, type LeadStatus } from "@/lib/data/leads";
 import { Button } from "@/components/ui/button";
 import { setLeadStatusAction } from "@/lib/leads/actions";
@@ -43,7 +44,8 @@ export default async function PipelinePage() {
                 <div>
                     <h1 className="text-2xl font-semibold md:text-3xl">Pipeline</h1>
                     <p className="text-sm text-muted-foreground">
-                        Drag-and-drop coming later. For now, use “Advance →” to move a card.
+                        Use the Advance button on a card to move it through the
+                        pipeline.
                     </p>
                 </div>
                 <div className="rounded-md border bg-card px-3 py-2 text-sm">
@@ -67,11 +69,11 @@ export default async function PipelinePage() {
                                     return (
                                         <li
                                             key={l.id}
-                                            className="rounded-md border bg-background p-3 text-sm shadow-sm"
+                                            className="rounded-lg border bg-card p-3 text-sm shadow-xs transition-shadow hover:shadow-sm"
                                         >
                                             <Link
                                                 href={`/leads/${l.id}`}
-                                                className="font-medium hover:underline"
+                                                className="block truncate font-medium hover:text-primary"
                                             >
                                                 {l.name}
                                             </Link>
@@ -81,43 +83,45 @@ export default async function PipelinePage() {
                                                 </p>
                                             ) : null}
                                             {l.estValueMyr > 0 ? (
-                                                <p className="mt-1 text-xs">
+                                                <p className="mt-1.5 text-xs font-medium tabular-nums">
                                                     MYR {l.estValueMyr.toLocaleString()}
                                                 </p>
                                             ) : null}
-                                            {next ? (
-                                                <form
-                                                    action={setLeadStatusAction}
-                                                    className="mt-2"
-                                                >
-                                                    <input type="hidden" name="id" value={l.id} />
-                                                    <input type="hidden" name="status" value={next} />
-                                                    <Button
-                                                        type="submit"
-                                                        size="sm"
-                                                        variant="outline"
-                                                        className="h-7 w-full text-xs"
-                                                    >
-                                                        Advance → {COLUMN_LABELS[next]}
-                                                    </Button>
-                                                </form>
-                                            ) : null}
-                                            {l.status !== "lost" && l.status !== "won" ? (
-                                                <form
-                                                    action={setLeadStatusAction}
-                                                    className="mt-1"
-                                                >
-                                                    <input type="hidden" name="id" value={l.id} />
-                                                    <input type="hidden" name="status" value="lost" />
-                                                    <Button
-                                                        type="submit"
-                                                        size="sm"
-                                                        variant="ghost"
-                                                        className="h-7 w-full text-xs text-muted-foreground"
-                                                    >
-                                                        Mark lost
-                                                    </Button>
-                                                </form>
+                                            {next || (l.status !== "lost" && l.status !== "won") ? (
+                                                <div className="mt-2.5 flex items-center gap-1.5 border-t pt-2.5">
+                                                    {next ? (
+                                                        <form
+                                                            action={setLeadStatusAction}
+                                                            className="flex-1"
+                                                        >
+                                                            <input type="hidden" name="id" value={l.id} />
+                                                            <input type="hidden" name="status" value={next} />
+                                                            <Button
+                                                                type="submit"
+                                                                size="sm"
+                                                                className="h-7 w-full text-xs"
+                                                                title={`Advance to ${COLUMN_LABELS[next]}`}
+                                                            >
+                                                                {COLUMN_LABELS[next]}
+                                                                <ArrowRight className="size-3.5" />
+                                                            </Button>
+                                                        </form>
+                                                    ) : null}
+                                                    {l.status !== "lost" && l.status !== "won" ? (
+                                                        <form action={setLeadStatusAction}>
+                                                            <input type="hidden" name="id" value={l.id} />
+                                                            <input type="hidden" name="status" value="lost" />
+                                                            <Button
+                                                                type="submit"
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                className="h-7 px-2 text-xs text-muted-foreground"
+                                                            >
+                                                                Lost
+                                                            </Button>
+                                                        </form>
+                                                    ) : null}
+                                                </div>
                                             ) : null}
                                         </li>
                                     );

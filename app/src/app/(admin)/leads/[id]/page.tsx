@@ -60,7 +60,7 @@ export default async function LeadDetailPage({
         <div className="space-y-6">
             <div>
                 <Link href="/leads" className="text-sm text-muted-foreground hover:underline">
-                    ← Back to leads
+                    Back to leads
                 </Link>
                 <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                     <h1 className="text-2xl font-semibold md:text-3xl">
@@ -164,7 +164,7 @@ export default async function LeadDetailPage({
                                 name="assignedTo"
                                 defaultValue={lead.assignedTo || "none"}
                             >
-                                <SelectTrigger className="h-11">
+                                <SelectTrigger className="h-10">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -237,7 +237,7 @@ export default async function LeadDetailPage({
                     <div className="space-y-1.5">
                         <Label className="text-sm">Source</Label>
                         <Select name="source" defaultValue={lead.source}>
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -265,7 +265,7 @@ export default async function LeadDetailPage({
                             name="sourceCampaignId"
                             defaultValue={lead.sourceCampaignId ?? "none"}
                         >
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -283,7 +283,7 @@ export default async function LeadDetailPage({
                                     href={`/campaigns/${sourceCampaign.id}`}
                                     className="underline"
                                 >
-                                    Open campaign →
+                                    Open campaign
                                 </Link>
                             </p>
                         ) : null}
@@ -324,7 +324,7 @@ export default async function LeadDetailPage({
                             href={`/onboarding/${lead.onboardingSubmissionId}`}
                             className="text-sm underline"
                         >
-                            Open onboarding →
+                            Open onboarding
                         </Link>
                     ) : (
                         <form action={convertLeadToOnboardingAction}>

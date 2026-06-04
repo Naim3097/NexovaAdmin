@@ -57,7 +57,7 @@ export default async function ClientReportPickerPage() {
                     href="/reports"
                     className="text-sm text-muted-foreground hover:underline"
                 >
-                    ← Back to reports
+                    Back to reports
                 </Link>
                 <h1 className="mt-2 text-2xl font-semibold md:text-3xl">
                     Client monthly report
@@ -83,7 +83,7 @@ export default async function ClientReportPickerPage() {
                         <div className="space-y-1.5">
                             <Label className="text-sm">Client</Label>
                             <Select name="client" defaultValue={clients[0]}>
-                                <SelectTrigger className="h-11">
+                                <SelectTrigger className="h-10">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -98,7 +98,7 @@ export default async function ClientReportPickerPage() {
                         <div className="space-y-1.5">
                             <Label className="text-sm">Month</Label>
                             <Select name="month" defaultValue={months[0].value}>
-                                <SelectTrigger className="h-11">
+                                <SelectTrigger className="h-10">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>

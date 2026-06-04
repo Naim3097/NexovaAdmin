@@ -90,7 +90,7 @@ export default async function ContentCalendarPage({
                         href={`/content/calendar?m=${prev}`}
                         className="rounded-md border bg-card px-3 py-1.5 hover:bg-muted"
                     >
-                        ← Prev
+                        Prev
                     </Link>
                     <Link
                         href="/content/calendar"
@@ -102,7 +102,7 @@ export default async function ContentCalendarPage({
                         href={`/content/calendar?m=${next}`}
                         className="rounded-md border bg-card px-3 py-1.5 hover:bg-muted"
                     >
-                        Next →
+                        Next
                     </Link>
                     <Link
                         href="/content"

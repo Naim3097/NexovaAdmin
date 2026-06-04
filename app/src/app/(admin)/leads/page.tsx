@@ -74,7 +74,7 @@ export default async function LeadsPage() {
                     <div className="space-y-1.5">
                         <Label className="text-sm">Source</Label>
                         <Select name="source" defaultValue="other">
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -93,7 +93,7 @@ export default async function LeadsPage() {
                     <div className="space-y-1.5 md:col-span-2">
                         <Label className="text-sm">Source campaign (optional)</Label>
                         <Select name="sourceCampaignId" defaultValue="none">
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>

@@ -74,7 +74,7 @@ export default async function ContentPage({
                     href="/content/calendar"
                     className="text-sm font-medium underline"
                 >
-                    Open calendar →
+                    Open calendar
                 </Link>
             </div>
 
@@ -100,7 +100,7 @@ export default async function ContentPage({
                     <div className="space-y-1.5">
                         <Label className="text-sm">Project (optional)</Label>
                         <Select name="projectId" defaultValue="none">
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -116,7 +116,7 @@ export default async function ContentPage({
                     <div className="space-y-1.5">
                         <Label className="text-sm">Platform</Label>
                         <Select name="platform" defaultValue="instagram">
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -131,7 +131,7 @@ export default async function ContentPage({
                     <div className="space-y-1.5">
                         <Label className="text-sm">Type</Label>
                         <Select name="type" defaultValue="post">
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -159,7 +159,7 @@ export default async function ContentPage({
                     <div className="space-y-1.5">
                         <Label className="text-sm">Assignee</Label>
                         <Select name="assignee" defaultValue="none">
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>

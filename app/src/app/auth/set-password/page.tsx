@@ -82,7 +82,7 @@ export default function SetPasswordPage() {
                                 minLength={8}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="h-11"
+                                className="h-10"
                             />
                         </div>
                         <div className="space-y-2">
@@ -95,12 +95,12 @@ export default function SetPasswordPage() {
                                 minLength={8}
                                 value={confirm}
                                 onChange={(e) => setConfirm(e.target.value)}
-                                className="h-11"
+                                className="h-10"
                             />
                         </div>
                         <Button
                             type="submit"
-                            className="h-11 w-full"
+                            className="h-10 w-full"
                             disabled={pending}
                         >
                             {pending ? "Saving…" : "Save password & continue"}

@@ -24,7 +24,7 @@ export function LoginForm({ next }: { next: string }) {
                     inputMode="email"
                     required
                     placeholder="you@example.com"
-                    className="h-11"
+                    className="h-10"
                 />
             </div>
             <div className="space-y-2">
@@ -37,10 +37,10 @@ export function LoginForm({ next }: { next: string }) {
                     required
                     minLength={6}
                     placeholder="Your password"
-                    className="h-11"
+                    className="h-10"
                 />
             </div>
-            <Button type="submit" className="h-11 w-full" disabled={pending}>
+            <Button type="submit" className="h-10 w-full" disabled={pending}>
                 {pending ? "Signing in…" : "Sign in"}
             </Button>
             {state.message ? (

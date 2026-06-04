@@ -107,7 +107,7 @@ export default async function CampaignsPage({
                         href="/campaigns/clients"
                         className="ml-auto rounded-full border px-3 py-1 hover:bg-accent"
                     >
-                        Per-client rollup →
+                        Per-client rollup
                     </Link>
                 </div>
             </div>
@@ -166,7 +166,7 @@ export default async function CampaignsPage({
                     <div className="space-y-1.5">
                         <Label className="text-sm">Platform</Label>
                         <Select name="platform" defaultValue="meta">
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -181,7 +181,7 @@ export default async function CampaignsPage({
                     <div className="space-y-1.5">
                         <Label className="text-sm">Objective</Label>
                         <Select name="objective" defaultValue="leads">
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -218,7 +218,7 @@ export default async function CampaignsPage({
                     <div className="space-y-1.5">
                         <Label className="text-sm">Fee model</Label>
                         <Select name="feeModel" defaultValue="none">
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>

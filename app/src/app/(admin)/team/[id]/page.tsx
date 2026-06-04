@@ -35,7 +35,7 @@ export default async function TeamMemberPage({
                         href="/team"
                         className="text-xs text-muted-foreground hover:underline"
                     >
-                        ← Team
+                        Team
                     </Link>
                     <h1 className="mt-1 text-2xl font-semibold md:text-3xl">
                         {m.name}
@@ -49,7 +49,7 @@ export default async function TeamMemberPage({
                     href={`/my-work?member=${encodeURIComponent(m.name)}`}
                     className="text-sm font-medium underline"
                 >
-                    View their work →
+                    View their work
                 </Link>
             </div>
 
@@ -66,7 +66,7 @@ export default async function TeamMemberPage({
                     <div className="space-y-1.5">
                         <Label className="text-sm">Role</Label>
                         <Select name="role" defaultValue={m.role}>
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>

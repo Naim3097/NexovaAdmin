@@ -77,7 +77,7 @@ export default async function ClientDetailPage({
                     href="/settings/clients"
                     className="text-xs text-muted-foreground hover:underline"
                 >
-                    ← Clients
+                    Clients
                 </Link>
                 <div className="mt-1 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                     <h1 className="text-2xl font-semibold md:text-3xl">
@@ -157,7 +157,7 @@ export default async function ClientDetailPage({
                     <div className="space-y-1.5">
                         <Label className="text-sm">Status</Label>
                         <Select name="status" defaultValue={client.status}>
-                            <SelectTrigger className="h-11">
+                            <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>

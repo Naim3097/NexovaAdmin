@@ -21,7 +21,7 @@ export default async function TeamPage() {
                     href="/my-work"
                     className="text-sm font-medium underline"
                 >
-                    My work →
+                    My work
                 </Link>
             </div>
 
@@ -58,7 +58,7 @@ export default async function TeamPage() {
                                         href={`/my-work?member=${encodeURIComponent(m.name)}`}
                                         className="text-xs underline text-muted-foreground"
                                     >
-                                        Their work →
+                                        Their work
                                     </Link>
                                     <Badge variant={m.userId ? "secondary" : "outline"}>
                                         {m.userId ? "has login" : "no login"}

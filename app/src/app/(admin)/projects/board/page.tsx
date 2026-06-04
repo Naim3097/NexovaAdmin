@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import {
     PROJECT_STATUSES,
     listProjects,
@@ -48,11 +49,12 @@ export default async function ProjectBoardPage() {
                         Project board
                     </h1>
                     <p className="text-sm text-muted-foreground">
-                        Drag-and-drop coming later. Use “Advance →” to move a card.
+                        Use the Advance button on a card to move it through the
+                        board.
                     </p>
                 </div>
                 <Link href="/projects" className="text-sm font-medium underline">
-                    ← List view
+                    List view
                 </Link>
             </div>
 
@@ -106,10 +108,11 @@ export default async function ProjectBoardPage() {
                                                     <Button
                                                         type="submit"
                                                         size="sm"
-                                                        variant="outline"
                                                         className="h-7 w-full text-xs"
+                                                        title={`Advance to ${COLUMN_LABELS[next]}`}
                                                     >
-                                                        Advance → {COLUMN_LABELS[next]}
+                                                        {COLUMN_LABELS[next]}
+                                                        <ArrowRight className="size-3.5" />
                                                     </Button>
                                                 </form>
                                             ) : null}

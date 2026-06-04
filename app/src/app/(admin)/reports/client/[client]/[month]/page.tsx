@@ -72,7 +72,7 @@ export default async function ClientMonthlyReportPage({
                     href="/reports/client"
                     className="text-sm text-muted-foreground hover:underline"
                 >
-                    ← Pick another client / month
+                    Pick another client / month
                 </Link>
                 <div className="flex items-center gap-2">
                     <span className="hidden text-xs text-muted-foreground md:inline">

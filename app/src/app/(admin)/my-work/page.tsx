@@ -95,7 +95,7 @@ export default async function MyWorkPage({
                         <Link
                             href={`/my-work?member=${encodeURIComponent(currentMember.name)}`}
                         >
-                            <Button size="sm">View my work →</Button>
+                            <Button size="sm">View my work</Button>
                         </Link>
                     ) : null}
                 </div>
@@ -138,7 +138,7 @@ export default async function MyWorkPage({
                                         href={`/my-work?member=${encodeURIComponent(r.name)}`}
                                     >
                                         <Button variant="outline" size="sm">
-                                            View work →
+                                            View work
                                         </Button>
                                     </Link>
                                 </li>
@@ -164,7 +164,7 @@ export default async function MyWorkPage({
                         href="/my-work"
                         className="text-xs text-muted-foreground hover:underline"
                     >
-                        ← All members
+                        All members
                     </Link>
                     <h1 className="mt-1 text-2xl font-semibold md:text-3xl">
                         {selected}&apos;s work

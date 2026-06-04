@@ -119,7 +119,7 @@ export function OnboardingForm({ token, initialData, logo, photos }: Props) {
 
             <Section title="Brand">
                 <Field label="Logo (PNG / SVG, transparent background)">
-                    <Input name="logo" type="file" accept=".png,.svg,.jpg,.jpeg,.webp" className="h-11" />
+                    <Input name="logo" type="file" accept=".png,.svg,.jpg,.jpeg,.webp" className="h-10" />
                     {logo ? (
                         <div className="mt-2 flex items-center gap-3 rounded-md border p-2">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -215,7 +215,7 @@ export function OnboardingForm({ token, initialData, logo, photos }: Props) {
                         type="file"
                         accept="image/*"
                         multiple
-                        className="h-11"
+                        className="h-10"
                     />
                     <p className="mt-1 text-xs text-muted-foreground">
                         New uploads add to the existing set; nothing is replaced.
@@ -240,7 +240,7 @@ export function OnboardingForm({ token, initialData, logo, photos }: Props) {
             <Section title="Design preferences">
                 <Field label="Main goal" error={fieldError("goal")}>
                     <Select value={goal} onValueChange={(val) => setGoal(val ?? "")}>
-                        <SelectTrigger className="h-11">
+                        <SelectTrigger className="h-10">
                             <SelectValue placeholder="Pick one" />
                         </SelectTrigger>
                         <SelectContent>

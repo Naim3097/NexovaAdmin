@@ -58,7 +58,7 @@ export default async function OnboardingDetailPage({
         <div className="space-y-6">
             <div>
                 <Link href="/onboarding" className="text-sm text-muted-foreground hover:underline">
-                    ← Back to onboarding
+                    Back to onboarding
                 </Link>
                 <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                     <h1 className="text-2xl font-semibold md:text-3xl">{sub.clientName}</h1>

@@ -74,7 +74,7 @@ export default async function ProjectDetailPage({
                     href="/projects"
                     className="text-sm text-muted-foreground hover:underline"
                 >
-                    ← Back to projects
+                    Back to projects
                 </Link>
                 <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                     <h1 className="text-2xl font-semibold md:text-3xl">{proj.name}</h1>
@@ -144,7 +144,7 @@ export default async function ProjectDetailPage({
                         placeholder="e.g. Send wireframes for review"
                     />
                     <Select name="phase" defaultValue={proj.phase}>
-                        <SelectTrigger className="h-11 md:w-44">
+                        <SelectTrigger className="h-10 md:w-44">
                             <SelectValue placeholder="Phase" />
                         </SelectTrigger>
                         <SelectContent>
@@ -157,7 +157,7 @@ export default async function ProjectDetailPage({
                         </SelectContent>
                     </Select>
                     <Select name="assignee" defaultValue="none">
-                        <SelectTrigger className="h-11 md:w-56">
+                        <SelectTrigger className="h-10 md:w-56">
                             <SelectValue placeholder="Assignee" />
                         </SelectTrigger>
                         <SelectContent>
@@ -256,7 +256,7 @@ export default async function ProjectDetailPage({
                         href="/invoices"
                         className="text-xs underline text-muted-foreground"
                     >
-                        New invoice →
+                        New invoice
                     </Link>
                 </div>
                 {invoices.length === 0 ? (
@@ -328,7 +328,7 @@ export default async function ProjectDetailPage({
                         placeholder="Figma / drive / repo link"
                     />
                     <Select name="phase" defaultValue={proj.phase}>
-                        <SelectTrigger className="h-11 md:w-44">
+                        <SelectTrigger className="h-10 md:w-44">
                             <SelectValue placeholder="Phase" />
                         </SelectTrigger>
                         <SelectContent>
@@ -503,7 +503,7 @@ export default async function ProjectDetailPage({
                                 rel="noopener noreferrer"
                                 className="inline-flex h-9 items-center rounded-md border bg-background px-3 text-sm font-medium hover:bg-accent"
                             >
-                                Open portal →
+                                Open portal
                             </a>
                             <form action={rotateProjectPortalTokenAction}>
                                 <input
