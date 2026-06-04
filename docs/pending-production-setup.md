@@ -5,6 +5,39 @@ Tick them off as you tackle each one.
 
 ---
 
+## Database — apply migration 0004 + seed
+
+**Status:** ⏳ pending.
+
+1. Apply `supabase/migrations/0004_team_auth_link.sql` (Dashboard SQL editor or
+   `supabase db push`). It adds `team_members.user_id` so logins link to team
+   records. Without it, the invite flow's link step fails.
+2. From `app/`, run `npm run seed` once. Idempotent: seeds the 9 Nexova services
+   and fills the agency display/legal name. Then finish SST no. + bank details in
+   **Settings → Agency** so invoices render a complete header.
+
+---
+
+## Team accounts — invite flow
+
+**Status:** ✅ works now via copyable link; auto-email optional.
+
+How to add a staff member: **Team → Invite team member** (name, email, role).
+The system creates their Supabase auth user, links it to a `team_members` row,
+and shows a **one-time set-password link**. Copy it and send it to them (e.g.
+WhatsApp); they open it, choose a password, and land in the app. After that they
+sign in with email + password at `/login`.
+
+To have invites **auto-email** instead of copy-paste, configure **Supabase Auth
+SMTP** to use Resend:
+- Supabase dashboard → **Authentication → Emails → SMTP Settings** → enable custom
+  SMTP, host `smtp.resend.com`, port 465, user `resend`, password = your Resend
+  API key, sender = an address on your verified domain.
+- This also fixes password-reset emails. Until it's set, the copyable link is the
+  reliable path.
+
+---
+
 ## Telegram — bot setup
 
 **Status:** ⏳ pending creds.

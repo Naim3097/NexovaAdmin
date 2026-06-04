@@ -17,7 +17,7 @@ import {
     Bell,
     Search,
 } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, getCurrentTeamMember } from "@/lib/auth";
 import { ClientNameDatalist } from "@/components/client-name-datalist";
 import { ServiceNameDatalist } from "@/components/service-name-datalist";
 import { SignOutButton } from "@/components/sign-out-button";
@@ -48,7 +48,11 @@ export default async function AdminLayout({
 }) {
     const user = await getCurrentUser();
     if (!user) redirect("/login");
-    const unread = await unreadCount().catch(() => 0);
+    const [member, unread] = await Promise.all([
+        getCurrentTeamMember(),
+        unreadCount().catch(() => 0),
+    ]);
+    const displayName = member?.name ?? user.email ?? "Account";
 
     return (
         <div className="flex min-h-dvh flex-col md:flex-row">
@@ -83,7 +87,15 @@ export default async function AdminLayout({
                 </nav>
                 <div className="border-t p-3 text-xs text-muted-foreground">
                     <div className="flex items-center justify-between gap-2">
-                        <span className="truncate">{user.email}</span>
+                        <span className="min-w-0 truncate">
+                            {displayName}
+                            {member?.role ? (
+                                <span className="text-muted-foreground/70">
+                                    {" "}
+                                    · {member.role}
+                                </span>
+                            ) : null}
+                        </span>
                         <SignOutButton />
                     </div>
                 </div>
@@ -105,8 +117,8 @@ export default async function AdminLayout({
                             </span>
                         ) : null}
                     </Link>
-                    <Link href="/settings" className="text-sm text-muted-foreground" aria-label={`Open settings (signed in as ${user.email})`}>
-                        {user.email?.split("@")[0]}
+                    <Link href="/settings" className="text-sm text-muted-foreground" aria-label={`Open settings (signed in as ${displayName})`}>
+                        {member?.name ?? user.email?.split("@")[0]}
                     </Link>
                 </div>
             </header>

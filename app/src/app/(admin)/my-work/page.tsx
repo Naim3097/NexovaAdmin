@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getCurrentTeamMember } from "@/lib/auth";
 import { listContentPosts } from "@/lib/data/content";
 import { listProjects } from "@/lib/data/projects";
 import { listTeamMembers } from "@/lib/data/team";
@@ -15,10 +16,11 @@ export default async function MyWorkPage({
     const sp = await searchParams;
     const selected = (sp.member ?? "").trim();
 
-    const [team, projects, content] = await Promise.all([
+    const [team, projects, content, currentMember] = await Promise.all([
         listTeamMembers(),
         listProjects(),
         listContentPosts(),
+        getCurrentTeamMember(),
     ]);
     const activeTeam = team.filter((m) => m.active);
 
@@ -82,11 +84,20 @@ export default async function MyWorkPage({
 
         return (
             <div className="space-y-6">
-                <div>
-                    <h1 className="text-2xl font-semibold md:text-3xl">My work</h1>
-                    <p className="text-sm text-muted-foreground">
-                        Pick a team member to see open tasks and content.
-                    </p>
+                <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                    <div>
+                        <h1 className="text-2xl font-semibold md:text-3xl">My work</h1>
+                        <p className="text-sm text-muted-foreground">
+                            Pick a team member to see open tasks and content.
+                        </p>
+                    </div>
+                    {currentMember ? (
+                        <Link
+                            href={`/my-work?member=${encodeURIComponent(currentMember.name)}`}
+                        >
+                            <Button size="sm">View my work →</Button>
+                        </Link>
+                    ) : null}
                 </div>
 
                 <div className="rounded-lg border bg-card">

@@ -34,6 +34,7 @@ export type TeamMember = {
     phone: string;
     skills: string; // comma-separated for now
     active: boolean;
+    userId: string | null; // linked Supabase auth user, if invited
     createdAt: string;
     updatedAt: string;
 };
@@ -52,6 +53,7 @@ export async function createTeamMember(input: {
     email?: string;
     phone?: string;
     skills?: string;
+    userId?: string | null;
 }): Promise<TeamMember> {
     await ensureDir();
     const now = new Date().toISOString();
@@ -63,6 +65,7 @@ export async function createTeamMember(input: {
         phone: input.phone ?? "",
         skills: input.skills ?? "",
         active: true,
+        userId: input.userId ?? null,
         createdAt: now,
         updatedAt: now,
     };
@@ -95,6 +98,13 @@ export async function getTeamMemberById(
     } catch {
         return null;
     }
+}
+
+export async function getTeamMemberByUserId(
+    userId: string,
+): Promise<TeamMember | null> {
+    const all = await listTeamMembers();
+    return all.find((m) => m.userId === userId) ?? null;
 }
 
 export async function updateTeamMember(

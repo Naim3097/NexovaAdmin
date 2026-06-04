@@ -1,17 +1,7 @@
 import Link from "next/link";
 import { TEAM_ROLES, listTeamMembers } from "@/lib/data/team";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { createTeamMemberAction } from "@/lib/team/actions";
+import { InviteForm } from "./invite-form";
 
 export const dynamic = "force-dynamic";
 
@@ -35,48 +25,7 @@ export default async function TeamPage() {
                 </Link>
             </div>
 
-            <form
-                action={createTeamMemberAction}
-                className="space-y-4 rounded-lg border bg-card p-4 md:p-6"
-            >
-                <h2 className="text-sm font-medium">Add team member</h2>
-                <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Name</Label>
-                        <Input name="name" required placeholder="e.g. Danis" />
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Role</Label>
-                        <Select name="role" defaultValue="Other">
-                            <SelectTrigger className="h-11">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {TEAM_ROLES.map((r) => (
-                                    <SelectItem key={r} value={r}>
-                                        {r}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Email</Label>
-                        <Input name="email" type="email" />
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Phone</Label>
-                        <Input name="phone" type="tel" placeholder="+60..." />
-                    </div>
-                </div>
-                <div className="space-y-1.5">
-                    <Label className="text-sm">Skills (comma-separated)</Label>
-                    <Input name="skills" placeholder="React, Figma, Copywriting" />
-                </div>
-                <div className="flex justify-end">
-                    <Button type="submit">Add member</Button>
-                </div>
-            </form>
+            <InviteForm roles={TEAM_ROLES} />
 
             <div className="rounded-lg border bg-card">
                 <div className="border-b p-4 text-sm font-medium">Members</div>
@@ -111,6 +60,9 @@ export default async function TeamPage() {
                                     >
                                         Their work →
                                     </Link>
+                                    <Badge variant={m.userId ? "secondary" : "outline"}>
+                                        {m.userId ? "has login" : "no login"}
+                                    </Badge>
                                     <Badge variant={m.active ? "default" : "outline"}>
                                         {m.active ? "active" : "inactive"}
                                     </Badge>

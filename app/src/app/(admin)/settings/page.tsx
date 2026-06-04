@@ -23,6 +23,65 @@ export default async function SettingsPage() {
     const agencyConfigured =
         agency.updatedAt > new Date(0).toISOString();
 
+    // Going-live setup status — read straight from env so the team can see at a
+    // glance what external configuration is still pending.
+    const has = (v: string | undefined) => !!v && v.trim().length > 0;
+    const resendFrom = process.env.RESEND_FROM ?? "";
+    const setupChecks: Array<{
+        label: string;
+        state: "ok" | "warn" | "todo";
+        detail: string;
+    }> = [
+        {
+            label: "AI (Gemini)",
+            state: has(process.env.GEMINI_API_KEY) ? "ok" : "todo",
+            detail: has(process.env.GEMINI_API_KEY)
+                ? "Key set — briefs & summaries live."
+                : "Set GEMINI_API_KEY.",
+        },
+        {
+            label: "Client email (Resend)",
+            state: !has(process.env.RESEND_API_KEY)
+                ? "todo"
+                : resendFrom.includes("resend.dev") || resendFrom === ""
+                  ? "warn"
+                  : "ok",
+            detail: !has(process.env.RESEND_API_KEY)
+                ? "Set RESEND_API_KEY."
+                : resendFrom.includes("resend.dev") || resendFrom === ""
+                  ? "Test domain — only reaches your own inbox. Verify a custom domain + set RESEND_FROM."
+                  : `Sending as ${resendFrom}.`,
+        },
+        {
+            label: "Payments (LeanX)",
+            state:
+                has(process.env.LEANX_AUTH_TOKEN) &&
+                has(process.env.LEANX_COLLECTION_UUID) &&
+                has(process.env.LEANX_HASH_KEY)
+                    ? "ok"
+                    : "todo",
+            detail:
+                has(process.env.LEANX_AUTH_TOKEN) &&
+                has(process.env.LEANX_COLLECTION_UUID) &&
+                has(process.env.LEANX_HASH_KEY)
+                    ? "Credentials set — payment links live."
+                    : "Complete KYC, then set LEANX_AUTH_TOKEN, LEANX_COLLECTION_UUID, LEANX_HASH_KEY.",
+        },
+        {
+            label: "Telegram alerts",
+            state:
+                has(process.env.TELEGRAM_BOT_TOKEN) &&
+                has(process.env.TELEGRAM_TEAM_CHAT_ID)
+                    ? "ok"
+                    : "todo",
+            detail:
+                has(process.env.TELEGRAM_BOT_TOKEN) &&
+                has(process.env.TELEGRAM_TEAM_CHAT_ID)
+                    ? "Bot + chat set."
+                    : "Set TELEGRAM_BOT_TOKEN + TELEGRAM_TEAM_CHAT_ID.",
+        },
+    ];
+
     const cards = [
         {
             href: "/settings/clients",
@@ -100,6 +159,46 @@ export default async function SettingsPage() {
                         </Link>
                     );
                 })}
+            </div>
+
+            <div className="rounded-lg border bg-card">
+                <div className="border-b p-4">
+                    <p className="text-sm font-medium">Setup status</p>
+                    <p className="text-xs text-muted-foreground">
+                        External services needed to go fully live. Staff invite
+                        emails also need Supabase Auth SMTP configured (see docs).
+                    </p>
+                </div>
+                <ul className="divide-y">
+                    {setupChecks.map((c) => (
+                        <li
+                            key={c.label}
+                            className="flex items-start justify-between gap-3 p-4"
+                        >
+                            <div className="min-w-0">
+                                <p className="text-sm font-medium">{c.label}</p>
+                                <p className="text-xs text-muted-foreground">
+                                    {c.detail}
+                                </p>
+                            </div>
+                            <span
+                                className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                                    c.state === "ok"
+                                        ? "bg-green-500/15 text-green-700 dark:text-green-400"
+                                        : c.state === "warn"
+                                          ? "bg-amber-500/15 text-amber-700 dark:text-amber-400"
+                                          : "bg-muted text-muted-foreground"
+                                }`}
+                            >
+                                {c.state === "ok"
+                                    ? "ready"
+                                    : c.state === "warn"
+                                      ? "test mode"
+                                      : "todo"}
+                            </span>
+                        </li>
+                    ))}
+                </ul>
             </div>
         </div>
     );

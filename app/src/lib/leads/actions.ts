@@ -16,6 +16,10 @@ import {
 } from "@/lib/data/leads";
 import { listTeamMembers } from "@/lib/data/team";
 import { createSubmission } from "@/lib/data/onboarding";
+import {
+    createClient as createClientRecord,
+    listClients,
+} from "@/lib/data/clients";
 import { pickAssignee, scoreLead } from "@/lib/leads/scoring";
 import { notify } from "@/lib/data/notifications";
 import { diffFields, recordAudit } from "@/lib/data/audit";
@@ -202,6 +206,60 @@ export async function rescoreLeadAction(formData: FormData) {
     revalidatePath(`/leads/${id}`);
     revalidatePath("/leads");
     revalidatePath("/pipeline");
+}
+
+/**
+ * Promote a won lead into a client record (the missing "deal → client" step).
+ * Idempotent by client name: if a client with the same name already exists we
+ * reuse it rather than create a duplicate. Marks the lead "won" and links it.
+ */
+export async function promoteLeadToClientAction(formData: FormData) {
+    const id = String(formData.get("id") ?? "");
+    if (!id) return;
+    const lead = await getLeadById(id);
+    if (!lead) return;
+
+    const clientName = (lead.company || lead.name).trim();
+    const existing = (await listClients()).find(
+        (c) => c.name.trim().toLowerCase() === clientName.toLowerCase(),
+    );
+
+    const client =
+        existing ??
+        (await createClientRecord({
+            name: clientName,
+            status: "active",
+            contactName: lead.name,
+            contactEmail: lead.email,
+            contactPhone: lead.phone,
+            notes: lead.interestedIn ? `Interested in: ${lead.interestedIn}` : "",
+        }));
+
+    if (lead.status !== "won") {
+        await updateLead(id, { status: "won" });
+    }
+
+    await recordAudit({
+        entity: "lead",
+        entityId: id,
+        kind: "status",
+        summary: existing
+            ? `Promoted to existing client: ${client.name}`
+            : `Promoted to new client: ${client.name}`,
+    });
+    await notify({
+        kind: "lead_won",
+        title: `Client ${existing ? "linked" : "created"}: ${client.name}`,
+        body: `From lead ${lead.name}${lead.company ? ` (${lead.company})` : ""}`,
+        link: `/settings/clients/${client.id}`,
+    });
+
+    revalidatePath(`/leads/${id}`);
+    revalidatePath("/leads");
+    revalidatePath("/pipeline");
+    revalidatePath("/settings/clients");
+    revalidatePath("/dashboard");
+    redirect(`/settings/clients/${client.id}`);
 }
 
 export async function convertLeadToOnboardingAction(formData: FormData) {

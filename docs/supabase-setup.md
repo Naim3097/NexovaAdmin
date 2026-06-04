@@ -13,6 +13,8 @@ Apply in numeric order from `supabase/migrations/`:
 
 1. `0001_init.sql` — creates 15 tables + RLS policies.
 2. `0002_user_permissions.sql` — adds the permissive `user_has_permission` function.
+3. `0003_invoice_payment.sql` — invoice payment-link / status columns (LeanX).
+4. `0004_team_auth_link.sql` — links `team_members` to Supabase auth users (invite flow).
 
 **Two ways:**
 

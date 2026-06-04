@@ -53,6 +53,19 @@ export async function requireUser() {
 }
 
 /**
+ * Resolve the signed-in auth user to their linked `team_members` row, so pages
+ * have team context (name/role, "my work" default, default assignee). Returns
+ * null if not signed in or the user has no linked member row yet.
+ */
+export async function getCurrentTeamMember() {
+    const user = await getCurrentUser();
+    if (!user) return null;
+    // Imported lazily to avoid pulling the data layer into every auth import.
+    const { getTeamMemberByUserId } = await import("@/lib/data/team");
+    return getTeamMemberByUserId(user.id).catch(() => null);
+}
+
+/**
  * Permissions are intentionally OPEN: any signed-in user (or the dev-bypass
  * user) can do anything. We only check authentication, not authorization.
  * Restore role/permission checks here when the team needs them.

@@ -123,6 +123,7 @@ export type TeamMemberRow = {
     phone: string;
     skills: string;
     active: boolean;
+    user_id: string | null;
     created_at: string;
     updated_at: string;
 };

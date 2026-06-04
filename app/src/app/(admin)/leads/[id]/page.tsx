@@ -24,6 +24,7 @@ import {
 import {
     convertLeadToOnboardingAction,
     deleteLeadAction,
+    promoteLeadToClientAction,
     rescoreLeadAction,
     setLeadAssigneeAction,
     setLeadStatusAction,
@@ -312,6 +313,12 @@ export default async function LeadDetailPage({
                     </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
+                    <form action={promoteLeadToClientAction}>
+                        <input type="hidden" name="id" value={lead.id} />
+                        <Button type="submit" variant="outline">
+                            Promote to client
+                        </Button>
+                    </form>
                     {lead.onboardingSubmissionId ? (
                         <Link
                             href={`/onboarding/${lead.onboardingSubmissionId}`}
