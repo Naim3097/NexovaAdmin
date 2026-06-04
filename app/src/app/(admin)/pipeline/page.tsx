@@ -88,12 +88,9 @@ export default async function PipelinePage() {
                                                 </p>
                                             ) : null}
                                             {next || (l.status !== "lost" && l.status !== "won") ? (
-                                                <div className="mt-2.5 flex items-center gap-1.5 border-t pt-2.5">
+                                                <div className="mt-2.5 space-y-1 border-t pt-2.5">
                                                     {next ? (
-                                                        <form
-                                                            action={setLeadStatusAction}
-                                                            className="flex-1"
-                                                        >
+                                                        <form action={setLeadStatusAction}>
                                                             <input type="hidden" name="id" value={l.id} />
                                                             <input type="hidden" name="status" value={next} />
                                                             <Button
@@ -115,9 +112,9 @@ export default async function PipelinePage() {
                                                                 type="submit"
                                                                 size="sm"
                                                                 variant="ghost"
-                                                                className="h-7 px-2 text-xs text-muted-foreground"
+                                                                className="h-7 w-full text-xs text-muted-foreground"
                                                             >
-                                                                Lost
+                                                                Mark lost
                                                             </Button>
                                                         </form>
                                                     ) : null}

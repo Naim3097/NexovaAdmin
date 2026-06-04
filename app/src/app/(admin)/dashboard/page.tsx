@@ -187,11 +187,8 @@ export default async function DashboardPage() {
                             {recentActivity.map((e) => (
                                 <li
                                     key={e.id}
-                                    className="flex items-baseline gap-3 py-2.5"
+                                    className="flex items-baseline justify-between gap-4 py-2.5"
                                 >
-                                    <span className="w-16 shrink-0 text-[11px] uppercase tracking-wider text-muted-foreground/70">
-                                        {e.kind.split(".")[0]}
-                                    </span>
                                     <div className="min-w-0 flex-1">
                                         <Link
                                             href={e.href}
