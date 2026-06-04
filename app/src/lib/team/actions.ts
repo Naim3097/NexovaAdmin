@@ -50,7 +50,26 @@ export async function inviteTeamMemberAction(
     const siteUrl = (
         process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3001"
     ).replace(/\/$/, "");
-    const redirectTo = `${siteUrl}/auth/callback?next=/auth/set-password`;
+    const redirectTo = `${siteUrl}/auth/confirm`;
+
+    // Build a server-side confirmation link from the token hash. This verifies
+    // via /auth/confirm (verifyOtp → cookie session) instead of the raw
+    // action_link, which uses a URL-hash redirect that breaks in a fresh
+    // browser. Falls back to the action_link if the hash isn't present.
+    const confirmLink = (props: {
+        hashed_token?: string;
+        verification_type?: string;
+        action_link?: string;
+    }): string | undefined => {
+        if (!props.hashed_token) return props.action_link;
+        const type = props.verification_type || "invite";
+        const q = new URLSearchParams({
+            token_hash: props.hashed_token,
+            type,
+            next: "/auth/set-password",
+        });
+        return `${siteUrl}/auth/confirm?${q.toString()}`;
+    };
 
     let sb;
     try {
@@ -90,10 +109,10 @@ export async function inviteTeamMemberAction(
             };
         }
         userId = recovery.data.user?.id ?? null;
-        inviteLink = recovery.data.properties?.action_link;
+        inviteLink = confirmLink(recovery.data.properties);
     } else {
         userId = invite.data.user?.id ?? null;
-        inviteLink = invite.data.properties?.action_link;
+        inviteLink = confirmLink(invite.data.properties);
     }
 
     // Flag the account as needing a password. The admin area forces the
