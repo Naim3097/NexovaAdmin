@@ -56,24 +56,42 @@ const ServerEnvSchema = z.object({
 
 export type ServerEnv = z.infer<typeof ServerEnvSchema>;
 
-const parsed = ServerEnvSchema.safeParse(process.env);
-
-if (!parsed.success) {
-    // eslint-disable-next-line no-console
-    console.error("❌ Invalid environment variables:", z.treeifyError(parsed.error));
-    throw new Error("Invalid environment configuration. See .env.example.");
+function loadServerEnv(): ServerEnv {
+    const parsed = ServerEnvSchema.safeParse(process.env);
+    if (!parsed.success) {
+        // eslint-disable-next-line no-console
+        console.error(
+            "❌ Invalid environment variables:",
+            z.treeifyError(parsed.error),
+        );
+        throw new Error("Invalid environment configuration. See .env.example.");
+    }
+    return parsed.data;
 }
 
-export const env: ServerEnv = parsed.data;
+/**
+ * Server-validated environment. ONLY parsed on the server — on the client
+ * `process.env` is not a full object (Next.js only inlines individual
+ * `NEXT_PUBLIC_*` reads it sees in source), so parsing it would always fail and
+ * throw. Client code must use `publicEnv` below, never `env`.
+ */
+export const env: ServerEnv =
+    typeof window === "undefined"
+        ? loadServerEnv()
+        : (undefined as unknown as ServerEnv);
 
-/** Public env values safe to ship to the browser. */
+/**
+ * Public values safe for the browser. Each `NEXT_PUBLIC_*` is read directly so
+ * the bundler inlines it on the client. Do NOT derive these from `env` (which
+ * is undefined in the browser).
+ */
 export const publicEnv = {
-    siteUrl: env.NEXT_PUBLIC_SITE_URL,
-    siteName: env.NEXT_PUBLIC_SITE_NAME,
-    supabaseUrl: env.NEXT_PUBLIC_SUPABASE_URL,
-    supabaseAnonKey: env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    turnstileSiteKey: env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
-    posthogKey: env.NEXT_PUBLIC_POSTHOG_KEY,
-    posthogHost: env.NEXT_PUBLIC_POSTHOG_HOST,
-    sentryDsn: env.NEXT_PUBLIC_SENTRY_DSN,
+    siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3001",
+    siteName: process.env.NEXT_PUBLIC_SITE_NAME ?? "Nexova Admin",
+    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+    supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
+    turnstileSiteKey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+    posthogKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
+    posthogHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+    sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 };

@@ -16,6 +16,13 @@ export default async function LoginPage({
     const user = await getCurrentUser();
     if (user) redirect(next);
 
+    const errorMessage =
+        sp.error === "link"
+            ? "This link has expired or was already used. Ask your admin for a new invite link."
+            : sp.error === "auth"
+              ? "We couldn't verify that link. Please try again, or ask for a new one."
+              : sp.error;
+
     return (
         <main className="flex min-h-dvh items-center justify-center bg-muted/40 p-4">
             <div className="w-full max-w-sm">
@@ -32,12 +39,12 @@ export default async function LoginPage({
                         </p>
                     </div>
 
-                    {sp.error ? (
+                    {errorMessage ? (
                         <p
                             role="alert"
                             className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
                         >
-                            {sp.error}
+                            {errorMessage}
                         </p>
                     ) : null}
 
