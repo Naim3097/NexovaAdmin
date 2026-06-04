@@ -21,6 +21,7 @@ export const ENTITY_NAMES = [
     "leads",
     "onboarding",
     "projects",
+    "workflows",
     "invoices",
     "campaigns",
     "content",

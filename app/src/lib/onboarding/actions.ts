@@ -13,13 +13,22 @@ import {
     updateSubmission,
     type UploadedFile,
 } from "@/lib/data/onboarding";
-import { createProject, updateProject, type ProjectTask } from "@/lib/data/projects";
-import { listTeamMembers } from "@/lib/data/team";
+import { createProject, instantiateProjectStages } from "@/lib/data/projects";
 import { onboardingFormSchema } from "@/lib/onboarding/schema";
 import { notify } from "@/lib/data/notifications";
 import { aiSummariseSubmission, emailSendOnboardingLink } from "@/lib/agent/tools";
 import { headers } from "next/headers";
-import { randomUUID } from "node:crypto";
+import {
+    SERVICE_CATEGORIES,
+    type ServiceCategory,
+} from "@/lib/dev-store/services";
+
+function asServiceCategory(v: FormDataEntryValue | null): ServiceCategory {
+    const s = String(v ?? "").trim();
+    return (SERVICE_CATEGORIES as readonly string[]).includes(s)
+        ? (s as ServiceCategory)
+        : "website";
+}
 
 /**
  * Run the AI summariser against a submission and persist the result under
@@ -298,71 +307,25 @@ export async function convertToProjectAction(formData: FormData) {
         (typeof sub.data.business_name === "string" && sub.data.business_name) ||
         sub.clientName ||
         "Untitled project";
+    const category = asServiceCategory(formData.get("serviceCategory"));
     const proj = await createProject({
         name: projectName,
         clientName: sub.clientName,
         onboardingSubmissionId: sub.id,
     });
 
-    // Seed the project with the AI-suggested tasks (the headline "tasks
-    // auto-created for FE/BE/UIUX" step). Best-effort: a failure here must not
-    // block the conversion — the project is already created.
+    // Generate the delivery pipeline from the service's workflow template
+    // (replaces AI task seeding). The AI brief stays on the submission.
     try {
-        const tasks = await buildTasksFromAi(sub.data);
-        if (tasks.length > 0) {
-            await updateProject(proj.id, { tasks });
-        }
+        await instantiateProjectStages(proj.id, category);
     } catch (e) {
         // eslint-disable-next-line no-console
-        console.error("Seeding project tasks from AI summary failed", proj.id, e);
+        console.error("Instantiating project stages failed", proj.id, e);
     }
 
     revalidatePath("/projects");
     revalidatePath(`/onboarding/${id}`);
     redirect(`/projects/${proj.id}`);
-}
-
-// Maps the AI summariser's `skill` tag to a team role, so we can auto-assign
-// each suggested task to whoever holds that role (first active match).
-const SKILL_TO_ROLE: Record<string, string> = {
-    design: "UI/UX",
-    frontend: "Frontend",
-    backend: "Backend",
-    content: "Content",
-    ads: "Ads",
-    seo: "SEO",
-    pm: "PM",
-};
-
-/** Turn `data._ai.tasks` into ProjectTask rows with best-effort assignees. */
-async function buildTasksFromAi(
-    data: Record<string, unknown>,
-): Promise<ProjectTask[]> {
-    const ai = data._ai as
-        | { tasks?: Array<{ title?: unknown; skill?: unknown }>; error?: unknown }
-        | undefined;
-    if (!ai || ai.error || !Array.isArray(ai.tasks) || ai.tasks.length === 0) {
-        return [];
-    }
-
-    const team = await listTeamMembers().catch(() => []);
-    const assigneeForRole = (role: string): string =>
-        team.find((m) => m.active && m.role === role)?.name ?? "";
-
-    const now = new Date().toISOString();
-    return ai.tasks
-        .filter((t) => typeof t.title === "string" && t.title.trim())
-        .map((t) => {
-            const role = SKILL_TO_ROLE[String(t.skill ?? "")] ?? "";
-            return {
-                id: randomUUID(),
-                title: String(t.title).trim(),
-                done: false,
-                assignee: role ? assigneeForRole(role) : "",
-                phase: "" as const,
-                createdAt: now,
-            };
-        });
 }
 
 // ---------- helpers ----------

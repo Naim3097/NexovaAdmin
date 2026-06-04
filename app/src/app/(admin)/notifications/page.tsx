@@ -24,6 +24,7 @@ const KIND_LABEL: Record<NotificationKind, string> = {
     invoice_paid: "Invoice paid",
     invoice_overdue: "Invoice overdue",
     onboarding_submitted: "Onboarding submitted",
+    stage_advanced: "Stage advanced",
     system: "System",
 };
 
@@ -40,6 +41,7 @@ const KIND_TONE: Record<
     invoice_paid: "default",
     invoice_overdue: "destructive",
     onboarding_submitted: "secondary",
+    stage_advanced: "default",
     system: "outline",
 };
 

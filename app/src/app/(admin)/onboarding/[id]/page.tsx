@@ -7,6 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { SERVICE_CATEGORIES } from "@/lib/dev-store/services";
+import {
     convertToProjectAction,
     deleteSubmissionAction,
     regenerateSummaryAction,
@@ -23,20 +31,8 @@ const HIDDEN_KEYS = new Set(["style", "goal", "_ai"]); // shown in their own sec
 
 type AiSummary = {
     brief?: string;
-    tasks?: { title: string; description?: string; skill: string }[];
     error?: string;
     generatedAt?: string;
-};
-
-const SKILL_TONE: Record<string, "default" | "secondary" | "outline"> = {
-    design: "default",
-    frontend: "default",
-    backend: "default",
-    content: "secondary",
-    ads: "secondary",
-    seo: "secondary",
-    pm: "outline",
-    other: "outline",
 };
 
 export default async function OnboardingDetailPage({
@@ -105,36 +101,10 @@ export default async function OnboardingDetailPage({
                             <p className="whitespace-pre-wrap text-sm leading-relaxed">
                                 {ai.brief}
                             </p>
-                            {ai.tasks && ai.tasks.length > 0 ? (
-                                <div className="mt-4">
-                                    <h3 className="text-xs uppercase tracking-wide text-muted-foreground">
-                                        Suggested tasks ({ai.tasks.length})
-                                    </h3>
-                                    <ul className="mt-2 space-y-2">
-                                        {ai.tasks.map((t, i) => (
-                                            <li
-                                                key={i}
-                                                className="rounded-md border p-3"
-                                            >
-                                                <div className="flex items-start justify-between gap-3">
-                                                    <p className="text-sm font-medium">{t.title}</p>
-                                                    <Badge
-                                                        variant={SKILL_TONE[t.skill] ?? "outline"}
-                                                        className="capitalize"
-                                                    >
-                                                        {t.skill}
-                                                    </Badge>
-                                                </div>
-                                                {t.description ? (
-                                                    <p className="mt-1 text-sm text-muted-foreground">
-                                                        {t.description}
-                                                    </p>
-                                                ) : null}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            ) : null}
+                            <p className="mt-3 text-xs text-muted-foreground">
+                                Delivery tasks come from the project&apos;s workflow
+                                pipeline (set when you convert), not the AI.
+                            </p>
                             {ai.generatedAt ? (
                                 <p className="mt-3 text-xs text-muted-foreground">
                                     Generated {new Date(ai.generatedAt).toLocaleString()}
@@ -292,9 +262,24 @@ export default async function OnboardingDetailPage({
                             : "Submission is still a draft — you can convert it once submitted."}
                     </p>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                    <form action={convertToProjectAction}>
+                <div className="flex flex-wrap items-end gap-2">
+                    <form action={convertToProjectAction} className="flex items-end gap-2">
                         <input type="hidden" name="id" value={sub.id} />
+                        <div className="space-y-1">
+                            <Label className="text-xs">Service / workflow</Label>
+                            <Select name="serviceCategory" defaultValue="website">
+                                <SelectTrigger className="h-9 w-40">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {SERVICE_CATEGORIES.map((c) => (
+                                        <SelectItem key={c} value={c}>
+                                            {c}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                         <Button type="submit" disabled={sub.status !== "submitted"}>
                             Convert to project
                         </Button>

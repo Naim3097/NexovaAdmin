@@ -12,7 +12,12 @@ Tick them off as you tackle each one.
 1. Apply `supabase/migrations/0004_team_auth_link.sql` (Dashboard SQL editor or
    `supabase db push`). It adds `team_members.user_id` so logins link to team
    records. Without it, the invite flow's link step fails.
-2. From `app/`, run `npm run seed` once. Idempotent: seeds the 9 Nexova services
+2. Apply `supabase/migrations/0005_project_workflows.sql`. Adds
+   `projects.service_category` + `projects.stages`, the `workflow_templates`
+   table, and the `stage_advanced` notification kind. **Required before
+   creating/converting projects** — new project rows write these columns, so
+   project creation errors until this is applied.
+3. From `app/`, run `npm run seed` once. Idempotent: seeds the 9 Nexova services
    and fills the agency display/legal name. Then finish SST no. + bank details in
    **Settings → Agency** so invoices render a complete header.
 

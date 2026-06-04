@@ -15,6 +15,9 @@ Apply in numeric order from `supabase/migrations/`:
 2. `0002_user_permissions.sql` — adds the permissive `user_has_permission` function.
 3. `0003_invoice_payment.sql` — invoice payment-link / status columns (LeanX).
 4. `0004_team_auth_link.sql` — links `team_members` to Supabase auth users (invite flow).
+5. `0005_project_workflows.sql` — `projects.service_category` + `projects.stages`,
+   the `workflow_templates` table, and the `stage_advanced` notification kind.
+   **Required before creating/converting projects** (new project rows write these columns).
 
 **Two ways:**
 

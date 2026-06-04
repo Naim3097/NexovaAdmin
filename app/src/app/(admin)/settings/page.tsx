@@ -4,6 +4,7 @@ import {
     Boxes,
     UserCog,
     SlidersHorizontal,
+    Workflow,
 } from "lucide-react";
 import { listClients } from "@/lib/data/clients";
 import { listServices } from "@/lib/data/services";
@@ -106,6 +107,14 @@ export default async function SettingsPage() {
             description:
                 "Members, roles, contact. Source of assignee dropdowns across the app.",
             icon: UserCog,
+        },
+        {
+            href: "/settings/workflows",
+            label: "Delivery workflows",
+            count: "per service",
+            description:
+                "The standard ordered stage pipeline (owner role per stage) each service follows. New projects instantiate these.",
+            icon: Workflow,
         },
         {
             href: "/settings/agency",

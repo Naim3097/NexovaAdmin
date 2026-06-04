@@ -15,6 +15,9 @@ import { createServiceClient } from "@/lib/supabase/server";
 import type { Database, ProjectRow } from "@/lib/supabase/types";
 import { isSupabaseEnabled } from "@/lib/data/flag";
 import * as devProjects from "@/lib/dev-store/projects";
+import { getTemplate } from "@/lib/data/workflows";
+import { listTeamMembers } from "@/lib/data/team";
+import type { ServiceCategory } from "@/lib/dev-store/services";
 
 export {
     PROJECT_PHASES,
@@ -25,6 +28,7 @@ export type {
     ProjectDeliverable,
     ProjectPhase,
     ProjectSignoff,
+    ProjectStage,
     ProjectStatus,
     ProjectTask,
 } from "@/lib/dev-store/projects";
@@ -37,6 +41,7 @@ type ProjectStatus = devProjects.ProjectStatus;
 type ProjectTask = devProjects.ProjectTask;
 type ProjectDeliverable = devProjects.ProjectDeliverable;
 type ProjectSignoff = devProjects.ProjectSignoff;
+type ProjectStage = devProjects.ProjectStage;
 type UpdatePatch = Partial<Omit<Project, "id" | "createdAt">>;
 
 type ProjectInsert = Database["public"]["Tables"]["projects"]["Insert"];
@@ -55,10 +60,12 @@ function rowToProject(row: ProjectRow): Project {
         clientName: row.client_name,
         status: row.status as ProjectStatus,
         phase: row.phase as ProjectPhase,
+        serviceCategory: row.service_category ?? "",
         onboardingSubmissionId: row.onboarding_submission_id,
         notes: row.notes,
         tasks: (row.tasks ?? []) as ProjectTask[],
         deliverables: (row.deliverables ?? []) as ProjectDeliverable[],
+        stages: (row.stages ?? []) as ProjectStage[],
         signoff:
             (row.signoff as ProjectSignoff | null) ?? {
                 signedAt: null,
@@ -78,10 +85,12 @@ function projectToInsert(p: Project): ProjectInsert {
         client_name: p.clientName,
         status: p.status,
         phase: p.phase,
+        service_category: p.serviceCategory,
         onboarding_submission_id: p.onboardingSubmissionId,
         notes: p.notes,
         tasks: p.tasks,
         deliverables: p.deliverables,
+        stages: p.stages,
         signoff: p.signoff,
         portal_token: p.portalToken,
         created_at: p.createdAt,
@@ -95,11 +104,14 @@ function patchToUpdate(patch: UpdatePatch): ProjectUpdate {
     if (patch.clientName !== undefined) out.client_name = patch.clientName;
     if (patch.status !== undefined) out.status = patch.status;
     if (patch.phase !== undefined) out.phase = patch.phase;
+    if (patch.serviceCategory !== undefined)
+        out.service_category = patch.serviceCategory;
     if (patch.onboardingSubmissionId !== undefined)
         out.onboarding_submission_id = patch.onboardingSubmissionId;
     if (patch.notes !== undefined) out.notes = patch.notes;
     if (patch.tasks !== undefined) out.tasks = patch.tasks;
     if (patch.deliverables !== undefined) out.deliverables = patch.deliverables;
+    if (patch.stages !== undefined) out.stages = patch.stages;
     if (patch.signoff !== undefined) out.signoff = patch.signoff;
     if (patch.portalToken !== undefined) out.portal_token = patch.portalToken;
     if (patch.updatedAt !== undefined) out.updated_at = patch.updatedAt;
@@ -124,10 +136,12 @@ export async function createProject(input: {
         clientName: input.clientName,
         status: "kickoff",
         phase: "discovery",
+        serviceCategory: "",
         onboardingSubmissionId: input.onboardingSubmissionId ?? null,
         notes: "",
         tasks: [],
         deliverables: [],
+        stages: [],
         signoff: { signedAt: null, signedBy: "", notes: "" },
         portalToken: "",
         createdAt: now,
@@ -355,4 +369,155 @@ export async function clearProjectSignoff(id: string): Promise<Project> {
     return updateProject(id, {
         signoff: { signedAt: null, signedBy: "", notes: "" },
     });
+}
+
+// ---------------------------------------------------------------------------
+// Delivery stages (the per-project flow pipeline)
+// ---------------------------------------------------------------------------
+
+/**
+ * Build a fresh ordered pipeline for `category` from its template, auto-assigning
+ * each stage's PIC to the first active member of the owner role. First stage is
+ * `active`, rest `pending`. Replaces any existing stages.
+ */
+export async function instantiateProjectStages(
+    id: string,
+    category: ServiceCategory,
+): Promise<Project> {
+    const [tpl, team] = await Promise.all([
+        getTemplate(category),
+        listTeamMembers().catch(() => []),
+    ]);
+    const picFor = (role: string) =>
+        team.find((m) => m.active && m.role === role)?.name ?? "";
+
+    const now = new Date().toISOString();
+    const stages: ProjectStage[] = tpl.stages.map((s, i) => ({
+        id: randomUUID(),
+        label: s.label,
+        ownerRole: s.ownerRole,
+        assignee: picFor(s.ownerRole),
+        state: i === 0 ? "active" : "pending",
+        startedAt: i === 0 ? now : null,
+        doneAt: null,
+    }));
+    return updateProject(id, { serviceCategory: category, stages });
+}
+
+/** Mark the active stage done and activate the next pending one (if any). */
+export async function advanceProjectStage(id: string): Promise<Project> {
+    const existing = await getProjectById(id);
+    if (!existing) throw new Error(`Project ${id} not found`);
+    const now = new Date().toISOString();
+    const stages = existing.stages.map((s) => ({ ...s }));
+    const activeIdx = stages.findIndex((s) => s.state === "active");
+    if (activeIdx === -1) {
+        // Nothing active — activate the first pending if present.
+        const firstPending = stages.findIndex((s) => s.state === "pending");
+        if (firstPending !== -1) {
+            stages[firstPending].state = "active";
+            stages[firstPending].startedAt = now;
+        }
+        return updateProject(id, { stages });
+    }
+    stages[activeIdx].state = "done";
+    stages[activeIdx].doneAt = now;
+    const next = stages.findIndex(
+        (s, i) => i > activeIdx && s.state === "pending",
+    );
+    if (next !== -1) {
+        stages[next].state = "active";
+        stages[next].startedAt = now;
+    }
+    return updateProject(id, { stages });
+}
+
+function patchStage(
+    stages: ProjectStage[],
+    stageId: string,
+    patch: Partial<ProjectStage>,
+): ProjectStage[] {
+    return stages.map((s) => (s.id === stageId ? { ...s, ...patch } : s));
+}
+
+export async function setProjectStageAssignee(
+    id: string,
+    stageId: string,
+    assignee: string,
+): Promise<Project> {
+    const existing = await getProjectById(id);
+    if (!existing) throw new Error(`Project ${id} not found`);
+    return updateProject(id, {
+        stages: patchStage(existing.stages, stageId, { assignee }),
+    });
+}
+
+export async function updateProjectStage(
+    id: string,
+    stageId: string,
+    patch: { label?: string; ownerRole?: string; assignee?: string },
+): Promise<Project> {
+    const existing = await getProjectById(id);
+    if (!existing) throw new Error(`Project ${id} not found`);
+    return updateProject(id, {
+        stages: patchStage(existing.stages, stageId, patch),
+    });
+}
+
+export async function addProjectStage(
+    id: string,
+    input: { label: string; ownerRole?: string; assignee?: string },
+): Promise<Project> {
+    const existing = await getProjectById(id);
+    if (!existing) throw new Error(`Project ${id} not found`);
+    const stage: ProjectStage = {
+        id: randomUUID(),
+        label: input.label,
+        ownerRole: input.ownerRole ?? "Other",
+        assignee: input.assignee ?? "",
+        // New stage is pending unless there's no active stage at all.
+        state: existing.stages.some((s) => s.state === "active")
+            ? "pending"
+            : "active",
+        startedAt: null,
+        doneAt: null,
+    };
+    return updateProject(id, { stages: [...existing.stages, stage] });
+}
+
+export async function removeProjectStage(
+    id: string,
+    stageId: string,
+): Promise<Project> {
+    const existing = await getProjectById(id);
+    if (!existing) throw new Error(`Project ${id} not found`);
+    let stages = existing.stages.filter((s) => s.id !== stageId);
+    // Keep exactly one active stage: if we removed it, activate the first pending.
+    if (!stages.some((s) => s.state === "active")) {
+        const firstPending = stages.findIndex((s) => s.state === "pending");
+        if (firstPending !== -1) {
+            stages = stages.map((s, i) =>
+                i === firstPending
+                    ? { ...s, state: "active", startedAt: new Date().toISOString() }
+                    : s,
+            );
+        }
+    }
+    return updateProject(id, { stages });
+}
+
+export async function moveProjectStage(
+    id: string,
+    stageId: string,
+    dir: "up" | "down",
+): Promise<Project> {
+    const existing = await getProjectById(id);
+    if (!existing) throw new Error(`Project ${id} not found`);
+    const stages = [...existing.stages];
+    const idx = stages.findIndex((s) => s.id === stageId);
+    if (idx === -1) return existing;
+    const swap = dir === "up" ? idx - 1 : idx + 1;
+    if (swap < 0 || swap >= stages.length) return existing;
+    [stages[idx], stages[swap]] = [stages[swap], stages[idx]];
+    return updateProject(id, { stages });
 }

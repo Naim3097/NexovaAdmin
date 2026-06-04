@@ -24,6 +24,7 @@ export const NOTIFICATION_KINDS = [
     "invoice_paid",
     "invoice_overdue",
     "onboarding_submitted",
+    "stage_advanced",
     "system",
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];

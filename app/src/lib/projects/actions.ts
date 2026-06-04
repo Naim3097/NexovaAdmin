@@ -20,12 +20,30 @@ import {
     toggleProjectTask,
     unapproveProjectDeliverable,
     updateProject,
+    instantiateProjectStages,
+    advanceProjectStage,
+    setProjectStageAssignee,
+    updateProjectStage,
+    addProjectStage,
+    removeProjectStage,
+    moveProjectStage,
     type ProjectPhase,
     type ProjectStatus,
 } from "@/lib/data/projects";
 import { getProjectById } from "@/lib/data/projects";
 import { notify } from "@/lib/data/notifications";
 import { diffFields, recordAudit } from "@/lib/data/audit";
+import {
+    SERVICE_CATEGORIES,
+    type ServiceCategory,
+} from "@/lib/dev-store/services";
+
+function asServiceCategory(v: FormDataEntryValue | null): ServiceCategory {
+    const s = String(v ?? "").trim();
+    return (SERVICE_CATEGORIES as readonly string[]).includes(s)
+        ? (s as ServiceCategory)
+        : "other";
+}
 
 function asStatus(v: FormDataEntryValue | null): ProjectStatus {
     const s = String(v ?? "");
@@ -54,6 +72,9 @@ export async function createProjectAction(formData: FormData) {
     const clientName = String(formData.get("clientName") ?? "").trim();
     if (!name || !clientName) return;
     const proj = await createProject({ name, clientName });
+    // Generate the delivery pipeline from the chosen service's workflow.
+    const category = asServiceCategory(formData.get("serviceCategory"));
+    await instantiateProjectStages(proj.id, category).catch(() => {});
     revalidatePath("/projects");
     revalidatePath("/dashboard");
     redirect(`/projects/${proj.id}`);
@@ -116,6 +137,122 @@ export async function deleteProjectAction(formData: FormData) {
     revalidatePath("/projects");
     revalidatePath("/dashboard");
     redirect("/projects");
+}
+
+// ---------------------------------------------------------------------------
+// Delivery stages (the flow pipeline)
+// ---------------------------------------------------------------------------
+
+function revalidateProject(id: string) {
+    revalidatePath(`/projects/${id}`);
+    revalidatePath("/projects");
+}
+
+/** Pick / change a project's service → (re)generate its stage pipeline. */
+export async function setProjectServiceAction(formData: FormData) {
+    const id = String(formData.get("id") ?? "");
+    if (!id) return;
+    const category = asServiceCategory(formData.get("serviceCategory"));
+    await instantiateProjectStages(id, category);
+    await recordAudit({
+        entity: "project",
+        entityId: id,
+        kind: "update",
+        summary: `Workflow set to "${category}" — pipeline generated`,
+    });
+    revalidateProject(id);
+}
+
+/** Mark the active stage done, activate the next, and ping the next PIC. */
+export async function advanceStageAction(formData: FormData) {
+    const id = String(formData.get("id") ?? "");
+    if (!id) return;
+    const proj = await advanceProjectStage(id);
+    const active = proj.stages.find((s) => s.state === "active");
+    const allDone =
+        proj.stages.length > 0 && proj.stages.every((s) => s.state === "done");
+
+    if (active) {
+        const who = active.assignee || active.ownerRole || "the team";
+        await notify({
+            kind: "stage_advanced",
+            title: `${proj.name}: ${active.label} is now active`,
+            body: `${who}, you're up next.`,
+            link: `/projects/${id}`,
+        });
+    } else if (allDone) {
+        await notify({
+            kind: "stage_advanced",
+            title: `${proj.name}: all stages complete`,
+            body: "Ready for sign-off.",
+            link: `/projects/${id}`,
+        });
+    }
+    await recordAudit({
+        entity: "project",
+        entityId: id,
+        kind: "status",
+        summary: active
+            ? `Stage advanced → ${active.label}`
+            : "Final stage completed",
+    });
+    revalidateProject(id);
+    revalidatePath("/dashboard");
+}
+
+export async function assignStagePicAction(formData: FormData) {
+    const id = String(formData.get("id") ?? "");
+    const stageId = String(formData.get("stageId") ?? "");
+    if (!id || !stageId) return;
+    const raw = String(formData.get("assignee") ?? "").trim();
+    await setProjectStageAssignee(id, stageId, raw === "none" ? "" : raw);
+    revalidateProject(id);
+}
+
+export async function updateStageAction(formData: FormData) {
+    const id = String(formData.get("id") ?? "");
+    const stageId = String(formData.get("stageId") ?? "");
+    if (!id || !stageId) return;
+    const patch: { label?: string; ownerRole?: string; assignee?: string } = {};
+    const label = String(formData.get("label") ?? "").trim();
+    const ownerRole = String(formData.get("ownerRole") ?? "").trim();
+    if (label) patch.label = label;
+    if (ownerRole) patch.ownerRole = ownerRole;
+    // assignee may legitimately be cleared → handle "none" sentinel explicitly.
+    const assigneeRaw = formData.get("assignee");
+    if (assigneeRaw !== null) {
+        const a = String(assigneeRaw).trim();
+        patch.assignee = a === "none" ? "" : a;
+    }
+    await updateProjectStage(id, stageId, patch);
+    revalidateProject(id);
+}
+
+export async function addStageAction(formData: FormData) {
+    const id = String(formData.get("id") ?? "");
+    if (!id) return;
+    const label = String(formData.get("label") ?? "").trim();
+    if (!label) return;
+    const ownerRole = String(formData.get("ownerRole") ?? "").trim() || "Other";
+    await addProjectStage(id, { label, ownerRole });
+    revalidateProject(id);
+}
+
+export async function removeStageAction(formData: FormData) {
+    const id = String(formData.get("id") ?? "");
+    const stageId = String(formData.get("stageId") ?? "");
+    if (!id || !stageId) return;
+    await removeProjectStage(id, stageId);
+    revalidateProject(id);
+}
+
+export async function moveStageAction(formData: FormData) {
+    const id = String(formData.get("id") ?? "");
+    const stageId = String(formData.get("stageId") ?? "");
+    const dir = String(formData.get("dir") ?? "");
+    if (!id || !stageId || (dir !== "up" && dir !== "down")) return;
+    await moveProjectStage(id, stageId, dir);
+    revalidateProject(id);
 }
 
 export async function addProjectTaskAction(formData: FormData) {

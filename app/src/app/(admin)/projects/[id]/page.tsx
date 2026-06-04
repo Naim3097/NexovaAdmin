@@ -34,13 +34,13 @@ import {
     deleteProjectTaskAction,
     revokeProjectPortalTokenAction,
     rotateProjectPortalTokenAction,
-    setProjectPhaseAction,
     setProjectStatusAction,
     signoffProjectAction,
     toggleProjectTaskAction,
     unapproveDeliverableAction,
     updateProjectAction,
 } from "@/lib/projects/actions";
+import { StagePipeline } from "./stage-pipeline";
 
 export const dynamic = "force-dynamic";
 
@@ -63,7 +63,7 @@ export default async function ProjectDetailPage({
         .filter((i) => i.status === "paid")
         .reduce((sum, i) => sum + computeTotals(i).total, 0);
 
-    const phaseIndex = (PROJECT_PHASES as readonly string[]).indexOf(proj.phase);
+    const activeStage = proj.stages.find((s) => s.state === "active");
     const approvedDeliverables = proj.deliverables.filter((d) => d.approvedAt);
     const pendingDeliverables = proj.deliverables.filter((d) => !d.approvedAt);
 
@@ -80,7 +80,9 @@ export default async function ProjectDetailPage({
                     <h1 className="text-2xl font-semibold md:text-3xl">{proj.name}</h1>
                     <div className="flex flex-wrap items-center gap-2">
                         <Badge variant="secondary">{proj.status.replace(/_/g, " ")}</Badge>
-                        <Badge variant="outline">phase: {proj.phase.replace(/_/g, " ")}</Badge>
+                        {activeStage ? (
+                            <Badge variant="outline">stage: {activeStage.label}</Badge>
+                        ) : null}
                         {proj.signoff.signedAt ? (
                             <Badge>signed off</Badge>
                         ) : null}
@@ -89,43 +91,13 @@ export default async function ProjectDetailPage({
                 <p className="text-sm text-muted-foreground">{proj.clientName}</p>
             </div>
 
-            {/* Phase gates */}
-            <section className="rounded-lg border bg-card p-4 md:p-6">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-sm font-medium">Delivery phase</h2>
-                    <span className="text-xs text-muted-foreground">
-                        Step {phaseIndex + 1} of {PROJECT_PHASES.length}
-                    </span>
-                </div>
-                <ol className="mt-3 flex flex-wrap gap-2">
-                    {PROJECT_PHASES.map((p, idx) => {
-                        const isCurrent = p === proj.phase;
-                        const isPast = idx < phaseIndex;
-                        return (
-                            <li key={p}>
-                                <form action={setProjectPhaseAction}>
-                                    <input type="hidden" name="id" value={proj.id} />
-                                    <input type="hidden" name="phase" value={p} />
-                                    <Button
-                                        type="submit"
-                                        size="sm"
-                                        variant={
-                                            isCurrent
-                                                ? "default"
-                                                : isPast
-                                                    ? "secondary"
-                                                    : "outline"
-                                        }
-                                        disabled={isCurrent}
-                                    >
-                                        {idx + 1}. {p.replace(/_/g, " ")}
-                                    </Button>
-                                </form>
-                            </li>
-                        );
-                    })}
-                </ol>
-            </section>
+            {/* Delivery pipeline (flow guide) */}
+            <StagePipeline
+                projectId={proj.id}
+                serviceCategory={proj.serviceCategory}
+                stages={proj.stages}
+                team={activeTeam}
+            />
 
             {/* Status changer */}
             <section className="rounded-lg border bg-card p-4 md:p-6">

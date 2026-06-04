@@ -4,6 +4,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { SERVICE_CATEGORIES } from "@/lib/dev-store/services";
 import { createProjectAction } from "@/lib/projects/actions";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +37,7 @@ export default async function ProjectsPage() {
 
             <form
                 action={createProjectAction}
-                className="grid gap-3 rounded-lg border bg-card p-4 md:grid-cols-[1fr_1fr_auto] md:items-end md:p-6"
+                className="grid gap-3 rounded-lg border bg-card p-4 md:grid-cols-[1fr_1fr_auto_auto] md:items-end md:p-6"
             >
                 <div className="space-y-1.5">
                     <Label className="text-sm">Project name</Label>
@@ -38,6 +46,21 @@ export default async function ProjectsPage() {
                 <div className="space-y-1.5">
                     <Label className="text-sm">Client</Label>
                     <Input name="clientName" list="clients-datalist" required placeholder="Lean.x Sdn Bhd" />
+                </div>
+                <div className="space-y-1.5">
+                    <Label className="text-sm">Service</Label>
+                    <Select name="serviceCategory" defaultValue="website">
+                        <SelectTrigger className="h-11 md:w-40">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {SERVICE_CATEGORIES.map((c) => (
+                                <SelectItem key={c} value={c}>
+                                    {c}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
                 <Button type="submit">Add project</Button>
             </form>

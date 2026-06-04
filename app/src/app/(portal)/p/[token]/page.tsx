@@ -28,6 +28,9 @@ export default async function ClientPortalPage({
     if (!project) notFound();
 
     const currentIdx = PROJECT_PHASES.indexOf(project.phase);
+    const stages = project.stages ?? [];
+    const hasStages = stages.length > 0;
+    const activeStage = stages.find((s) => s.state === "active");
     const approvedDeliverables = project.deliverables.filter(
         (d) => d.approvedAt,
     );
@@ -42,7 +45,11 @@ export default async function ClientPortalPage({
                     {project.name}
                 </h1>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <Badge>{PHASE_LABEL[project.phase]}</Badge>
+                    <Badge>
+                        {hasStages
+                            ? (activeStage?.label ?? "Completed")
+                            : PHASE_LABEL[project.phase]}
+                    </Badge>
                     <Badge variant="outline">
                         {project.status.replace(/_/g, " ")}
                     </Badge>
@@ -52,44 +59,79 @@ export default async function ClientPortalPage({
                 </div>
             </div>
 
-            {/* Phase progress */}
+            {/* Progress — real per-project pipeline if set, else phase fallback */}
             <section className="rounded-lg border bg-card p-4 md:p-6">
                 <h2 className="text-sm font-medium">Project progress</h2>
                 <ol className="mt-4 space-y-2">
-                    {PROJECT_PHASES.map((p, idx) => {
-                        const done = idx < currentIdx;
-                        const active = idx === currentIdx;
-                        return (
-                            <li
-                                key={p}
-                                className="flex items-center gap-3 text-sm"
-                            >
-                                <span
-                                    className={
-                                        done
-                                            ? "flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground"
-                                            : active
-                                                ? "flex h-6 w-6 items-center justify-center rounded-full border-2 border-primary text-primary"
-                                                : "flex h-6 w-6 items-center justify-center rounded-full border text-muted-foreground"
-                                    }
-                                    aria-hidden
-                                >
-                                    {done ? "✓" : idx + 1}
-                                </span>
-                                <span
-                                    className={
-                                        active
-                                            ? "font-medium"
-                                            : done
-                                                ? ""
-                                                : "text-muted-foreground"
-                                    }
-                                >
-                                    {PHASE_LABEL[p]}
-                                </span>
-                            </li>
-                        );
-                    })}
+                    {hasStages
+                        ? stages.map((s, idx) => {
+                              const done = s.state === "done";
+                              const active = s.state === "active";
+                              return (
+                                  <li
+                                      key={s.id}
+                                      className="flex items-center gap-3 text-sm"
+                                  >
+                                      <span
+                                          className={
+                                              done
+                                                  ? "flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground"
+                                                  : active
+                                                      ? "flex h-6 w-6 items-center justify-center rounded-full border-2 border-primary text-primary"
+                                                      : "flex h-6 w-6 items-center justify-center rounded-full border text-muted-foreground"
+                                          }
+                                          aria-hidden
+                                      >
+                                          {done ? "✓" : idx + 1}
+                                      </span>
+                                      <span
+                                          className={
+                                              active
+                                                  ? "font-medium"
+                                                  : done
+                                                      ? ""
+                                                      : "text-muted-foreground"
+                                          }
+                                      >
+                                          {s.label}
+                                      </span>
+                                  </li>
+                              );
+                          })
+                        : PROJECT_PHASES.map((p, idx) => {
+                              const done = idx < currentIdx;
+                              const active = idx === currentIdx;
+                              return (
+                                  <li
+                                      key={p}
+                                      className="flex items-center gap-3 text-sm"
+                                  >
+                                      <span
+                                          className={
+                                              done
+                                                  ? "flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground"
+                                                  : active
+                                                      ? "flex h-6 w-6 items-center justify-center rounded-full border-2 border-primary text-primary"
+                                                      : "flex h-6 w-6 items-center justify-center rounded-full border text-muted-foreground"
+                                          }
+                                          aria-hidden
+                                      >
+                                          {done ? "✓" : idx + 1}
+                                      </span>
+                                      <span
+                                          className={
+                                              active
+                                                  ? "font-medium"
+                                                  : done
+                                                      ? ""
+                                                      : "text-muted-foreground"
+                                          }
+                                      >
+                                          {PHASE_LABEL[p]}
+                                      </span>
+                                  </li>
+                              );
+                          })}
                 </ol>
             </section>
 

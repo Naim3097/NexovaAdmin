@@ -161,19 +161,45 @@ export type OnboardingSubmissionRow = {
     submitted_at: string | null;
 };
 
+export type ProjectStageRow = {
+    id: string;
+    label: string;
+    ownerRole: string;
+    assignee: string;
+    state: "pending" | "active" | "done";
+    startedAt: string | null;
+    doneAt: string | null;
+};
+
 export type ProjectRow = {
     id: string;
     name: string;
     client_name: string;
     status: string;
     phase: string;
+    service_category: string;
     onboarding_submission_id: string | null;
     notes: string;
     tasks: ProjectTaskRow[];
     deliverables: ProjectDeliverableRow[];
+    stages: ProjectStageRow[];
     signoff: ProjectSignoffRow;
     portal_token: string;
     created_at: string;
+    updated_at: string;
+};
+
+export type WorkflowStageDefRow = {
+    key: string;
+    label: string;
+    ownerRole: string;
+    description: string;
+};
+
+export type WorkflowTemplateRow = {
+    service_category: string;
+    name: string;
+    stages: WorkflowStageDefRow[];
     updated_at: string;
 };
 
@@ -315,6 +341,7 @@ export type Database = {
             leads: Tbl<LeadRow>;
             onboarding_submissions: Tbl<OnboardingSubmissionRow>;
             projects: Tbl<ProjectRow>;
+            workflow_templates: Tbl<WorkflowTemplateRow>;
             invoices: Tbl<InvoiceRow>;
             invoice_items: Tbl<InvoiceItemRow>;
             campaigns: Tbl<CampaignRow>;

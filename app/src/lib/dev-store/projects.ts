@@ -59,6 +59,21 @@ export type ProjectDeliverable = {
     createdAt: string;
 };
 
+/**
+ * A single stage in a project's delivery pipeline, instantiated (copied) from a
+ * workflow template and editable per project. `assignee` is the PIC (a team
+ * member name). Exactly the active stage is "active"; earlier ones "done".
+ */
+export type ProjectStage = {
+    id: string;
+    label: string;
+    ownerRole: string;
+    assignee: string;
+    state: "pending" | "active" | "done";
+    startedAt: string | null;
+    doneAt: string | null;
+};
+
 export type ProjectSignoff = {
     /** ISO timestamp the project was formally signed off by the client. */
     signedAt: string | null;
@@ -73,10 +88,14 @@ export type Project = {
     clientName: string;
     status: ProjectStatus;
     phase: ProjectPhase;
+    /** Service category this project's workflow follows (""=not set yet). */
+    serviceCategory: string;
     onboardingSubmissionId: string | null;
     notes: string;
     tasks: ProjectTask[];
     deliverables: ProjectDeliverable[];
+    /** Ordered delivery pipeline (the flow guide). [] until a service is set. */
+    stages: ProjectStage[];
     signoff: ProjectSignoff;
     /**
      * Random unguessable token for the read-only client portal at /p/<token>.
@@ -113,10 +132,12 @@ export async function createProject(input: {
         clientName: input.clientName,
         status: "kickoff",
         phase: "discovery",
+        serviceCategory: "",
         onboardingSubmissionId: input.onboardingSubmissionId ?? null,
         notes: "",
         tasks: [],
         deliverables: [],
+        stages: [],
         signoff: { signedAt: null, signedBy: "", notes: "" },
         portalToken: "",
         createdAt: now,
@@ -151,6 +172,8 @@ function backfill(proj: Project): Project {
         proj.tasks = [];
     }
     if (!Array.isArray(proj.deliverables)) proj.deliverables = [];
+    if (!Array.isArray(proj.stages)) proj.stages = [];
+    if (typeof proj.serviceCategory !== "string") proj.serviceCategory = "";
     if (!proj.phase) proj.phase = "discovery";
     if (!proj.signoff)
         proj.signoff = { signedAt: null, signedBy: "", notes: "" };
