@@ -57,6 +57,34 @@ export default async function MyWorkPage({
         }
     }
 
+    // Active delivery-pipeline stages assigned (PIC) to each member. Stages are
+    // the primary unit of delivery work now (they replaced AI tasks).
+    const stagesByAssignee = new Map<
+        string,
+        Array<{
+            projectId: string;
+            projectName: string;
+            clientName: string;
+            label: string;
+            ownerRole: string;
+        }>
+    >();
+    for (const p of projects) {
+        for (const s of p.stages) {
+            if (s.state !== "active") continue;
+            if (!s.assignee) continue;
+            const arr = stagesByAssignee.get(s.assignee) ?? [];
+            arr.push({
+                projectId: p.id,
+                projectName: p.name,
+                clientName: p.clientName,
+                label: s.label,
+                ownerRole: s.ownerRole,
+            });
+            stagesByAssignee.set(s.assignee, arr);
+        }
+    }
+
     const contentByAssignee = new Map<string, typeof content>();
     for (const c of content) {
         if (!c.assignee) continue;
@@ -71,11 +99,13 @@ export default async function MyWorkPage({
         const rows = activeTeam.map((m) => {
             const tasks = tasksByAssignee.get(m.name) ?? [];
             const posts = contentByAssignee.get(m.name) ?? [];
+            const stages = stagesByAssignee.get(m.name) ?? [];
             const dueSoon = posts.filter(
                 (p) => p.scheduledFor >= today && p.scheduledFor <= inSevenDays,
             ).length;
             return {
                 ...m,
+                activeStages: stages.length,
                 openTasks: tasks.length,
                 openPosts: posts.length,
                 dueSoon,
@@ -127,6 +157,8 @@ export default async function MyWorkPage({
                                             </span>
                                         </p>
                                         <p className="text-xs text-muted-foreground">
+                                            {r.activeStages} active stage
+                                            {r.activeStages === 1 ? "" : "s"} ·{" "}
                                             {r.openTasks} open task
                                             {r.openTasks === 1 ? "" : "s"} ·{" "}
                                             {r.openPosts} open post
@@ -152,6 +184,7 @@ export default async function MyWorkPage({
 
     // Selected member view
     const memberTasks = tasksByAssignee.get(selected) ?? [];
+    const memberStages = stagesByAssignee.get(selected) ?? [];
     const memberPosts = (contentByAssignee.get(selected) ?? []).slice().sort(
         (a, b) => a.scheduledFor.localeCompare(b.scheduledFor),
     );
@@ -170,6 +203,8 @@ export default async function MyWorkPage({
                         {selected}&apos;s work
                     </h1>
                     <p className="text-sm text-muted-foreground">
+                        {memberStages.length} active stage
+                        {memberStages.length === 1 ? "" : "s"} ·{" "}
                         {memberTasks.length} open task
                         {memberTasks.length === 1 ? "" : "s"} ·{" "}
                         {memberPosts.length} open content post
@@ -177,6 +212,40 @@ export default async function MyWorkPage({
                     </p>
                 </div>
             </div>
+
+            <section className="rounded-lg border bg-card">
+                <div className="border-b p-4 text-sm font-medium">
+                    Active delivery stages
+                </div>
+                {memberStages.length === 0 ? (
+                    <p className="p-6 text-sm text-muted-foreground">
+                        No active stages assigned.
+                    </p>
+                ) : (
+                    <ul className="divide-y">
+                        {memberStages.map((s, i) => (
+                            <li
+                                key={`${s.projectId}-${i}`}
+                                className="flex flex-col gap-1 p-4 md:flex-row md:items-center md:justify-between"
+                            >
+                                <div className="min-w-0 flex-1">
+                                    <p className="font-medium">{s.label}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {s.clientName} ·{" "}
+                                        <Link
+                                            href={`/projects/${s.projectId}`}
+                                            className="underline"
+                                        >
+                                            {s.projectName}
+                                        </Link>
+                                    </p>
+                                </div>
+                                <Badge variant="outline">{s.ownerRole}</Badge>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </section>
 
             <section className="rounded-lg border bg-card">
                 <div className="border-b p-4 text-sm font-medium">Open tasks</div>
