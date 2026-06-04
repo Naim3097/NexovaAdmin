@@ -152,14 +152,16 @@ export default async function DashboardPage() {
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                 {kpis.map((k) => (
                     <Link key={k.label} href={k.href} className="block">
-                        <Card className="h-full transition-colors hover:bg-muted/40">
+                        <Card className="h-full transition-all hover:shadow-md hover:ring-primary/20">
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-xs font-medium text-muted-foreground">
                                     {k.label}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-semibold">{k.value}</div>
+                                <div className="text-2xl font-semibold tabular-nums tracking-tight">
+                                    {k.value}
+                                </div>
                             </CardContent>
                         </Card>
                     </Link>

@@ -1,45 +1,13 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import {
-    LayoutDashboard,
-    Users,
-    Briefcase,
-    KanbanSquare,
-    Megaphone,
-    FileText,
-    Receipt,
-    Settings,
-    ClipboardList,
-    UserCog,
-    CheckSquare,
-    Activity,
-    BarChart3,
-    Bell,
-    Search,
-} from "lucide-react";
+import { Bell } from "lucide-react";
 import { getCurrentUser, getCurrentTeamMember } from "@/lib/auth";
+import { Logo } from "@/components/logo";
 import { ClientNameDatalist } from "@/components/client-name-datalist";
 import { ServiceNameDatalist } from "@/components/service-name-datalist";
 import { SignOutButton } from "@/components/sign-out-button";
 import { unreadCount } from "@/lib/data/notifications";
-
-const NAV = [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/my-work", label: "My work", icon: CheckSquare },
-    { href: "/leads", label: "Leads", icon: Users },
-    { href: "/pipeline", label: "Pipeline", icon: KanbanSquare },
-    { href: "/onboarding", label: "Onboarding", icon: ClipboardList },
-    { href: "/projects", label: "Projects", icon: Briefcase },
-    { href: "/campaigns", label: "Campaigns", icon: Megaphone },
-    { href: "/content", label: "Content", icon: FileText },
-    { href: "/seo", label: "SEO", icon: Search },
-    { href: "/invoices", label: "Invoices", icon: Receipt },
-    { href: "/activity", label: "Activity", icon: Activity },
-    { href: "/notifications", label: "Inbox", icon: Bell },
-    { href: "/reports", label: "Reports", icon: BarChart3 },
-    { href: "/team", label: "Team", icon: UserCog },
-    { href: "/settings", label: "Settings", icon: Settings },
-];
+import { SidebarNav, MobileNav } from "./admin-nav";
 
 export default async function AdminLayout({
     children,
@@ -53,6 +21,7 @@ export default async function AdminLayout({
         unreadCount().catch(() => 0),
     ]);
     const displayName = member?.name ?? user.email ?? "Account";
+    const initial = (member?.name ?? user.email ?? "?").charAt(0).toUpperCase();
 
     return (
         <div className="flex min-h-dvh flex-col md:flex-row">
@@ -63,47 +32,38 @@ export default async function AdminLayout({
             >
                 Skip to content
             </a>
+
             {/* Desktop sidebar */}
-            <aside className="hidden md:flex md:w-60 md:flex-col md:border-r md:bg-card">
-                <div className="flex h-14 items-center border-b px-4 font-semibold">
-                    Nexova
+            <aside className="sticky top-0 hidden h-dvh md:flex md:w-64 md:flex-col md:border-r md:bg-sidebar">
+                <div className="flex h-16 items-center border-b px-5">
+                    <Link href="/dashboard" aria-label="Nexova — dashboard">
+                        <Logo className="h-6" />
+                    </Link>
                 </div>
-                <nav aria-label="Primary" className="flex-1 space-y-1 p-2">
-                    {NAV.map(({ href, label, icon: Icon }) => (
-                        <Link
-                            key={href}
-                            href={href}
-                            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-accent focus-visible:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        >
-                            <Icon className="size-4" aria-hidden="true" />
-                            <span className="flex-1">{label}</span>
-                            {href === "/notifications" && unread > 0 ? (
-                                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
-                                    {unread > 99 ? "99+" : unread}
-                                </span>
-                            ) : null}
-                        </Link>
-                    ))}
-                </nav>
-                <div className="border-t p-3 text-xs text-muted-foreground">
-                    <div className="flex items-center justify-between gap-2">
-                        <span className="min-w-0 truncate">
-                            {displayName}
-                            {member?.role ? (
-                                <span className="text-muted-foreground/70">
-                                    {" "}
-                                    · {member.role}
-                                </span>
-                            ) : null}
+                <SidebarNav unread={unread} />
+                <div className="border-t p-3">
+                    <div className="flex items-center gap-2.5">
+                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-gradient text-xs font-semibold text-white">
+                            {initial}
                         </span>
+                        <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium">
+                                {displayName}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                                {member?.role ?? user.email}
+                            </p>
+                        </div>
                         <SignOutButton />
                     </div>
                 </div>
             </aside>
 
             {/* Top bar (mobile) */}
-            <header className="flex h-14 items-center justify-between border-b bg-card px-4 md:hidden">
-                <span className="font-semibold">Nexova</span>
+            <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur md:hidden">
+                <Link href="/dashboard" aria-label="Nexova — dashboard">
+                    <Logo className="h-5" />
+                </Link>
                 <div className="flex items-center gap-3">
                     <Link
                         href="/notifications"
@@ -117,35 +77,29 @@ export default async function AdminLayout({
                             </span>
                         ) : null}
                     </Link>
-                    <Link href="/settings" className="text-sm text-muted-foreground" aria-label={`Open settings (signed in as ${displayName})`}>
-                        {member?.name ?? user.email?.split("@")[0]}
+                    <Link
+                        href="/settings"
+                        className="flex size-8 items-center justify-center rounded-full bg-brand-gradient text-xs font-semibold text-white"
+                        aria-label={`Open settings (signed in as ${displayName})`}
+                    >
+                        {initial}
                     </Link>
                 </div>
             </header>
 
-            <main id="main-content" className="flex-1 overflow-y-auto p-4 pb-24 md:p-8 md:pb-8">
-                {children}
+            <main
+                id="main-content"
+                className="flex-1 overflow-y-auto bg-muted/40 p-4 pb-24 md:p-8 md:pb-10"
+            >
+                <div className="mx-auto w-full max-w-6xl">
+                    {children}
+                </div>
                 {/* Shared datalists used by autocomplete inputs across forms */}
                 <ClientNameDatalist />
                 <ServiceNameDatalist />
             </main>
 
-            {/* Bottom nav (mobile) */}
-            <nav
-                aria-label="Primary"
-                className="fixed inset-x-0 bottom-0 z-10 grid grid-cols-5 border-t bg-background md:hidden"
-            >
-                {NAV.slice(0, 5).map(({ href, label, icon: Icon }) => (
-                    <Link
-                        key={href}
-                        href={href}
-                        className="flex min-h-12 flex-col items-center justify-center gap-0.5 py-2 text-[10px] text-muted-foreground hover:text-foreground focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                        <Icon className="size-5" aria-hidden="true" />
-                        {label}
-                    </Link>
-                ))}
-            </nav>
+            <MobileNav unread={unread} />
         </div>
     );
 }

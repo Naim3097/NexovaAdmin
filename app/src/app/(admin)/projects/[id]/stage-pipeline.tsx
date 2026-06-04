@@ -1,3 +1,4 @@
+import { ChevronUp, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -320,8 +321,13 @@ function StageMini({
                 variant="ghost"
                 className="h-8 px-2 text-xs"
                 disabled={disabled}
+                aria-label={dir === "up" ? "Move up" : "Move down"}
             >
-                {dir === "up" ? "↑" : "↓"}
+                {dir === "up" ? (
+                    <ChevronUp className="size-4" />
+                ) : (
+                    <ChevronDown className="size-4" />
+                )}
             </Button>
         </form>
     );

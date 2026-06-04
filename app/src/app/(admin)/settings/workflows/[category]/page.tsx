@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ChevronUp, ChevronDown } from "lucide-react";
 import { getTemplate } from "@/lib/data/workflows";
 import {
     SERVICE_CATEGORIES,
@@ -208,8 +209,13 @@ function MoveBtn({
                 variant="ghost"
                 className="h-8 px-2 text-xs"
                 disabled={disabled}
+                aria-label={dir === "up" ? "Move up" : "Move down"}
             >
-                {dir === "up" ? "↑" : "↓"}
+                {dir === "up" ? (
+                    <ChevronUp className="size-4" />
+                ) : (
+                    <ChevronDown className="size-4" />
+                )}
             </Button>
         </form>
     );

@@ -6,16 +6,21 @@
  * Sibling to (admin) and (print) route groups so it bypasses the admin
  * chrome (sidebar, etc.) entirely.
  */
+import { Logo } from "@/components/logo";
+
 export default function PortalLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
     return (
-        <div className="min-h-dvh bg-background">
-            <header className="border-b">
-                <div className="mx-auto flex h-14 max-w-3xl items-center px-4 text-sm font-semibold">
-                    Nexov · Client portal
+        <div className="min-h-dvh bg-muted/40">
+            <header className="border-b bg-background">
+                <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-4">
+                    <Logo className="h-5" />
+                    <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        Client portal
+                    </span>
                 </div>
             </header>
             <main className="mx-auto max-w-3xl px-4 py-8">{children}</main>
