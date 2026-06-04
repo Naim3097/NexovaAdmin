@@ -42,7 +42,10 @@ export default function SetPasswordPage() {
         }
         setPending(true);
         const supabase = createClient();
-        const { error } = await supabase.auth.updateUser({ password });
+        const { error } = await supabase.auth.updateUser({
+            password,
+            data: { needs_password: false },
+        });
         setPending(false);
         if (error) {
             setError(error.message);

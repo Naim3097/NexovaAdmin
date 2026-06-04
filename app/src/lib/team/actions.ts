@@ -96,6 +96,16 @@ export async function inviteTeamMemberAction(
         inviteLink = invite.data.properties?.action_link;
     }
 
+    // Flag the account as needing a password. The admin area forces the
+    // set-password step while this is set, so an invited user can't slip
+    // straight into the app regardless of how GoTrue resolves the invite
+    // redirect. Cleared when they choose a password.
+    if (userId) {
+        await sb.auth.admin
+            .updateUserById(userId, { user_metadata: { needs_password: true } })
+            .catch(() => {});
+    }
+
     // Already linked to a member row? Don't duplicate — just resend the link.
     if (userId) {
         const existing = await getTeamMemberByUserId(userId);

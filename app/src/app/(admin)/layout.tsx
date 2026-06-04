@@ -16,6 +16,8 @@ export default async function AdminLayout({
 }) {
     const user = await getCurrentUser();
     if (!user) redirect("/login");
+    // Invited users must choose a password before entering the app.
+    if (user.user_metadata?.needs_password) redirect("/auth/set-password");
     const [member, unread] = await Promise.all([
         getCurrentTeamMember(),
         unreadCount().catch(() => 0),
