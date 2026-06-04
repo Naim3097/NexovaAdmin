@@ -1,0 +1,125 @@
+import Link from "next/link";
+import { TEAM_ROLES, listTeamMembers } from "@/lib/data/team";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { createTeamMemberAction } from "@/lib/team/actions";
+
+export const dynamic = "force-dynamic";
+
+export default async function TeamPage() {
+    const members = await listTeamMembers();
+    const active = members.filter((m) => m.active).length;
+    return (
+        <div className="space-y-6">
+            <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                <div>
+                    <h1 className="text-2xl font-semibold md:text-3xl">Team</h1>
+                    <p className="text-sm text-muted-foreground">
+                        {active} active · {members.length} total
+                    </p>
+                </div>
+                <Link
+                    href="/my-work"
+                    className="text-sm font-medium underline"
+                >
+                    My work →
+                </Link>
+            </div>
+
+            <form
+                action={createTeamMemberAction}
+                className="space-y-4 rounded-lg border bg-card p-4 md:p-6"
+            >
+                <h2 className="text-sm font-medium">Add team member</h2>
+                <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-1.5">
+                        <Label className="text-sm">Name</Label>
+                        <Input name="name" required placeholder="e.g. Danis" />
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label className="text-sm">Role</Label>
+                        <Select name="role" defaultValue="Other">
+                            <SelectTrigger className="h-11">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {TEAM_ROLES.map((r) => (
+                                    <SelectItem key={r} value={r}>
+                                        {r}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label className="text-sm">Email</Label>
+                        <Input name="email" type="email" />
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label className="text-sm">Phone</Label>
+                        <Input name="phone" type="tel" placeholder="+60..." />
+                    </div>
+                </div>
+                <div className="space-y-1.5">
+                    <Label className="text-sm">Skills (comma-separated)</Label>
+                    <Input name="skills" placeholder="React, Figma, Copywriting" />
+                </div>
+                <div className="flex justify-end">
+                    <Button type="submit">Add member</Button>
+                </div>
+            </form>
+
+            <div className="rounded-lg border bg-card">
+                <div className="border-b p-4 text-sm font-medium">Members</div>
+                {members.length === 0 ? (
+                    <p className="p-6 text-sm text-muted-foreground">
+                        No members yet.
+                    </p>
+                ) : (
+                    <ul className="divide-y">
+                        {members.map((m) => (
+                            <li
+                                key={m.id}
+                                className="flex flex-col gap-2 p-4 md:flex-row md:items-center md:justify-between"
+                            >
+                                <div className="min-w-0 flex-1">
+                                    <Link
+                                        href={`/team/${m.id}`}
+                                        className="font-medium hover:underline"
+                                    >
+                                        {m.name}
+                                    </Link>
+                                    <p className="truncate text-xs text-muted-foreground">
+                                        {m.role}
+                                        {m.email ? ` · ${m.email}` : ""}
+                                        {m.skills ? ` · ${m.skills}` : ""}
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Link
+                                        href={`/my-work?member=${encodeURIComponent(m.name)}`}
+                                        className="text-xs underline text-muted-foreground"
+                                    >
+                                        Their work →
+                                    </Link>
+                                    <Badge variant={m.active ? "default" : "outline"}>
+                                        {m.active ? "active" : "inactive"}
+                                    </Badge>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
+        </div>
+    );
+}

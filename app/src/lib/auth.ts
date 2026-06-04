@@ -1,0 +1,69 @@
+/**
+ * Permission helper backed by the SQL function `user_has_permission(uid, perm)`.
+ * Used in Server Components, Server Actions, and Route Handlers.
+ *
+ * Permission keys follow `entity.action` (e.g. `leads.view`, `deals.edit`)
+ * with `*` wildcards (e.g. `leads.*` or top-level `*`).
+ */
+import { createClient } from "@/lib/supabase/server";
+
+/**
+ * DEV-ONLY auth bypass. When `DEV_AUTH_BYPASS=1` and not in production,
+ * `getCurrentUser` returns a fake admin user so layouts/pages render without
+ * a real Supabase session. `hasPermission` returns true for everything.
+ * Force-disabled in production builds.
+ */
+function devBypassUser() {
+    if (
+        process.env.NODE_ENV !== "production" &&
+        process.env.DEV_AUTH_BYPASS === "1"
+    ) {
+        return {
+            id: "00000000-0000-0000-0000-000000000000",
+            email: "dev@nexova.local",
+            aud: "authenticated",
+            role: "authenticated",
+            app_metadata: {},
+            user_metadata: { name: "Dev User" },
+            created_at: new Date(0).toISOString(),
+        } as unknown as Awaited<
+            ReturnType<
+                Awaited<ReturnType<typeof createClient>>["auth"]["getUser"]
+            >
+        >["data"]["user"];
+    }
+    return null;
+}
+
+export async function getCurrentUser() {
+    const bypass = devBypassUser();
+    if (bypass) return bypass;
+    const supabase = await createClient();
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) return null;
+    return data.user;
+}
+
+export async function requireUser() {
+    const user = await getCurrentUser();
+    if (!user) {
+        throw new Error("UNAUTHENTICATED");
+    }
+    return user;
+}
+
+/**
+ * Permissions are intentionally OPEN: any signed-in user (or the dev-bypass
+ * user) can do anything. We only check authentication, not authorization.
+ * Restore role/permission checks here when the team needs them.
+ */
+export async function hasPermission(_perm: string): Promise<boolean> {
+    if (devBypassUser()) return true;
+    const user = await getCurrentUser();
+    return user !== null;
+}
+
+export async function requirePermission(_perm: string) {
+    const user = await getCurrentUser();
+    if (!user) throw new Error("UNAUTHENTICATED");
+}

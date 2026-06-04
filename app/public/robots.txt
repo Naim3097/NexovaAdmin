@@ -1,0 +1,12 @@
+User-agent: *
+Disallow: /portal/
+Disallow: /dashboard/
+Disallow: /leads/
+Disallow: /pipeline/
+Disallow: /projects/
+Disallow: /campaigns/
+Disallow: /content/
+Disallow: /invoices/
+Disallow: /settings/
+Disallow: /api/
+Allow: /

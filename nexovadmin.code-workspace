@@ -1,0 +1,23 @@
+{
+  "folders": [
+    { "name": "Nexov Admin (root)", "path": "." },
+    { "name": "App (Next.js)", "path": "app" },
+    { "name": "Supabase", "path": "supabase" },
+    { "name": "n8n Workflows", "path": "n8n" },
+    { "name": "Docs", "path": "docs" }
+  ],
+  "settings": {
+    "editor.formatOnSave": true,
+    "files.associations": {
+      "*.sql": "sql"
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "esbenp.prettier-vscode",
+      "dbaeumer.vscode-eslint",
+      "bradlc.vscode-tailwindcss",
+      "supabase.vscode-supabase-extension"
+    ]
+  }
+}
