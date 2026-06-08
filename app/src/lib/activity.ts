@@ -11,12 +11,15 @@
  * written to by triggers or in the action layer. The shape here is a
  * deliberate template for that future table.
  */
-import { listLeads } from "@/lib/data/leads";
-import { listProjects } from "@/lib/data/projects";
-import { computeTotals, listInvoices } from "@/lib/data/invoices";
-import { listContentPosts } from "@/lib/data/content";
-import { listCampaigns } from "@/lib/data/campaigns";
-import { listSubmissions } from "@/lib/data/onboarding";
+import { computeTotals } from "@/lib/data/invoices";
+import {
+    listLeads,
+    listProjects,
+    listInvoices,
+    listContentPosts,
+    listCampaigns,
+    listSubmissions,
+} from "@/lib/data/reads";
 
 export const ACTIVITY_ENTITIES = [
     "lead",

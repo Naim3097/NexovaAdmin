@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import {
     CLIENT_STATUSES,
@@ -31,6 +31,7 @@ export async function createClientAction(formData: FormData) {
         notes: String(formData.get("notes") ?? "").trim(),
     });
     revalidatePath("/settings/clients");
+    revalidateTag("clients", "max");
     redirect(`/settings/clients/${c.id}`);
 }
 
@@ -49,6 +50,7 @@ export async function updateClientAction(formData: FormData) {
     });
     revalidatePath(`/settings/clients/${id}`);
     revalidatePath("/settings/clients");
+    revalidateTag("clients", "max");
 }
 
 export async function deleteClientAction(formData: FormData) {
@@ -56,5 +58,6 @@ export async function deleteClientAction(formData: FormData) {
     if (!id) return;
     await deleteClient(id);
     revalidatePath("/settings/clients");
+    revalidateTag("clients", "max");
     redirect("/settings/clients");
 }

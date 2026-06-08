@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import {
     createLead,
@@ -259,6 +259,7 @@ export async function promoteLeadToClientAction(formData: FormData) {
     revalidatePath("/pipeline");
     revalidatePath("/settings/clients");
     revalidatePath("/dashboard");
+    revalidateTag("clients", "max");
     redirect(`/settings/clients/${client.id}`);
 }
 

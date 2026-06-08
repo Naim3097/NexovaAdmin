@@ -5,6 +5,7 @@
  * Permission keys follow `entity.action` (e.g. `leads.view`, `deals.edit`)
  * with `*` wildcards (e.g. `leads.*` or top-level `*`).
  */
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -35,14 +36,18 @@ function devBypassUser() {
     return null;
 }
 
-export async function getCurrentUser() {
+/**
+ * Wrapped in React `cache()` so the (network) auth validation runs at most once
+ * per request, even though the layout, page, and helpers all call it.
+ */
+export const getCurrentUser = cache(async () => {
     const bypass = devBypassUser();
     if (bypass) return bypass;
     const supabase = await createClient();
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) return null;
     return data.user;
-}
+});
 
 export async function requireUser() {
     const user = await getCurrentUser();
@@ -57,13 +62,13 @@ export async function requireUser() {
  * have team context (name/role, "my work" default, default assignee). Returns
  * null if not signed in or the user has no linked member row yet.
  */
-export async function getCurrentTeamMember() {
+export const getCurrentTeamMember = cache(async () => {
     const user = await getCurrentUser();
     if (!user) return null;
     // Imported lazily to avoid pulling the data layer into every auth import.
     const { getTeamMemberByUserId } = await import("@/lib/data/team");
     return getTeamMemberByUserId(user.id).catch(() => null);
-}
+});
 
 /**
  * Permissions are intentionally OPEN: any signed-in user (or the dev-bypass

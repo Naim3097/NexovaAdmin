@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import {
     SERVICE_CATEGORIES,
@@ -33,6 +33,7 @@ export async function createServiceAction(formData: FormData) {
         description: String(formData.get("description") ?? "").trim(),
     });
     revalidatePath("/settings/services");
+    revalidateTag("services", "max");
     redirect(`/settings/services/${s.id}`);
 }
 
@@ -49,6 +50,7 @@ export async function updateServiceAction(formData: FormData) {
     });
     revalidatePath(`/settings/services/${id}`);
     revalidatePath("/settings/services");
+    revalidateTag("services", "max");
 }
 
 export async function deleteServiceAction(formData: FormData) {
@@ -56,5 +58,6 @@ export async function deleteServiceAction(formData: FormData) {
     if (!id) return;
     await deleteService(id);
     revalidatePath("/settings/services");
+    revalidateTag("services", "max");
     redirect("/settings/services");
 }

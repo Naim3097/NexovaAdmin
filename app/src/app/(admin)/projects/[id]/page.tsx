@@ -50,14 +50,17 @@ export default async function ProjectDetailPage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    const proj = await getProjectById(id);
+    // Fetch the three independent reads in one wave instead of sequentially.
+    const [proj, team, invoices] = await Promise.all([
+        getProjectById(id),
+        listTeamMembers(),
+        listInvoicesForProject(id),
+    ]);
     if (!proj) notFound();
 
     const open = proj.tasks.filter((t) => !t.done).length;
     const total = proj.tasks.length;
-    const team = await listTeamMembers();
     const activeTeam = team.filter((m) => m.active);
-    const invoices = await listInvoicesForProject(proj.id);
     const billed = invoices.reduce((sum, i) => sum + computeTotals(i).total, 0);
     const paid = invoices
         .filter((i) => i.status === "paid")

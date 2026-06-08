@@ -1,11 +1,15 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { listLeads } from "@/lib/data/leads";
-import { listSubmissions } from "@/lib/data/onboarding";
-import { listProjects } from "@/lib/data/projects";
-import { computeTotals, listInvoices } from "@/lib/data/invoices";
-import { listContentPosts } from "@/lib/data/content";
-import { listCampaigns, totalsFor } from "@/lib/data/campaigns";
+import { computeTotals } from "@/lib/data/invoices";
+import { totalsFor } from "@/lib/data/campaigns";
+import {
+    listLeads,
+    listSubmissions,
+    listProjects,
+    listInvoices,
+    listContentPosts,
+    listCampaigns,
+} from "@/lib/data/reads";
 import { listActivityFiltered } from "@/lib/activity";
 
 export const dynamic = "force-dynamic";
