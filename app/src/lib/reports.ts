@@ -332,6 +332,7 @@ export type ClientMonthlyReport = {
         signedOffInMonth: boolean;
     }>;
     contentPostsPublished: ContentPost[];
+    contentApproved: ContentPost[];
     seoArticlesPublished: SeoArticle[];
     invoicesIssued: Invoice[];
     invoicesPaid: Invoice[];
@@ -433,6 +434,12 @@ export async function buildClientMonthlyReport(
             p.status === "posted" &&
             inMonth(p.postedAt ?? p.scheduledFor, monthKey),
     );
+    const contentApproved = posts.filter(
+        (p) =>
+            p.clientName === clientName &&
+            p.reviewStatus === "approved" &&
+            inMonth(p.approvedAt, monthKey),
+    );
     const seoArticlesPublished = articles.filter(
         (a) =>
             a.clientName === clientName &&
@@ -470,6 +477,7 @@ export async function buildClientMonthlyReport(
         totals,
         projects: clientProjects,
         contentPostsPublished,
+        contentApproved,
         seoArticlesPublished,
         invoicesIssued,
         invoicesPaid,

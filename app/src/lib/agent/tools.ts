@@ -30,6 +30,14 @@ import {
     generateInvoicePaymentLink,
 } from "@/lib/payments/send-invoice";
 import { sendTelegram, escapeMd } from "@/lib/telegram/send";
+import {
+    approveContent,
+    createContentRequest,
+    generateMonthlyPlan,
+    requestChanges,
+    submitDraft,
+} from "@/lib/data/content";
+import { listClients } from "@/lib/data/clients";
 
 // ---------------------------------------------------------------------------
 // Tool type
@@ -217,6 +225,182 @@ function absoluteLink(pathOrUrl: string): string {
 }
 
 // ---------------------------------------------------------------------------
+// Content review tools (the Axtra loop, native in Nexov Admin)
+// ---------------------------------------------------------------------------
+
+const generatePlanInput = z.object({
+    clientName: z.string().min(1),
+    month: z.string().regex(/^\d{4}-\d{2}$/), // YYYY-MM
+    quota: z.number().int().min(0).optional(),
+});
+const generatePlanResult = z.object({
+    created: z.number(),
+    existing: z.number(),
+});
+
+export const contentGeneratePlan: AgentTool<
+    z.infer<typeof generatePlanInput>,
+    z.infer<typeof generatePlanResult>
+> = {
+    name: "content.generatePlan",
+    description:
+        "Generate a client's monthly content plan (N placeholder content items) from their retainer quota. Idempotent per (client, month): does nothing if a plan already exists. Omit `quota` to use the client's configured monthlyContentQuota.",
+    inputSchema: generatePlanInput,
+    outputSchema: generatePlanResult,
+    invoke: async (input) => {
+        let quota = input.quota;
+        if (quota === undefined) {
+            const clients = await listClients();
+            const c = clients.find(
+                (x) =>
+                    x.name.trim().toLowerCase() ===
+                    input.clientName.trim().toLowerCase(),
+            );
+            quota = c?.monthlyContentQuota ?? 0;
+        }
+        return generateMonthlyPlan({
+            clientName: input.clientName,
+            month: input.month,
+            quota,
+        });
+    },
+};
+
+const submitDraftInput = z.object({
+    contentId: z.string().min(1),
+    draftNumber: z.string().min(1), // 'Draft 1'..'Draft 3' | 'Final Draft'
+    fileUrl: z.url(),
+    caption: z.string().optional(),
+});
+const reviewStateResult = z.object({
+    id: z.string(),
+    reviewStatus: z.string(),
+    draftNumber: z.string(),
+});
+
+export const contentSubmitDraft: AgentTool<
+    z.infer<typeof submitDraftInput>,
+    z.infer<typeof reviewStateResult>
+> = {
+    name: "content.submitDraft",
+    description:
+        "Submit a new draft version of a content item for client review (moves it to 'awaiting_client' and notifies). draftNumber is one of 'Draft 1','Draft 2','Draft 3','Final Draft'. fileUrl is the asset link.",
+    inputSchema: submitDraftInput,
+    outputSchema: reviewStateResult,
+    invoke: async (input) => {
+        const p = await submitDraft({
+            id: input.contentId,
+            draftNumber: input.draftNumber,
+            fileUrl: input.fileUrl,
+            caption: input.caption,
+        });
+        return {
+            id: p.id,
+            reviewStatus: p.reviewStatus,
+            draftNumber: p.draftNumber,
+        };
+    },
+};
+
+const requestChangesInput = z.object({
+    contentId: z.string().min(1),
+    body: z.string().min(1),
+    fileUrl: z.url().optional(),
+});
+const requestChangesResult = z.object({
+    ok: z.boolean(),
+    error: z.string().optional(),
+    reviewStatus: z.string().optional(),
+    revisionsUsed: z.number().optional(),
+});
+
+export const contentRequestChanges: AgentTool<
+    z.infer<typeof requestChangesInput>,
+    z.infer<typeof requestChangesResult>
+> = {
+    name: "content.requestChanges",
+    description:
+        "Record client-requested changes on a content item's current draft. Consumes one revision cycle (capped by the client's revision limit) and moves it to 'changes_requested'. Returns ok:false with an error if the cap is reached, the item is already approved, or there is no draft yet.",
+    inputSchema: requestChangesInput,
+    outputSchema: requestChangesResult,
+    invoke: async (input) => {
+        const r = await requestChanges({
+            id: input.contentId,
+            body: input.body,
+            fileUrl: input.fileUrl,
+        });
+        if (r.error) return { ok: false, error: r.error };
+        return {
+            ok: true,
+            reviewStatus: r.post?.reviewStatus,
+            revisionsUsed: r.post?.revisionsUsed,
+        };
+    },
+};
+
+const approveInput = z.object({
+    contentId: z.string().min(1),
+    by: z.string().optional(),
+});
+const approveResult = z.object({
+    id: z.string(),
+    reviewStatus: z.string(),
+    approvedAt: z.string().nullable(),
+});
+
+export const contentApprove: AgentTool<
+    z.infer<typeof approveInput>,
+    z.infer<typeof approveResult>
+> = {
+    name: "content.approve",
+    description:
+        "Approve a content item's current draft on the client's behalf (terminal state). Stamps approvedAt/by and notifies.",
+    inputSchema: approveInput,
+    outputSchema: approveResult,
+    invoke: async (input) => {
+        const p = await approveContent({
+            id: input.contentId,
+            by: input.by,
+        });
+        return {
+            id: p.id,
+            reviewStatus: p.reviewStatus,
+            approvedAt: p.approvedAt,
+        };
+    },
+};
+
+const createRequestInput = z.object({
+    clientName: z.string().min(1),
+    title: z.string().min(1),
+    instructions: z.string().optional(),
+});
+const createRequestResult = z.object({
+    id: z.string(),
+    title: z.string(),
+    origin: z.string(),
+});
+
+export const contentCreateRequest: AgentTool<
+    z.infer<typeof createRequestInput>,
+    z.infer<typeof createRequestResult>
+> = {
+    name: "content.createRequest",
+    description:
+        "Log a one-off content request from a client (origin 'request'). Creates a content item and notifies the team.",
+    inputSchema: createRequestInput,
+    outputSchema: createRequestResult,
+    invoke: async (input) => {
+        const p = await createContentRequest({
+            clientName: input.clientName,
+            title: input.title,
+            instructions: input.instructions,
+        });
+        return { id: p.id, title: p.title, origin: p.origin };
+    },
+};
+
+// ---------------------------------------------------------------------------
 // Master registry
 // ---------------------------------------------------------------------------
 
@@ -226,6 +410,11 @@ export const AGENT_TOOLS: AgentTool[] = [
     paymentsCreateInvoiceLink as unknown as AgentTool,
     paymentsCheckInvoiceStatus as unknown as AgentTool,
     telegramSendAlert as unknown as AgentTool,
+    contentGeneratePlan as unknown as AgentTool,
+    contentSubmitDraft as unknown as AgentTool,
+    contentRequestChanges as unknown as AgentTool,
+    contentApprove as unknown as AgentTool,
+    contentCreateRequest as unknown as AgentTool,
 ];
 
 /** Look up a tool by name. Throws if unknown — the agent must not invent tools. */

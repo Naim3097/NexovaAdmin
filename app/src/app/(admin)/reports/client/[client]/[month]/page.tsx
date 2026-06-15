@@ -52,6 +52,7 @@ export default async function ClientMonthlyReportPage({
         report.campaigns.length > 0 ||
         report.projects.length > 0 ||
         report.contentPostsPublished.length > 0 ||
+        report.contentApproved.length > 0 ||
         report.seoArticlesPublished.length > 0 ||
         report.invoicesIssued.length > 0;
 
@@ -283,6 +284,35 @@ export default async function ClientMonthlyReportPage({
                                         <span className="text-xs text-muted-foreground">
                                             {p.platform} · {p.type} ·{" "}
                                             {(p.postedAt ?? p.scheduledFor).slice(0, 10)}
+                                        </span>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                ) : null}
+
+                {/* Content approved (delivered via the review portal) */}
+                {report.contentApproved.length > 0 ? (
+                    <section className="space-y-3">
+                        <h2 className="text-lg font-semibold">
+                            Content approved ({report.contentApproved.length})
+                        </h2>
+                        <ul className="divide-y rounded-lg border">
+                            {report.contentApproved.map((p) => (
+                                <li key={p.id} className="p-3 text-sm">
+                                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                                        <span className="font-medium">
+                                            {p.title}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                            {p.draftNumber
+                                                ? `${p.draftNumber} · `
+                                                : ""}
+                                            {p.platform} · {p.type}
+                                            {p.approvedAt
+                                                ? ` · ${p.approvedAt.slice(0, 10)}`
+                                                : ""}
                                         </span>
                                     </div>
                                 </li>
