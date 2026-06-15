@@ -111,6 +111,9 @@ export type ClientRow = {
     website: string;
     industry: string;
     notes: string;
+    content_revision_limit: number;
+    monthly_content_quota: number;
+    portal_token: string;
     created_at: string;
     updated_at: string;
 };
@@ -281,6 +284,8 @@ export type ContentPostRow = {
     hashtags: string;
     notes: string;
     assignee: string;
+    plan_month: string;
+    origin: string;
     created_at: string;
     updated_at: string;
     posted_at: string | null;

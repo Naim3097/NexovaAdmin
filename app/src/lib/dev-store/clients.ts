@@ -31,9 +31,25 @@ export type Client = {
     website: string;
     industry: string;
     notes: string;
+    /** Capped feedback cycles per content item (Axtra default: 3). */
+    contentRevisionLimit: number;
+    /** Content items the retainer covers per month (0 = no plan). */
+    monthlyContentQuota: number;
+    /** Client-level portal link token; '' until generated. */
+    portalToken: string;
     createdAt: string;
     updatedAt: string;
 };
+
+/** Backfill fields added after early dev rows were written. */
+function normalizeClient(c: Client): Client {
+    return {
+        ...c,
+        contentRevisionLimit: c.contentRevisionLimit ?? 3,
+        monthlyContentQuota: c.monthlyContentQuota ?? 0,
+        portalToken: c.portalToken ?? "",
+    };
+}
 
 async function ensureDir() {
     await fs.mkdir(CLIENTS_DIR, { recursive: true });
@@ -52,6 +68,9 @@ export async function createClient(input: {
     website?: string;
     industry?: string;
     notes?: string;
+    contentRevisionLimit?: number;
+    monthlyContentQuota?: number;
+    portalToken?: string;
 }): Promise<Client> {
     await ensureDir();
     const now = new Date().toISOString();
@@ -65,6 +84,9 @@ export async function createClient(input: {
         website: input.website ?? "",
         industry: input.industry ?? "",
         notes: input.notes ?? "",
+        contentRevisionLimit: input.contentRevisionLimit ?? 3,
+        monthlyContentQuota: input.monthlyContentQuota ?? 0,
+        portalToken: input.portalToken ?? "",
         createdAt: now,
         updatedAt: now,
     };
@@ -79,7 +101,7 @@ export async function listClients(): Promise<Client[]> {
     for (const entry of entries) {
         if (!entry.endsWith(".json")) continue;
         const raw = await fs.readFile(path.join(CLIENTS_DIR, entry), "utf8");
-        out.push(JSON.parse(raw) as Client);
+        out.push(normalizeClient(JSON.parse(raw) as Client));
     }
     return out.sort((a, b) => a.name.localeCompare(b.name));
 }
@@ -87,7 +109,7 @@ export async function listClients(): Promise<Client[]> {
 export async function getClientById(id: string): Promise<Client | null> {
     try {
         const raw = await fs.readFile(fileFor(id), "utf8");
-        return JSON.parse(raw) as Client;
+        return normalizeClient(JSON.parse(raw) as Client);
     } catch {
         return null;
     }

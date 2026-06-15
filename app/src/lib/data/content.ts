@@ -14,18 +14,21 @@ export {
     CONTENT_STATUSES,
     CONTENT_PLATFORMS,
     CONTENT_TYPES,
+    CONTENT_ORIGINS,
 } from "@/lib/dev-store/content";
 export type {
     ContentPost,
     ContentPlatform,
     ContentStatus,
     ContentType,
+    ContentOrigin,
 } from "@/lib/dev-store/content";
 
 type ContentPost = devContent.ContentPost;
 type ContentStatus = devContent.ContentStatus;
 type ContentPlatform = devContent.ContentPlatform;
 type ContentType = devContent.ContentType;
+type ContentOrigin = devContent.ContentOrigin;
 type UpdatePatch = Partial<Omit<ContentPost, "id" | "createdAt">>;
 
 type ContentInsert = Database["public"]["Tables"]["content_posts"]["Insert"];
@@ -48,6 +51,8 @@ function rowToPost(row: ContentPostRow): ContentPost {
         hashtags: row.hashtags,
         notes: row.notes,
         assignee: row.assignee,
+        planMonth: row.plan_month,
+        origin: row.origin as ContentOrigin,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
         postedAt: row.posted_at,
@@ -69,6 +74,8 @@ function postToInsert(p: ContentPost): ContentInsert {
         hashtags: p.hashtags,
         notes: p.notes,
         assignee: p.assignee,
+        plan_month: p.planMonth,
+        origin: p.origin,
         created_at: p.createdAt,
         updated_at: p.updatedAt,
         posted_at: p.postedAt,
@@ -90,6 +97,8 @@ function patchToUpdate(patch: UpdatePatch): ContentUpdate {
     if (patch.hashtags !== undefined) out.hashtags = patch.hashtags;
     if (patch.notes !== undefined) out.notes = patch.notes;
     if (patch.assignee !== undefined) out.assignee = patch.assignee;
+    if (patch.planMonth !== undefined) out.plan_month = patch.planMonth;
+    if (patch.origin !== undefined) out.origin = patch.origin;
     if (patch.postedAt !== undefined) out.posted_at = patch.postedAt;
     if (patch.updatedAt !== undefined) out.updated_at = patch.updatedAt;
     return out;
@@ -107,6 +116,8 @@ export async function createContentPost(input: {
     hashtags?: string;
     notes?: string;
     assignee?: string;
+    planMonth?: string;
+    origin?: ContentOrigin;
 }): Promise<ContentPost> {
     if (!isSupabaseEnabled("content")) return devContent.createContentPost(input);
 
@@ -125,6 +136,8 @@ export async function createContentPost(input: {
         hashtags: input.hashtags ?? "",
         notes: input.notes ?? "",
         assignee: input.assignee ?? "",
+        planMonth: input.planMonth ?? "",
+        origin: input.origin ?? "plan",
         createdAt: now,
         updatedAt: now,
         postedAt: null,
@@ -188,6 +201,49 @@ export async function setContentStatus(
     if (status === "posted") patch.postedAt = new Date().toISOString();
     else patch.postedAt = null;
     return updateContentPost(id, patch);
+}
+
+/**
+ * Generate a client's monthly content plan: create `quota` placeholder content
+ * posts for the given month (origin 'plan'), replacing Axtra's hardcoded
+ * per-client deliverable lists. Idempotent per (client, month): if a plan
+ * already exists it creates nothing and reports the existing count.
+ *
+ * @returns the number of posts created (0 if a plan already existed or quota<=0)
+ */
+export async function generateMonthlyPlan(input: {
+    clientName: string;
+    month: string; // 'YYYY-MM'
+    quota: number;
+    type?: ContentType;
+    platform?: ContentPlatform;
+}): Promise<{ created: number; existing: number }> {
+    const { clientName, month, quota } = input;
+    if (!clientName || !/^\d{4}-\d{2}$/.test(month)) {
+        throw new Error("generateMonthlyPlan: clientName and YYYY-MM month required");
+    }
+
+    const all = await listContentPosts();
+    const existing = all.filter(
+        (p) => p.clientName === clientName && p.planMonth === month,
+    );
+    if (existing.length > 0 || quota <= 0) {
+        return { created: 0, existing: existing.length };
+    }
+
+    const scheduledFor = `${month}-01`;
+    for (let i = 1; i <= quota; i++) {
+        await createContentPost({
+            title: `${month} · Content ${i}`,
+            clientName,
+            scheduledFor,
+            type: input.type ?? "post",
+            platform: input.platform ?? "instagram",
+            planMonth: month,
+            origin: "plan",
+        });
+    }
+    return { created: quota, existing: 0 };
 }
 
 export async function deleteContentPost(id: string): Promise<void> {

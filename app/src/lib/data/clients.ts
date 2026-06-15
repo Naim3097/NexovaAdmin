@@ -35,6 +35,9 @@ function rowToClient(row: ClientRow): Client {
         website: row.website,
         industry: row.industry,
         notes: row.notes,
+        contentRevisionLimit: row.content_revision_limit,
+        monthlyContentQuota: row.monthly_content_quota,
+        portalToken: row.portal_token,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
     };
@@ -51,6 +54,9 @@ function clientToInsert(c: Client): ClientInsert {
         website: c.website,
         industry: c.industry,
         notes: c.notes,
+        content_revision_limit: c.contentRevisionLimit,
+        monthly_content_quota: c.monthlyContentQuota,
+        portal_token: c.portalToken,
         created_at: c.createdAt,
         updated_at: c.updatedAt,
     };
@@ -68,6 +74,11 @@ function patchToUpdate(patch: UpdatePatch): ClientUpdate {
     if (patch.website !== undefined) out.website = patch.website;
     if (patch.industry !== undefined) out.industry = patch.industry;
     if (patch.notes !== undefined) out.notes = patch.notes;
+    if (patch.contentRevisionLimit !== undefined)
+        out.content_revision_limit = patch.contentRevisionLimit;
+    if (patch.monthlyContentQuota !== undefined)
+        out.monthly_content_quota = patch.monthlyContentQuota;
+    if (patch.portalToken !== undefined) out.portal_token = patch.portalToken;
     if (patch.updatedAt !== undefined) out.updated_at = patch.updatedAt;
     return out;
 }
@@ -81,6 +92,9 @@ export async function createClient(input: {
     website?: string;
     industry?: string;
     notes?: string;
+    contentRevisionLimit?: number;
+    monthlyContentQuota?: number;
+    portalToken?: string;
 }): Promise<Client> {
     if (!isSupabaseEnabled("clients")) return devClients.createClient(input);
     const now = new Date().toISOString();
@@ -94,6 +108,9 @@ export async function createClient(input: {
         website: input.website ?? "",
         industry: input.industry ?? "",
         notes: input.notes ?? "",
+        contentRevisionLimit: input.contentRevisionLimit ?? 3,
+        monthlyContentQuota: input.monthlyContentQuota ?? 0,
+        portalToken: input.portalToken ?? "",
         createdAt: now,
         updatedAt: now,
     };

@@ -20,10 +20,18 @@ import {
 } from "@/components/ui/select";
 import {
     deleteClientAction,
+    generateClientPortalTokenAction,
+    generateContentPlanAction,
     updateClientAction,
 } from "@/lib/clients/actions";
 
 export const dynamic = "force-dynamic";
+
+/** Current month as 'YYYY-MM' for the plan-generation default. */
+function currentMonth() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
 
 function eq(a: string | undefined | null, b: string) {
     return (a ?? "").trim().toLowerCase() === b.trim().toLowerCase();
@@ -63,6 +71,11 @@ export default async function ClientDetailPage({
     const openContent = myContent.filter(
         (c) => c.status !== "posted" && c.status !== "archived",
     ).length;
+
+    const thisMonth = currentMonth();
+    const planThisMonth = myContent.filter(
+        (c) => c.origin === "plan" && c.planMonth === thisMonth,
+    );
 
     const fmt = (n: number) =>
         n.toLocaleString(undefined, {
@@ -207,6 +220,32 @@ export default async function ClientDetailPage({
                             defaultValue={client.website}
                         />
                     </div>
+                    <div className="space-y-1.5">
+                        <Label className="text-sm">
+                            Monthly content quota
+                        </Label>
+                        <Input
+                            name="monthlyContentQuota"
+                            type="number"
+                            min={0}
+                            defaultValue={client.monthlyContentQuota}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            Content items the retainer covers per month.
+                        </p>
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label className="text-sm">Revision limit</Label>
+                        <Input
+                            name="contentRevisionLimit"
+                            type="number"
+                            min={0}
+                            defaultValue={client.contentRevisionLimit}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            Feedback cycles allowed per content item.
+                        </p>
+                    </div>
                 </div>
                 <div className="space-y-1.5">
                     <Label className="text-sm">Internal notes</Label>
@@ -216,6 +255,73 @@ export default async function ClientDetailPage({
                     <Button type="submit">Save</Button>
                 </div>
             </form>
+
+            {/* Content plan & client portal */}
+            <section className="space-y-4 rounded-lg border bg-card p-4 md:p-6">
+                <div>
+                    <h2 className="text-sm font-medium">
+                        Content plan & portal
+                    </h2>
+                    <p className="text-xs text-muted-foreground">
+                        Generate this client&apos;s monthly content from their
+                        quota, and issue a portal link for review.
+                    </p>
+                </div>
+
+                {/* Generate this month's plan */}
+                <form
+                    action={generateContentPlanAction}
+                    className="flex flex-col gap-3 sm:flex-row sm:items-end"
+                >
+                    <input type="hidden" name="id" value={client.id} />
+                    <div className="space-y-1.5">
+                        <Label className="text-sm">Plan month</Label>
+                        <Input
+                            name="month"
+                            type="month"
+                            defaultValue={thisMonth}
+                            className="w-44"
+                        />
+                    </div>
+                    <Button
+                        type="submit"
+                        disabled={client.monthlyContentQuota <= 0}
+                    >
+                        Generate plan ({client.monthlyContentQuota})
+                    </Button>
+                    <p className="text-xs text-muted-foreground sm:pb-2">
+                        {planThisMonth.length > 0
+                            ? `${planThisMonth.length} planned item(s) for ${thisMonth}.`
+                            : client.monthlyContentQuota <= 0
+                                ? "Set a monthly quota above first."
+                                : "No plan generated for this month yet."}
+                    </p>
+                </form>
+
+                {/* Portal token */}
+                <div className="flex flex-col gap-2 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                        <p className="text-sm font-medium">Client portal link</p>
+                        {client.portalToken ? (
+                            <code className="block break-all text-xs text-muted-foreground">
+                                /p/{client.portalToken}
+                            </code>
+                        ) : (
+                            <p className="text-xs text-muted-foreground">
+                                Not issued yet.
+                            </p>
+                        )}
+                    </div>
+                    <form action={generateClientPortalTokenAction}>
+                        <input type="hidden" name="id" value={client.id} />
+                        <Button type="submit" variant="outline">
+                            {client.portalToken
+                                ? "Regenerate link"
+                                : "Generate link"}
+                        </Button>
+                    </form>
+                </div>
+            </section>
 
             {/* Aggregated lists */}
             {mySubmissions.length > 0 ? (

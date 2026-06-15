@@ -43,6 +43,9 @@ export const CONTENT_TYPES = [
 ] as const;
 export type ContentType = (typeof CONTENT_TYPES)[number];
 
+export const CONTENT_ORIGINS = ["plan", "request"] as const;
+export type ContentOrigin = (typeof CONTENT_ORIGINS)[number];
+
 export type ContentPost = {
     id: string;
     title: string;
@@ -59,10 +62,23 @@ export type ContentPost = {
     hashtags: string;
     notes: string;
     assignee: string;
+    /** 'YYYY-MM' monthly plan this post belongs to ('' = ad-hoc). */
+    planMonth: string;
+    /** 'plan' = retainer deliverable, 'request' = one-off client ask. */
+    origin: ContentOrigin;
     createdAt: string;
     updatedAt: string;
     postedAt: string | null;
 };
+
+/** Backfill fields added after early dev rows were written. */
+function normalizeContentPost(p: ContentPost): ContentPost {
+    return {
+        ...p,
+        planMonth: p.planMonth ?? "",
+        origin: p.origin ?? "plan",
+    };
+}
 
 async function ensureDir() {
     await fs.mkdir(CONTENT_DIR, { recursive: true });
@@ -84,6 +100,8 @@ export async function createContentPost(input: {
     hashtags?: string;
     notes?: string;
     assignee?: string;
+    planMonth?: string;
+    origin?: ContentOrigin;
 }): Promise<ContentPost> {
     await ensureDir();
     const now = new Date().toISOString();
@@ -101,6 +119,8 @@ export async function createContentPost(input: {
         hashtags: input.hashtags ?? "",
         notes: input.notes ?? "",
         assignee: input.assignee ?? "",
+        planMonth: input.planMonth ?? "",
+        origin: input.origin ?? "plan",
         createdAt: now,
         updatedAt: now,
         postedAt: null,
@@ -116,7 +136,7 @@ export async function listContentPosts(): Promise<ContentPost[]> {
     for (const entry of entries) {
         if (!entry.endsWith(".json")) continue;
         const raw = await fs.readFile(path.join(CONTENT_DIR, entry), "utf8");
-        out.push(JSON.parse(raw) as ContentPost);
+        out.push(normalizeContentPost(JSON.parse(raw) as ContentPost));
     }
     // Sort by scheduledFor ascending (calendar order).
     return out.sort((a, b) => a.scheduledFor.localeCompare(b.scheduledFor));
@@ -127,7 +147,7 @@ export async function getContentPostById(
 ): Promise<ContentPost | null> {
     try {
         const raw = await fs.readFile(fileFor(id), "utf8");
-        return JSON.parse(raw) as ContentPost;
+        return normalizeContentPost(JSON.parse(raw) as ContentPost);
     } catch {
         return null;
     }
