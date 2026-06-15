@@ -7,12 +7,60 @@
  */
 import { revalidatePath } from "next/cache";
 import { getCurrentClient } from "@/lib/auth";
-import { createContentRequest, listContentPosts } from "@/lib/data/content";
+import {
+    approveContent,
+    createContentRequest,
+    getContentPostById,
+    listContentPosts,
+    requestChanges,
+} from "@/lib/data/content";
 
 export type PortalCreateState = { ok: boolean; message?: string };
 
 function currentMonth() {
     return new Date().toISOString().slice(0, 7); // YYYY-MM
+}
+
+/** Confirm the signed-in client owns this content item before any review action. */
+async function ownContent(contentId: string) {
+    const client = await getCurrentClient();
+    if (!client) return null;
+    const post = await getContentPostById(contentId);
+    if (
+        !post ||
+        post.clientName.trim().toLowerCase() !== client.name.trim().toLowerCase()
+    ) {
+        return null;
+    }
+    return { client, post };
+}
+
+/** Logged-in client approves the current draft. */
+export async function portalApproveAction(formData: FormData) {
+    const id = String(formData.get("id") ?? "");
+    if (!id) return;
+    const owned = await ownContent(id);
+    if (!owned) return;
+    await approveContent({
+        id,
+        by: owned.client.contactName || owned.client.name,
+    });
+    revalidatePath("/portal/content");
+    revalidatePath("/content");
+    revalidatePath("/dashboard");
+}
+
+/** Logged-in client requests changes on the current draft. */
+export async function portalRequestChangesAction(formData: FormData) {
+    const id = String(formData.get("id") ?? "");
+    const body = String(formData.get("body") ?? "").trim();
+    if (!id || !body) return;
+    const owned = await ownContent(id);
+    if (!owned) return;
+    await requestChanges({ id, body });
+    revalidatePath("/portal/content");
+    revalidatePath("/content");
+    revalidatePath("/dashboard");
 }
 
 /** Client submits a new content request with a direction + reference links. */
