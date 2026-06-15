@@ -304,7 +304,7 @@ export default async function ClientDetailPage({
                         <p className="text-sm font-medium">Client portal link</p>
                         {client.portalToken ? (
                             <code className="block break-all text-xs text-muted-foreground">
-                                /p/{client.portalToken}
+                                /c/{client.portalToken}
                             </code>
                         ) : (
                             <p className="text-xs text-muted-foreground">

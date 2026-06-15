@@ -9,6 +9,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import type { Database, ContentPostRow } from "@/lib/supabase/types";
 import { isSupabaseEnabled } from "@/lib/data/flag";
 import { notify } from "@/lib/data/notifications";
+import { listClients } from "@/lib/data/clients";
 import * as devContent from "@/lib/dev-store/content";
 
 export {
@@ -334,6 +335,124 @@ export async function submitDraft(input: {
     });
 
     return updated;
+}
+
+/** Resolve a client's capped revision limit by name (defaults to 3). */
+async function revisionLimitFor(clientName: string): Promise<number> {
+    const clients = await listClients();
+    const c = clients.find(
+        (x) => x.name.trim().toLowerCase() === clientName.trim().toLowerCase(),
+    );
+    return c?.contentRevisionLimit ?? 3;
+}
+
+/**
+ * Client requests changes on the current draft. Appends a client feedback
+ * entry, consumes one revision cycle (enforced against the client's
+ * contentRevisionLimit), and moves the item to 'changes_requested'.
+ * Returns an error string instead of throwing on a business-rule violation
+ * (already approved / no draft yet / limit reached) so callers can surface it.
+ */
+export async function requestChanges(input: {
+    id: string;
+    body: string;
+    fileUrl?: string;
+}): Promise<{ post?: ContentPost; error?: string }> {
+    const post = await getContentPostById(input.id);
+    if (!post) return { error: "Content not found." };
+    if (post.reviewStatus === "approved") {
+        return { error: "This content is already approved." };
+    }
+    if (post.drafts.length === 0) {
+        return { error: "There is no draft to give feedback on yet." };
+    }
+    const limit = await revisionLimitFor(post.clientName);
+    if (post.revisionsUsed >= limit) {
+        return {
+            error: `You've used all ${limit} revision cycle(s) for this item.`,
+        };
+    }
+
+    const cycle = post.revisionsUsed + 1;
+    const entry: ContentFeedback = {
+        id: randomUUID(),
+        draftId: post.drafts[post.drafts.length - 1]?.id ?? "",
+        author: "client",
+        body: input.body,
+        fileUrl: input.fileUrl ?? "",
+        cycle,
+        createdAt: new Date().toISOString(),
+    };
+
+    const updated = await updateContentPost(input.id, {
+        feedback: [...post.feedback, entry],
+        revisionsUsed: cycle,
+        reviewStatus: "changes_requested",
+        status: "review",
+    });
+
+    await notify({
+        kind: "content_changes_requested",
+        title: `Changes requested: ${post.title}`,
+        body: `${post.clientName} · cycle ${cycle} of ${limit}`,
+        link: `/content/${input.id}`,
+    });
+
+    return { post: updated };
+}
+
+/** Client approves the current draft — terminal for the review loop. */
+export async function approveContent(input: {
+    id: string;
+    by?: string;
+}): Promise<ContentPost> {
+    const post = await getContentPostById(input.id);
+    if (!post) throw new Error(`approveContent: content ${input.id} not found`);
+    if (post.reviewStatus === "approved") return post;
+
+    const updated = await updateContentPost(input.id, {
+        reviewStatus: "approved",
+        approvedAt: new Date().toISOString(),
+        approvedBy: input.by ?? "client",
+    });
+
+    await notify({
+        kind: "content_approved",
+        title: `Content approved: ${post.title}`,
+        body: `${post.clientName}${post.draftNumber ? ` · ${post.draftNumber}` : ""}`,
+        link: `/content/${input.id}`,
+    });
+
+    return updated;
+}
+
+/**
+ * Client submits a one-off content request (Track B). Creates a content_posts
+ * row with origin 'request' and notifies the agency.
+ */
+export async function createContentRequest(input: {
+    clientName: string;
+    title: string;
+    instructions?: string;
+    scheduledFor?: string;
+}): Promise<ContentPost> {
+    const post = await createContentPost({
+        title: input.title,
+        clientName: input.clientName,
+        scheduledFor:
+            input.scheduledFor || new Date().toISOString().slice(0, 10),
+        notes: input.instructions ?? "",
+        origin: "request",
+    });
+
+    await notify({
+        kind: "system",
+        title: `New content request from ${input.clientName}`,
+        body: input.title,
+        link: `/content/${post.id}`,
+    });
+
+    return post;
 }
 
 export async function deleteContentPost(id: string): Promise<void> {

@@ -147,6 +147,23 @@ export async function getClientById(id: string): Promise<Client | null> {
     return data ? rowToClient(data as ClientRow) : null;
 }
 
+export async function getClientByPortalToken(
+    token: string,
+): Promise<Client | null> {
+    if (!token || token.length < 16) return null;
+    if (!isSupabaseEnabled("clients")) {
+        return devClients.getClientByPortalToken(token);
+    }
+    const sb = createServiceClient();
+    const { data, error } = await sb
+        .from(TABLE)
+        .select("*")
+        .eq("portal_token", token)
+        .maybeSingle();
+    if (error) throw new Error(`getClientByPortalToken: ${error.message}`);
+    return data ? rowToClient(data as ClientRow) : null;
+}
+
 export async function updateClient(
     id: string,
     patch: UpdatePatch,

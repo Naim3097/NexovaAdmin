@@ -115,6 +115,14 @@ export async function getClientById(id: string): Promise<Client | null> {
     }
 }
 
+export async function getClientByPortalToken(
+    token: string,
+): Promise<Client | null> {
+    if (!token) return null;
+    const all = await listClients();
+    return all.find((c) => c.portalToken && c.portalToken === token) ?? null;
+}
+
 export async function updateClient(
     id: string,
     patch: Partial<Omit<Client, "id" | "createdAt">>,

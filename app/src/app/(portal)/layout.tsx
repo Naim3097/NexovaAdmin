@@ -25,8 +25,8 @@ export default function PortalLayout({
             </header>
             <main className="mx-auto max-w-3xl px-4 py-8">{children}</main>
             <footer className="mx-auto max-w-3xl px-4 py-6 text-xs text-muted-foreground">
-                Read-only. Do not share this link publicly — it grants access
-                to your project status.
+                Private link — do not share publicly. It grants access to your
+                project status and content.
             </footer>
         </div>
     );
