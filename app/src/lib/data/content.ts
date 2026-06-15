@@ -19,6 +19,7 @@ export {
     CONTENT_ORIGINS,
     CONTENT_REVIEW_STATUSES,
     CONTENT_DRAFT_STAGES,
+    CONTENT_ASSET_TYPES,
 } from "@/lib/dev-store/content";
 export type {
     ContentPost,
@@ -30,6 +31,8 @@ export type {
     ContentDraftStage,
     ContentDraft,
     ContentFeedback,
+    ContentMedia,
+    ContentAssetType,
 } from "@/lib/dev-store/content";
 
 type ContentPost = devContent.ContentPost;
@@ -40,6 +43,8 @@ type ContentOrigin = devContent.ContentOrigin;
 type ContentReviewStatus = devContent.ContentReviewStatus;
 type ContentDraft = devContent.ContentDraft;
 type ContentFeedback = devContent.ContentFeedback;
+type ContentMedia = devContent.ContentMedia;
+type ContentAssetType = devContent.ContentAssetType;
 type UpdatePatch = Partial<Omit<ContentPost, "id" | "createdAt">>;
 
 type ContentInsert = Database["public"]["Tables"]["content_posts"]["Insert"];
@@ -325,17 +330,32 @@ export async function generateMonthlyPlan(input: {
 export async function submitDraft(input: {
     id: string;
     draftNumber: string;
-    fileUrl: string;
+    media: ContentMedia[];
+    assetType?: ContentAssetType;
     caption?: string;
     submittedBy?: string;
 }): Promise<ContentPost> {
     const post = await getContentPostById(input.id);
     if (!post) throw new Error(`submitDraft: content post ${input.id} not found`);
+    if (input.media.length === 0) {
+        throw new Error("submitDraft: at least one asset is required");
+    }
+
+    const assetType: ContentAssetType =
+        input.assetType ??
+        (input.media.some((m) => m.type === "video")
+            ? "video"
+            : input.media.length > 1
+                ? "carousel"
+                : "image");
+    const fileUrl = input.media[0]?.url ?? "";
 
     const draft: ContentDraft = {
         id: randomUUID(),
         draftNumber: input.draftNumber,
-        fileUrl: input.fileUrl,
+        fileUrl,
+        media: input.media,
+        assetType,
         caption: input.caption ?? "",
         submittedAt: new Date().toISOString(),
         submittedBy: input.submittedBy ?? "agency",
@@ -343,7 +363,7 @@ export async function submitDraft(input: {
 
     const updated = await updateContentPost(input.id, {
         drafts: [...post.drafts, draft],
-        currentFileUrl: input.fileUrl,
+        currentFileUrl: fileUrl,
         draftNumber: input.draftNumber,
         caption: input.caption?.trim() ? input.caption : post.caption,
         reviewStatus: "awaiting_client",

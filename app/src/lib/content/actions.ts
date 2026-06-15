@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
+    CONTENT_ASSET_TYPES,
     CONTENT_DRAFT_STAGES,
     CONTENT_PLATFORMS,
     CONTENT_STATUSES,
@@ -12,10 +13,13 @@ import {
     setContentStatus,
     submitDraft,
     updateContentPost,
+    type ContentAssetType,
+    type ContentMedia,
     type ContentPlatform,
     type ContentStatus,
     type ContentType,
 } from "@/lib/data/content";
+import { saveContentAsset } from "@/lib/storage/content-assets";
 
 function asPlatform(v: FormDataEntryValue | null): ContentPlatform {
     const s = String(v ?? "");
@@ -109,14 +113,37 @@ function asDraftStage(v: FormDataEntryValue | null): string {
         : "Draft 1";
 }
 
+function asAssetType(v: FormDataEntryValue | null): ContentAssetType | undefined {
+    const s = String(v ?? "");
+    return (CONTENT_ASSET_TYPES as readonly string[]).includes(s)
+        ? (s as ContentAssetType)
+        : undefined;
+}
+
 export async function submitDraftAction(formData: FormData) {
     const id = String(formData.get("id") ?? "");
-    const fileUrl = String(formData.get("fileUrl") ?? "").trim();
-    if (!id || !fileUrl) return;
+    if (!id) return;
+
+    const files = formData
+        .getAll("files")
+        .filter((f): f is File => f instanceof File && f.size > 0);
+    if (files.length === 0) return;
+
+    const media: ContentMedia[] = [];
+    for (const file of files) {
+        const stored = await saveContentAsset(id, file);
+        media.push({
+            url: stored.url,
+            type: stored.type.startsWith("video") ? "video" : "image",
+            name: stored.name,
+        });
+    }
+
     await submitDraft({
         id,
         draftNumber: asDraftStage(formData.get("draftNumber")),
-        fileUrl,
+        media,
+        assetType: asAssetType(formData.get("assetType")),
         caption: String(formData.get("caption") ?? "").trim(),
     });
     revalidatePath(`/content/${id}`);

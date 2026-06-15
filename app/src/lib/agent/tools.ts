@@ -284,14 +284,21 @@ export const contentSubmitDraft: AgentTool<
 > = {
     name: "content.submitDraft",
     description:
-        "Submit a new draft version of a content item for client review (moves it to 'awaiting_client' and notifies). draftNumber is one of 'Draft 1','Draft 2','Draft 3','Final Draft'. fileUrl is the asset link.",
+        "Submit a new draft version of a content item for client review (moves it to 'awaiting_client' and notifies). draftNumber is one of 'Draft 1','Draft 2','Draft 3','Final Draft'. fileUrl is the asset link (single image/video; use the UI for carousels).",
     inputSchema: submitDraftInput,
     outputSchema: reviewStateResult,
     invoke: async (input) => {
+        const isVideo = /\.(mp4|mov|webm|m4v)(\?|$)/i.test(input.fileUrl);
         const p = await submitDraft({
             id: input.contentId,
             draftNumber: input.draftNumber,
-            fileUrl: input.fileUrl,
+            media: [
+                {
+                    url: input.fileUrl,
+                    type: isVideo ? "video" : "image",
+                    name: "asset",
+                },
+            ],
             caption: input.caption,
         });
         return {

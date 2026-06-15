@@ -64,11 +64,26 @@ export const CONTENT_DRAFT_STAGES = [
 ] as const;
 export type ContentDraftStage = (typeof CONTENT_DRAFT_STAGES)[number];
 
+/** Asset shape of a submitted draft. */
+export const CONTENT_ASSET_TYPES = ["image", "carousel", "video"] as const;
+export type ContentAssetType = (typeof CONTENT_ASSET_TYPES)[number];
+
+/** One uploaded media item (a carousel draft has several). */
+export type ContentMedia = {
+    url: string;
+    type: "image" | "video";
+    name: string;
+};
+
 /** A versioned draft the agency submits for client review. */
 export type ContentDraft = {
     id: string;
     draftNumber: string;
+    /** First media URL — kept for back-compat / quick previews. */
     fileUrl: string;
+    /** All uploaded media (carousel = several images). */
+    media: ContentMedia[];
+    assetType: ContentAssetType;
     caption: string;
     submittedAt: string;
     submittedBy: string;

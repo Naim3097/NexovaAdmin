@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { AssetPreview } from "@/components/asset-preview";
 import {
     portalApproveAction,
     portalCreateRequestAction,
@@ -14,36 +15,11 @@ import {
 
 export const dynamic = "force-dynamic";
 
-function isImage(url: string) {
-    return /\.(png|jpe?g|gif|webp|svg|avif)$/i.test(url);
-}
-
 function DraftPreview({ post }: { post: ContentPost }) {
-    if (!post.currentFileUrl) {
-        return (
-            <p className="text-sm text-muted-foreground">
-                No draft attached yet.
-            </p>
-        );
-    }
+    const media = post.drafts[post.drafts.length - 1]?.media ?? [];
     return (
         <div className="space-y-2">
-            {isImage(post.currentFileUrl) ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                    src={post.currentFileUrl}
-                    alt={`${post.title} — ${post.draftNumber}`}
-                    className="max-h-80 w-full rounded-md border object-contain"
-                />
-            ) : null}
-            <a
-                href={post.currentFileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block break-all text-xs text-primary hover:underline"
-            >
-                {post.currentFileUrl}
-            </a>
+            <AssetPreview media={media} fallbackUrl={post.currentFileUrl} />
             {post.caption ? (
                 <p className="whitespace-pre-wrap text-sm">{post.caption}</p>
             ) : null}

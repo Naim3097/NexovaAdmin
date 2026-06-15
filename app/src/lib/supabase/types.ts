@@ -271,10 +271,18 @@ export type CampaignMetricRow = {
     created_at: string;
 };
 
+export type ContentMediaRow = {
+    url: string;
+    type: "image" | "video";
+    name: string;
+};
+
 export type ContentDraftRow = {
     id: string;
     draftNumber: string;
     fileUrl: string;
+    media: ContentMediaRow[];
+    assetType: "image" | "carousel" | "video";
     caption: string;
     submittedAt: string;
     submittedBy: string;

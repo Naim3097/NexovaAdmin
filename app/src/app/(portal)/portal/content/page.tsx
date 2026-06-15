@@ -2,7 +2,12 @@ import { getCurrentClient } from "@/lib/auth";
 import { listContentPosts, type ContentPost } from "@/lib/data/content";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AssetPreview } from "@/components/asset-preview";
 import { RequestContentForm } from "./request-content-form";
+
+function latestMedia(post: ContentPost) {
+    return post.drafts[post.drafts.length - 1]?.media ?? [];
+}
 
 export const dynamic = "force-dynamic";
 
@@ -96,11 +101,9 @@ export default async function PortalContentPage() {
                                 </CardHeader>
                                 <CardContent className="space-y-2 text-sm">
                                     {post.currentFileUrl ? (
-                                        // eslint-disable-next-line @next/next/no-img-element
-                                        <img
-                                            src={post.currentFileUrl}
-                                            alt={post.title}
-                                            className="max-h-48 w-full rounded border object-contain"
+                                        <AssetPreview
+                                            media={latestMedia(post)}
+                                            fallbackUrl={post.currentFileUrl}
                                         />
                                     ) : null}
                                     {post.direction ? (

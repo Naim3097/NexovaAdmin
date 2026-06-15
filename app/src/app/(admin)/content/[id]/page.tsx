@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
+    CONTENT_ASSET_TYPES,
     CONTENT_DRAFT_STAGES,
     CONTENT_PLATFORMS,
     CONTENT_STATUSES,
@@ -8,6 +9,7 @@ import {
     getContentPostById,
 } from "@/lib/data/content";
 import { listClients } from "@/lib/data/clients";
+import { AssetPreview } from "@/components/asset-preview";
 import { listProjects } from "@/lib/data/projects";
 import { listTeamMembers } from "@/lib/data/team";
 import { Badge } from "@/components/ui/badge";
@@ -217,16 +219,12 @@ export default async function ContentDetailPage({
                                             {d.caption}
                                         </p>
                                     ) : null}
-                                    {d.fileUrl ? (
-                                        <a
-                                            href={d.fileUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="mt-1 block break-all text-xs text-primary hover:underline"
-                                        >
-                                            {d.fileUrl}
-                                        </a>
-                                    ) : null}
+                                    <div className="mt-2">
+                                        <AssetPreview
+                                            media={d.media}
+                                            fallbackUrl={d.fileUrl}
+                                        />
+                                    </div>
                                 </li>
                             ))}
                         </ul>
@@ -306,14 +304,32 @@ export default async function ContentDetailPage({
                                 </Select>
                             </div>
                             <div className="space-y-1.5">
-                                <Label className="text-sm">Asset URL</Label>
-                                <Input
-                                    name="fileUrl"
-                                    type="url"
-                                    placeholder="https://… (image, PDF, Drive link)"
-                                    required
-                                />
+                                <Label className="text-sm">Asset type</Label>
+                                <Select name="assetType" defaultValue="image">
+                                    <SelectTrigger className="h-10">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {CONTENT_ASSET_TYPES.map((t) => (
+                                            <SelectItem key={t} value={t}>
+                                                {t}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">
+                                Asset file(s) — select multiple for a carousel
+                            </Label>
+                            <Input
+                                name="files"
+                                type="file"
+                                multiple
+                                required
+                                accept="image/*,video/*"
+                            />
                         </div>
                         <div className="space-y-1.5">
                             <Label className="text-sm">Caption / notes</Label>
