@@ -1,40 +1,45 @@
+import Link from "next/link";
 import { getCurrentClient } from "@/lib/auth";
-import { listContentPosts, type ContentPost } from "@/lib/data/content";
-import { Badge } from "@/components/ui/badge";
+import { listContentPosts } from "@/lib/data/content";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AssetPreview } from "@/components/asset-preview";
+import { ContentCard } from "@/components/content-card";
 import { RequestContentForm } from "./request-content-form";
-
-function latestMedia(post: ContentPost) {
-    return post.drafts[post.drafts.length - 1]?.media ?? [];
-}
 
 export const dynamic = "force-dynamic";
 
 const CLIENT_STATUS_LABEL: Record<string, string> = {
     none: "In production",
     awaiting_client: "Ready for your review",
-    changes_requested: "We're working on your changes",
+    changes_requested: "We're on your changes",
     approved: "Approved",
+};
+const CLIENT_STATUS_VARIANT: Record<
+    string,
+    "default" | "secondary" | "outline" | "destructive"
+> = {
+    none: "outline",
+    awaiting_client: "secondary",
+    changes_requested: "outline",
+    approved: "default",
 };
 
 function currentMonth() {
     return new Date().toISOString().slice(0, 7);
 }
-
-function StatusBadge({ post }: { post: ContentPost }) {
-    const v =
-        post.reviewStatus === "approved"
-            ? "default"
-            : post.reviewStatus === "awaiting_client"
-                ? "secondary"
-                : "outline";
-    return <Badge variant={v}>{CLIENT_STATUS_LABEL[post.reviewStatus]}</Badge>;
+function fmtMonth(m: string) {
+    const [y, mo] = m.split("-").map(Number);
+    return new Date(Date.UTC(y, mo - 1, 1)).toLocaleDateString(undefined, {
+        month: "short",
+        year: "numeric",
+    });
 }
 
-export default async function PortalContentPage() {
+export default async function PortalContentPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ month?: string }>;
+}) {
     const client = await getCurrentClient();
-
     if (!client) {
         return (
             <div className="space-y-2">
@@ -46,7 +51,7 @@ export default async function PortalContentPage() {
         );
     }
 
-    const month = currentMonth();
+    const { month: monthParam } = await searchParams;
     const mine = (await listContentPosts())
         .filter(
             (p) =>
@@ -54,7 +59,20 @@ export default async function PortalContentPage() {
                 client.name.trim().toLowerCase(),
         )
         .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
-    const thisMonth = mine.filter((p) => p.planMonth === month);
+
+    const months = Array.from(
+        new Set(
+            [currentMonth(), ...mine.map((p) => p.planMonth).filter(Boolean)].filter(
+                Boolean,
+            ),
+        ),
+    ).sort((a, b) => (a < b ? 1 : -1));
+    const selectedMonth =
+        monthParam && months.includes(monthParam) ? monthParam : months[0];
+    const monthPosts = mine.filter((p) => p.planMonth === selectedMonth);
+
+    const pill = (active: boolean) =>
+        `rounded-full border px-3 py-1 text-xs ${active ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`;
 
     return (
         <div className="space-y-6">
@@ -68,7 +86,6 @@ export default async function PortalContentPage() {
                 </p>
             </div>
 
-            {/* Request form */}
             <Card>
                 <CardHeader>
                     <CardTitle className="text-base">Request content</CardTitle>
@@ -78,45 +95,39 @@ export default async function PortalContentPage() {
                 </CardContent>
             </Card>
 
-            {/* This month's items */}
-            <div>
-                <h2 className="mb-3 text-sm font-medium">
-                    This month ({thisMonth.length})
-                </h2>
-                {thisMonth.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                        Nothing yet this month — submit a request above.
-                    </p>
-                ) : (
-                    <div className="grid gap-3 sm:grid-cols-2">
-                        {thisMonth.map((post) => (
-                            <Card key={post.id}>
-                                <CardHeader className="pb-2">
-                                    <div className="flex items-start justify-between gap-2">
-                                        <CardTitle className="text-sm">
-                                            {post.title}
-                                        </CardTitle>
-                                        <StatusBadge post={post} />
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="space-y-2 text-sm">
-                                    {post.currentFileUrl ? (
-                                        <AssetPreview
-                                            media={latestMedia(post)}
-                                            fallbackUrl={post.currentFileUrl}
-                                        />
-                                    ) : null}
-                                    {post.direction ? (
-                                        <p className="line-clamp-3 text-xs text-muted-foreground">
-                                            {post.direction}
-                                        </p>
-                                    ) : null}
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                )}
+            {/* Month tabs */}
+            <div className="flex flex-wrap gap-2 border-b pb-3">
+                {months.map((m) => (
+                    <Link
+                        key={m}
+                        href={`/portal/content?month=${m}`}
+                        className={pill(m === selectedMonth)}
+                    >
+                        {fmtMonth(m)}
+                    </Link>
+                ))}
             </div>
+
+            {monthPosts.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                    Nothing for {fmtMonth(selectedMonth)} yet — submit a request
+                    above.
+                </p>
+            ) : (
+                <div className="grid gap-3 sm:grid-cols-2">
+                    {monthPosts.map((post) => (
+                        <ContentCard
+                            key={post.id}
+                            post={post}
+                            statusLabel={CLIENT_STATUS_LABEL[post.reviewStatus]}
+                            statusVariant={
+                                CLIENT_STATUS_VARIANT[post.reviewStatus] ??
+                                "outline"
+                            }
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

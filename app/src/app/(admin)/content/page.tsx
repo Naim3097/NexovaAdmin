@@ -70,12 +70,20 @@ export default async function ContentPage({
                         Plan, draft, schedule. Publishing integrations are on hold.
                     </p>
                 </div>
-                <Link
-                    href="/content/calendar"
-                    className="text-sm font-medium underline"
-                >
-                    Open calendar
-                </Link>
+                <div className="flex items-center gap-4">
+                    <Link
+                        href="/content/board"
+                        className="text-sm font-medium underline"
+                    >
+                        Review board
+                    </Link>
+                    <Link
+                        href="/content/calendar"
+                        className="text-sm font-medium underline"
+                    >
+                        Open calendar
+                    </Link>
+                </div>
             </div>
 
             {/* Add form */}
