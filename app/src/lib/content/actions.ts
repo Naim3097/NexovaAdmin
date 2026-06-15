@@ -3,12 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
+    CONTENT_DRAFT_STAGES,
     CONTENT_PLATFORMS,
     CONTENT_STATUSES,
     CONTENT_TYPES,
     createContentPost,
     deleteContentPost,
     setContentStatus,
+    submitDraft,
     updateContentPost,
     type ContentPlatform,
     type ContentStatus,
@@ -94,6 +96,28 @@ export async function setContentStatusAction(formData: FormData) {
     revalidatePath(`/content/${id}`);
     revalidatePath("/content");
     revalidatePath("/content/calendar");
+    revalidatePath("/dashboard");
+}
+
+function asDraftStage(v: FormDataEntryValue | null): string {
+    const s = String(v ?? "");
+    return (CONTENT_DRAFT_STAGES as readonly string[]).includes(s)
+        ? s
+        : "Draft 1";
+}
+
+export async function submitDraftAction(formData: FormData) {
+    const id = String(formData.get("id") ?? "");
+    const fileUrl = String(formData.get("fileUrl") ?? "").trim();
+    if (!id || !fileUrl) return;
+    await submitDraft({
+        id,
+        draftNumber: asDraftStage(formData.get("draftNumber")),
+        fileUrl,
+        caption: String(formData.get("caption") ?? "").trim(),
+    });
+    revalidatePath(`/content/${id}`);
+    revalidatePath("/content");
     revalidatePath("/dashboard");
 }
 

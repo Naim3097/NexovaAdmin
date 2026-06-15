@@ -270,6 +270,25 @@ export type CampaignMetricRow = {
     created_at: string;
 };
 
+export type ContentDraftRow = {
+    id: string;
+    draftNumber: string;
+    fileUrl: string;
+    caption: string;
+    submittedAt: string;
+    submittedBy: string;
+};
+
+export type ContentFeedbackRow = {
+    id: string;
+    draftId: string;
+    author: "client" | "agency";
+    body: string;
+    fileUrl: string;
+    cycle: number;
+    createdAt: string;
+};
+
 export type ContentPostRow = {
     id: string;
     title: string;
@@ -286,6 +305,14 @@ export type ContentPostRow = {
     assignee: string;
     plan_month: string;
     origin: string;
+    review_status: string;
+    draft_number: string;
+    revisions_used: number;
+    current_file_url: string;
+    drafts: ContentDraftRow[];
+    feedback: ContentFeedbackRow[];
+    approved_at: string | null;
+    approved_by: string;
     created_at: string;
     updated_at: string;
     posted_at: string | null;

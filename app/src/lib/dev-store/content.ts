@@ -46,6 +46,45 @@ export type ContentType = (typeof CONTENT_TYPES)[number];
 export const CONTENT_ORIGINS = ["plan", "request"] as const;
 export type ContentOrigin = (typeof CONTENT_ORIGINS)[number];
 
+/** Client-approval axis, orthogonal to the publishing `status`. */
+export const CONTENT_REVIEW_STATUSES = [
+    "none",
+    "awaiting_client",
+    "changes_requested",
+    "approved",
+] as const;
+export type ContentReviewStatus = (typeof CONTENT_REVIEW_STATUSES)[number];
+
+/** Draft ladder for the review loop (Axtra: Draft 1 → Final Draft). */
+export const CONTENT_DRAFT_STAGES = [
+    "Draft 1",
+    "Draft 2",
+    "Draft 3",
+    "Final Draft",
+] as const;
+export type ContentDraftStage = (typeof CONTENT_DRAFT_STAGES)[number];
+
+/** A versioned draft the agency submits for client review. */
+export type ContentDraft = {
+    id: string;
+    draftNumber: string;
+    fileUrl: string;
+    caption: string;
+    submittedAt: string;
+    submittedBy: string;
+};
+
+/** One feedback/approval event in the review thread. */
+export type ContentFeedback = {
+    id: string;
+    draftId: string;
+    author: "client" | "agency";
+    body: string;
+    fileUrl: string;
+    cycle: number;
+    createdAt: string;
+};
+
 export type ContentPost = {
     id: string;
     title: string;
@@ -66,6 +105,21 @@ export type ContentPost = {
     planMonth: string;
     /** 'plan' = retainer deliverable, 'request' = one-off client ask. */
     origin: ContentOrigin;
+    // ---- Client review loop (Phase 2/3) -----------------------------------
+    /** Client-approval state, orthogonal to `status`. */
+    reviewStatus: ContentReviewStatus;
+    /** Current draft stage, e.g. 'Draft 2' ('' before first submission). */
+    draftNumber: string;
+    /** Client feedback cycles consumed (capped by clients.contentRevisionLimit). */
+    revisionsUsed: number;
+    /** Latest draft asset URL (mirrors the newest drafts[] entry). */
+    currentFileUrl: string;
+    /** Version history of agency-submitted drafts. */
+    drafts: ContentDraft[];
+    /** Threaded client/agency feedback. */
+    feedback: ContentFeedback[];
+    approvedAt: string | null;
+    approvedBy: string;
     createdAt: string;
     updatedAt: string;
     postedAt: string | null;
@@ -77,6 +131,14 @@ function normalizeContentPost(p: ContentPost): ContentPost {
         ...p,
         planMonth: p.planMonth ?? "",
         origin: p.origin ?? "plan",
+        reviewStatus: p.reviewStatus ?? "none",
+        draftNumber: p.draftNumber ?? "",
+        revisionsUsed: p.revisionsUsed ?? 0,
+        currentFileUrl: p.currentFileUrl ?? "",
+        drafts: p.drafts ?? [],
+        feedback: p.feedback ?? [],
+        approvedAt: p.approvedAt ?? null,
+        approvedBy: p.approvedBy ?? "",
     };
 }
 
@@ -121,6 +183,14 @@ export async function createContentPost(input: {
         assignee: input.assignee ?? "",
         planMonth: input.planMonth ?? "",
         origin: input.origin ?? "plan",
+        reviewStatus: "none",
+        draftNumber: "",
+        revisionsUsed: 0,
+        currentFileUrl: "",
+        drafts: [],
+        feedback: [],
+        approvedAt: null,
+        approvedBy: "",
         createdAt: now,
         updatedAt: now,
         postedAt: null,

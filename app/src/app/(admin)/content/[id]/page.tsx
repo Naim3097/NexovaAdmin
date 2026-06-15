@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
+    CONTENT_DRAFT_STAGES,
     CONTENT_PLATFORMS,
     CONTENT_STATUSES,
     CONTENT_TYPES,
     getContentPostById,
 } from "@/lib/data/content";
+import { listClients } from "@/lib/data/clients";
 import { listProjects } from "@/lib/data/projects";
 import { listTeamMembers } from "@/lib/data/team";
 import { Badge } from "@/components/ui/badge";
@@ -23,10 +25,18 @@ import {
 import {
     deleteContentPostAction,
     setContentStatusAction,
+    submitDraftAction,
     updateContentPostAction,
 } from "@/lib/content/actions";
 
 export const dynamic = "force-dynamic";
+
+const REVIEW_STATUS_LABEL: Record<string, string> = {
+    none: "Not in review",
+    awaiting_client: "Awaiting client",
+    changes_requested: "Changes requested",
+    approved: "Approved",
+};
 
 export default async function ContentDetailPage({
     params,
@@ -36,10 +46,15 @@ export default async function ContentDetailPage({
     const { id } = await params;
     const post = await getContentPostById(id);
     if (!post) notFound();
-    const [projects, team] = await Promise.all([
+    const [projects, team, clients] = await Promise.all([
         listProjects(),
         listTeamMembers(),
+        listClients(),
     ]);
+    const client = clients.find(
+        (c) => c.name.trim().toLowerCase() === post.clientName.trim().toLowerCase(),
+    );
+    const revisionLimit = client?.contentRevisionLimit ?? 3;
     const activeTeam = team.filter((m) => m.active);
     const assigneeOptions = post.assignee && !activeTeam.some((m) => m.name === post.assignee)
         ? [{ id: post.assignee, name: post.assignee, role: "legacy" }, ...activeTeam.map((m) => ({ id: m.id, name: m.name, role: m.role }))]
@@ -102,6 +117,182 @@ export default async function ContentDetailPage({
                         Posted on {new Date(post.postedAt).toLocaleString()}
                     </p>
                 ) : null}
+            </section>
+
+            {/* Client review loop */}
+            <section className="space-y-4 rounded-lg border bg-card p-4 md:p-6">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h2 className="text-sm font-medium">Client review</h2>
+                    <div className="flex items-center gap-2">
+                        <Badge
+                            variant={
+                                post.reviewStatus === "approved"
+                                    ? "default"
+                                    : post.reviewStatus === "changes_requested"
+                                        ? "destructive"
+                                        : post.reviewStatus === "awaiting_client"
+                                            ? "secondary"
+                                            : "outline"
+                            }
+                        >
+                            {REVIEW_STATUS_LABEL[post.reviewStatus] ??
+                                post.reviewStatus}
+                        </Badge>
+                        {post.draftNumber ? (
+                            <Badge variant="outline">{post.draftNumber}</Badge>
+                        ) : null}
+                    </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                    {post.revisionsUsed} of {revisionLimit} client revision
+                    cycle(s) used.
+                    {post.approvedAt
+                        ? ` Approved ${new Date(post.approvedAt).toLocaleDateString()}${post.approvedBy ? ` by ${post.approvedBy}` : ""}.`
+                        : ""}
+                </p>
+
+                {/* Draft history */}
+                <div>
+                    <h3 className="text-xs font-medium text-muted-foreground">
+                        Draft history
+                    </h3>
+                    {post.drafts.length === 0 ? (
+                        <p className="mt-1 text-sm text-muted-foreground">
+                            No drafts submitted yet.
+                        </p>
+                    ) : (
+                        <ul className="mt-2 divide-y rounded-md border">
+                            {[...post.drafts].reverse().map((d) => (
+                                <li key={d.id} className="p-3">
+                                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                                        <span className="text-sm font-medium">
+                                            {d.draftNumber}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                            {new Date(
+                                                d.submittedAt,
+                                            ).toLocaleString()}
+                                            {d.submittedBy
+                                                ? ` · ${d.submittedBy}`
+                                                : ""}
+                                        </span>
+                                    </div>
+                                    {d.caption ? (
+                                        <p className="mt-1 whitespace-pre-wrap text-xs text-muted-foreground">
+                                            {d.caption}
+                                        </p>
+                                    ) : null}
+                                    {d.fileUrl ? (
+                                        <a
+                                            href={d.fileUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="mt-1 block break-all text-xs text-primary hover:underline"
+                                        >
+                                            {d.fileUrl}
+                                        </a>
+                                    ) : null}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+
+                {/* Feedback thread */}
+                {post.feedback.length > 0 ? (
+                    <div>
+                        <h3 className="text-xs font-medium text-muted-foreground">
+                            Feedback
+                        </h3>
+                        <ul className="mt-2 space-y-2">
+                            {[...post.feedback].reverse().map((f) => (
+                                <li
+                                    key={f.id}
+                                    className="rounded-md border bg-background p-3"
+                                >
+                                    <div className="flex items-baseline justify-between gap-2">
+                                        <span className="text-xs font-medium capitalize">
+                                            {f.author}
+                                            {f.cycle ? ` · cycle ${f.cycle}` : ""}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                            {new Date(
+                                                f.createdAt,
+                                            ).toLocaleString()}
+                                        </span>
+                                    </div>
+                                    <p className="mt-1 whitespace-pre-wrap text-sm">
+                                        {f.body}
+                                    </p>
+                                    {f.fileUrl ? (
+                                        <a
+                                            href={f.fileUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="mt-1 block break-all text-xs text-primary hover:underline"
+                                        >
+                                            {f.fileUrl}
+                                        </a>
+                                    ) : null}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                ) : null}
+
+                {/* Submit a new draft */}
+                {post.reviewStatus === "approved" ? (
+                    <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+                        This content is approved. No further drafts needed.
+                    </p>
+                ) : (
+                    <form
+                        action={submitDraftAction}
+                        className="space-y-3 border-t pt-4"
+                    >
+                        <input type="hidden" name="id" value={post.id} />
+                        <h3 className="text-xs font-medium text-muted-foreground">
+                            Submit a draft for client review
+                        </h3>
+                        <div className="grid gap-3 md:grid-cols-2">
+                            <div className="space-y-1.5">
+                                <Label className="text-sm">Draft stage</Label>
+                                <Select name="draftNumber" defaultValue="Draft 1">
+                                    <SelectTrigger className="h-10">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {CONTENT_DRAFT_STAGES.map((s) => (
+                                            <SelectItem key={s} value={s}>
+                                                {s}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label className="text-sm">Asset URL</Label>
+                                <Input
+                                    name="fileUrl"
+                                    type="url"
+                                    placeholder="https://… (image, PDF, Drive link)"
+                                    required
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Caption / notes</Label>
+                            <Textarea
+                                name="caption"
+                                rows={3}
+                                placeholder="Caption or context for this draft…"
+                            />
+                        </div>
+                        <div className="flex justify-end">
+                            <Button type="submit">Send draft to client</Button>
+                        </div>
+                    </form>
+                )}
             </section>
 
             {/* Edit */}

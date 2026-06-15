@@ -8,6 +8,7 @@ import { randomUUID } from "node:crypto";
 import { createServiceClient } from "@/lib/supabase/server";
 import type { Database, ContentPostRow } from "@/lib/supabase/types";
 import { isSupabaseEnabled } from "@/lib/data/flag";
+import { notify } from "@/lib/data/notifications";
 import * as devContent from "@/lib/dev-store/content";
 
 export {
@@ -15,6 +16,8 @@ export {
     CONTENT_PLATFORMS,
     CONTENT_TYPES,
     CONTENT_ORIGINS,
+    CONTENT_REVIEW_STATUSES,
+    CONTENT_DRAFT_STAGES,
 } from "@/lib/dev-store/content";
 export type {
     ContentPost,
@@ -22,6 +25,10 @@ export type {
     ContentStatus,
     ContentType,
     ContentOrigin,
+    ContentReviewStatus,
+    ContentDraftStage,
+    ContentDraft,
+    ContentFeedback,
 } from "@/lib/dev-store/content";
 
 type ContentPost = devContent.ContentPost;
@@ -29,6 +36,9 @@ type ContentStatus = devContent.ContentStatus;
 type ContentPlatform = devContent.ContentPlatform;
 type ContentType = devContent.ContentType;
 type ContentOrigin = devContent.ContentOrigin;
+type ContentReviewStatus = devContent.ContentReviewStatus;
+type ContentDraft = devContent.ContentDraft;
+type ContentFeedback = devContent.ContentFeedback;
 type UpdatePatch = Partial<Omit<ContentPost, "id" | "createdAt">>;
 
 type ContentInsert = Database["public"]["Tables"]["content_posts"]["Insert"];
@@ -53,6 +63,14 @@ function rowToPost(row: ContentPostRow): ContentPost {
         assignee: row.assignee,
         planMonth: row.plan_month,
         origin: row.origin as ContentOrigin,
+        reviewStatus: row.review_status as ContentReviewStatus,
+        draftNumber: row.draft_number,
+        revisionsUsed: row.revisions_used,
+        currentFileUrl: row.current_file_url,
+        drafts: (row.drafts ?? []) as ContentDraft[],
+        feedback: (row.feedback ?? []) as ContentFeedback[],
+        approvedAt: row.approved_at,
+        approvedBy: row.approved_by,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
         postedAt: row.posted_at,
@@ -76,6 +94,14 @@ function postToInsert(p: ContentPost): ContentInsert {
         assignee: p.assignee,
         plan_month: p.planMonth,
         origin: p.origin,
+        review_status: p.reviewStatus,
+        draft_number: p.draftNumber,
+        revisions_used: p.revisionsUsed,
+        current_file_url: p.currentFileUrl,
+        drafts: p.drafts,
+        feedback: p.feedback,
+        approved_at: p.approvedAt,
+        approved_by: p.approvedBy,
         created_at: p.createdAt,
         updated_at: p.updatedAt,
         posted_at: p.postedAt,
@@ -99,6 +125,16 @@ function patchToUpdate(patch: UpdatePatch): ContentUpdate {
     if (patch.assignee !== undefined) out.assignee = patch.assignee;
     if (patch.planMonth !== undefined) out.plan_month = patch.planMonth;
     if (patch.origin !== undefined) out.origin = patch.origin;
+    if (patch.reviewStatus !== undefined) out.review_status = patch.reviewStatus;
+    if (patch.draftNumber !== undefined) out.draft_number = patch.draftNumber;
+    if (patch.revisionsUsed !== undefined)
+        out.revisions_used = patch.revisionsUsed;
+    if (patch.currentFileUrl !== undefined)
+        out.current_file_url = patch.currentFileUrl;
+    if (patch.drafts !== undefined) out.drafts = patch.drafts;
+    if (patch.feedback !== undefined) out.feedback = patch.feedback;
+    if (patch.approvedAt !== undefined) out.approved_at = patch.approvedAt;
+    if (patch.approvedBy !== undefined) out.approved_by = patch.approvedBy;
     if (patch.postedAt !== undefined) out.posted_at = patch.postedAt;
     if (patch.updatedAt !== undefined) out.updated_at = patch.updatedAt;
     return out;
@@ -138,6 +174,14 @@ export async function createContentPost(input: {
         assignee: input.assignee ?? "",
         planMonth: input.planMonth ?? "",
         origin: input.origin ?? "plan",
+        reviewStatus: "none",
+        draftNumber: "",
+        revisionsUsed: 0,
+        currentFileUrl: "",
+        drafts: [],
+        feedback: [],
+        approvedAt: null,
+        approvedBy: "",
         createdAt: now,
         updatedAt: now,
         postedAt: null,
@@ -244,6 +288,52 @@ export async function generateMonthlyPlan(input: {
         });
     }
     return { created: quota, existing: 0 };
+}
+
+/**
+ * Agency submits a new draft version of a content item for client review.
+ * Appends to drafts[], advances the draft stage, moves the item into the
+ * 'awaiting_client' review state, and notifies (in-app + Telegram).
+ *
+ * Built on the dual-pathed getContentPostById + updateContentPost, so it works
+ * the same in dev-store and Supabase mode.
+ */
+export async function submitDraft(input: {
+    id: string;
+    draftNumber: string;
+    fileUrl: string;
+    caption?: string;
+    submittedBy?: string;
+}): Promise<ContentPost> {
+    const post = await getContentPostById(input.id);
+    if (!post) throw new Error(`submitDraft: content post ${input.id} not found`);
+
+    const draft: ContentDraft = {
+        id: randomUUID(),
+        draftNumber: input.draftNumber,
+        fileUrl: input.fileUrl,
+        caption: input.caption ?? "",
+        submittedAt: new Date().toISOString(),
+        submittedBy: input.submittedBy ?? "agency",
+    };
+
+    const updated = await updateContentPost(input.id, {
+        drafts: [...post.drafts, draft],
+        currentFileUrl: input.fileUrl,
+        draftNumber: input.draftNumber,
+        caption: input.caption?.trim() ? input.caption : post.caption,
+        reviewStatus: "awaiting_client",
+        status: "review",
+    });
+
+    await notify({
+        kind: "content_draft_submitted",
+        title: `Draft sent for review: ${post.title}`,
+        body: `${post.clientName} · ${input.draftNumber}`,
+        link: `/content/${input.id}`,
+    });
+
+    return updated;
 }
 
 export async function deleteContentPost(id: string): Promise<void> {
