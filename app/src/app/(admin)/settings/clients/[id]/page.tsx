@@ -24,6 +24,7 @@ import {
     generateContentPlanAction,
     updateClientAction,
 } from "@/lib/clients/actions";
+import { ClientInviteForm } from "./client-invite-form";
 
 export const dynamic = "force-dynamic";
 
@@ -321,6 +322,13 @@ export default async function ClientDetailPage({
                         </Button>
                     </form>
                 </div>
+
+                {/* Authenticated portal login */}
+                <ClientInviteForm
+                    clientId={client.id}
+                    defaultEmail={client.contactEmail}
+                    linked={Boolean(client.userId)}
+                />
             </section>
 
             {/* Aggregated lists */}

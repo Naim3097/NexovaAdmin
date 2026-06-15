@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Bell } from "lucide-react";
-import { getCurrentUser, getCurrentTeamMember } from "@/lib/auth";
+import { getCurrentUser, getCurrentTeamMember, getCurrentClient } from "@/lib/auth";
 import { Logo } from "@/components/logo";
 import { ClientNameDatalist } from "@/components/client-name-datalist";
 import { ServiceNameDatalist } from "@/components/service-name-datalist";
@@ -18,6 +18,11 @@ export default async function AdminLayout({
     if (!user) redirect("/login");
     // Invited users must choose a password before entering the app.
     if (user.user_metadata?.needs_password) redirect("/auth/set-password");
+    // Client logins are NOT agency staff — keep them out of the admin and send
+    // them to their portal. (Permissions are otherwise open, so this redirect
+    // is what stops a client account from reaching agency data.)
+    const client = await getCurrentClient();
+    if (client) redirect("/portal");
     const [member, unread] = await Promise.all([
         getCurrentTeamMember(),
         unreadCount().catch(() => 0),

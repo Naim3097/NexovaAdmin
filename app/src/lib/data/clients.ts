@@ -38,6 +38,7 @@ function rowToClient(row: ClientRow): Client {
         contentRevisionLimit: row.content_revision_limit,
         monthlyContentQuota: row.monthly_content_quota,
         portalToken: row.portal_token,
+        userId: row.user_id,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
     };
@@ -57,6 +58,7 @@ function clientToInsert(c: Client): ClientInsert {
         content_revision_limit: c.contentRevisionLimit,
         monthly_content_quota: c.monthlyContentQuota,
         portal_token: c.portalToken,
+        user_id: c.userId,
         created_at: c.createdAt,
         updated_at: c.updatedAt,
     };
@@ -79,6 +81,7 @@ function patchToUpdate(patch: UpdatePatch): ClientUpdate {
     if (patch.monthlyContentQuota !== undefined)
         out.monthly_content_quota = patch.monthlyContentQuota;
     if (patch.portalToken !== undefined) out.portal_token = patch.portalToken;
+    if (patch.userId !== undefined) out.user_id = patch.userId;
     if (patch.updatedAt !== undefined) out.updated_at = patch.updatedAt;
     return out;
 }
@@ -95,6 +98,7 @@ export async function createClient(input: {
     contentRevisionLimit?: number;
     monthlyContentQuota?: number;
     portalToken?: string;
+    userId?: string | null;
 }): Promise<Client> {
     if (!isSupabaseEnabled("clients")) return devClients.createClient(input);
     const now = new Date().toISOString();
@@ -111,6 +115,7 @@ export async function createClient(input: {
         contentRevisionLimit: input.contentRevisionLimit ?? 3,
         monthlyContentQuota: input.monthlyContentQuota ?? 0,
         portalToken: input.portalToken ?? "",
+        userId: input.userId ?? null,
         createdAt: now,
         updatedAt: now,
     };
@@ -161,6 +166,23 @@ export async function getClientByPortalToken(
         .eq("portal_token", token)
         .maybeSingle();
     if (error) throw new Error(`getClientByPortalToken: ${error.message}`);
+    return data ? rowToClient(data as ClientRow) : null;
+}
+
+export async function getClientByUserId(
+    userId: string,
+): Promise<Client | null> {
+    if (!userId) return null;
+    if (!isSupabaseEnabled("clients")) {
+        return devClients.getClientByUserId(userId);
+    }
+    const sb = createServiceClient();
+    const { data, error } = await sb
+        .from(TABLE)
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
+    if (error) throw new Error(`getClientByUserId: ${error.message}`);
     return data ? rowToClient(data as ClientRow) : null;
 }
 

@@ -114,6 +114,7 @@ export type ClientRow = {
     content_revision_limit: number;
     monthly_content_quota: number;
     portal_token: string;
+    user_id: string | null;
     created_at: string;
     updated_at: string;
 };

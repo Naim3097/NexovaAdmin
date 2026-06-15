@@ -71,6 +71,19 @@ export const getCurrentTeamMember = cache(async () => {
 });
 
 /**
+ * Resolve the signed-in auth user to the CLIENT they belong to (via
+ * clients.user_id), if any. A non-null result means this user is a client —
+ * the admin layout uses this to redirect them out to /portal, and the portal
+ * uses it to scope to their own content. Returns null for team/agency users.
+ */
+export const getCurrentClient = cache(async () => {
+    const user = await getCurrentUser();
+    if (!user) return null;
+    const { getClientByUserId } = await import("@/lib/data/clients");
+    return getClientByUserId(user.id).catch(() => null);
+});
+
+/**
  * Permissions are intentionally OPEN: any signed-in user (or the dev-bypass
  * user) can do anything. We only check authentication, not authorization.
  * Restore role/permission checks here when the team needs them.

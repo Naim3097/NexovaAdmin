@@ -37,6 +37,8 @@ export type Client = {
     monthlyContentQuota: number;
     /** Client-level portal link token; '' until generated. */
     portalToken: string;
+    /** Linked Supabase auth user for the client's portal login; null until invited. */
+    userId: string | null;
     createdAt: string;
     updatedAt: string;
 };
@@ -48,6 +50,7 @@ function normalizeClient(c: Client): Client {
         contentRevisionLimit: c.contentRevisionLimit ?? 3,
         monthlyContentQuota: c.monthlyContentQuota ?? 0,
         portalToken: c.portalToken ?? "",
+        userId: c.userId ?? null,
     };
 }
 
@@ -71,6 +74,7 @@ export async function createClient(input: {
     contentRevisionLimit?: number;
     monthlyContentQuota?: number;
     portalToken?: string;
+    userId?: string | null;
 }): Promise<Client> {
     await ensureDir();
     const now = new Date().toISOString();
@@ -87,6 +91,7 @@ export async function createClient(input: {
         contentRevisionLimit: input.contentRevisionLimit ?? 3,
         monthlyContentQuota: input.monthlyContentQuota ?? 0,
         portalToken: input.portalToken ?? "",
+        userId: input.userId ?? null,
         createdAt: now,
         updatedAt: now,
     };
@@ -121,6 +126,14 @@ export async function getClientByPortalToken(
     if (!token) return null;
     const all = await listClients();
     return all.find((c) => c.portalToken && c.portalToken === token) ?? null;
+}
+
+export async function getClientByUserId(
+    userId: string,
+): Promise<Client | null> {
+    if (!userId) return null;
+    const all = await listClients();
+    return all.find((c) => c.userId && c.userId === userId) ?? null;
 }
 
 export async function updateClient(
