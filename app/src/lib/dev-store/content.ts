@@ -105,6 +105,15 @@ export type ContentPost = {
     planMonth: string;
     /** 'plan' = retainer deliverable, 'request' = one-off client ask. */
     origin: ContentOrigin;
+    // ---- Direction (client) + concept (agency) — Phase 6 ------------------
+    /** Client's brief for this item. */
+    direction: string;
+    /** Client-provided reference URLs. */
+    references: string[];
+    /** Agency concept fields (freeform, any team member). */
+    visualHeadline: string;
+    visualIdea: string;
+    copywriting: string;
     // ---- Client review loop (Phase 2/3) -----------------------------------
     /** Client-approval state, orthogonal to `status`. */
     reviewStatus: ContentReviewStatus;
@@ -131,6 +140,11 @@ function normalizeContentPost(p: ContentPost): ContentPost {
         ...p,
         planMonth: p.planMonth ?? "",
         origin: p.origin ?? "plan",
+        direction: p.direction ?? "",
+        references: p.references ?? [],
+        visualHeadline: p.visualHeadline ?? "",
+        visualIdea: p.visualIdea ?? "",
+        copywriting: p.copywriting ?? "",
         reviewStatus: p.reviewStatus ?? "none",
         draftNumber: p.draftNumber ?? "",
         revisionsUsed: p.revisionsUsed ?? 0,
@@ -164,6 +178,8 @@ export async function createContentPost(input: {
     assignee?: string;
     planMonth?: string;
     origin?: ContentOrigin;
+    direction?: string;
+    references?: string[];
 }): Promise<ContentPost> {
     await ensureDir();
     const now = new Date().toISOString();
@@ -183,6 +199,11 @@ export async function createContentPost(input: {
         assignee: input.assignee ?? "",
         planMonth: input.planMonth ?? "",
         origin: input.origin ?? "plan",
+        direction: input.direction ?? "",
+        references: input.references ?? [],
+        visualHeadline: "",
+        visualIdea: "",
+        copywriting: "",
         reviewStatus: "none",
         draftNumber: "",
         revisionsUsed: 0,

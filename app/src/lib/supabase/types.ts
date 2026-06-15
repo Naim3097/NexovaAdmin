@@ -306,6 +306,11 @@ export type ContentPostRow = {
     assignee: string;
     plan_month: string;
     origin: string;
+    direction: string;
+    reference_links: string[];
+    visual_headline: string;
+    visual_idea: string;
+    copywriting: string;
     review_status: string;
     draft_number: string;
     revisions_used: number;

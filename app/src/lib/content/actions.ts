@@ -83,6 +83,9 @@ export async function updateContentPostAction(formData: FormData) {
         hashtags: String(formData.get("hashtags") ?? "").trim(),
         notes: String(formData.get("notes") ?? "").trim(),
         assignee: assigneeStr(formData.get("assignee")),
+        visualHeadline: String(formData.get("visualHeadline") ?? "").trim(),
+        visualIdea: String(formData.get("visualIdea") ?? "").trim(),
+        copywriting: String(formData.get("copywriting") ?? "").trim(),
     });
     revalidatePath(`/content/${id}`);
     revalidatePath("/content");

@@ -93,6 +93,41 @@ export default async function ContentDetailPage({
                 </p>
             </div>
 
+            {/* Client direction (read-only — the client's brief) */}
+            <section className="rounded-lg border bg-card p-4 md:p-6">
+                <h2 className="text-sm font-medium">Client direction</h2>
+                {post.direction ? (
+                    <p className="mt-2 whitespace-pre-wrap text-sm">
+                        {post.direction}
+                    </p>
+                ) : (
+                    <p className="mt-2 text-sm text-muted-foreground">
+                        No direction provided by the client.
+                    </p>
+                )}
+                {post.references.length > 0 ? (
+                    <div className="mt-3">
+                        <p className="text-xs font-medium text-muted-foreground">
+                            References
+                        </p>
+                        <ul className="mt-1 space-y-1">
+                            {post.references.map((url, i) => (
+                                <li key={i}>
+                                    <a
+                                        href={url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="break-all text-xs text-primary hover:underline"
+                                    >
+                                        {url}
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                ) : null}
+            </section>
+
             {/* Status pills */}
             <section className="rounded-lg border bg-card p-4 md:p-6">
                 <h2 className="text-sm font-medium">Move to status</h2>
@@ -414,6 +449,40 @@ export default async function ContentDetailPage({
                         placeholder="#nexova #malaysia #marketing"
                     />
                 </div>
+                <div className="rounded-md border border-dashed p-4">
+                    <p className="text-xs font-medium text-muted-foreground">
+                        Concept (internal — headline, idea, copy)
+                    </p>
+                    <div className="mt-3 space-y-3">
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Visual headline</Label>
+                            <Input
+                                name="visualHeadline"
+                                defaultValue={post.visualHeadline}
+                                placeholder="The hook / headline on the visual"
+                            />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Visual idea</Label>
+                            <Textarea
+                                name="visualIdea"
+                                defaultValue={post.visualIdea}
+                                rows={3}
+                                placeholder="The concept / art direction for the asset"
+                            />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Copywriting</Label>
+                            <Textarea
+                                name="copywriting"
+                                defaultValue={post.copywriting}
+                                rows={4}
+                                placeholder="Caption / body copy draft"
+                            />
+                        </div>
+                    </div>
+                </div>
+
                 <div className="space-y-1.5">
                     <Label className="text-sm">Internal notes</Label>
                     <Textarea name="notes" defaultValue={post.notes} rows={3} />

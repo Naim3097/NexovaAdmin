@@ -64,6 +64,11 @@ function rowToPost(row: ContentPostRow): ContentPost {
         assignee: row.assignee,
         planMonth: row.plan_month,
         origin: row.origin as ContentOrigin,
+        direction: row.direction,
+        references: (row.reference_links ?? []) as string[],
+        visualHeadline: row.visual_headline,
+        visualIdea: row.visual_idea,
+        copywriting: row.copywriting,
         reviewStatus: row.review_status as ContentReviewStatus,
         draftNumber: row.draft_number,
         revisionsUsed: row.revisions_used,
@@ -95,6 +100,11 @@ function postToInsert(p: ContentPost): ContentInsert {
         assignee: p.assignee,
         plan_month: p.planMonth,
         origin: p.origin,
+        direction: p.direction,
+        reference_links: p.references,
+        visual_headline: p.visualHeadline,
+        visual_idea: p.visualIdea,
+        copywriting: p.copywriting,
         review_status: p.reviewStatus,
         draft_number: p.draftNumber,
         revisions_used: p.revisionsUsed,
@@ -126,6 +136,12 @@ function patchToUpdate(patch: UpdatePatch): ContentUpdate {
     if (patch.assignee !== undefined) out.assignee = patch.assignee;
     if (patch.planMonth !== undefined) out.plan_month = patch.planMonth;
     if (patch.origin !== undefined) out.origin = patch.origin;
+    if (patch.direction !== undefined) out.direction = patch.direction;
+    if (patch.references !== undefined) out.reference_links = patch.references;
+    if (patch.visualHeadline !== undefined)
+        out.visual_headline = patch.visualHeadline;
+    if (patch.visualIdea !== undefined) out.visual_idea = patch.visualIdea;
+    if (patch.copywriting !== undefined) out.copywriting = patch.copywriting;
     if (patch.reviewStatus !== undefined) out.review_status = patch.reviewStatus;
     if (patch.draftNumber !== undefined) out.draft_number = patch.draftNumber;
     if (patch.revisionsUsed !== undefined)
@@ -155,6 +171,8 @@ export async function createContentPost(input: {
     assignee?: string;
     planMonth?: string;
     origin?: ContentOrigin;
+    direction?: string;
+    references?: string[];
 }): Promise<ContentPost> {
     if (!isSupabaseEnabled("content")) return devContent.createContentPost(input);
 
@@ -175,6 +193,11 @@ export async function createContentPost(input: {
         assignee: input.assignee ?? "",
         planMonth: input.planMonth ?? "",
         origin: input.origin ?? "plan",
+        direction: input.direction ?? "",
+        references: input.references ?? [],
+        visualHeadline: "",
+        visualIdea: "",
+        copywriting: "",
         reviewStatus: "none",
         draftNumber: "",
         revisionsUsed: 0,
@@ -434,14 +457,21 @@ export async function createContentRequest(input: {
     clientName: string;
     title: string;
     instructions?: string;
+    direction?: string;
+    references?: string[];
+    planMonth?: string;
     scheduledFor?: string;
 }): Promise<ContentPost> {
+    const month = input.planMonth || new Date().toISOString().slice(0, 7);
     const post = await createContentPost({
         title: input.title,
         clientName: input.clientName,
         scheduledFor:
-            input.scheduledFor || new Date().toISOString().slice(0, 10),
+            input.scheduledFor || `${month}-01`,
         notes: input.instructions ?? "",
+        direction: input.direction ?? "",
+        references: input.references ?? [],
+        planMonth: month,
         origin: "request",
     });
 
