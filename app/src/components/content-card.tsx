@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { AssetPreview } from "@/components/asset-preview";
-import { ReviewTimeline } from "@/components/review-timeline";
+import { DraftViewer } from "@/components/draft-viewer";
+import { CopyButton } from "@/components/copy-button";
 import {
     portalApproveAction,
     portalRequestChangesAction,
@@ -18,10 +19,12 @@ function latestMedia(post: ContentPost) {
 }
 
 /**
- * The ONE content card, used everywhere:
- *  - Agency board: pass `href` → it's a compact link to /content/[id].
- *  - Client portal: pass `clientReview` → it shows the asset, copy, the shared
- *    timeline, and (when it's the client's turn) inline Approve / Request-changes.
+ * The ONE content card.
+ *  - Agency board: pass `href` → compact link to /content/[id] (latest asset).
+ *  - Client portal: pass `clientReview` → a compact DRAFT SLIDER (one version at
+ *    a time, navigable), a bounded + copyable caption, and inline Approve /
+ *    Request-changes when it's the client's turn. Stays a fixed height regardless
+ *    of how many drafts/revisions.
  */
 export function ContentCard({
     post,
@@ -40,7 +43,6 @@ export function ContentCard({
     revisionLimit?: number;
     extraRevisionPrice?: number;
 }) {
-    const media = latestMedia(post);
     const awaiting = post.reviewStatus === "awaiting_client";
     const atLimit = post.revisionsUsed >= revisionLimit;
 
@@ -53,26 +55,35 @@ export function ContentCard({
                 </div>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
-                {media.length > 0 || post.currentFileUrl ? (
-                    <AssetPreview media={media} fallbackUrl={post.currentFileUrl} />
-                ) : null}
-
-                {/* Agency board cards stay compact; client cards get full detail */}
                 {clientReview ? (
                     <>
+                        {/* Compact, navigable draft slider — bounded height */}
+                        <DraftViewer
+                            drafts={post.drafts}
+                            feedback={post.feedback}
+                            revisionLimit={revisionLimit}
+                            revisionsUsed={post.revisionsUsed}
+                        />
+
+                        {/* Caption — formatting preserved + one-tap copy */}
                         {post.copywriting ? (
                             <div>
-                                <p className="text-xs font-medium text-muted-foreground">
-                                    Caption
-                                </p>
-                                <p className="whitespace-pre-wrap text-sm">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-xs font-medium text-muted-foreground">
+                                        Caption
+                                    </p>
+                                    <CopyButton
+                                        text={post.copywriting}
+                                        label="Copy caption"
+                                    />
+                                </div>
+                                <p className="mt-1 max-h-28 overflow-y-auto whitespace-pre-wrap rounded-md border bg-muted/30 p-2 text-sm">
                                     {post.copywriting}
                                 </p>
                             </div>
                         ) : null}
 
-                        <ReviewTimeline post={post} revisionLimit={revisionLimit} />
-
+                        {/* Actions */}
                         {awaiting ? (
                             <div className="space-y-3 border-t pt-3">
                                 <form action={portalApproveAction}>
@@ -128,11 +139,21 @@ export function ContentCard({
                             </div>
                         ) : null}
                     </>
-                ) : post.direction ? (
-                    <p className="line-clamp-2 text-xs text-muted-foreground">
-                        {post.direction}
-                    </p>
-                ) : null}
+                ) : (
+                    <>
+                        {latestMedia(post).length > 0 || post.currentFileUrl ? (
+                            <AssetPreview
+                                media={latestMedia(post)}
+                                fallbackUrl={post.currentFileUrl}
+                            />
+                        ) : null}
+                        {post.direction ? (
+                            <p className="line-clamp-2 text-xs text-muted-foreground">
+                                {post.direction}
+                            </p>
+                        ) : null}
+                    </>
+                )}
             </CardContent>
         </Card>
     );
