@@ -50,3 +50,9 @@ public/fallback-*.js
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local dev server logs
+devrun.log
+devrun.err.log
+devout.log
+deverr.log
