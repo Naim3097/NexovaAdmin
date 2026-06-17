@@ -5,8 +5,14 @@ import { getAgencyProfile, formatAddress } from "@/lib/data/agency";
 import { type ContentPost } from "@/lib/data/content";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { AssetPreview } from "@/components/asset-preview";
-import { createMonthlyInvoiceAction } from "@/lib/reports/actions";
+import {
+    createMonthlyInvoiceAction,
+    saveReportInsightsAction,
+    setReportPublishedAction,
+} from "@/lib/reports/actions";
 import { getReportInsights } from "@/lib/data/report-insights";
 import { PrintButton } from "./print-button";
 import { GenerateInsightsButton } from "./generate-insights-button";
@@ -76,6 +82,13 @@ export default async function ClientMonthlyReportPage({
                     .no-print { display: none !important; }
                     body { background: white !important; }
                     @page { margin: 16mm; }
+                    /* Clean page breaks: keep sections, cards, images, and table
+                       rows from splitting across pages; keep headings with their
+                       content. */
+                    article > section { break-inside: avoid; }
+                    h1, h2, h3 { break-after: avoid; }
+                    img, video, tr, li { break-inside: avoid; }
+                    details { display: none !important; }
                 }
             `}</style>
 
@@ -116,16 +129,58 @@ export default async function ClientMonthlyReportPage({
                     </p>
                 </header>
 
-                {/* AI narrative — Summary / Conclusion / Recommendations */}
+                {/* AI narrative — editable, then publish to the client portal */}
                 <section className="space-y-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                        <h2 className="text-lg font-semibold">Overview</h2>
-                        <GenerateInsightsButton
-                            client={report.clientName}
-                            month={report.monthKey}
-                            hasInsights={Boolean(insights)}
-                        />
+                        <div className="flex items-center gap-2">
+                            <h2 className="text-lg font-semibold">Overview</h2>
+                            {insights?.published ? (
+                                <Badge>Published</Badge>
+                            ) : insights ? (
+                                <Badge variant="outline">Draft</Badge>
+                            ) : null}
+                        </div>
+                        <div className="no-print flex items-center gap-2">
+                            <GenerateInsightsButton
+                                client={report.clientName}
+                                month={report.monthKey}
+                                hasInsights={Boolean(insights)}
+                            />
+                            {insights ? (
+                                <form action={setReportPublishedAction}>
+                                    <input
+                                        type="hidden"
+                                        name="client"
+                                        value={report.clientName}
+                                    />
+                                    <input
+                                        type="hidden"
+                                        name="month"
+                                        value={report.monthKey}
+                                    />
+                                    <input
+                                        type="hidden"
+                                        name="published"
+                                        value={insights.published ? "0" : "1"}
+                                    />
+                                    <Button
+                                        type="submit"
+                                        size="sm"
+                                        variant={
+                                            insights.published
+                                                ? "outline"
+                                                : "default"
+                                        }
+                                    >
+                                        {insights.published
+                                            ? "Unpublish"
+                                            : "Publish to client"}
+                                    </Button>
+                                </form>
+                            ) : null}
+                        </div>
                     </div>
+
                     {insights ? (
                         <div className="space-y-4">
                             <div>
@@ -154,12 +209,70 @@ export default async function ClientMonthlyReportPage({
                                     </ul>
                                 </div>
                             ) : null}
+
+                            {/* Editable (hidden in print) */}
+                            <details className="no-print rounded-lg border bg-muted/30 p-3">
+                                <summary className="cursor-pointer text-sm font-medium">
+                                    Edit overview
+                                </summary>
+                                <form
+                                    action={saveReportInsightsAction}
+                                    className="mt-3 space-y-3"
+                                >
+                                    <input
+                                        type="hidden"
+                                        name="client"
+                                        value={report.clientName}
+                                    />
+                                    <input
+                                        type="hidden"
+                                        name="month"
+                                        value={report.monthKey}
+                                    />
+                                    <div className="space-y-1.5">
+                                        <Label className="text-sm">Summary</Label>
+                                        <Textarea
+                                            name="summary"
+                                            rows={4}
+                                            defaultValue={insights.summary}
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-sm">
+                                            Conclusion
+                                        </Label>
+                                        <Textarea
+                                            name="conclusion"
+                                            rows={3}
+                                            defaultValue={insights.conclusion}
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-sm">
+                                            Recommendations (one per line)
+                                        </Label>
+                                        <Textarea
+                                            name="recommendations"
+                                            rows={5}
+                                            defaultValue={insights.recommendations.join(
+                                                "\n",
+                                            )}
+                                        />
+                                    </div>
+                                    <div className="flex justify-end">
+                                        <Button type="submit" size="sm">
+                                            Save overview
+                                        </Button>
+                                    </div>
+                                </form>
+                            </details>
+
                             <p className="text-[11px] text-muted-foreground">
                                 Drafted by AI on{" "}
                                 {new Date(
                                     insights.generatedAt,
-                                ).toLocaleString()}{" "}
-                                · review before sending.
+                                ).toLocaleDateString()}{" "}
+                                · edit, then publish to the client.
                             </p>
                         </div>
                     ) : (

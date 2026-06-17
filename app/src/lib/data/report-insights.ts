@@ -24,6 +24,7 @@ function rowTo(row: ReportInsightsRow): ReportInsights {
         summary: row.summary,
         conclusion: row.conclusion,
         recommendations: (row.recommendations ?? []) as string[],
+        published: row.published ?? false,
         generatedAt: row.generated_at,
     };
 }
@@ -52,6 +53,7 @@ export async function saveReportInsights(input: {
     summary: string;
     conclusion: string;
     recommendations: string[];
+    published?: boolean;
 }): Promise<ReportInsights> {
     if (!isSupabaseEnabled("reportInsights")) {
         return dev.saveReportInsights(input);
@@ -65,6 +67,7 @@ export async function saveReportInsights(input: {
         summary: input.summary,
         conclusion: input.conclusion,
         recommendations: input.recommendations,
+        published: input.published ?? existing?.published ?? false,
         generated_at: new Date().toISOString(),
     };
     const { data, error } = await sb
@@ -74,4 +77,40 @@ export async function saveReportInsights(input: {
         .single();
     if (error) throw new Error(`saveReportInsights: ${error.message}`);
     return rowTo(data as ReportInsightsRow);
+}
+
+export async function setReportPublished(
+    clientName: string,
+    month: string,
+    published: boolean,
+): Promise<void> {
+    if (!isSupabaseEnabled("reportInsights")) {
+        await dev.setReportPublished(clientName, month, published);
+        return;
+    }
+    const sb = createServiceClient();
+    const { error } = await sb
+        .from(TABLE)
+        .update({ published })
+        .eq("client_name", clientName)
+        .eq("month", month);
+    if (error) throw new Error(`setReportPublished: ${error.message}`);
+}
+
+/** Published reports for a client (for the client portal). */
+export async function listPublishedReports(
+    clientName: string,
+): Promise<ReportInsights[]> {
+    if (!isSupabaseEnabled("reportInsights")) {
+        return dev.listPublishedReports(clientName);
+    }
+    const sb = createServiceClient();
+    const { data, error } = await sb
+        .from(TABLE)
+        .select("*")
+        .eq("client_name", clientName)
+        .eq("published", true)
+        .order("month", { ascending: false });
+    if (error) throw new Error(`listPublishedReports: ${error.message}`);
+    return (data as ReportInsightsRow[]).map(rowTo);
 }

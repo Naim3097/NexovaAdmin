@@ -3,6 +3,7 @@ import { buildClientMonthlyReport } from "@/lib/reports";
 import { computeTotals, listInvoices } from "@/lib/data/invoices";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PrintButton } from "@/components/print-button";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +39,10 @@ export default async function PortalBillingPage() {
         .filter(
             (i) =>
                 i.clientName.trim().toLowerCase() ===
-                client.name.trim().toLowerCase(),
+                    client.name.trim().toLowerCase() &&
+                // Only invoices the agency has issued — never drafts.
+                i.status !== "draft" &&
+                i.status !== "void",
         )
         .sort((a, b) => (a.issueDate < b.issueDate ? 1 : -1));
 
@@ -46,11 +50,25 @@ export default async function PortalBillingPage() {
 
     return (
         <div className="space-y-6">
-            <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                    {client.name}
-                </p>
-                <h1 className="text-2xl font-semibold">Billing</h1>
+            <style>{`
+                @media print {
+                    .no-print { display: none !important; }
+                    body { background: white !important; }
+                    @page { margin: 16mm; }
+                    [data-card] { break-inside: avoid; }
+                    tr, li { break-inside: avoid; }
+                }
+            `}</style>
+            <div className="flex items-start justify-between gap-2">
+                <div>
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        {client.name}
+                    </p>
+                    <h1 className="text-2xl font-semibold">Billing</h1>
+                </div>
+                <div className="no-print">
+                    <PrintButton />
+                </div>
             </div>
 
             {/* This month */}

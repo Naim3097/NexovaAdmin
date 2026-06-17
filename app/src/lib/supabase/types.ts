@@ -386,6 +386,7 @@ export type ReportInsightsRow = {
     summary: string;
     conclusion: string;
     recommendations: string[];
+    published: boolean;
     generated_at: string;
 };
 

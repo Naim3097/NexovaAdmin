@@ -5,7 +5,44 @@ import { redirect } from "next/navigation";
 import { buildClientMonthlyReport } from "@/lib/reports";
 import { createInvoice, updateInvoice } from "@/lib/data/invoices";
 import { generateReportInsights } from "@/lib/ai/report-insights";
-import { saveReportInsights } from "@/lib/data/report-insights";
+import {
+    saveReportInsights,
+    setReportPublished,
+} from "@/lib/data/report-insights";
+
+function reportPath(clientName: string, month: string) {
+    return `/reports/client/${encodeURIComponent(clientName)}/${month}`;
+}
+
+/** Agency edits the report overview (summary / conclusion / recommendations). */
+export async function saveReportInsightsAction(formData: FormData) {
+    const clientName = String(formData.get("client") ?? "").trim();
+    const month = String(formData.get("month") ?? "").trim();
+    if (!clientName || !/^\d{4}-\d{2}$/.test(month)) return;
+    const recommendations = String(formData.get("recommendations") ?? "")
+        .split(/\r?\n/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+    await saveReportInsights({
+        clientName,
+        month,
+        summary: String(formData.get("summary") ?? "").trim(),
+        conclusion: String(formData.get("conclusion") ?? "").trim(),
+        recommendations,
+    });
+    revalidatePath(reportPath(clientName, month));
+}
+
+/** Publish / unpublish the report to the client portal. */
+export async function setReportPublishedAction(formData: FormData) {
+    const clientName = String(formData.get("client") ?? "").trim();
+    const month = String(formData.get("month") ?? "").trim();
+    const published = String(formData.get("published") ?? "") === "1";
+    if (!clientName || !/^\d{4}-\d{2}$/.test(month)) return;
+    await setReportPublished(clientName, month, published);
+    revalidatePath(reportPath(clientName, month));
+    revalidatePath("/portal/reports");
+}
 
 export type InsightsState = { ok: boolean; error?: string };
 

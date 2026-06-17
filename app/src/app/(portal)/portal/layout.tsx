@@ -1,14 +1,14 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Home, FileText, Folder, Receipt, Images } from "lucide-react";
+import { Home, FileText, ClipboardList, Receipt, Images } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 
 const NAV = [
     { href: "/portal", label: "Home", icon: Home },
     { href: "/portal/content", label: "Content", icon: Images },
+    { href: "/portal/reports", label: "Reports", icon: FileText },
     { href: "/portal/billing", label: "Billing", icon: Receipt },
-    { href: "/portal/onboarding", label: "Forms", icon: FileText },
-    { href: "/portal/projects", label: "Projects", icon: Folder },
+    { href: "/portal/onboarding", label: "Forms", icon: ClipboardList },
 ];
 
 export default async function PortalLayout({
