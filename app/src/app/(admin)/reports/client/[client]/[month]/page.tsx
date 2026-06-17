@@ -4,7 +4,7 @@ import { buildClientMonthlyReport } from "@/lib/reports";
 import { getAgencyProfile, formatAddress } from "@/lib/data/agency";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { createExtrasInvoiceAction } from "@/lib/reports/actions";
+import { createMonthlyInvoiceAction } from "@/lib/reports/actions";
 import { PrintButton } from "./print-button";
 
 export const dynamic = "force-dynamic";
@@ -55,7 +55,7 @@ export default async function ClientMonthlyReportPage({
         report.projects.length > 0 ||
         report.contentPostsPublished.length > 0 ||
         report.contentApproved.length > 0 ||
-        report.extras.total > 0 ||
+        report.billing.total > 0 ||
         report.seoArticlesPublished.length > 0 ||
         report.invoicesIssued.length > 0;
 
@@ -324,15 +324,15 @@ export default async function ClientMonthlyReportPage({
                     </section>
                 ) : null}
 
-                {/* Chargeable extras (beyond plan) */}
-                {report.extras.total > 0 ? (
+                {/* Billing this month — retainer + extras */}
+                {report.billing.total > 0 ? (
                     <section className="space-y-3">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                             <h2 className="text-lg font-semibold">
-                                Chargeable extras
+                                Billing this month
                             </h2>
                             <form
-                                action={createExtrasInvoiceAction}
+                                action={createMonthlyInvoiceAction}
                                 className="no-print"
                             >
                                 <input
@@ -346,7 +346,7 @@ export default async function ClientMonthlyReportPage({
                                     value={report.monthKey}
                                 />
                                 <Button type="submit" size="sm">
-                                    Create draft invoice
+                                    Generate monthly invoice
                                 </Button>
                             </form>
                         </div>
@@ -369,6 +369,38 @@ export default async function ClientMonthlyReportPage({
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    {report.billing.retainer > 0 ? (
+                                        <tr className="border-b last:border-b-0">
+                                            <td className="px-3 py-2">
+                                                {report.billing.packageName
+                                                    ? `${report.billing.packageName} retainer`
+                                                    : "Monthly retainer"}
+                                                <span className="text-muted-foreground">
+                                                    {" "}
+                                                    ·{" "}
+                                                    {
+                                                        report.billing
+                                                            .deliveredContents
+                                                    }
+                                                    /
+                                                    {
+                                                        report.billing
+                                                            .includedContents
+                                                    }{" "}
+                                                    contents delivered
+                                                </span>
+                                            </td>
+                                            <td className="px-3 py-2 text-right">
+                                                1
+                                            </td>
+                                            <td className="px-3 py-2 text-right">
+                                                {fmtMyr(report.billing.retainer)}
+                                            </td>
+                                            <td className="px-3 py-2 text-right">
+                                                {fmtMyr(report.billing.retainer)}
+                                            </td>
+                                        </tr>
+                                    ) : null}
                                     {report.extras.contentCount > 0 ? (
                                         <tr className="border-b last:border-b-0">
                                             <td className="px-3 py-2">
@@ -411,10 +443,10 @@ export default async function ClientMonthlyReportPage({
                                     ) : null}
                                     <tr className="font-semibold">
                                         <td className="px-3 py-2" colSpan={3}>
-                                            Total extras
+                                            Total
                                         </td>
                                         <td className="px-3 py-2 text-right">
-                                            {fmtMyr(report.extras.total)}
+                                            {fmtMyr(report.billing.total)}
                                         </td>
                                     </tr>
                                 </tbody>

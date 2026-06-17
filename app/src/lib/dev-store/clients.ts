@@ -43,6 +43,10 @@ export type Client = {
     extraContentPrice: number;
     /** MYR per revision beyond content_revision_limit. */
     extraRevisionPrice: number;
+    /** Fixed monthly retainer fee (charged in full regardless of usage). */
+    monthlyRetainerMyr: number;
+    /** Package label, e.g. "Growth". */
+    packageName: string;
     createdAt: string;
     updatedAt: string;
 };
@@ -57,6 +61,8 @@ function normalizeClient(c: Client): Client {
         userId: c.userId ?? null,
         extraContentPrice: c.extraContentPrice ?? 0,
         extraRevisionPrice: c.extraRevisionPrice ?? 0,
+        monthlyRetainerMyr: c.monthlyRetainerMyr ?? 0,
+        packageName: c.packageName ?? "",
     };
 }
 
@@ -83,6 +89,8 @@ export async function createClient(input: {
     userId?: string | null;
     extraContentPrice?: number;
     extraRevisionPrice?: number;
+    monthlyRetainerMyr?: number;
+    packageName?: string;
 }): Promise<Client> {
     await ensureDir();
     const now = new Date().toISOString();
@@ -102,6 +110,8 @@ export async function createClient(input: {
         userId: input.userId ?? null,
         extraContentPrice: input.extraContentPrice ?? 0,
         extraRevisionPrice: input.extraRevisionPrice ?? 0,
+        monthlyRetainerMyr: input.monthlyRetainerMyr ?? 0,
+        packageName: input.packageName ?? "",
         createdAt: now,
         updatedAt: now,
     };

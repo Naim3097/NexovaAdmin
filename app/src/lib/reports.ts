@@ -344,6 +344,15 @@ export type ClientMonthlyReport = {
         revisionCharge: number;
         total: number;
     };
+    /** Monthly billing = fixed retainer + extras. */
+    billing: {
+        packageName: string;
+        retainer: number;
+        includedContents: number;
+        deliveredContents: number;
+        extrasTotal: number;
+        total: number;
+    };
     seoArticlesPublished: SeoArticle[];
     invoicesIssued: Invoice[];
     invoicesPaid: Invoice[];
@@ -478,6 +487,16 @@ export async function buildClientMonthlyReport(
             extraRevisionCount * revisionPrice
         ).toFixed(2),
     };
+
+    const retainer = clientCfg?.monthlyRetainerMyr ?? 0;
+    const billing = {
+        packageName: clientCfg?.packageName ?? "",
+        retainer,
+        includedContents: clientCfg?.monthlyContentQuota ?? 0,
+        deliveredContents: monthContent.length,
+        extrasTotal: extras.total,
+        total: +(retainer + extras.total).toFixed(2),
+    };
     const seoArticlesPublished = articles.filter(
         (a) =>
             a.clientName === clientName &&
@@ -517,6 +536,7 @@ export async function buildClientMonthlyReport(
         contentPostsPublished,
         contentApproved,
         extras,
+        billing,
         seoArticlesPublished,
         invoicesIssued,
         invoicesPaid,

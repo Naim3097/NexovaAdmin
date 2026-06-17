@@ -117,6 +117,8 @@ export type ClientRow = {
     user_id: string | null;
     extra_content_price: number;
     extra_revision_price: number;
+    monthly_retainer_myr: number;
+    package_name: string;
     created_at: string;
     updated_at: string;
 };

@@ -41,6 +41,8 @@ function rowToClient(row: ClientRow): Client {
         userId: row.user_id,
         extraContentPrice: Number(row.extra_content_price),
         extraRevisionPrice: Number(row.extra_revision_price),
+        monthlyRetainerMyr: Number(row.monthly_retainer_myr),
+        packageName: row.package_name,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
     };
@@ -63,6 +65,8 @@ function clientToInsert(c: Client): ClientInsert {
         user_id: c.userId,
         extra_content_price: c.extraContentPrice,
         extra_revision_price: c.extraRevisionPrice,
+        monthly_retainer_myr: c.monthlyRetainerMyr,
+        package_name: c.packageName,
         created_at: c.createdAt,
         updated_at: c.updatedAt,
     };
@@ -90,6 +94,9 @@ function patchToUpdate(patch: UpdatePatch): ClientUpdate {
         out.extra_content_price = patch.extraContentPrice;
     if (patch.extraRevisionPrice !== undefined)
         out.extra_revision_price = patch.extraRevisionPrice;
+    if (patch.monthlyRetainerMyr !== undefined)
+        out.monthly_retainer_myr = patch.monthlyRetainerMyr;
+    if (patch.packageName !== undefined) out.package_name = patch.packageName;
     if (patch.updatedAt !== undefined) out.updated_at = patch.updatedAt;
     return out;
 }
@@ -109,6 +116,8 @@ export async function createClient(input: {
     userId?: string | null;
     extraContentPrice?: number;
     extraRevisionPrice?: number;
+    monthlyRetainerMyr?: number;
+    packageName?: string;
 }): Promise<Client> {
     if (!isSupabaseEnabled("clients")) return devClients.createClient(input);
     const now = new Date().toISOString();
@@ -128,6 +137,8 @@ export async function createClient(input: {
         userId: input.userId ?? null,
         extraContentPrice: input.extraContentPrice ?? 0,
         extraRevisionPrice: input.extraRevisionPrice ?? 0,
+        monthlyRetainerMyr: input.monthlyRetainerMyr ?? 0,
+        packageName: input.packageName ?? "",
         createdAt: now,
         updatedAt: now,
     };

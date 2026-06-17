@@ -220,9 +220,39 @@ export default async function ClientDetailPage({
                             defaultValue={client.website}
                         />
                     </div>
+                    <div className="md:col-span-2">
+                        <p className="text-sm font-medium">Service package</p>
+                        <p className="text-xs text-muted-foreground">
+                            The retainer is charged in full each month; extras
+                            bill on top.
+                        </p>
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label className="text-sm">Package name</Label>
+                        <Input
+                            name="packageName"
+                            defaultValue={client.packageName}
+                            placeholder="e.g. Growth"
+                        />
+                    </div>
                     <div className="space-y-1.5">
                         <Label className="text-sm">
-                            Monthly content quota
+                            Monthly retainer (MYR)
+                        </Label>
+                        <Input
+                            name="monthlyRetainerMyr"
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            defaultValue={client.monthlyRetainerMyr}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            Fixed monthly fee, e.g. 5500.
+                        </p>
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label className="text-sm">
+                            Included contents / month
                         </Label>
                         <Input
                             name="monthlyContentQuota"

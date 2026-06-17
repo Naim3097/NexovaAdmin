@@ -6,9 +6,9 @@ import { getCurrentUser } from "@/lib/auth";
 const NAV = [
     { href: "/portal", label: "Home", icon: Home },
     { href: "/portal/content", label: "Content", icon: Images },
+    { href: "/portal/billing", label: "Billing", icon: Receipt },
     { href: "/portal/onboarding", label: "Forms", icon: FileText },
     { href: "/portal/projects", label: "Projects", icon: Folder },
-    { href: "/portal/invoices", label: "Invoices", icon: Receipt },
 ];
 
 export default async function PortalLayout({

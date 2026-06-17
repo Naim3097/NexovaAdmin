@@ -68,6 +68,8 @@ export async function updateClientAction(formData: FormData) {
         monthlyContentQuota: asCount(formData.get("monthlyContentQuota"), 0),
         extraContentPrice: asMoney(formData.get("extraContentPrice")),
         extraRevisionPrice: asMoney(formData.get("extraRevisionPrice")),
+        monthlyRetainerMyr: asMoney(formData.get("monthlyRetainerMyr")),
+        packageName: String(formData.get("packageName") ?? "").trim(),
     });
     revalidatePath(`/settings/clients/${id}`);
     revalidatePath("/settings/clients");
