@@ -17,7 +17,7 @@ export default async function PortalLayout({
     children: React.ReactNode;
 }) {
     const user = await getCurrentUser();
-    if (!user) redirect("/login");
+    if (!user) redirect("/portal-login");
 
     return (
         <div className="flex min-h-dvh flex-col">

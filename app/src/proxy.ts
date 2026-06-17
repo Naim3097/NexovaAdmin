@@ -8,7 +8,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const PUBLIC_PATHS = ["/", "/login", "/signup", "/api/health"];
+const PUBLIC_PATHS = ["/", "/login", "/portal-login", "/signup", "/api/health"];
 
 function isPublic(pathname: string) {
     if (PUBLIC_PATHS.includes(pathname)) return true;
@@ -70,7 +70,9 @@ export async function proxy(request: NextRequest) {
 
     if (!user) {
         const url = request.nextUrl.clone();
-        url.pathname = "/login";
+        // Client portal routes get the client-branded login; everything else
+        // (the admin app) gets the agency login.
+        url.pathname = pathname.startsWith("/portal") ? "/portal-login" : "/login";
         url.searchParams.set("next", pathname);
         return NextResponse.redirect(url);
     }
