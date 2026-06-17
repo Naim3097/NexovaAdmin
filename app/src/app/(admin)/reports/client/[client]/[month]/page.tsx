@@ -387,11 +387,6 @@ export default async function ClientMonthlyReportPage({
                                         media={latestMedia(p)}
                                         fallbackUrl={p.currentFileUrl}
                                     />
-                                    {p.copywriting ? (
-                                        <p className="whitespace-pre-wrap text-xs text-muted-foreground">
-                                            {p.copywriting}
-                                        </p>
-                                    ) : null}
                                 </div>
                             ))}
                         </div>

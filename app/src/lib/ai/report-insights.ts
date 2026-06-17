@@ -20,10 +20,10 @@ export const ReportInsightsSchema = z.object({
         .max(1500)
         .describe("2-4 sentences on the outcome / how the month went."),
     recommendations: z
-        .array(z.string().min(5).max(300))
+        .array(z.string().min(5).max(500))
         .min(2)
         .max(6)
-        .describe("Concrete next-month suggestions."),
+        .describe("Concrete next-month suggestions, one concise sentence each."),
 });
 
 export type ReportInsightsResult = z.infer<typeof ReportInsightsSchema>;
@@ -78,9 +78,9 @@ export async function generateReportInsights(
         `Write, grounded only in the above:`,
         `1. summary — 3-6 sentences recapping what was delivered (the content, themes, any ad results).`,
         `2. conclusion — 2-4 sentences on how the month went overall.`,
-        `3. recommendations — 2-6 specific, actionable suggestions for next month`,
-        `   (e.g. content angles, cadence, what to double down on). Use the review`,
-        `   notes and what was delivered to inform these.`,
+        `3. recommendations — 2-6 suggestions for next month, ONE concise sentence`,
+        `   each (max ~40 words). Keep them practical and relevant to digital`,
+        `   marketing (content angles, cadence, channels) — not deep analysis.`,
     ].join("\n");
 
     return generateJSON(prompt, ReportInsightsSchema, {
