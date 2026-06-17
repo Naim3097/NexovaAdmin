@@ -75,22 +75,29 @@ export async function createContentPostAction(formData: FormData) {
 export async function updateContentPostAction(formData: FormData) {
     const id = String(formData.get("id") ?? "");
     if (!id) return;
-    await updateContentPost(id, {
-        title: String(formData.get("title") ?? "").trim(),
-        clientName: String(formData.get("clientName") ?? "").trim(),
-        projectId: nullableId(formData.get("projectId")),
-        platform: asPlatform(formData.get("platform")),
-        type: asType(formData.get("type")),
-        scheduledFor: String(formData.get("scheduledFor") ?? "").trim(),
-        scheduledTime: String(formData.get("scheduledTime") ?? "").trim(),
-        caption: String(formData.get("caption") ?? "").trim(),
-        hashtags: String(formData.get("hashtags") ?? "").trim(),
-        notes: String(formData.get("notes") ?? "").trim(),
-        assignee: assigneeStr(formData.get("assignee")),
-        visualHeadline: String(formData.get("visualHeadline") ?? "").trim(),
-        visualIdea: String(formData.get("visualIdea") ?? "").trim(),
-        copywriting: String(formData.get("copywriting") ?? "").trim(),
-    });
+    // Patch only the fields actually present in this form, so the Concept and
+    // Details sections (separate forms) never clobber each other's values.
+    const patch: Parameters<typeof updateContentPost>[1] = {};
+    const str = (k: string) => String(formData.get(k) ?? "").trim();
+    if (formData.has("title")) patch.title = str("title");
+    if (formData.has("clientName")) patch.clientName = str("clientName");
+    if (formData.has("projectId"))
+        patch.projectId = nullableId(formData.get("projectId"));
+    if (formData.has("platform"))
+        patch.platform = asPlatform(formData.get("platform"));
+    if (formData.has("type")) patch.type = asType(formData.get("type"));
+    if (formData.has("scheduledFor")) patch.scheduledFor = str("scheduledFor");
+    if (formData.has("scheduledTime")) patch.scheduledTime = str("scheduledTime");
+    if (formData.has("caption")) patch.caption = str("caption");
+    if (formData.has("hashtags")) patch.hashtags = str("hashtags");
+    if (formData.has("notes")) patch.notes = str("notes");
+    if (formData.has("assignee"))
+        patch.assignee = assigneeStr(formData.get("assignee"));
+    if (formData.has("visualHeadline"))
+        patch.visualHeadline = str("visualHeadline");
+    if (formData.has("visualIdea")) patch.visualIdea = str("visualIdea");
+    if (formData.has("copywriting")) patch.copywriting = str("copywriting");
+    await updateContentPost(id, patch);
     revalidatePath(`/content/${id}`);
     revalidatePath("/content");
     revalidatePath("/content/calendar");
