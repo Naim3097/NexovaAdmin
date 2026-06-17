@@ -1,6 +1,5 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import {
@@ -165,15 +164,6 @@ export async function inviteClientAction(
         message: `Invited ${client.name}. Share the link below so they can set a password.`,
         inviteLink,
     };
-}
-
-/** Issue (or re-issue) the client's portal link token. */
-export async function generateClientPortalTokenAction(formData: FormData) {
-    const id = String(formData.get("id") ?? "");
-    if (!id) return;
-    await updateClient(id, { portalToken: randomUUID() });
-    revalidatePath(`/settings/clients/${id}`);
-    revalidateTag("clients", "max");
 }
 
 /**

@@ -16,14 +16,14 @@ export default function HomePage() {
         </p>
       </div>
       <div className="flex flex-col gap-3 sm:flex-row">
-        <Link href="/login" className={buttonVariants({ size: "lg" })}>
-          Sign in
+        <Link href="/portal" className={buttonVariants({ size: "lg" })}>
+          Client login
         </Link>
         <Link
-          href="/api/health"
+          href="/login"
           className={buttonVariants({ size: "lg", variant: "outline" })}
         >
-          Status
+          Team sign in
         </Link>
       </div>
     </main>

@@ -1,0 +1,54 @@
+[browser] Base UI: A component is changing the default value state of an uncontrolled FieldControl after being initialized. To suppress this warning opt to use a controlled FieldControl. 
+[browser] Base UI: A component is changing the default value state of an uncontrolled FieldControl after being initialized. To suppress this warning opt to use a controlled FieldControl. 
+[browser] In HTML, <a> cannot be a descendant of <a>.
+This will cause a hydration error.
+
+  ...
+    <InnerScrollAndFocusHandlerOld focusAndScrollRef={{...}} cacheNode={{rsc:<Fragment>, ...}}>
+      <ErrorBoundary errorComponent={undefined} errorStyles={undefined} errorScripts={undefined}>
+        <LoadingBoundary name="board/" loading={null}>
+          <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
+            <RedirectBoundary>
+              <RedirectErrorBoundary router={{...}}>
+                <InnerLayoutRouter url="/content/b..." tree={[...]} params={{}} cacheNode={{rsc:<Fragment>, ...}} ...>
+                  <SegmentViewNode type="page" pagePath="(admin)/co...">
+                    <SegmentTrieNode>
+                    <ContentBoardPage>
+                      <div className="space-y-6">
+                        <div>
+                        <div>
+                        <div>
+                        <div className="grid gap-4...">
+                          <ContentCard>
+                            <LinkComponent>
+                              <LinkComponent href="/content/c..." className="block">
+>                               <a
+>                                 className="block"
+>                                 ref={function}
+>                                 onClick={function onClick}
+>                                 onMouseEnter={function onMouseEnter}
+>                                 onTouchStart={function onTouchStart}
+>                                 href="/content/ca99c282-6cf2-4050-b651-ef9e7d21e860"
+>                               >
+                                  <Card>
+                                    <div data-slot="card" data-size="default" className={"group/ca..."}>
+                                      <div>
+                                      <CardContent>
+                                        <div data-slot="card-content" className="px-4 group...">
+                                          <AssetPreview>
+                                            <div className={"space-y-2 "}>
+                                              <img>
+                                              <DownloadLink>
+>                                               <a
+>                                                 href="https://gdinummzvbwjfdesqfpt.supabase.co/storage/v1/object/pub..."
+>                                                 download="C3.jpg"
+>                                                 className="inline-flex items-center gap-1 text-xs text-primary hover..."
+>                                               >
+                                          ...
+                  ...
+                ...
+      ...
+ 
+[browser] <a> cannot contain a nested <a>.
+See this log for the ancestor stack trace. 
+[browser] Base UI: A component is changing the default value state of an uncontrolled FieldControl after being initialized. To suppress this warning opt to use a controlled FieldControl. 

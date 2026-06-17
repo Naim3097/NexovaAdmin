@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/select";
 import {
     deleteClientAction,
-    generateClientPortalTokenAction,
     generateContentPlanAction,
     updateClientAction,
 } from "@/lib/clients/actions";
@@ -299,31 +298,7 @@ export default async function ClientDetailPage({
                     </p>
                 </form>
 
-                {/* Portal token */}
-                <div className="flex flex-col gap-2 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="min-w-0">
-                        <p className="text-sm font-medium">Client portal link</p>
-                        {client.portalToken ? (
-                            <code className="block break-all text-xs text-muted-foreground">
-                                /c/{client.portalToken}
-                            </code>
-                        ) : (
-                            <p className="text-xs text-muted-foreground">
-                                Not issued yet.
-                            </p>
-                        )}
-                    </div>
-                    <form action={generateClientPortalTokenAction}>
-                        <input type="hidden" name="id" value={client.id} />
-                        <Button type="submit" variant="outline">
-                            {client.portalToken
-                                ? "Regenerate link"
-                                : "Generate link"}
-                        </Button>
-                    </form>
-                </div>
-
-                {/* Authenticated portal login */}
+                {/* Portal login */}
                 <ClientInviteForm
                     clientId={client.id}
                     defaultEmail={client.contactEmail}
