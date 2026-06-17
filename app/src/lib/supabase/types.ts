@@ -379,6 +379,16 @@ export type AuditEventRow = {
     changes: AuditChangeRow[];
 };
 
+export type ReportInsightsRow = {
+    id: string;
+    client_name: string;
+    month: string;
+    summary: string;
+    conclusion: string;
+    recommendations: string[];
+    generated_at: string;
+};
+
 // -----------------------------------------------------------------------------
 // Database type expected by supabase-js
 // -----------------------------------------------------------------------------
@@ -402,6 +412,7 @@ export type Database = {
             seo_articles: Tbl<SeoArticleRow>;
             notifications: Tbl<NotificationRow>;
             audit_events: Tbl<AuditEventRow>;
+            report_insights: Tbl<ReportInsightsRow>;
         };
         Views: Record<string, never>;
         // Permissive Functions map: the new schema declares no RPCs yet, but

@@ -28,6 +28,7 @@ export const ENTITY_NAMES = [
     "seo",
     "notifications",
     "audit",
+    "reportInsights",
 ] as const;
 
 export type EntityName = (typeof ENTITY_NAMES)[number];

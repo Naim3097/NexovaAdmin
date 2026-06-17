@@ -2,12 +2,20 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildClientMonthlyReport } from "@/lib/reports";
 import { getAgencyProfile, formatAddress } from "@/lib/data/agency";
+import { type ContentPost } from "@/lib/data/content";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AssetPreview } from "@/components/asset-preview";
 import { createMonthlyInvoiceAction } from "@/lib/reports/actions";
+import { getReportInsights } from "@/lib/data/report-insights";
 import { PrintButton } from "./print-button";
+import { GenerateInsightsButton } from "./generate-insights-button";
 
 export const dynamic = "force-dynamic";
+
+function latestMedia(p: ContentPost) {
+    return p.drafts[p.drafts.length - 1]?.media ?? [];
+}
 
 const MONTH_LABELS = [
     "January",
@@ -45,9 +53,10 @@ export default async function ClientMonthlyReportPage({
     if (!/^\d{4}-\d{2}$/.test(month)) notFound();
     const client = decodeURIComponent(clientRaw);
 
-    const [report, agency] = await Promise.all([
+    const [report, agency, insights] = await Promise.all([
         buildClientMonthlyReport(client, month),
         getAgencyProfile(),
+        getReportInsights(client, month),
     ]);
 
     const hasAnything =
@@ -106,6 +115,62 @@ export default async function ClientMonthlyReportPage({
                         Coverage: {report.monthStart} → {report.monthEnd}
                     </p>
                 </header>
+
+                {/* AI narrative — Summary / Conclusion / Recommendations */}
+                <section className="space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <h2 className="text-lg font-semibold">Overview</h2>
+                        <GenerateInsightsButton
+                            client={report.clientName}
+                            month={report.monthKey}
+                            hasInsights={Boolean(insights)}
+                        />
+                    </div>
+                    {insights ? (
+                        <div className="space-y-4">
+                            <div>
+                                <h3 className="text-sm font-medium">Summary</h3>
+                                <p className="mt-1 whitespace-pre-wrap text-sm">
+                                    {insights.summary}
+                                </p>
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-medium">
+                                    Conclusion
+                                </h3>
+                                <p className="mt-1 whitespace-pre-wrap text-sm">
+                                    {insights.conclusion}
+                                </p>
+                            </div>
+                            {insights.recommendations.length > 0 ? (
+                                <div>
+                                    <h3 className="text-sm font-medium">
+                                        Recommendations
+                                    </h3>
+                                    <ul className="mt-1 list-disc space-y-1 pl-5 text-sm">
+                                        {insights.recommendations.map((r, i) => (
+                                            <li key={i}>{r}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ) : null}
+                            <p className="text-[11px] text-muted-foreground">
+                                Drafted by AI on{" "}
+                                {new Date(
+                                    insights.generatedAt,
+                                ).toLocaleString()}{" "}
+                                · review before sending.
+                            </p>
+                        </div>
+                    ) : (
+                        <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+                            No overview yet. Click{" "}
+                            <span className="font-medium">Generate insights</span>{" "}
+                            to draft a Summary, Conclusion, and Recommendations
+                            from this month&apos;s deliverables.
+                        </p>
+                    )}
+                </section>
 
                 {!hasAnything ? (
                     <p className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
@@ -295,32 +360,41 @@ export default async function ClientMonthlyReportPage({
                     </section>
                 ) : null}
 
-                {/* Content approved (delivered via the review portal) */}
+                {/* Content delivered — visual showcase */}
                 {report.contentApproved.length > 0 ? (
                     <section className="space-y-3">
                         <h2 className="text-lg font-semibold">
-                            Content approved ({report.contentApproved.length})
+                            Content delivered ({report.contentApproved.length})
                         </h2>
-                        <ul className="divide-y rounded-lg border">
+                        <div className="grid gap-4 sm:grid-cols-2">
                             {report.contentApproved.map((p) => (
-                                <li key={p.id} className="p-3 text-sm">
+                                <div
+                                    key={p.id}
+                                    className="space-y-2 rounded-lg border p-3"
+                                >
                                     <div className="flex flex-wrap items-baseline justify-between gap-2">
-                                        <span className="font-medium">
+                                        <span className="text-sm font-medium">
                                             {p.title}
                                         </span>
                                         <span className="text-xs text-muted-foreground">
-                                            {p.draftNumber
-                                                ? `${p.draftNumber} · `
-                                                : ""}
                                             {p.platform} · {p.type}
                                             {p.approvedAt
                                                 ? ` · ${p.approvedAt.slice(0, 10)}`
                                                 : ""}
                                         </span>
                                     </div>
-                                </li>
+                                    <AssetPreview
+                                        media={latestMedia(p)}
+                                        fallbackUrl={p.currentFileUrl}
+                                    />
+                                    {p.copywriting ? (
+                                        <p className="whitespace-pre-wrap text-xs text-muted-foreground">
+                                            {p.copywriting}
+                                        </p>
+                                    ) : null}
+                                </div>
                             ))}
-                        </ul>
+                        </div>
                     </section>
                 ) : null}
 

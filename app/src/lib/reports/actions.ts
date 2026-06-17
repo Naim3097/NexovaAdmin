@@ -4,6 +4,62 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { buildClientMonthlyReport } from "@/lib/reports";
 import { createInvoice, updateInvoice } from "@/lib/data/invoices";
+import { generateReportInsights } from "@/lib/ai/report-insights";
+import { saveReportInsights } from "@/lib/data/report-insights";
+
+export type InsightsState = { ok: boolean; error?: string };
+
+/**
+ * Generate the AI narrative (summary / conclusion / recommendations) for a
+ * client's month from its deliverables + review notes + ad metrics, and cache it.
+ */
+export async function generateReportInsightsAction(
+    _prev: InsightsState | undefined,
+    formData: FormData,
+): Promise<InsightsState> {
+    const clientName = String(formData.get("client") ?? "").trim();
+    const month = String(formData.get("month") ?? "").trim();
+    if (!clientName || !/^\d{4}-\d{2}$/.test(month)) {
+        return { ok: false, error: "Missing client or month." };
+    }
+    try {
+        const report = await buildClientMonthlyReport(clientName, month);
+        const result = await generateReportInsights({
+            clientName,
+            month,
+            packageName: report.billing.packageName,
+            delivered: report.contentApproved.map((p) => ({
+                title: p.title,
+                platform: p.platform,
+                type: p.type,
+                caption: p.copywriting,
+                direction: p.direction,
+                notes: p.feedback
+                    .filter((f) => f.author === "client")
+                    .map((f) => f.body),
+            })),
+            campaigns: report.campaigns.map((r) => ({
+                name: r.campaign.name,
+                platform: r.campaign.platform,
+                spendMyr: r.spendMyr,
+                impressions: r.impressions,
+                clicks: r.clicks,
+                leads: r.crmLeads,
+            })),
+            extras: {
+                contentCount: report.extras.contentCount,
+                revisionCount: report.extras.revisionCount,
+            },
+        });
+        await saveReportInsights({ clientName, month, ...result });
+        revalidatePath(
+            `/reports/client/${encodeURIComponent(clientName)}/${month}`,
+        );
+        return { ok: true };
+    } catch (e) {
+        return { ok: false, error: (e as Error).message };
+    }
+}
 
 /**
  * Auto-build a DRAFT invoice for a client's month = fixed retainer + any
