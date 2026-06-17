@@ -84,19 +84,15 @@ export async function portalCreateContentAction(
 
     const month = currentMonth();
 
-    // Quota: monthly_content_quota caps items per month (0 = no cap configured).
+    // Over the monthly quota is ALLOWED but billable (0 quota = no cap).
+    let billable = false;
     if (client.monthlyContentQuota > 0) {
         const used = (await listContentPosts()).filter(
             (p) =>
                 p.clientName.trim().toLowerCase() ===
                     client.name.trim().toLowerCase() && p.planMonth === month,
         ).length;
-        if (used >= client.monthlyContentQuota) {
-            return {
-                ok: false,
-                message: `You've reached this month's limit of ${client.monthlyContentQuota} request(s). Contact us to add more.`,
-            };
-        }
+        billable = used >= client.monthlyContentQuota;
     }
 
     await createContentRequest({
@@ -105,10 +101,16 @@ export async function portalCreateContentAction(
         direction,
         references,
         planMonth: month,
+        billable,
     });
 
     revalidatePath("/portal/content");
     revalidatePath("/content");
     revalidatePath("/dashboard");
-    return { ok: true, message: "Request submitted — we'll get on it." };
+    return {
+        ok: true,
+        message: billable
+            ? `Request submitted. This is beyond your plan, so it's chargeable at MYR ${client.extraContentPrice.toFixed(2)}.`
+            : "Request submitted — we'll get on it.",
+    };
 }

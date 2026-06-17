@@ -84,6 +84,13 @@ export default async function PortalContentPage({
         (p) => p.reviewStatus === "awaiting_client",
     ).length;
 
+    const usedThisMonth = mine.filter(
+        (p) => p.planMonth === currentMonth(),
+    ).length;
+    const overQuota =
+        client.monthlyContentQuota > 0 &&
+        usedThisMonth >= client.monthlyContentQuota;
+
     const pill = (active: boolean) =>
         `rounded-full border px-3 py-1 text-xs ${active ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`;
 
@@ -106,7 +113,10 @@ export default async function PortalContentPage({
                     <CardTitle className="text-base">Request content</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <RequestContentForm />
+                    <RequestContentForm
+                        overQuota={overQuota}
+                        extraPrice={client.extraContentPrice}
+                    />
                 </CardContent>
             </Card>
 
@@ -136,6 +146,7 @@ export default async function PortalContentPage({
                             post={post}
                             clientReview
                             revisionLimit={client.contentRevisionLimit}
+                            extraRevisionPrice={client.extraRevisionPrice}
                             statusLabel={STATUS_LABEL[post.reviewStatus]}
                             statusVariant={
                                 STATUS_VARIANT[post.reviewStatus] ?? "outline"

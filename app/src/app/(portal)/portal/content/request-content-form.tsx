@@ -12,7 +12,13 @@ import {
 
 const initial: PortalCreateState = { ok: false };
 
-export function RequestContentForm() {
+export function RequestContentForm({
+    overQuota = false,
+    extraPrice = 0,
+}: {
+    overQuota?: boolean;
+    extraPrice?: number;
+}) {
     const [state, formAction, pending] = useActionState(
         portalCreateContentAction,
         initial,
@@ -20,6 +26,13 @@ export function RequestContentForm() {
 
     return (
         <form action={formAction} className="space-y-3">
+            {overQuota ? (
+                <p className="rounded-md border border-amber-400/40 bg-amber-50 p-3 text-xs text-amber-800">
+                    You&apos;ve used your plan for this month. Extra content is
+                    charged at <strong>MYR {extraPrice.toFixed(2)}</strong> each —
+                    submitting below means you agree to the charge.
+                </p>
+            ) : null}
             <div className="space-y-1.5">
                 <Label className="text-sm">What do you need?</Label>
                 <Input name="title" required placeholder="e.g. Raya promo post" />

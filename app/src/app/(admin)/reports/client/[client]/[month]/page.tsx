@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { buildClientMonthlyReport } from "@/lib/reports";
 import { getAgencyProfile, formatAddress } from "@/lib/data/agency";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { createExtrasInvoiceAction } from "@/lib/reports/actions";
 import { PrintButton } from "./print-button";
 
 export const dynamic = "force-dynamic";
@@ -53,6 +55,7 @@ export default async function ClientMonthlyReportPage({
         report.projects.length > 0 ||
         report.contentPostsPublished.length > 0 ||
         report.contentApproved.length > 0 ||
+        report.extras.total > 0 ||
         report.seoArticlesPublished.length > 0 ||
         report.invoicesIssued.length > 0;
 
@@ -318,6 +321,105 @@ export default async function ClientMonthlyReportPage({
                                 </li>
                             ))}
                         </ul>
+                    </section>
+                ) : null}
+
+                {/* Chargeable extras (beyond plan) */}
+                {report.extras.total > 0 ? (
+                    <section className="space-y-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <h2 className="text-lg font-semibold">
+                                Chargeable extras
+                            </h2>
+                            <form
+                                action={createExtrasInvoiceAction}
+                                className="no-print"
+                            >
+                                <input
+                                    type="hidden"
+                                    name="client"
+                                    value={report.clientName}
+                                />
+                                <input
+                                    type="hidden"
+                                    name="month"
+                                    value={report.monthKey}
+                                />
+                                <Button type="submit" size="sm">
+                                    Create draft invoice
+                                </Button>
+                            </form>
+                        </div>
+                        <div className="overflow-x-auto rounded-lg border">
+                            <table className="w-full text-sm">
+                                <thead className="border-b bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
+                                    <tr>
+                                        <th className="px-3 py-2 text-left">
+                                            Item
+                                        </th>
+                                        <th className="px-3 py-2 text-right">
+                                            Qty
+                                        </th>
+                                        <th className="px-3 py-2 text-right">
+                                            Unit
+                                        </th>
+                                        <th className="px-3 py-2 text-right">
+                                            Amount
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {report.extras.contentCount > 0 ? (
+                                        <tr className="border-b last:border-b-0">
+                                            <td className="px-3 py-2">
+                                                Extra content (beyond plan)
+                                            </td>
+                                            <td className="px-3 py-2 text-right">
+                                                {report.extras.contentCount}
+                                            </td>
+                                            <td className="px-3 py-2 text-right">
+                                                {fmtMyr(
+                                                    report.extras.contentPrice,
+                                                )}
+                                            </td>
+                                            <td className="px-3 py-2 text-right">
+                                                {fmtMyr(
+                                                    report.extras.contentCharge,
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ) : null}
+                                    {report.extras.revisionCount > 0 ? (
+                                        <tr className="border-b last:border-b-0">
+                                            <td className="px-3 py-2">
+                                                Extra revisions (beyond limit)
+                                            </td>
+                                            <td className="px-3 py-2 text-right">
+                                                {report.extras.revisionCount}
+                                            </td>
+                                            <td className="px-3 py-2 text-right">
+                                                {fmtMyr(
+                                                    report.extras.revisionPrice,
+                                                )}
+                                            </td>
+                                            <td className="px-3 py-2 text-right">
+                                                {fmtMyr(
+                                                    report.extras.revisionCharge,
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ) : null}
+                                    <tr className="font-semibold">
+                                        <td className="px-3 py-2" colSpan={3}>
+                                            Total extras
+                                        </td>
+                                        <td className="px-3 py-2 text-right">
+                                            {fmtMyr(report.extras.total)}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </section>
                 ) : null}
 

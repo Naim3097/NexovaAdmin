@@ -115,6 +115,8 @@ export type ClientRow = {
     monthly_content_quota: number;
     portal_token: string;
     user_id: string | null;
+    extra_content_price: number;
+    extra_revision_price: number;
     created_at: string;
     updated_at: string;
 };
@@ -319,6 +321,8 @@ export type ContentPostRow = {
     visual_headline: string;
     visual_idea: string;
     copywriting: string;
+    billable: boolean;
+    billable_revisions: number;
     review_status: string;
     draft_number: string;
     revisions_used: number;

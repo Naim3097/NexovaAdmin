@@ -246,6 +246,36 @@ export default async function ClientDetailPage({
                             Feedback cycles allowed per content item.
                         </p>
                     </div>
+                    <div className="space-y-1.5">
+                        <Label className="text-sm">
+                            Extra content price (MYR)
+                        </Label>
+                        <Input
+                            name="extraContentPrice"
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            defaultValue={client.extraContentPrice}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            Charged per content item beyond the monthly quota.
+                        </p>
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label className="text-sm">
+                            Extra revision price (MYR)
+                        </Label>
+                        <Input
+                            name="extraRevisionPrice"
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            defaultValue={client.extraRevisionPrice}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            Charged per revision beyond the limit.
+                        </p>
+                    </div>
                 </div>
                 <div className="space-y-1.5">
                     <Label className="text-sm">Internal notes</Label>

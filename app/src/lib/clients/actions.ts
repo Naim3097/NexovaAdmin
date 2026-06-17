@@ -27,6 +27,13 @@ function asCount(v: FormDataEntryValue | null, fallback: number): number {
     return Math.min(n, 1000);
 }
 
+/** Parse a non-negative money amount (MYR) from a form field. */
+function asMoney(v: FormDataEntryValue | null): number {
+    const n = Number.parseFloat(String(v ?? ""));
+    if (!Number.isFinite(n) || n < 0) return 0;
+    return Math.round(n * 100) / 100;
+}
+
 export async function createClientAction(formData: FormData) {
     const name = String(formData.get("name") ?? "").trim();
     if (!name) return;
@@ -59,6 +66,8 @@ export async function updateClientAction(formData: FormData) {
         notes: String(formData.get("notes") ?? "").trim(),
         contentRevisionLimit: asCount(formData.get("contentRevisionLimit"), 3),
         monthlyContentQuota: asCount(formData.get("monthlyContentQuota"), 0),
+        extraContentPrice: asMoney(formData.get("extraContentPrice")),
+        extraRevisionPrice: asMoney(formData.get("extraRevisionPrice")),
     });
     revalidatePath(`/settings/clients/${id}`);
     revalidatePath("/settings/clients");

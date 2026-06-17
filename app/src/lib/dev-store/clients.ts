@@ -39,6 +39,10 @@ export type Client = {
     portalToken: string;
     /** Linked Supabase auth user for the client's portal login; null until invited. */
     userId: string | null;
+    /** MYR per content item beyond monthly_content_quota (0 = free / disabled). */
+    extraContentPrice: number;
+    /** MYR per revision beyond content_revision_limit. */
+    extraRevisionPrice: number;
     createdAt: string;
     updatedAt: string;
 };
@@ -51,6 +55,8 @@ function normalizeClient(c: Client): Client {
         monthlyContentQuota: c.monthlyContentQuota ?? 0,
         portalToken: c.portalToken ?? "",
         userId: c.userId ?? null,
+        extraContentPrice: c.extraContentPrice ?? 0,
+        extraRevisionPrice: c.extraRevisionPrice ?? 0,
     };
 }
 
@@ -75,6 +81,8 @@ export async function createClient(input: {
     monthlyContentQuota?: number;
     portalToken?: string;
     userId?: string | null;
+    extraContentPrice?: number;
+    extraRevisionPrice?: number;
 }): Promise<Client> {
     await ensureDir();
     const now = new Date().toISOString();
@@ -92,6 +100,8 @@ export async function createClient(input: {
         monthlyContentQuota: input.monthlyContentQuota ?? 0,
         portalToken: input.portalToken ?? "",
         userId: input.userId ?? null,
+        extraContentPrice: input.extraContentPrice ?? 0,
+        extraRevisionPrice: input.extraRevisionPrice ?? 0,
         createdAt: now,
         updatedAt: now,
     };

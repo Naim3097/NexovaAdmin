@@ -23,6 +23,7 @@ import {
     type Campaign,
 } from "@/lib/data/campaigns";
 import { listContentPosts, type ContentPost } from "@/lib/data/content";
+import { listClients } from "@/lib/data/clients";
 import {
     listSeoArticles,
     type SeoArticle,
@@ -333,6 +334,16 @@ export type ClientMonthlyReport = {
     }>;
     contentPostsPublished: ContentPost[];
     contentApproved: ContentPost[];
+    /** Chargeable extras beyond the client's plan this month. */
+    extras: {
+        contentCount: number;
+        revisionCount: number;
+        contentPrice: number;
+        revisionPrice: number;
+        contentCharge: number;
+        revisionCharge: number;
+        total: number;
+    };
     seoArticlesPublished: SeoArticle[];
     invoicesIssued: Invoice[];
     invoicesPaid: Invoice[];
@@ -355,7 +366,7 @@ export async function buildClientMonthlyReport(
     clientName: string,
     monthKey: string,
 ): Promise<ClientMonthlyReport> {
-    const [campaigns, projects, invoices, leads, posts, articles] =
+    const [campaigns, projects, invoices, leads, posts, articles, clients] =
         await Promise.all([
             listCampaigns(),
             listProjects(),
@@ -363,6 +374,7 @@ export async function buildClientMonthlyReport(
             listLeads(),
             listContentPosts(),
             listSeoArticles(),
+            listClients(),
         ]);
 
     const monthStart = `${monthKey}-01`;
@@ -440,6 +452,32 @@ export async function buildClientMonthlyReport(
             p.reviewStatus === "approved" &&
             inMonth(p.approvedAt, monthKey),
     );
+
+    // Chargeable extras: content created beyond the plan + revisions beyond the
+    // limit, this month, priced from the client's per-extra rates.
+    const clientCfg = clients.find((c) => c.name === clientName);
+    const monthContent = posts.filter(
+        (p) => p.clientName === clientName && p.planMonth === monthKey,
+    );
+    const extraContentCount = monthContent.filter((p) => p.billable).length;
+    const extraRevisionCount = monthContent.reduce(
+        (n, p) => n + (p.billableRevisions || 0),
+        0,
+    );
+    const contentPrice = clientCfg?.extraContentPrice ?? 0;
+    const revisionPrice = clientCfg?.extraRevisionPrice ?? 0;
+    const extras = {
+        contentCount: extraContentCount,
+        revisionCount: extraRevisionCount,
+        contentPrice,
+        revisionPrice,
+        contentCharge: +(extraContentCount * contentPrice).toFixed(2),
+        revisionCharge: +(extraRevisionCount * revisionPrice).toFixed(2),
+        total: +(
+            extraContentCount * contentPrice +
+            extraRevisionCount * revisionPrice
+        ).toFixed(2),
+    };
     const seoArticlesPublished = articles.filter(
         (a) =>
             a.clientName === clientName &&
@@ -478,6 +516,7 @@ export async function buildClientMonthlyReport(
         projects: clientProjects,
         contentPostsPublished,
         contentApproved,
+        extras,
         seoArticlesPublished,
         invoicesIssued,
         invoicesPaid,

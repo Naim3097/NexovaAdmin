@@ -39,6 +39,8 @@ function rowToClient(row: ClientRow): Client {
         monthlyContentQuota: row.monthly_content_quota,
         portalToken: row.portal_token,
         userId: row.user_id,
+        extraContentPrice: Number(row.extra_content_price),
+        extraRevisionPrice: Number(row.extra_revision_price),
         createdAt: row.created_at,
         updatedAt: row.updated_at,
     };
@@ -59,6 +61,8 @@ function clientToInsert(c: Client): ClientInsert {
         monthly_content_quota: c.monthlyContentQuota,
         portal_token: c.portalToken,
         user_id: c.userId,
+        extra_content_price: c.extraContentPrice,
+        extra_revision_price: c.extraRevisionPrice,
         created_at: c.createdAt,
         updated_at: c.updatedAt,
     };
@@ -82,6 +86,10 @@ function patchToUpdate(patch: UpdatePatch): ClientUpdate {
         out.monthly_content_quota = patch.monthlyContentQuota;
     if (patch.portalToken !== undefined) out.portal_token = patch.portalToken;
     if (patch.userId !== undefined) out.user_id = patch.userId;
+    if (patch.extraContentPrice !== undefined)
+        out.extra_content_price = patch.extraContentPrice;
+    if (patch.extraRevisionPrice !== undefined)
+        out.extra_revision_price = patch.extraRevisionPrice;
     if (patch.updatedAt !== undefined) out.updated_at = patch.updatedAt;
     return out;
 }
@@ -99,6 +107,8 @@ export async function createClient(input: {
     monthlyContentQuota?: number;
     portalToken?: string;
     userId?: string | null;
+    extraContentPrice?: number;
+    extraRevisionPrice?: number;
 }): Promise<Client> {
     if (!isSupabaseEnabled("clients")) return devClients.createClient(input);
     const now = new Date().toISOString();
@@ -116,6 +126,8 @@ export async function createClient(input: {
         monthlyContentQuota: input.monthlyContentQuota ?? 0,
         portalToken: input.portalToken ?? "",
         userId: input.userId ?? null,
+        extraContentPrice: input.extraContentPrice ?? 0,
+        extraRevisionPrice: input.extraRevisionPrice ?? 0,
         createdAt: now,
         updatedAt: now,
     };

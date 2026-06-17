@@ -30,6 +30,7 @@ export function ContentCard({
     statusVariant = "outline",
     clientReview = false,
     revisionLimit = 3,
+    extraRevisionPrice = 0,
 }: {
     post: ContentPost;
     href?: string;
@@ -37,6 +38,7 @@ export function ContentCard({
     statusVariant?: BadgeVariant;
     clientReview?: boolean;
     revisionLimit?: number;
+    extraRevisionPrice?: number;
 }) {
     const media = latestMedia(post);
     const awaiting = post.reviewStatus === "awaiting_client";
@@ -88,36 +90,41 @@ export function ContentCard({
                                     </Button>
                                 </form>
 
-                                {atLimit ? (
-                                    <p className="rounded-md border border-dashed p-3 text-center text-xs text-muted-foreground">
-                                        You&apos;ve used all your revisions for
-                                        this item. Approve it, or contact us.
-                                    </p>
-                                ) : (
-                                    <form
-                                        action={portalRequestChangesAction}
-                                        className="space-y-2"
+                                <form
+                                    action={portalRequestChangesAction}
+                                    className="space-y-2"
+                                >
+                                    <input
+                                        type="hidden"
+                                        name="id"
+                                        value={post.id}
+                                    />
+                                    {atLimit ? (
+                                        <p className="rounded-md border border-amber-400/40 bg-amber-50 p-2 text-xs text-amber-800">
+                                            You&apos;ve used your{" "}
+                                            {revisionLimit} included revision(s).
+                                            Further changes are charged at{" "}
+                                            <strong>
+                                                MYR{" "}
+                                                {extraRevisionPrice.toFixed(2)}
+                                            </strong>{" "}
+                                            each.
+                                        </p>
+                                    ) : null}
+                                    <Textarea
+                                        name="body"
+                                        rows={2}
+                                        required
+                                        placeholder="Request changes…"
+                                    />
+                                    <Button
+                                        type="submit"
+                                        variant="outline"
+                                        className="w-full"
                                     >
-                                        <input
-                                            type="hidden"
-                                            name="id"
-                                            value={post.id}
-                                        />
-                                        <Textarea
-                                            name="body"
-                                            rows={2}
-                                            required
-                                            placeholder="Request changes…"
-                                        />
-                                        <Button
-                                            type="submit"
-                                            variant="outline"
-                                            className="w-full"
-                                        >
-                                            Send change request
-                                        </Button>
-                                    </form>
-                                )}
+                                        Send change request
+                                    </Button>
+                                </form>
                             </div>
                         ) : null}
                     </>

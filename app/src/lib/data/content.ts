@@ -74,6 +74,8 @@ function rowToPost(row: ContentPostRow): ContentPost {
         visualHeadline: row.visual_headline,
         visualIdea: row.visual_idea,
         copywriting: row.copywriting,
+        billable: row.billable,
+        billableRevisions: row.billable_revisions,
         reviewStatus: row.review_status as ContentReviewStatus,
         draftNumber: row.draft_number,
         revisionsUsed: row.revisions_used,
@@ -110,6 +112,8 @@ function postToInsert(p: ContentPost): ContentInsert {
         visual_headline: p.visualHeadline,
         visual_idea: p.visualIdea,
         copywriting: p.copywriting,
+        billable: p.billable,
+        billable_revisions: p.billableRevisions,
         review_status: p.reviewStatus,
         draft_number: p.draftNumber,
         revisions_used: p.revisionsUsed,
@@ -147,6 +151,9 @@ function patchToUpdate(patch: UpdatePatch): ContentUpdate {
         out.visual_headline = patch.visualHeadline;
     if (patch.visualIdea !== undefined) out.visual_idea = patch.visualIdea;
     if (patch.copywriting !== undefined) out.copywriting = patch.copywriting;
+    if (patch.billable !== undefined) out.billable = patch.billable;
+    if (patch.billableRevisions !== undefined)
+        out.billable_revisions = patch.billableRevisions;
     if (patch.reviewStatus !== undefined) out.review_status = patch.reviewStatus;
     if (patch.draftNumber !== undefined) out.draft_number = patch.draftNumber;
     if (patch.revisionsUsed !== undefined)
@@ -178,6 +185,7 @@ export async function createContentPost(input: {
     origin?: ContentOrigin;
     direction?: string;
     references?: string[];
+    billable?: boolean;
 }): Promise<ContentPost> {
     if (!isSupabaseEnabled("content")) return devContent.createContentPost(input);
 
@@ -203,6 +211,8 @@ export async function createContentPost(input: {
         visualHeadline: "",
         visualIdea: "",
         copywriting: "",
+        billable: input.billable ?? false,
+        billableRevisions: 0,
         reviewStatus: "none",
         draftNumber: "",
         revisionsUsed: 0,
@@ -390,17 +400,17 @@ async function revisionLimitFor(clientName: string): Promise<number> {
 }
 
 /**
- * Client requests changes on the current draft. Appends a client feedback
- * entry, consumes one revision cycle (enforced against the client's
- * contentRevisionLimit), and moves the item to 'changes_requested'.
- * Returns an error string instead of throwing on a business-rule violation
- * (already approved / no draft yet / limit reached) so callers can surface it.
+ * Client requests changes on the current draft. Appends a client feedback entry
+ * and moves the item to 'changes_requested'. Revisions BEYOND the client's limit
+ * are still allowed but flagged billable (billable_revisions++) so they flow into
+ * the report + invoice. Returns an error only on a true block (already approved /
+ * no draft yet); `billable` says whether this revision is chargeable.
  */
 export async function requestChanges(input: {
     id: string;
     body: string;
     fileUrl?: string;
-}): Promise<{ post?: ContentPost; error?: string }> {
+}): Promise<{ post?: ContentPost; error?: string; billable?: boolean }> {
     const post = await getContentPostById(input.id);
     if (!post) return { error: "Content not found." };
     if (post.reviewStatus === "approved") {
@@ -410,13 +420,9 @@ export async function requestChanges(input: {
         return { error: "There is no draft to give feedback on yet." };
     }
     const limit = await revisionLimitFor(post.clientName);
-    if (post.revisionsUsed >= limit) {
-        return {
-            error: `You've used all ${limit} revision cycle(s) for this item.`,
-        };
-    }
-
     const cycle = post.revisionsUsed + 1;
+    const isExtra = post.revisionsUsed >= limit;
+
     const entry: ContentFeedback = {
         id: randomUUID(),
         draftId: post.drafts[post.drafts.length - 1]?.id ?? "",
@@ -430,6 +436,7 @@ export async function requestChanges(input: {
     const updated = await updateContentPost(input.id, {
         feedback: [...post.feedback, entry],
         revisionsUsed: cycle,
+        billableRevisions: post.billableRevisions + (isExtra ? 1 : 0),
         reviewStatus: "changes_requested",
         status: "review",
     });
@@ -437,11 +444,11 @@ export async function requestChanges(input: {
     await notify({
         kind: "content_changes_requested",
         title: `Changes requested: ${post.title}`,
-        body: `${post.clientName} · cycle ${cycle} of ${limit}`,
+        body: `${post.clientName} · revision ${cycle}${isExtra ? " (chargeable extra)" : ` of ${limit}`}`,
         link: `/content/${input.id}`,
     });
 
-    return { post: updated };
+    return { post: updated, billable: isExtra };
 }
 
 /** Client approves the current draft — terminal for the review loop. */
@@ -481,6 +488,7 @@ export async function createContentRequest(input: {
     references?: string[];
     planMonth?: string;
     scheduledFor?: string;
+    billable?: boolean;
 }): Promise<ContentPost> {
     const month = input.planMonth || new Date().toISOString().slice(0, 7);
     const post = await createContentPost({
@@ -493,6 +501,7 @@ export async function createContentRequest(input: {
         references: input.references ?? [],
         planMonth: month,
         origin: "request",
+        billable: input.billable ?? false,
     });
 
     await notify({

@@ -129,6 +129,10 @@ export type ContentPost = {
     visualHeadline: string;
     visualIdea: string;
     copywriting: string;
+    /** This item is an extra (created beyond the client's monthly quota). */
+    billable: boolean;
+    /** # of revisions on this item that were beyond the client's limit. */
+    billableRevisions: number;
     // ---- Client review loop (Phase 2/3) -----------------------------------
     /** Client-approval state, orthogonal to `status`. */
     reviewStatus: ContentReviewStatus;
@@ -160,6 +164,8 @@ function normalizeContentPost(p: ContentPost): ContentPost {
         visualHeadline: p.visualHeadline ?? "",
         visualIdea: p.visualIdea ?? "",
         copywriting: p.copywriting ?? "",
+        billable: p.billable ?? false,
+        billableRevisions: p.billableRevisions ?? 0,
         reviewStatus: p.reviewStatus ?? "none",
         draftNumber: p.draftNumber ?? "",
         revisionsUsed: p.revisionsUsed ?? 0,
@@ -195,6 +201,7 @@ export async function createContentPost(input: {
     origin?: ContentOrigin;
     direction?: string;
     references?: string[];
+    billable?: boolean;
 }): Promise<ContentPost> {
     await ensureDir();
     const now = new Date().toISOString();
@@ -219,6 +226,8 @@ export async function createContentPost(input: {
         visualHeadline: "",
         visualIdea: "",
         copywriting: "",
+        billable: input.billable ?? false,
+        billableRevisions: 0,
         reviewStatus: "none",
         draftNumber: "",
         revisionsUsed: 0,
