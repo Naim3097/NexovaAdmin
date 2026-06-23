@@ -44,6 +44,35 @@ const ServerEnvSchema = z.object({
     TELEGRAM_BOT_TOKEN: z.string().optional(),
     TELEGRAM_TEAM_CHAT_ID: z.string().optional(),
 
+    /**
+     * Auth for the external agent API (`/api/agent`). See lib/agent/scopes.ts.
+     * Two ways to configure keys (both optional; unset → endpoint locked):
+     *
+     *  - AGENT_API_KEYS: JSON array of scoped keys, e.g.
+     *      [{"label":"scrum","key":"<32+ chars>","scopes":["read","write","outbound"]}]
+     *    Preferred. Scopes: read | write | outbound | destructive. The scrum
+     *    master gets read+write+outbound (full operational power) but NOT
+     *    destructive — deletions require a human-held admin key.
+     *
+     *  - AGENT_API_KEY (+ AGENT_API_SCOPES): a single key whose scopes come
+     *    from AGENT_API_SCOPES (comma list of read|write|outbound). Defaults to
+     *    "read" (least privilege) when AGENT_API_SCOPES is unset.
+     *
+     * Keys shorter than 24 chars are rejected (low entropy). Validation is done
+     * in scopes.ts (fail-closed) so a bad value locks the endpoint, not the app.
+     */
+    AGENT_API_KEYS: z.string().optional(),
+    AGENT_API_KEY: z.string().optional(),
+    AGENT_API_SCOPES: z.string().optional(),
+    /** Comma list of tools the single key may NOT call (e.g. "email.*"). */
+    AGENT_API_DENY: z.string().optional(),
+    /**
+     * Set to "1" only when the app sits behind a trusted proxy/LB that rewrites
+     * `x-forwarded-for`. Then the agent API's brute-force throttle keys on the
+     * client IP; otherwise it uses a single global bucket (un-spoofable).
+     */
+    AGENT_TRUST_PROXY: z.string().optional(),
+
     CALCOM_WEBHOOK_SECRET: z.string().optional(),
 
     NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),

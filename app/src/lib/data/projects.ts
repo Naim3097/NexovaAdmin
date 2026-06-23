@@ -264,6 +264,21 @@ export async function toggleProjectTask(
     return updateProject(id, { tasks });
 }
 
+export async function setProjectTaskAssignee(
+    id: string,
+    taskId: string,
+    assignee: string,
+): Promise<Project> {
+    const existing = await getProjectById(id);
+    if (!existing) throw new Error(`Project ${id} not found`);
+    if (!existing.tasks.some((t) => t.id === taskId))
+        throw new Error(`Task ${taskId} not found on project ${id}`);
+    const tasks = existing.tasks.map((t) =>
+        t.id === taskId ? { ...t, assignee } : t,
+    );
+    return updateProject(id, { tasks });
+}
+
 export async function deleteProjectTask(
     id: string,
     taskId: string,

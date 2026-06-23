@@ -14,6 +14,10 @@ function isPublic(pathname: string) {
     if (PUBLIC_PATHS.includes(pathname)) return true;
     // Webhooks are signature-verified inside each route; bypass auth gate.
     if (pathname.startsWith("/api/webhooks/")) return true;
+    // The agent API authenticates with its own `x-api-key` (scopes + rate limit)
+    // inside the route — it must bypass the session-login gate, otherwise every
+    // call is redirected to /login before the key is ever checked.
+    if (pathname === "/api/agent" || pathname.startsWith("/api/agent/")) return true;
     if (pathname.startsWith("/api/public/")) return true;
     if (pathname.startsWith("/api/dev-files/")) return true;
     // /api/ai/* /api/email/* /api/telegram/* are dev-only (routes 404 in prod)
