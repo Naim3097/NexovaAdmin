@@ -64,6 +64,8 @@ export const TOOL_SCOPES: Record<string, Scope> = {
     "projects.assignStage": "write",
     "content.generatePlan": "write",
     "content.createRequest": "write",
+    "invoices.create": "write",
+    "team.create": "write",
     // --- outbound / external effects ---------------------------------------
     "ai.summariseSubmission": "outbound",
     "payments.createInvoiceLink": "outbound",
