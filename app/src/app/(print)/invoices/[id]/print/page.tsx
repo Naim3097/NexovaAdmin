@@ -82,7 +82,7 @@ export default async function InvoicePrintPage({
             <div className="mx-auto max-w-3xl bg-white p-8 text-sm text-black md:p-12">
                 {/* Header */}
                 <div className="flex items-start justify-between gap-6 border-b pb-6">
-                    <div>
+                    <div className="min-w-0">
                         {logo ? (
                             <>
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -119,19 +119,21 @@ export default async function InvoicePrintPage({
                             </p>
                         ) : null}
                     </div>
-                    <div className="text-right">
+                    <div className="shrink-0 text-right">
                         <p className="text-xs uppercase tracking-wide text-neutral-500">
                             Invoice
                         </p>
-                        <p className="text-xl font-semibold">{inv.number}</p>
-                        <p className="mt-2 text-xs text-neutral-600">
+                        <p className="whitespace-nowrap text-xl font-semibold">
+                            {inv.number}
+                        </p>
+                        <p className="mt-2 whitespace-nowrap text-xs text-neutral-600">
                             Issue date: {fmtDate(inv.issueDate)}
                         </p>
-                        <p className="text-xs text-neutral-600">
+                        <p className="whitespace-nowrap text-xs text-neutral-600">
                             Due date: {fmtDate(inv.dueDate)}
                         </p>
                         {inv.paidAt ? (
-                            <p className="mt-1 text-xs font-medium text-emerald-700">
+                            <p className="mt-1 whitespace-nowrap text-xs font-medium text-emerald-700">
                                 PAID {fmtDate(inv.paidAt.slice(0, 10))}
                             </p>
                         ) : null}
@@ -208,7 +210,7 @@ export default async function InvoicePrintPage({
                                         <td className="py-2 pr-4 text-right">
                                             {it.quantity}
                                         </td>
-                                        <td className="py-2 pr-4 text-right">
+                                        <td className="whitespace-nowrap py-2 pr-4 text-right">
                                             {it.unitPriceMyr.toLocaleString(
                                                 undefined,
                                                 {
@@ -217,7 +219,7 @@ export default async function InvoicePrintPage({
                                                 },
                                             )}
                                         </td>
-                                        <td className="py-2 text-right">
+                                        <td className="whitespace-nowrap py-2 text-right">
                                             {fmtMyr(line)}
                                         </td>
                                     </tr>
@@ -233,7 +235,7 @@ export default async function InvoicePrintPage({
                             >
                                 Subtotal
                             </td>
-                            <td className="py-2 text-right">
+                            <td className="whitespace-nowrap py-2 text-right">
                                 {fmtMyr(totals.subtotal)}
                             </td>
                         </tr>
@@ -244,7 +246,7 @@ export default async function InvoicePrintPage({
                             >
                                 Tax ({inv.taxRatePct}%)
                             </td>
-                            <td className="py-1 text-right">
+                            <td className="whitespace-nowrap py-1 text-right">
                                 {fmtMyr(totals.tax)}
                             </td>
                         </tr>
@@ -255,7 +257,7 @@ export default async function InvoicePrintPage({
                             >
                                 Total
                             </td>
-                            <td className="py-2 text-right text-base font-semibold">
+                            <td className="whitespace-nowrap py-2 text-right text-base font-semibold">
                                 {fmtMyr(totals.total)}
                             </td>
                         </tr>

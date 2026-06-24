@@ -85,7 +85,7 @@ export default async function QuotationPrintPage({
             <div className="mx-auto max-w-3xl bg-white p-8 text-sm text-black md:p-12">
                 {/* Header */}
                 <div className="flex items-start justify-between gap-6 border-b pb-6">
-                    <div>
+                    <div className="min-w-0">
                         {logo ? (
                             <>
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -122,15 +122,17 @@ export default async function QuotationPrintPage({
                             </p>
                         ) : null}
                     </div>
-                    <div className="text-right">
+                    <div className="shrink-0 text-right">
                         <p className="text-xs uppercase tracking-wide text-neutral-500">
                             Quotation
                         </p>
-                        <p className="text-xl font-semibold">{quote.number}</p>
-                        <p className="mt-2 text-xs text-neutral-600">
+                        <p className="whitespace-nowrap text-xl font-semibold">
+                            {quote.number}
+                        </p>
+                        <p className="mt-2 whitespace-nowrap text-xs text-neutral-600">
                             Issue date: {fmtDate(quote.issueDate)}
                         </p>
-                        <p className="text-xs text-neutral-600">
+                        <p className="whitespace-nowrap text-xs text-neutral-600">
                             Valid until: {fmtDate(quote.validUntil)}
                         </p>
                     </div>
@@ -215,7 +217,7 @@ export default async function QuotationPrintPage({
                                         <td className="py-2 pr-4 text-right">
                                             {it.quantity}
                                         </td>
-                                        <td className="py-2 pr-4 text-right">
+                                        <td className="whitespace-nowrap py-2 pr-4 text-right">
                                             {it.unitPriceMyr.toLocaleString(
                                                 undefined,
                                                 {
@@ -224,7 +226,7 @@ export default async function QuotationPrintPage({
                                                 },
                                             )}
                                         </td>
-                                        <td className="py-2 text-right">
+                                        <td className="whitespace-nowrap py-2 text-right">
                                             {fmtMyr(line)}
                                         </td>
                                     </tr>
@@ -240,7 +242,7 @@ export default async function QuotationPrintPage({
                             >
                                 Subtotal
                             </td>
-                            <td className="py-2 text-right">
+                            <td className="whitespace-nowrap py-2 text-right text-neutral-600">
                                 {fmtMyr(totals.subtotal)}
                             </td>
                         </tr>
@@ -251,7 +253,7 @@ export default async function QuotationPrintPage({
                             >
                                 Tax ({quote.taxRatePct}%)
                             </td>
-                            <td className="py-1 text-right">
+                            <td className="whitespace-nowrap py-1 text-right text-neutral-600">
                                 {fmtMyr(totals.tax)}
                             </td>
                         </tr>
@@ -262,7 +264,7 @@ export default async function QuotationPrintPage({
                             >
                                 Total
                             </td>
-                            <td className="py-2 text-right text-base font-semibold">
+                            <td className="whitespace-nowrap py-2 text-right text-base font-semibold">
                                 {fmtMyr(totals.total)}
                             </td>
                         </tr>
@@ -343,14 +345,14 @@ export default async function QuotationPrintPage({
 
                 {/* Acceptance / signature block */}
                 {quote.showAcceptance ? (
-                    <div className="avoid-break mt-10 border-t pt-6">
+                    <div className="avoid-break mt-8 border-t pt-4">
                         <p className="text-xs uppercase tracking-wide text-neutral-500">
                             Acceptance
                         </p>
-                        <p className="mt-2 text-sm text-neutral-700">
+                        <p className="mt-1 text-xs text-neutral-600">
                             Accepted by, for and on behalf of the client:
                         </p>
-                        <div className="mt-6 space-y-6 text-sm text-neutral-800">
+                        <div className="mt-3 space-y-3.5 text-sm text-neutral-800">
                             {[
                                 "Name",
                                 "Designation",
@@ -360,10 +362,10 @@ export default async function QuotationPrintPage({
                             ].map((label) => (
                                 <div
                                     key={label}
-                                    className="flex items-end gap-3"
+                                    className="flex items-end gap-2"
                                 >
-                                    <span className="whitespace-nowrap">
-                                        {label}:
+                                    <span className="w-44 shrink-0 text-xs text-neutral-600">
+                                        {label}
                                     </span>
                                     <span className="flex-1 border-b border-dotted border-neutral-400">
                                         &nbsp;
