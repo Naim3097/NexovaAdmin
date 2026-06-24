@@ -9,6 +9,7 @@ import {
     KanbanSquare,
     Megaphone,
     FileText,
+    ScrollText,
     Receipt,
     Settings,
     ClipboardList,
@@ -56,7 +57,10 @@ const SECTIONS: { label: string; items: Item[] }[] = [
     },
     {
         label: "Finance",
-        items: [{ href: "/invoices", label: "Invoices", icon: Receipt }],
+        items: [
+            { href: "/quotes", label: "Quotations", icon: ScrollText },
+            { href: "/invoices", label: "Invoices", icon: Receipt },
+        ],
     },
     {
         label: "Workspace",

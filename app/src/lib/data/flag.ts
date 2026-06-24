@@ -23,6 +23,7 @@ export const ENTITY_NAMES = [
     "projects",
     "workflows",
     "invoices",
+    "quotations",
     "campaigns",
     "content",
     "seo",

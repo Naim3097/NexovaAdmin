@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
-    INVOICE_STATUSES,
     computeTotals,
-    getInvoiceById,
-} from "@/lib/data/invoices";
+    getQuotationById,
+    type QuotationStatus,
+} from "@/lib/data/quotations";
+import { getInvoiceById } from "@/lib/data/invoices";
 import { listProjects } from "@/lib/data/projects";
 import { listServices } from "@/lib/data/services";
 import {
@@ -12,6 +13,8 @@ import {
     getAgencyProfile,
     resolveDocumentLogo,
 } from "@/lib/data/agency";
+import { LineItemForm } from "@/components/line-item-form";
+import { DocumentOverrideFields } from "@/components/document-override-fields";
 import { Badge } from "@/components/ui/badge";
 import { HistoryPanel } from "@/components/history-panel";
 import { Button } from "@/components/ui/button";
@@ -26,18 +29,25 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import {
-    addInvoiceItemAction,
-    deleteInvoiceAction,
-    deleteInvoiceItemAction,
-    setInvoiceStatusAction,
-    updateInvoiceAction,
-} from "@/lib/invoices/actions";
-import { LineItemForm } from "@/components/line-item-form";
-import { DocumentOverrideFields } from "@/components/document-override-fields";
-import { PaymentSection } from "./payment-section";
-import { ManualPaymentForm } from "./manual-payment-form";
+    addQuotationItemAction,
+    convertQuotationToInvoiceAction,
+    deleteQuotationAction,
+    deleteQuotationItemAction,
+    setQuotationStatusAction,
+    updateQuotationAction,
+} from "@/lib/quotations/actions";
 
 export const dynamic = "force-dynamic";
+
+// Statuses the user can move to by hand. "converted" is set only by the
+// convert action and is terminal, so it's excluded from the manual pills.
+const MANUAL_STATUSES: QuotationStatus[] = [
+    "draft",
+    "sent",
+    "accepted",
+    "declined",
+    "expired",
+];
 
 function fmtMyr(n: number) {
     return `MYR ${n.toLocaleString(undefined, {
@@ -46,14 +56,14 @@ function fmtMyr(n: number) {
     })}`;
 }
 
-export default async function InvoiceDetailPage({
+export default async function QuotationDetailPage({
     params,
 }: {
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    const inv = await getInvoiceById(id);
-    if (!inv) notFound();
+    const quote = await getQuotationById(id);
+    if (!quote) notFound();
     const [projects, services, agency] = await Promise.all([
         listProjects(),
         listServices(),
@@ -67,32 +77,34 @@ export default async function InvoiceDetailPage({
             details: s.details,
             defaultPrice: s.defaultPrice,
         }));
-    const totals = computeTotals(inv);
+    const totals = computeTotals(quote);
     const today = new Date().toISOString().slice(0, 10);
-    const isOverdue = inv.status === "sent" && inv.dueDate < today;
+    const isExpired = quote.status === "sent" && quote.validUntil < today;
     const agencyAddress = formatAddress(agency);
+    const isConverted = quote.status === "converted";
+    const convertedInvoice = quote.convertedInvoiceId
+        ? await getInvoiceById(quote.convertedInvoiceId)
+        : null;
 
     return (
         <div className="space-y-6">
             <div>
                 <Link
-                    href="/invoices"
+                    href="/quotes"
                     className="text-sm text-muted-foreground hover:underline"
                 >
-                    Back to invoices
+                    Back to quotations
                 </Link>
                 <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                     <h1 className="text-2xl font-semibold md:text-3xl">
-                        {inv.number}
+                        {quote.number}
                     </h1>
                     <div className="flex items-center gap-2">
-                        <Badge
-                            variant={isOverdue ? "destructive" : "secondary"}
-                        >
-                            {isOverdue ? "overdue" : inv.status}
+                        <Badge variant={isExpired ? "outline" : "secondary"}>
+                            {isExpired ? "expired" : quote.status}
                         </Badge>
                         <Link
-                            href={`/invoices/${inv.id}/print`}
+                            href={`/quotes/${quote.id}/print`}
                             target="_blank"
                             rel="noopener"
                             className="text-sm text-muted-foreground hover:underline"
@@ -102,12 +114,12 @@ export default async function InvoiceDetailPage({
                     </div>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                    {inv.clientName}
-                    {inv.projectId ? (
+                    {quote.clientName}
+                    {quote.projectId ? (
                         <>
                             {" · "}
                             <Link
-                                href={`/projects/${inv.projectId}`}
+                                href={`/projects/${quote.projectId}`}
                                 className="underline"
                             >
                                 project
@@ -117,60 +129,80 @@ export default async function InvoiceDetailPage({
                 </p>
             </div>
 
-            {/* Status pills */}
+            {/* Convert to invoice — the QuickBooks "Estimate → Invoice" move */}
             <section className="rounded-lg border bg-card p-4 md:p-6">
-                <h2 className="text-sm font-medium">Move to status</h2>
-                <div className="mt-3 flex flex-wrap gap-2">
-                    {INVOICE_STATUSES.map((s) => (
-                        <form key={s} action={setInvoiceStatusAction}>
-                            <input type="hidden" name="id" value={inv.id} />
-                            <input type="hidden" name="status" value={s} />
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h2 className="text-sm font-medium">Convert to invoice</h2>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                            {isConverted
+                                ? "This quotation has been converted."
+                                : "Copies the client, tax rate, and all line items into a new draft invoice."}
+                        </p>
+                    </div>
+                    {isConverted && convertedInvoice ? (
+                        <Link
+                            href={`/invoices/${convertedInvoice.id}`}
+                            className="text-sm font-medium text-primary hover:underline"
+                        >
+                            View invoice {convertedInvoice.number} →
+                        </Link>
+                    ) : (
+                        <form action={convertQuotationToInvoiceAction}>
+                            <input type="hidden" name="id" value={quote.id} />
                             <Button
                                 type="submit"
-                                size="sm"
-                                variant={inv.status === s ? "default" : "outline"}
-                                disabled={inv.status === s}
+                                disabled={quote.items.length === 0}
                             >
-                                {s}
+                                Convert to invoice
                             </Button>
                         </form>
-                    ))}
+                    )}
                 </div>
-                {inv.paidAt ? (
-                    <p className="mt-3 text-xs text-muted-foreground">
-                        Paid on {new Date(inv.paidAt).toLocaleString()}
-                    </p>
-                ) : null}
             </section>
 
-            {/* Manual payment (bank transfer / cheque / cash) — primary path for big clients */}
-            <ManualPaymentForm
-                invoiceId={inv.id}
-                invoiceTotal={totals.total}
-                isPaid={inv.status === "paid"}
-            />
-
-            {/* Online payment link (LeanX / FPX) — optional, for clients who want it */}
-            <PaymentSection
-                invoiceId={inv.id}
-                paymentLink={inv.paymentLink}
-                paymentExternalId={inv.paymentExternalId}
-                paymentLinkCreatedAt={inv.paymentLinkCreatedAt}
-                clientName={inv.clientName}
-            />
-
+            {/* Status pills */}
+            {!isConverted ? (
+                <section className="rounded-lg border bg-card p-4 md:p-6">
+                    <h2 className="text-sm font-medium">Move to status</h2>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                        {MANUAL_STATUSES.map((s) => (
+                            <form key={s} action={setQuotationStatusAction}>
+                                <input type="hidden" name="id" value={quote.id} />
+                                <input type="hidden" name="status" value={s} />
+                                <Button
+                                    type="submit"
+                                    size="sm"
+                                    variant={
+                                        quote.status === s ? "default" : "outline"
+                                    }
+                                    disabled={quote.status === s}
+                                >
+                                    {s}
+                                </Button>
+                            </form>
+                        ))}
+                    </div>
+                    {quote.acceptedAt ? (
+                        <p className="mt-3 text-xs text-muted-foreground">
+                            Accepted on{" "}
+                            {new Date(quote.acceptedAt).toLocaleString()}
+                        </p>
+                    ) : null}
+                </section>
+            ) : null}
 
             {/* Line items */}
             <section className="rounded-lg border bg-card p-4 md:p-6">
                 <h2 className="text-sm font-medium">Line items</h2>
 
                 <LineItemForm
-                    docId={inv.id}
+                    docId={quote.id}
                     services={serviceOptions}
-                    action={addInvoiceItemAction}
+                    action={addQuotationItemAction}
                 />
 
-                {inv.items.length === 0 ? (
+                {quote.items.length === 0 ? (
                     <p className="mt-4 text-sm text-muted-foreground">
                         No line items yet.
                     </p>
@@ -187,7 +219,7 @@ export default async function InvoiceDetailPage({
                                 </tr>
                             </thead>
                             <tbody className="divide-y">
-                                {inv.items.map((it) => {
+                                {quote.items.map((it) => {
                                     const line = it.quantity * it.unitPriceMyr;
                                     const bullets = it.details
                                         .split("\n")
@@ -216,13 +248,15 @@ export default async function InvoiceDetailPage({
                                             </td>
                                             <td className="py-2 text-right">
                                                 <form
-                                                    action={deleteInvoiceItemAction}
+                                                    action={
+                                                        deleteQuotationItemAction
+                                                    }
                                                     className="inline"
                                                 >
                                                     <input
                                                         type="hidden"
                                                         name="id"
-                                                        value={inv.id}
+                                                        value={quote.id}
                                                     />
                                                     <input
                                                         type="hidden"
@@ -255,7 +289,7 @@ export default async function InvoiceDetailPage({
                                 </tr>
                                 <tr>
                                     <td colSpan={3} className="py-1 text-right text-muted-foreground">
-                                        Tax ({inv.taxRatePct}%)
+                                        Tax ({quote.taxRatePct}%)
                                     </td>
                                     <td className="py-1 text-right">
                                         {fmtMyr(totals.tax)}
@@ -279,17 +313,17 @@ export default async function InvoiceDetailPage({
 
             {/* Edit details */}
             <form
-                action={updateInvoiceAction}
+                action={updateQuotationAction}
                 className="space-y-4 rounded-lg border bg-card p-4 md:p-6"
             >
-                <input type="hidden" name="id" value={inv.id} />
+                <input type="hidden" name="id" value={quote.id} />
                 <h2 className="text-sm font-medium">Details</h2>
                 <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-1.5">
                         <Label className="text-sm">Client</Label>
                         <Input
                             name="clientName"
-                            defaultValue={inv.clientName}
+                            defaultValue={quote.clientName}
                             required
                         />
                     </div>
@@ -297,7 +331,7 @@ export default async function InvoiceDetailPage({
                         <Label className="text-sm">Project</Label>
                         <Select
                             name="projectId"
-                            defaultValue={inv.projectId ?? "none"}
+                            defaultValue={quote.projectId ?? "none"}
                         >
                             <SelectTrigger className="h-10">
                                 <SelectValue />
@@ -317,15 +351,15 @@ export default async function InvoiceDetailPage({
                         <Input
                             name="issueDate"
                             type="date"
-                            defaultValue={inv.issueDate}
+                            defaultValue={quote.issueDate}
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <Label className="text-sm">Due date</Label>
+                        <Label className="text-sm">Valid until</Label>
                         <Input
-                            name="dueDate"
+                            name="validUntil"
                             type="date"
-                            defaultValue={inv.dueDate}
+                            defaultValue={quote.validUntil}
                         />
                     </div>
                     <div className="space-y-1.5">
@@ -336,26 +370,26 @@ export default async function InvoiceDetailPage({
                             min={0}
                             max={100}
                             step={0.5}
-                            defaultValue={inv.taxRatePct}
+                            defaultValue={quote.taxRatePct}
                         />
                     </div>
                 </div>
                 <div className="space-y-1.5">
-                    <Label className="text-sm">Notes (visible on invoice)</Label>
-                    <Textarea name="notes" defaultValue={inv.notes} rows={3} />
+                    <Label className="text-sm">Notes (visible on quotation)</Label>
+                    <Textarea name="notes" defaultValue={quote.notes} rows={3} />
                 </div>
 
                 <div className="border-t pt-4">
                     <h3 className="mb-3 text-sm font-medium">
-                        Bill to · logo · payment
+                        Prepared for · logo · payment
                     </h3>
                     <div className="space-y-4">
                         <DocumentOverrideFields
-                            billToAddress={inv.billToAddress}
-                            paymentDetails={inv.paymentDetails}
-                            logoChoice={inv.logoChoice}
+                            billToAddress={quote.billToAddress}
+                            paymentDetails={quote.paymentDetails}
+                            logoChoice={quote.logoChoice}
                             logos={agency.logos}
-                            addressLabel="Bill to — address"
+                            addressLabel="Prepared for — address"
                         />
                     </div>
                 </div>
@@ -366,26 +400,26 @@ export default async function InvoiceDetailPage({
             </form>
 
             <section className="flex items-center justify-end rounded-lg border bg-card p-4 md:p-6">
-                <form action={deleteInvoiceAction}>
-                    <input type="hidden" name="id" value={inv.id} />
+                <form action={deleteQuotationAction}>
+                    <input type="hidden" name="id" value={quote.id} />
                     <Button type="submit" variant="destructive">
-                        Delete invoice
+                        Delete quotation
                     </Button>
                 </form>
             </section>
 
-            {/* Issuer / payment / footer — pulled from agency profile */}
+            {/* Issuer / footer — pulled from agency profile */}
             <section className="rounded-lg border bg-card p-4 text-sm md:p-6">
-                <div className="grid gap-6 md:grid-cols-3">
+                <div className="grid gap-6 md:grid-cols-2">
                     <div>
                         <h3 className="text-xs font-medium uppercase text-muted-foreground">
                             Issued by
                         </h3>
-                        {resolveDocumentLogo(inv.logoChoice, agency) ? (
+                        {resolveDocumentLogo(quote.logoChoice, agency) ? (
                             <>
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
-                                    src={resolveDocumentLogo(inv.logoChoice, agency)}
+                                    src={resolveDocumentLogo(quote.logoChoice, agency)}
                                     alt="Logo"
                                     className="mt-2 h-10 w-auto object-contain"
                                 />
@@ -409,42 +443,13 @@ export default async function InvoiceDetailPage({
                                 {agencyAddress}
                             </p>
                         ) : null}
-                        {(agency.email || agency.phone) ? (
+                        {agency.email || agency.phone ? (
                             <p className="mt-2 text-xs text-muted-foreground">
                                 {[agency.email, agency.phone]
                                     .filter(Boolean)
                                     .join(" · ")}
                             </p>
                         ) : null}
-                    </div>
-                    <div>
-                        <h3 className="text-xs font-medium uppercase text-muted-foreground">
-                            Payment
-                        </h3>
-                        {agency.bankName ||
-                            agency.bankAccountName ||
-                            agency.bankAccountNo ? (
-                            <>
-                                <p className="mt-2">{agency.bankName}</p>
-                                <p className="text-xs text-muted-foreground">
-                                    {agency.bankAccountName}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                    {agency.bankAccountNo}
-                                </p>
-                            </>
-                        ) : (
-                            <p className="mt-2 text-xs text-muted-foreground">
-                                No bank details set.{" "}
-                                <Link
-                                    href="/settings/agency"
-                                    className="underline"
-                                >
-                                    Add in agency profile
-                                </Link>
-                                .
-                            </p>
-                        )}
                     </div>
                     <div>
                         <h3 className="text-xs font-medium uppercase text-muted-foreground">
@@ -457,11 +462,11 @@ export default async function InvoiceDetailPage({
                 </div>
             </section>
 
-            <HistoryPanel entity="invoice" entityId={inv.id} />
+            <HistoryPanel entity="quotation" entityId={quote.id} />
 
             <p className="text-xs text-muted-foreground">
-                Created {new Date(inv.createdAt).toLocaleString()} · Last updated{" "}
-                {new Date(inv.updatedAt).toLocaleString()}
+                Created {new Date(quote.createdAt).toLocaleString()} · Last updated{" "}
+                {new Date(quote.updatedAt).toLocaleString()}
             </p>
         </div>
     );

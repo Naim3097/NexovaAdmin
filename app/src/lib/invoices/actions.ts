@@ -73,6 +73,9 @@ export async function updateInvoiceAction(formData: FormData) {
         dueDate: String(formData.get("dueDate") ?? "").trim(),
         taxRatePct: Number.isFinite(taxRatePct) ? taxRatePct : 0,
         notes: String(formData.get("notes") ?? "").trim(),
+        billToAddress: String(formData.get("billToAddress") ?? "").trim(),
+        paymentDetails: String(formData.get("paymentDetails") ?? "").trim(),
+        logoChoice: String(formData.get("logoChoice") ?? "").trim(),
     });
     if (before) {
         const after = (await getInvoiceById(id)) ?? before;
@@ -160,10 +163,11 @@ export async function deleteInvoiceAction(formData: FormData) {
 export async function addInvoiceItemAction(formData: FormData) {
     const id = String(formData.get("id") ?? "");
     const description = String(formData.get("description") ?? "").trim();
+    const details = String(formData.get("details") ?? "").trim();
     const quantity = Number(formData.get("quantity") ?? 1) || 1;
     const unitPriceMyr = Number(formData.get("unitPriceMyr") ?? 0) || 0;
     if (!id || !description) return;
-    await addInvoiceItem(id, { description, quantity, unitPriceMyr });
+    await addInvoiceItem(id, { description, details, quantity, unitPriceMyr });
     revalidatePath(`/invoices/${id}`);
     revalidatePath("/invoices");
     revalidatePath("/dashboard");

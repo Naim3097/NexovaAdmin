@@ -25,6 +25,8 @@ export type InvoiceStatus = (typeof INVOICE_STATUSES)[number];
 export type InvoiceItem = {
     id: string;
     description: string;
+    /** Optional sub-points, one bullet per line. Rendered under the description. */
+    details: string;
     quantity: number;
     unitPriceMyr: number;
 };
@@ -42,6 +44,12 @@ export type Invoice = {
     /** Tax rate in percent, e.g. 6 for 6% SST. */
     taxRatePct: number;
     notes: string;
+    /** Per-invoice "Bill to" address (under the client name). Empty = none. */
+    billToAddress: string;
+    /** Free-text payment block; when set, overrides the agency bank details. */
+    paymentDetails: string;
+    /** Logo: "" = agency default · "none" = hide · else a logo id. */
+    logoChoice: string;
     createdAt: string;
     updatedAt: string;
     paidAt: string | null;
@@ -113,6 +121,9 @@ export async function createInvoice(input: {
         items: [],
         taxRatePct: input.taxRatePct ?? 6,
         notes: "",
+        billToAddress: "",
+        paymentDetails: "",
+        logoChoice: "",
         createdAt: now.toISOString(),
         updatedAt: now.toISOString(),
         paidAt: null,
@@ -189,13 +200,19 @@ export async function deleteInvoice(id: string): Promise<void> {
 
 export async function addInvoiceItem(
     id: string,
-    input: { description: string; quantity: number; unitPriceMyr: number },
+    input: {
+        description: string;
+        details?: string;
+        quantity: number;
+        unitPriceMyr: number;
+    },
 ): Promise<Invoice> {
     const existing = await getInvoiceById(id);
     if (!existing) throw new Error(`Invoice ${id} not found`);
     const item: InvoiceItem = {
         id: randomUUID(),
         description: input.description,
+        details: input.details ?? "",
         quantity: input.quantity,
         unitPriceMyr: input.unitPriceMyr,
     };

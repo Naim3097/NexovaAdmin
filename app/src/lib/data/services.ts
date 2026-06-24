@@ -27,6 +27,7 @@ function rowToService(row: ServiceRow): Service {
         unit: row.unit,
         defaultPrice: Number(row.default_price),
         description: row.description,
+        details: row.details ?? "",
         active: row.active,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
@@ -41,6 +42,7 @@ function serviceToInsert(s: Service): ServiceInsert {
         unit: s.unit,
         default_price: s.defaultPrice,
         description: s.description,
+        details: s.details,
         active: s.active,
         created_at: s.createdAt,
         updated_at: s.updatedAt,
@@ -55,6 +57,7 @@ function patchToUpdate(patch: UpdatePatch): ServiceUpdate {
     if (patch.defaultPrice !== undefined)
         out.default_price = patch.defaultPrice;
     if (patch.description !== undefined) out.description = patch.description;
+    if (patch.details !== undefined) out.details = patch.details;
     if (patch.active !== undefined) out.active = patch.active;
     if (patch.updatedAt !== undefined) out.updated_at = patch.updatedAt;
     return out;
@@ -66,6 +69,7 @@ export async function createService(input: {
     unit?: string;
     defaultPrice?: number;
     description?: string;
+    details?: string;
 }): Promise<Service> {
     if (!isSupabaseEnabled("services")) return devServices.createService(input);
     const now = new Date().toISOString();
@@ -76,6 +80,7 @@ export async function createService(input: {
         unit: input.unit ?? "project",
         defaultPrice: Math.max(0, Number(input.defaultPrice ?? 0)),
         description: input.description ?? "",
+        details: input.details ?? "",
         active: true,
         createdAt: now,
         updatedAt: now,

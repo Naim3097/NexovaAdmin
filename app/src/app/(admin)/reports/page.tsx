@@ -48,6 +48,8 @@ export default async function ReportsPage({
             leadsWon: acc.leadsWon + r.leadsWon,
             projectsCreated: acc.projectsCreated + r.projectsCreated,
             projectsDelivered: acc.projectsDelivered + r.projectsDelivered,
+            quotesSent: acc.quotesSent + r.quotesSent,
+            quotesAccepted: acc.quotesAccepted + r.quotesAccepted,
             invoicesIssued: acc.invoicesIssued + r.invoicesIssued,
             invoicesPaid: acc.invoicesPaid + r.invoicesPaid,
             billedMyr: acc.billedMyr + r.billedMyr,
@@ -59,6 +61,8 @@ export default async function ReportsPage({
             leadsWon: 0,
             projectsCreated: 0,
             projectsDelivered: 0,
+            quotesSent: 0,
+            quotesAccepted: 0,
             invoicesIssued: 0,
             invoicesPaid: 0,
             billedMyr: 0,
@@ -68,7 +72,13 @@ export default async function ReportsPage({
     );
 
     const downloads: Array<{
-        kind: "monthly" | "invoices" | "leads" | "projects" | "campaigns";
+        kind:
+            | "monthly"
+            | "quotations"
+            | "invoices"
+            | "leads"
+            | "projects"
+            | "campaigns";
         label: string;
         hint: string;
         href: string;
@@ -78,6 +88,12 @@ export default async function ReportsPage({
                 label: "Monthly summary",
                 hint: `12 rows for ${year} — counts + revenue + ad spend`,
                 href: `/reports/export?kind=monthly&year=${year}`,
+            },
+            {
+                kind: "quotations",
+                label: "Quotations",
+                hint: "All quotations with computed subtotal/tax/total",
+                href: "/reports/export?kind=quotations",
             },
             {
                 kind: "invoices",
@@ -165,6 +181,9 @@ export default async function ReportsPage({
                                         Projects (new / delivered)
                                     </th>
                                     <th className="py-2 pr-4 font-medium">
+                                        Quotes (sent / accepted)
+                                    </th>
+                                    <th className="py-2 pr-4 font-medium">
                                         Invoices (issued / paid)
                                     </th>
                                     <th className="py-2 pr-4 font-medium">
@@ -206,6 +225,10 @@ export default async function ReportsPage({
                                                 {r.projectsDelivered}
                                             </td>
                                             <td className="py-2 pr-4">
+                                                {r.quotesSent} /{" "}
+                                                {r.quotesAccepted}
+                                            </td>
+                                            <td className="py-2 pr-4">
                                                 {r.invoicesIssued} /{" "}
                                                 {r.invoicesPaid}
                                             </td>
@@ -232,6 +255,10 @@ export default async function ReportsPage({
                                     <td className="py-2 pr-4">
                                         {totals.projectsCreated} /{" "}
                                         {totals.projectsDelivered}
+                                    </td>
+                                    <td className="py-2 pr-4">
+                                        {totals.quotesSent} /{" "}
+                                        {totals.quotesAccepted}
                                     </td>
                                     <td className="py-2 pr-4">
                                         {totals.invoicesIssued} /{" "}

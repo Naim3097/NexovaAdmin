@@ -20,6 +20,7 @@ export const AUDIT_ENTITIES = [
     "lead",
     "project",
     "invoice",
+    "quotation",
     "campaign",
 ] as const;
 export type AuditEntity = (typeof AUDIT_ENTITIES)[number];

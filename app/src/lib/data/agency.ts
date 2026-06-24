@@ -11,9 +11,27 @@ import { isSupabaseEnabled } from "@/lib/data/flag";
 import * as devAgency from "@/lib/dev-store/agency";
 
 export { DEFAULT_PROFILE, formatAddress } from "@/lib/dev-store/agency";
-export type { AgencyProfile } from "@/lib/dev-store/agency";
+export type { AgencyProfile, BrandLogo } from "@/lib/dev-store/agency";
 
 type AgencyProfile = devAgency.AgencyProfile;
+
+/**
+ * Resolve a document's `logoChoice` to the data URL to actually render:
+ *   "" (or unknown id) → the agency's active logo
+ *   "none"             → no logo (empty string)
+ *   <logo id>          → that specific saved logo
+ */
+export function resolveDocumentLogo(
+    choice: string,
+    agency: AgencyProfile,
+): string {
+    if (choice === "none") return "";
+    if (choice) {
+        const found = agency.logos.find((l) => l.id === choice);
+        if (found) return found.dataUrl;
+    }
+    return agency.logoUrl;
+}
 
 type AgencyInsert = Database["public"]["Tables"]["agency_profile"]["Insert"];
 
@@ -39,6 +57,8 @@ function rowToProfile(row: AgencyProfileRow): AgencyProfile {
         bankAccountName: row.bank_account_name,
         bankAccountNo: row.bank_account_no,
         invoiceFooter: row.invoice_footer,
+        logoUrl: row.logo_url ?? "",
+        logos: Array.isArray(row.logos) ? row.logos : [],
         updatedAt: row.updated_at,
     };
 }
@@ -63,6 +83,8 @@ function profileToUpsert(p: AgencyProfile): AgencyInsert {
         bank_account_name: p.bankAccountName,
         bank_account_no: p.bankAccountNo,
         invoice_footer: p.invoiceFooter,
+        logo_url: p.logoUrl,
+        logos: p.logos,
         updated_at: p.updatedAt,
     };
 }

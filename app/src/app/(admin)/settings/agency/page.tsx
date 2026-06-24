@@ -3,8 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { getAgencyProfile } from "@/lib/data/agency";
-import { updateAgencyProfileAction } from "@/lib/agency/actions";
+import { LogoUploader } from "@/components/logo-uploader";
+import {
+    addAgencyLogoAction,
+    clearAgencyLogoAction,
+    deleteAgencyLogoAction,
+    selectAgencyLogoAction,
+    updateAgencyProfileAction,
+} from "@/lib/agency/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -219,6 +227,92 @@ export default async function AgencyProfilePage() {
                     <Button type="submit">Save profile</Button>
                 </div>
             </form>
+
+            {/* Branding / logo library */}
+            <section className="space-y-4 rounded-lg border bg-card p-4 md:p-6">
+                <div>
+                    <h2 className="text-sm font-medium">Logo</h2>
+                    <p className="text-xs text-muted-foreground">
+                        Upload one or more logos, then select which appears on
+                        your quotations and invoices (and their PDFs).
+                    </p>
+                </div>
+
+                <LogoUploader action={addAgencyLogoAction} />
+
+                {p.logos.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                        {p.logos.map((logo) => {
+                            const isActive = logo.dataUrl === p.logoUrl;
+                            return (
+                                <div
+                                    key={logo.id}
+                                    className={`flex flex-col gap-2 rounded-lg border p-3 ${
+                                        isActive
+                                            ? "border-primary ring-1 ring-primary/30"
+                                            : ""
+                                    }`}
+                                >
+                                    <div className="flex h-16 items-center justify-center rounded bg-white p-1">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                            src={logo.dataUrl}
+                                            alt={logo.name}
+                                            className="max-h-full max-w-full object-contain"
+                                        />
+                                    </div>
+                                    <div className="flex items-center justify-between gap-2">
+                                        <span className="truncate text-xs">
+                                            {logo.name}
+                                        </span>
+                                        {isActive ? (
+                                            <Badge variant="default">Active</Badge>
+                                        ) : null}
+                                    </div>
+                                    <div className="flex gap-1">
+                                        {!isActive ? (
+                                            <form action={selectAgencyLogoAction} className="flex-1">
+                                                <input type="hidden" name="logoId" value={logo.id} />
+                                                <Button
+                                                    type="submit"
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="h-7 w-full text-xs"
+                                                >
+                                                    Use
+                                                </Button>
+                                            </form>
+                                        ) : null}
+                                        <form action={deleteAgencyLogoAction}>
+                                            <input type="hidden" name="logoId" value={logo.id} />
+                                            <Button
+                                                type="submit"
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-7 text-xs text-muted-foreground"
+                                            >
+                                                Remove
+                                            </Button>
+                                        </form>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <p className="text-xs text-muted-foreground">
+                        No logos saved yet.
+                    </p>
+                )}
+
+                {p.logoUrl ? (
+                    <form action={clearAgencyLogoAction}>
+                        <Button type="submit" size="sm" variant="outline">
+                            Show no logo on documents
+                        </Button>
+                    </form>
+                ) : null}
+            </section>
         </div>
     );
 }

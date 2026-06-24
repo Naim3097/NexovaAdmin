@@ -12,6 +12,11 @@ import {
     type Invoice,
 } from "@/lib/data/invoices";
 import {
+    computeTotals as quoteTotals,
+    listQuotations,
+    type Quotation,
+} from "@/lib/data/quotations";
+import {
     listProjects,
     PROJECT_PHASES,
     type Project,
@@ -59,6 +64,9 @@ export type MonthlySummaryRow = {
     leadsWon: number;
     projectsCreated: number;
     projectsDelivered: number;
+    quotesSent: number; // quotes issued (status past draft) in month
+    quotesAccepted: number; // quotes accepted/converted in month
+    quotedMyr: number; // total MYR on quotes issued in month
     invoicesIssued: number;
     invoicesPaid: number;
     billedMyr: number; // total MYR on invoices issued in month
@@ -79,6 +87,9 @@ function emptyRow(month: string): MonthlySummaryRow {
         leadsWon: 0,
         projectsCreated: 0,
         projectsDelivered: 0,
+        quotesSent: 0,
+        quotesAccepted: 0,
+        quotedMyr: 0,
         invoicesIssued: 0,
         invoicesPaid: 0,
         billedMyr: 0,
@@ -94,10 +105,11 @@ function monthOf(iso: string | null | undefined): string {
 export async function buildMonthlySummary(
     year: number,
 ): Promise<MonthlySummaryRow[]> {
-    const [leads, projects, invoices, campaigns] = await Promise.all([
+    const [leads, projects, invoices, quotes, campaigns] = await Promise.all([
         listLeads(),
         listProjects(),
         listInvoices(),
+        listQuotations(),
         listCampaigns(),
     ]);
     const yearPrefix = String(year);
@@ -137,6 +149,18 @@ export async function buildMonthlySummary(
             });
         }
     }
+    for (const q of quotes) {
+        const totals = quoteTotals(q);
+        if (q.status !== "draft") {
+            bump(monthOf(q.issueDate), (r) => {
+                r.quotesSent++;
+                r.quotedMyr += totals.total;
+            });
+        }
+        if ((q.status === "accepted" || q.status === "converted") && q.acceptedAt) {
+            bump(monthOf(q.acceptedAt), (r) => r.quotesAccepted++);
+        }
+    }
     for (const c of campaigns) {
         for (const m of c.metrics) {
             bump(monthOf(m.date), (r) => {
@@ -148,6 +172,7 @@ export async function buildMonthlySummary(
     // Round currency to 2dp for stable CSV output
     return [...rows.values()].map((r) => ({
         ...r,
+        quotedMyr: +r.quotedMyr.toFixed(2),
         billedMyr: +r.billedMyr.toFixed(2),
         paidMyr: +r.paidMyr.toFixed(2),
         adSpendMyr: +r.adSpendMyr.toFixed(2),
@@ -176,6 +201,30 @@ export function invoicesToRows(
             totalMyr: t.total,
             projectId: i.projectId ?? "",
             createdAt: i.createdAt,
+        };
+    });
+}
+
+export function quotationsToRows(
+    quotes: Quotation[],
+): Array<Record<string, unknown>> {
+    return quotes.map((q) => {
+        const t = quoteTotals(q);
+        return {
+            number: q.number,
+            client: q.clientName,
+            status: q.status,
+            issueDate: q.issueDate,
+            validUntil: q.validUntil,
+            acceptedAt: q.acceptedAt ?? "",
+            convertedInvoiceId: q.convertedInvoiceId ?? "",
+            itemCount: q.items.length,
+            subtotalMyr: t.subtotal,
+            taxRatePct: q.taxRatePct,
+            taxMyr: t.tax,
+            totalMyr: t.total,
+            projectId: q.projectId ?? "",
+            createdAt: q.createdAt,
         };
     });
 }
@@ -254,6 +303,7 @@ export function campaignsToRows(
 
 export const REPORT_KINDS = [
     "monthly",
+    "quotations",
     "invoices",
     "leads",
     "projects",
@@ -270,6 +320,8 @@ export async function buildReportCsv(
             const year = opts.year ?? new Date().getFullYear();
             return toCsv(await buildMonthlySummary(year));
         }
+        case "quotations":
+            return toCsv(quotationsToRows(await listQuotations()));
         case "invoices":
             return toCsv(invoicesToRows(await listInvoices()));
         case "leads":

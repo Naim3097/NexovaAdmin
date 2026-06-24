@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { computeTotals } from "@/lib/data/invoices";
+import { computeTotals as quoteTotals } from "@/lib/data/quotations";
 import { totalsFor } from "@/lib/data/campaigns";
 import {
     listLeads,
     listSubmissions,
     listProjects,
     listInvoices,
+    listQuotations,
     listContentPosts,
     listCampaigns,
 } from "@/lib/data/reads";
@@ -15,12 +17,13 @@ import { listActivityFiltered } from "@/lib/activity";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-    const [leads, submissions, projects, invoices, content, campaigns, recentActivity] =
+    const [leads, submissions, projects, invoices, quotes, content, campaigns, recentActivity] =
         await Promise.all([
             listLeads(),
             listSubmissions(),
             listProjects(),
             listInvoices(),
+            listQuotations(),
             listContentPosts(),
             listCampaigns(),
             listActivityFiltered({ limit: 8 }),
@@ -51,6 +54,25 @@ export default async function DashboardPage() {
     const overdueCount = invoices.filter(
         (i) => i.status === "sent" && i.dueDate < today,
     ).length;
+
+    // Quotes awaiting a decision (sent, not past validity).
+    const quotesOutstanding = quotes
+        .filter((q) => q.status === "sent" && q.validUntil >= today)
+        .reduce((sum, q) => sum + quoteTotals(q).total, 0);
+
+    // A/R aging — bucket every open invoice by how far past its due date it is.
+    const MS_DAY = 24 * 60 * 60 * 1000;
+    const todayMs = Date.parse(today);
+    const aging = { current: 0, d1to30: 0, d31to60: 0, d60plus: 0 };
+    for (const i of invoices) {
+        if (i.status !== "sent" && i.status !== "overdue") continue;
+        const total = computeTotals(i).total;
+        const daysPastDue = Math.floor((todayMs - Date.parse(i.dueDate)) / MS_DAY);
+        if (daysPastDue <= 0) aging.current += total;
+        else if (daysPastDue <= 30) aging.d1to30 += total;
+        else if (daysPastDue <= 60) aging.d31to60 += total;
+        else aging.d60plus += total;
+    }
 
     // eslint-disable-next-line react-hooks/purity -- server component, runs per request
     const inSevenDays = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
@@ -105,6 +127,11 @@ export default async function DashboardPage() {
             label: "Onboardings open",
             value: String(draftOnboardings),
             href: "/onboarding",
+        },
+        {
+            label: "Quotes out (MYR)",
+            value: fmtMyr(quotesOutstanding),
+            href: "/quotes",
         },
         {
             label: "AR open (MYR)",
@@ -170,6 +197,56 @@ export default async function DashboardPage() {
                     </Link>
                 ))}
             </div>
+
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle>Accounts receivable aging</CardTitle>
+                    <Link
+                        href="/invoices"
+                        className="text-xs text-muted-foreground hover:underline"
+                    >
+                        View invoices
+                    </Link>
+                </CardHeader>
+                <CardContent>
+                    {arOpen === 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                            No open receivables — everything billed is paid. 🎉
+                        </p>
+                    ) : (
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                            {[
+                                { label: "Current", value: aging.current, tone: "" },
+                                { label: "1–30 days", value: aging.d1to30, tone: "" },
+                                {
+                                    label: "31–60 days",
+                                    value: aging.d31to60,
+                                    tone: "text-amber-600",
+                                },
+                                {
+                                    label: "60+ days",
+                                    value: aging.d60plus,
+                                    tone: "text-destructive",
+                                },
+                            ].map((b) => (
+                                <div
+                                    key={b.label}
+                                    className="rounded-lg border bg-card p-3"
+                                >
+                                    <p className="text-xs text-muted-foreground">
+                                        {b.label}
+                                    </p>
+                                    <p
+                                        className={`mt-1 text-lg font-semibold tabular-nums ${b.tone}`}
+                                    >
+                                        {fmtMyr(b.value)}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
 
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">

@@ -38,7 +38,9 @@ const ServerEnvSchema = z.object({
     ANTHROPIC_API_KEY: z.string().optional(),
     GEMINI_API_KEY: z.string().optional(),
 
-    N8N_WEBHOOK_BASE: z.string().url().optional(),
+    // Accept "" as well as a URL so the var can sit in .env.local as an empty
+    // placeholder (empty = unset; code treats it falsy) without failing Zod.
+    N8N_WEBHOOK_BASE: z.string().url().optional().or(z.literal("")),
     N8N_INBOUND_SECRET: z.string().optional(),
 
     TELEGRAM_BOT_TOKEN: z.string().optional(),
@@ -74,6 +76,15 @@ const ServerEnvSchema = z.object({
     AGENT_TRUST_PROXY: z.string().optional(),
 
     CALCOM_WEBHOOK_SECRET: z.string().optional(),
+
+    /**
+     * Shared secret for the public lead-intake endpoint (POST /api/public/leads).
+     * When set, callers must send it as `x-api-key` (or `Authorization: Bearer`).
+     * Recommended for the Nexova Digital website → IMS server-to-server forward.
+     * If unset, the endpoint still works (honeypot + rate-limit only) so dev
+     * doesn't break — but set it in production.
+     */
+    PUBLIC_LEADS_SECRET: z.string().optional(),
 
     NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),
     TURNSTILE_SECRET_KEY: z.string().optional(),

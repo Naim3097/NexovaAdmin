@@ -67,6 +67,13 @@ type Tbl<R> = {
     Relationships: [];
 };
 
+export type BrandLogoRow = {
+    id: string;
+    name: string;
+    /** base64 data URL (e.g. "data:image/png;base64,...") */
+    dataUrl: string;
+};
+
 export type AgencyProfileRow = {
     id: string;
     legal_name: string;
@@ -86,6 +93,8 @@ export type AgencyProfileRow = {
     bank_account_name: string;
     bank_account_no: string;
     invoice_footer: string;
+    logo_url: string;
+    logos: BrandLogoRow[];
     updated_at: string;
 };
 
@@ -96,6 +105,7 @@ export type ServiceRow = {
     unit: string;
     default_price: number;
     description: string;
+    details: string;
     active: boolean;
     created_at: string;
     updated_at: string;
@@ -221,6 +231,9 @@ export type InvoiceRow = {
     due_date: string;
     tax_rate_pct: number;
     notes: string;
+    bill_to_address: string;
+    payment_details: string;
+    logo_choice: string;
     created_at: string;
     updated_at: string;
     paid_at: string | null;
@@ -236,6 +249,36 @@ export type InvoiceItemRow = {
     id: string;
     invoice_id: string;
     description: string;
+    details: string;
+    quantity: number;
+    unit_price_myr: number;
+    sort_order: number;
+};
+
+export type QuotationRow = {
+    id: string;
+    number: string;
+    client_name: string;
+    project_id: string | null;
+    status: string;
+    issue_date: string;
+    valid_until: string;
+    tax_rate_pct: number;
+    notes: string;
+    bill_to_address: string;
+    payment_details: string;
+    logo_choice: string;
+    converted_invoice_id: string | null;
+    created_at: string;
+    updated_at: string;
+    accepted_at: string | null;
+};
+
+export type QuotationItemRow = {
+    id: string;
+    quotation_id: string;
+    description: string;
+    details: string;
     quantity: number;
     unit_price_myr: number;
     sort_order: number;
@@ -407,6 +450,8 @@ export type Database = {
             workflow_templates: Tbl<WorkflowTemplateRow>;
             invoices: Tbl<InvoiceRow>;
             invoice_items: Tbl<InvoiceItemRow>;
+            quotations: Tbl<QuotationRow>;
+            quotation_items: Tbl<QuotationItemRow>;
             campaigns: Tbl<CampaignRow>;
             campaign_metrics: Tbl<CampaignMetricRow>;
             content_posts: Tbl<ContentPostRow>;

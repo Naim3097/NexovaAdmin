@@ -28,6 +28,8 @@ export const NOTIFICATION_KINDS = [
     "content_draft_submitted",
     "content_changes_requested",
     "content_approved",
+    "quote_sent",
+    "quote_accepted",
     "system",
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];

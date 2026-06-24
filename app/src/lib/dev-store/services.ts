@@ -31,6 +31,8 @@ export type Service = {
     unit: string; // e.g. "month", "project", "hour"
     defaultPrice: number; // MYR
     description: string;
+    /** Default sub-points (one bullet per line) pre-filled when picked on a line. */
+    details: string;
     active: boolean;
     createdAt: string;
     updatedAt: string;
@@ -50,6 +52,7 @@ export async function createService(input: {
     unit?: string;
     defaultPrice?: number;
     description?: string;
+    details?: string;
 }): Promise<Service> {
     await ensureDir();
     const now = new Date().toISOString();
@@ -60,6 +63,7 @@ export async function createService(input: {
         unit: input.unit ?? "project",
         defaultPrice: Math.max(0, Number(input.defaultPrice ?? 0)),
         description: input.description ?? "",
+        details: input.details ?? "",
         active: true,
         createdAt: now,
         updatedAt: now,

@@ -4,6 +4,7 @@ import { SERVICE_CATEGORIES, getServiceById } from "@/lib/data/services";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
     Select,
     SelectContent,
@@ -84,6 +85,17 @@ export default async function ServiceDetailPage({
                 <div className="space-y-1.5">
                     <Label className="text-sm">Description</Label>
                     <Input name="description" defaultValue={s.description} />
+                </div>
+                <div className="space-y-1.5">
+                    <Label className="text-sm">
+                        Default sub-points (one per line)
+                    </Label>
+                    <Textarea
+                        name="details"
+                        rows={4}
+                        defaultValue={s.details}
+                        placeholder={"Pre-fills as bullets when this service is picked on a quote/invoice."}
+                    />
                 </div>
                 <label className="flex items-center gap-2 text-sm">
                     <input

@@ -41,6 +41,7 @@ function rowToItem(row: InvoiceItemRow): InvoiceItem {
     return {
         id: row.id,
         description: row.description,
+        details: row.details ?? "",
         quantity: Number(row.quantity),
         unitPriceMyr: Number(row.unit_price_myr),
     };
@@ -55,6 +56,7 @@ function itemToInsert(
         id: item.id || randomUUID(),
         invoice_id: invoiceId,
         description: item.description,
+        details: item.details ?? "",
         quantity: item.quantity,
         unit_price_myr: item.unitPriceMyr,
         sort_order: sortOrder,
@@ -76,6 +78,9 @@ function rowToInvoice(row: InvoiceRow, items: InvoiceItemRow[]): Invoice {
             .map(rowToItem),
         taxRatePct: Number(row.tax_rate_pct),
         notes: row.notes,
+        billToAddress: row.bill_to_address ?? "",
+        paymentDetails: row.payment_details ?? "",
+        logoChoice: row.logo_choice ?? "",
         createdAt: row.created_at,
         updatedAt: row.updated_at,
         paidAt: row.paid_at,
@@ -98,6 +103,9 @@ function invoiceToInsert(inv: Invoice): InvoiceInsert {
         due_date: inv.dueDate,
         tax_rate_pct: inv.taxRatePct,
         notes: inv.notes,
+        bill_to_address: inv.billToAddress,
+        payment_details: inv.paymentDetails,
+        logo_choice: inv.logoChoice,
         created_at: inv.createdAt,
         updated_at: inv.updatedAt,
         paid_at: inv.paidAt,
@@ -118,6 +126,9 @@ function patchToUpdate(patch: UpdatePatch): InvoiceUpdate {
     if (patch.dueDate !== undefined) out.due_date = patch.dueDate;
     if (patch.taxRatePct !== undefined) out.tax_rate_pct = patch.taxRatePct;
     if (patch.notes !== undefined) out.notes = patch.notes;
+    if (patch.billToAddress !== undefined) out.bill_to_address = patch.billToAddress;
+    if (patch.paymentDetails !== undefined) out.payment_details = patch.paymentDetails;
+    if (patch.logoChoice !== undefined) out.logo_choice = patch.logoChoice;
     if (patch.paidAt !== undefined) out.paid_at = patch.paidAt;
     if (patch.updatedAt !== undefined) out.updated_at = patch.updatedAt;
     if (patch.paymentProvider !== undefined) out.payment_provider = patch.paymentProvider;
@@ -178,6 +189,9 @@ export async function createInvoice(input: {
         items: [],
         taxRatePct: input.taxRatePct ?? 6,
         notes: "",
+        billToAddress: "",
+        paymentDetails: "",
+        logoChoice: "",
         createdAt: now.toISOString(),
         updatedAt: now.toISOString(),
         paidAt: null,
@@ -306,13 +320,19 @@ export async function deleteInvoice(id: string): Promise<void> {
 
 export async function addInvoiceItem(
     id: string,
-    input: { description: string; quantity: number; unitPriceMyr: number },
+    input: {
+        description: string;
+        details?: string;
+        quantity: number;
+        unitPriceMyr: number;
+    },
 ): Promise<Invoice> {
     const existing = await getInvoiceById(id);
     if (!existing) throw new Error(`Invoice ${id} not found`);
     const item: InvoiceItem = {
         id: randomUUID(),
         description: input.description,
+        details: input.details ?? "",
         quantity: input.quantity,
         unitPriceMyr: input.unitPriceMyr,
     };

@@ -114,6 +114,7 @@ export async function createMonthlyInvoiceAction(formData: FormData) {
     const items: {
         id: string;
         description: string;
+        details: string;
         quantity: number;
         unitPriceMyr: number;
     }[] = [];
@@ -121,6 +122,7 @@ export async function createMonthlyInvoiceAction(formData: FormData) {
     if (billing.retainer > 0) {
         items.push({
             id: "",
+            details: "",
             description: `${billing.packageName ? `${billing.packageName} ` : ""}monthly retainer — ${month}`,
             quantity: 1,
             unitPriceMyr: billing.retainer,
@@ -129,6 +131,7 @@ export async function createMonthlyInvoiceAction(formData: FormData) {
     if (extras.contentCount > 0) {
         items.push({
             id: "",
+            details: "",
             description: `Extra content beyond plan — ${month}`,
             quantity: extras.contentCount,
             unitPriceMyr: extras.contentPrice,
@@ -137,6 +140,7 @@ export async function createMonthlyInvoiceAction(formData: FormData) {
     if (extras.revisionCount > 0) {
         items.push({
             id: "",
+            details: "",
             description: `Extra revisions beyond limit — ${month}`,
             quantity: extras.revisionCount,
             unitPriceMyr: extras.revisionPrice,

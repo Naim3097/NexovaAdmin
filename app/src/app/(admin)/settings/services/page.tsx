@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
     Select,
     SelectContent,
@@ -91,6 +92,16 @@ export default async function SettingsServicesPage() {
                     <div className="space-y-1.5 md:col-span-2">
                         <Label className="text-sm">Description</Label>
                         <Input name="description" />
+                    </div>
+                    <div className="space-y-1.5 md:col-span-2">
+                        <Label className="text-sm">
+                            Default sub-points (one per line)
+                        </Label>
+                        <Textarea
+                            name="details"
+                            rows={3}
+                            placeholder={"Pre-fills as bullets when this service is picked on a quote/invoice.\nHomepage + 5 sub-pages\nMobile responsive"}
+                        />
                     </div>
                 </div>
                 <div className="flex justify-end">

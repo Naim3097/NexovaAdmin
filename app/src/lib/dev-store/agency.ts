@@ -13,6 +13,13 @@ import path from "node:path";
 const ROOT = path.join(process.cwd(), ".dev-data");
 const PROFILE_FILE = path.join(ROOT, "agency.json");
 
+export type BrandLogo = {
+    id: string;
+    name: string;
+    /** base64 data URL, e.g. "data:image/png;base64,..." */
+    dataUrl: string;
+};
+
 export type AgencyProfile = {
     legalName: string;
     displayName: string;
@@ -31,6 +38,10 @@ export type AgencyProfile = {
     bankAccountName: string;
     bankAccountNo: string;
     invoiceFooter: string;
+    /** Currently-selected logo (base64 data URL). Empty = no logo on documents. */
+    logoUrl: string;
+    /** Saved logo library to pick from. */
+    logos: BrandLogo[];
     updatedAt: string;
 };
 
@@ -53,6 +64,8 @@ export const DEFAULT_PROFILE: AgencyProfile = {
     bankAccountNo: "",
     invoiceFooter:
         "Thank you for your business. Payment due within 14 days of issue.",
+    logoUrl: "",
+    logos: [],
     updatedAt: new Date(0).toISOString(),
 };
 

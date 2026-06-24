@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { computeTotals, getInvoiceById } from "@/lib/data/invoices";
+import { computeTotals, getQuotationById } from "@/lib/data/quotations";
 import {
     formatAddress,
     getAgencyProfile,
     resolveDocumentLogo,
 } from "@/lib/data/agency";
-import { PrintButton } from "./print-button";
+import { PrintButton } from "@/app/(print)/invoices/[id]/print/print-button";
 
 export const dynamic = "force-dynamic";
 
@@ -26,19 +26,19 @@ function fmtDate(iso: string): string {
     });
 }
 
-export default async function InvoicePrintPage({
+export default async function QuotationPrintPage({
     params,
 }: {
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    const inv = await getInvoiceById(id);
-    if (!inv) notFound();
+    const quote = await getQuotationById(id);
+    if (!quote) notFound();
     const agency = await getAgencyProfile();
-    const totals = computeTotals(inv);
+    const totals = computeTotals(quote);
     const agencyAddress = formatAddress(agency);
-    const logo = resolveDocumentLogo(inv.logoChoice, agency);
-    const billToLines = inv.billToAddress
+    const logo = resolveDocumentLogo(quote.logoChoice, agency);
+    const preparedForLines = quote.billToAddress
         .split("\n")
         .map((l) => l.trim())
         .filter(Boolean);
@@ -51,16 +51,11 @@ export default async function InvoicePrintPage({
                     .no-print { display: none !important; }
                     body { background: white !important; }
                     @page { margin: 16mm; }
-                    /* Repeat the table header on every page; keep the totals
-                       block in normal flow (once, at the end). */
                     table { page-break-inside: auto; }
                     thead { display: table-header-group; }
                     tfoot { display: table-row-group; }
-                    /* Never split a line item (with its sub-points) across pages. */
                     tr { page-break-inside: avoid; }
-                    /* Keep these blocks intact across page breaks. */
                     .avoid-break { page-break-inside: avoid; }
-                    /* Ensure shaded boxes (bank panel) actually print. */
                     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                 }
             `}</style>
@@ -68,13 +63,16 @@ export default async function InvoicePrintPage({
             {/* Action bar (screen only) */}
             <div className="no-print sticky top-0 z-10 flex items-center justify-between gap-4 border-b bg-card px-6 py-3">
                 <Link
-                    href={`/invoices/${inv.id}`}
+                    href={`/quotes/${quote.id}`}
                     className="text-sm text-muted-foreground hover:underline"
                 >
-                    Back to invoice
+                    Back to quotation
                 </Link>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>Tip: use your browser&apos;s &ldquo;Print&rdquo; → &ldquo;Save as PDF&rdquo; for a clean export.</span>
+                    <span>
+                        Tip: use your browser&apos;s &ldquo;Print&rdquo; →
+                        &ldquo;Save as PDF&rdquo; for a clean export.
+                    </span>
                     <PrintButton />
                 </div>
             </div>
@@ -94,7 +92,7 @@ export default async function InvoicePrintPage({
                             </>
                         ) : null}
                         <p className="text-2xl font-semibold">
-                            {agency.legalName || agency.displayName || "Invoice"}
+                            {agency.legalName || agency.displayName || "Quotation"}
                         </p>
                         {agency.registrationNo ? (
                             <p className="text-xs text-neutral-600">
@@ -111,7 +109,7 @@ export default async function InvoicePrintPage({
                                 {agencyAddress}
                             </p>
                         ) : null}
-                        {(agency.email || agency.phone) ? (
+                        {agency.email || agency.phone ? (
                             <p className="text-xs text-neutral-600">
                                 {[agency.email, agency.phone]
                                     .filter(Boolean)
@@ -121,32 +119,27 @@ export default async function InvoicePrintPage({
                     </div>
                     <div className="text-right">
                         <p className="text-xs uppercase tracking-wide text-neutral-500">
-                            Invoice
+                            Quotation
                         </p>
-                        <p className="text-xl font-semibold">{inv.number}</p>
+                        <p className="text-xl font-semibold">{quote.number}</p>
                         <p className="mt-2 text-xs text-neutral-600">
-                            Issue date: {fmtDate(inv.issueDate)}
+                            Issue date: {fmtDate(quote.issueDate)}
                         </p>
                         <p className="text-xs text-neutral-600">
-                            Due date: {fmtDate(inv.dueDate)}
+                            Valid until: {fmtDate(quote.validUntil)}
                         </p>
-                        {inv.paidAt ? (
-                            <p className="mt-1 text-xs font-medium text-emerald-700">
-                                PAID {fmtDate(inv.paidAt.slice(0, 10))}
-                            </p>
-                        ) : null}
                     </div>
                 </div>
 
-                {/* Bill to */}
+                {/* Quote for */}
                 <div className="mt-6">
                     <p className="text-xs uppercase tracking-wide text-neutral-500">
-                        Bill to
+                        Prepared for
                     </p>
-                    <p className="mt-1 font-medium">{inv.clientName}</p>
-                    {billToLines.length > 0 ? (
+                    <p className="mt-1 font-medium">{quote.clientName}</p>
+                    {preparedForLines.length > 0 ? (
                         <div className="mt-0.5 text-sm text-neutral-700">
-                            {billToLines.map((l, i) => (
+                            {preparedForLines.map((l, i) => (
                                 <p key={i}>{l}</p>
                             ))}
                         </div>
@@ -157,9 +150,7 @@ export default async function InvoicePrintPage({
                 <table className="mt-8 w-full text-sm">
                     <thead className="border-b text-left text-xs uppercase tracking-wide text-neutral-500">
                         <tr>
-                            <th className="pb-2 pr-4 font-medium">
-                                Description
-                            </th>
+                            <th className="pb-2 pr-4 font-medium">Description</th>
                             <th className="pb-2 pr-4 text-right font-medium">
                                 Qty
                             </th>
@@ -172,7 +163,7 @@ export default async function InvoicePrintPage({
                         </tr>
                     </thead>
                     <tbody>
-                        {inv.items.length === 0 ? (
+                        {quote.items.length === 0 ? (
                             <tr>
                                 <td
                                     colSpan={4}
@@ -182,10 +173,9 @@ export default async function InvoicePrintPage({
                                 </td>
                             </tr>
                         ) : (
-                            inv.items.map((it) => {
+                            quote.items.map((it) => {
                                 const line =
-                                    (it.quantity || 0) *
-                                    (it.unitPriceMyr || 0);
+                                    (it.quantity || 0) * (it.unitPriceMyr || 0);
                                 const bullets = it.details
                                     .split("\n")
                                     .map((b) => b.trim())
@@ -242,7 +232,7 @@ export default async function InvoicePrintPage({
                                 colSpan={3}
                                 className="py-1 pr-4 text-right text-neutral-600"
                             >
-                                Tax ({inv.taxRatePct}%)
+                                Tax ({quote.taxRatePct}%)
                             </td>
                             <td className="py-1 text-right">
                                 {fmtMyr(totals.tax)}
@@ -263,43 +253,34 @@ export default async function InvoicePrintPage({
                 </table>
 
                 {/* Notes */}
-                {inv.notes ? (
+                {quote.notes ? (
                     <div className="avoid-break mt-8">
                         <p className="text-xs uppercase tracking-wide text-neutral-500">
                             Notes
                         </p>
                         <p className="mt-1 whitespace-pre-line text-sm">
-                            {inv.notes}
+                            {quote.notes}
                         </p>
                     </div>
                 ) : null}
 
-                {/* Payment details — per-invoice override wins, else agency bank. */}
-                {inv.paymentDetails.trim() ? (
+                {/* Payment details (when filled on the quote) */}
+                {quote.paymentDetails.trim() ? (
                     <div className="avoid-break mt-8 rounded border bg-neutral-50 p-4">
                         <p className="text-xs uppercase tracking-wide text-neutral-500">
                             Payment details
                         </p>
                         <p className="mt-1 whitespace-pre-line text-sm text-neutral-700">
-                            {inv.paymentDetails}
-                        </p>
-                    </div>
-                ) : agency.bankName ||
-                  agency.bankAccountName ||
-                  agency.bankAccountNo ? (
-                    <div className="avoid-break mt-8 rounded border bg-neutral-50 p-4">
-                        <p className="text-xs uppercase tracking-wide text-neutral-500">
-                            Payment details
-                        </p>
-                        <p className="mt-1 font-medium">{agency.bankName}</p>
-                        <p className="text-xs text-neutral-700">
-                            {agency.bankAccountName}
-                        </p>
-                        <p className="text-xs text-neutral-700">
-                            {agency.bankAccountNo}
+                            {quote.paymentDetails}
                         </p>
                     </div>
                 ) : null}
+
+                {/* Validity note */}
+                <p className="mt-8 text-xs text-neutral-500">
+                    This quotation is valid until {fmtDate(quote.validUntil)}.
+                    Prices are quoted in MYR and subject to the terms above.
+                </p>
 
                 {/* Footer */}
                 {agency.invoiceFooter ? (

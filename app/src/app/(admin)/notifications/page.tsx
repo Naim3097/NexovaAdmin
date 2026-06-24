@@ -28,6 +28,8 @@ const KIND_LABEL: Record<NotificationKind, string> = {
     content_draft_submitted: "Draft sent for review",
     content_changes_requested: "Changes requested",
     content_approved: "Content approved",
+    quote_sent: "Quotation sent",
+    quote_accepted: "Quotation accepted",
     system: "System",
 };
 
@@ -48,6 +50,8 @@ const KIND_TONE: Record<
     content_draft_submitted: "secondary",
     content_changes_requested: "destructive",
     content_approved: "default",
+    quote_sent: "secondary",
+    quote_accepted: "default",
     system: "outline",
 };
 

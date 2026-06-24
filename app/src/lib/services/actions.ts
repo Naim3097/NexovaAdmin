@@ -31,6 +31,7 @@ export async function createServiceAction(formData: FormData) {
         unit: String(formData.get("unit") ?? "project").trim() || "project",
         defaultPrice: asPrice(formData.get("defaultPrice")),
         description: String(formData.get("description") ?? "").trim(),
+        details: String(formData.get("details") ?? "").trim(),
     });
     revalidatePath("/settings/services");
     revalidateTag("services", "max");
@@ -46,6 +47,7 @@ export async function updateServiceAction(formData: FormData) {
         unit: String(formData.get("unit") ?? "project").trim() || "project",
         defaultPrice: asPrice(formData.get("defaultPrice")),
         description: String(formData.get("description") ?? "").trim(),
+        details: String(formData.get("details") ?? "").trim(),
         active: String(formData.get("active") ?? "") === "on",
     });
     revalidatePath(`/settings/services/${id}`);
