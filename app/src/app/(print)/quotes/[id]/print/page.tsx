@@ -10,6 +10,27 @@ import { PrintButton } from "@/app/(print)/invoices/[id]/print/print-button";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Set the document <title>, which browsers use as the default "Save as PDF"
+ * filename. `absolute` bypasses the root "%s · Nexova" template so the file is
+ * named cleanly, e.g. "QUO-2026-0001 - FTECH Solutions Sdn Bhd".
+ */
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ id: string }>;
+}) {
+    const { id } = await params;
+    const quote = await getQuotationById(id);
+    if (!quote) return { title: { absolute: "Quotation" } };
+    const client = quote.clientName.trim();
+    return {
+        title: {
+            absolute: client ? `${quote.number} - ${client}` : quote.number,
+        },
+    };
+}
+
 function fmtMyr(n: number): string {
     return `MYR ${n.toLocaleString(undefined, {
         minimumFractionDigits: 2,

@@ -10,6 +10,27 @@ import { PrintButton } from "./print-button";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Set the document <title> so the browser's "Save as PDF" default filename is
+ * the invoice number + client, e.g. "INV-2026-0001 - FTECH Solutions Sdn Bhd".
+ * `absolute` bypasses the root "%s · Nexova" title template.
+ */
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ id: string }>;
+}) {
+    const { id } = await params;
+    const inv = await getInvoiceById(id);
+    if (!inv) return { title: { absolute: "Invoice" } };
+    const client = inv.clientName.trim();
+    return {
+        title: {
+            absolute: client ? `${inv.number} - ${client}` : inv.number,
+        },
+    };
+}
+
 function fmtMyr(n: number): string {
     return `MYR ${n.toLocaleString(undefined, {
         minimumFractionDigits: 2,
