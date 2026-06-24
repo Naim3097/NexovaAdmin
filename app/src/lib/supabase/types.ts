@@ -95,6 +95,8 @@ export type AgencyProfileRow = {
     invoice_footer: string;
     logo_url: string;
     logos: BrandLogoRow[];
+    default_quote_terms: string;
+    default_quote_acceptance: boolean;
     updated_at: string;
 };
 
@@ -268,6 +270,11 @@ export type QuotationRow = {
     bill_to_address: string;
     payment_details: string;
     logo_choice: string;
+    subject: string;
+    scope_includes: string;
+    exclusions: string;
+    terms: string;
+    show_acceptance: boolean;
     converted_invoice_id: string | null;
     created_at: string;
     updated_at: string;

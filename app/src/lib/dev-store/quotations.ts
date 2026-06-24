@@ -52,6 +52,16 @@ export type Quotation = {
     paymentDetails: string;
     /** Logo: "" = agency default · "none" = hide · else a logo id. */
     logoChoice: string;
+    /** Document subject/title, e.g. "Website Enhancement & Backend Optimization". */
+    subject: string;
+    /** "Scope includes" bullets (one per line). */
+    scopeIncludes: string;
+    /** "Exclusions" bullets (one per line). */
+    exclusions: string;
+    /** "Terms & Conditions" bullets (one per line). */
+    terms: string;
+    /** Whether to print the acceptance / signature block. */
+    showAcceptance: boolean;
     /** Set once when converted into an invoice. */
     convertedInvoiceId: string | null;
     createdAt: string;
@@ -97,6 +107,8 @@ export async function createQuotation(input: {
     issueDate?: string;
     validUntil?: string;
     taxRatePct?: number;
+    terms?: string;
+    showAcceptance?: boolean;
 }): Promise<Quotation> {
     await ensureDir();
     const now = new Date();
@@ -121,6 +133,11 @@ export async function createQuotation(input: {
         billToAddress: "",
         paymentDetails: "",
         logoChoice: "",
+        subject: "",
+        scopeIncludes: "",
+        exclusions: "",
+        terms: input.terms ?? "",
+        showAcceptance: input.showAcceptance ?? true,
         convertedInvoiceId: null,
         createdAt: now.toISOString(),
         updatedAt: now.toISOString(),

@@ -87,6 +87,11 @@ function rowToQuotation(row: QuotationRow, items: QuotationItemRow[]): Quotation
         billToAddress: row.bill_to_address ?? "",
         paymentDetails: row.payment_details ?? "",
         logoChoice: row.logo_choice ?? "",
+        subject: row.subject ?? "",
+        scopeIncludes: row.scope_includes ?? "",
+        exclusions: row.exclusions ?? "",
+        terms: row.terms ?? "",
+        showAcceptance: row.show_acceptance ?? true,
         convertedInvoiceId: row.converted_invoice_id ?? null,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
@@ -108,6 +113,11 @@ function quotationToInsert(q: Quotation): QuotationInsert {
         bill_to_address: q.billToAddress,
         payment_details: q.paymentDetails,
         logo_choice: q.logoChoice,
+        subject: q.subject,
+        scope_includes: q.scopeIncludes,
+        exclusions: q.exclusions,
+        terms: q.terms,
+        show_acceptance: q.showAcceptance,
         converted_invoice_id: q.convertedInvoiceId,
         created_at: q.createdAt,
         updated_at: q.updatedAt,
@@ -127,6 +137,11 @@ function patchToUpdate(patch: UpdatePatch): QuotationUpdate {
     if (patch.billToAddress !== undefined) out.bill_to_address = patch.billToAddress;
     if (patch.paymentDetails !== undefined) out.payment_details = patch.paymentDetails;
     if (patch.logoChoice !== undefined) out.logo_choice = patch.logoChoice;
+    if (patch.subject !== undefined) out.subject = patch.subject;
+    if (patch.scopeIncludes !== undefined) out.scope_includes = patch.scopeIncludes;
+    if (patch.exclusions !== undefined) out.exclusions = patch.exclusions;
+    if (patch.terms !== undefined) out.terms = patch.terms;
+    if (patch.showAcceptance !== undefined) out.show_acceptance = patch.showAcceptance;
     if (patch.convertedInvoiceId !== undefined)
         out.converted_invoice_id = patch.convertedInvoiceId;
     if (patch.acceptedAt !== undefined) out.accepted_at = patch.acceptedAt;
@@ -161,6 +176,8 @@ export async function createQuotation(input: {
     issueDate?: string;
     validUntil?: string;
     taxRatePct?: number;
+    terms?: string;
+    showAcceptance?: boolean;
 }): Promise<Quotation> {
     if (!isSupabaseEnabled("quotations")) {
         return devQuotations.createQuotation(input);
@@ -187,6 +204,11 @@ export async function createQuotation(input: {
         billToAddress: "",
         paymentDetails: "",
         logoChoice: "",
+        subject: "",
+        scopeIncludes: "",
+        exclusions: "",
+        terms: input.terms ?? "",
+        showAcceptance: input.showAcceptance ?? true,
         convertedInvoiceId: null,
         createdAt: now.toISOString(),
         updatedAt: now.toISOString(),

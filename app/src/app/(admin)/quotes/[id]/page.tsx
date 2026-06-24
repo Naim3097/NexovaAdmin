@@ -127,6 +127,9 @@ export default async function QuotationDetailPage({
                         </>
                     ) : null}
                 </p>
+                {quote.subject ? (
+                    <p className="mt-1 text-sm font-medium">{quote.subject}</p>
+                ) : null}
             </div>
 
             {/* Convert to invoice — the QuickBooks "Estimate → Invoice" move */}
@@ -392,6 +395,59 @@ export default async function QuotationDetailPage({
                             addressLabel="Prepared for — address"
                         />
                     </div>
+                </div>
+
+                <div className="space-y-4 border-t pt-4">
+                    <h3 className="text-sm font-medium">Document sections</h3>
+                    <div className="space-y-1.5">
+                        <Label className="text-sm">Subject / project title</Label>
+                        <Input
+                            name="subject"
+                            defaultValue={quote.subject}
+                            placeholder="Website Enhancement & Backend Optimization"
+                        />
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label className="text-sm">
+                            Scope includes (one per line)
+                        </Label>
+                        <Textarea
+                            name="scopeIncludes"
+                            rows={4}
+                            defaultValue={quote.scopeIncludes}
+                            placeholder={"Content & layout revisions for up to 10 existing pages\nBackend configuration adjustments\nTesting and deployment of approved changes"}
+                        />
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label className="text-sm">Exclusions (one per line)</Label>
+                        <Textarea
+                            name="exclusions"
+                            rows={4}
+                            defaultValue={quote.exclusions}
+                            placeholder={"New page creation\nCustom plugin or software development\nThird-party subscriptions / licensing fees\nStock photos, premium plugins, paid assets"}
+                        />
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label className="text-sm">
+                            Terms &amp; Conditions (one per line) · pre-filled from
+                            Settings → Agency
+                        </Label>
+                        <Textarea
+                            name="terms"
+                            rows={4}
+                            defaultValue={quote.terms}
+                            placeholder={"This quotation is valid for 30 days from the date of issue.\nAny work outside the stated scope may incur additional charges.\nAll pricing is in Malaysian Ringgit (MYR)."}
+                        />
+                    </div>
+                    <label className="flex items-center gap-2 text-sm">
+                        <input
+                            type="checkbox"
+                            name="showAcceptance"
+                            defaultChecked={quote.showAcceptance}
+                            className="size-4 rounded border-input"
+                        />
+                        Show acceptance / signature block on the PDF
+                    </label>
                 </div>
 
                 <div className="flex justify-end">

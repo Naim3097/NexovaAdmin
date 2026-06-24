@@ -59,6 +59,8 @@ function rowToProfile(row: AgencyProfileRow): AgencyProfile {
         invoiceFooter: row.invoice_footer,
         logoUrl: row.logo_url ?? "",
         logos: Array.isArray(row.logos) ? row.logos : [],
+        defaultQuoteTerms: row.default_quote_terms ?? "",
+        defaultQuoteAcceptance: row.default_quote_acceptance ?? true,
         updatedAt: row.updated_at,
     };
 }
@@ -85,6 +87,8 @@ function profileToUpsert(p: AgencyProfile): AgencyInsert {
         invoice_footer: p.invoiceFooter,
         logo_url: p.logoUrl,
         logos: p.logos,
+        default_quote_terms: p.defaultQuoteTerms,
+        default_quote_acceptance: p.defaultQuoteAcceptance,
         updated_at: p.updatedAt,
     };
 }

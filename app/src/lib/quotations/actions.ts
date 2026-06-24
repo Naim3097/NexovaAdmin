@@ -19,6 +19,7 @@ import {
     updateInvoice,
     getInvoiceById,
 } from "@/lib/data/invoices";
+import { getAgencyProfile } from "@/lib/data/agency";
 import { notify } from "@/lib/data/notifications";
 import { diffFields, recordAudit } from "@/lib/data/audit";
 
@@ -46,12 +47,16 @@ export async function createQuotationAction(formData: FormData) {
         taxRatePctRaw === null || taxRatePctRaw === ""
             ? 6
             : Number(taxRatePctRaw);
+    // Pre-fill T&C + acceptance toggle from the agency defaults (still editable).
+    const agency = await getAgencyProfile();
     const quote = await createQuotation({
         clientName,
         projectId,
         issueDate,
         validUntil,
         taxRatePct: Number.isFinite(taxRatePct) ? taxRatePct : 6,
+        terms: agency.defaultQuoteTerms,
+        showAcceptance: agency.defaultQuoteAcceptance,
     });
     revalidatePath("/quotes");
     revalidatePath("/dashboard");
@@ -74,6 +79,11 @@ export async function updateQuotationAction(formData: FormData) {
         billToAddress: String(formData.get("billToAddress") ?? "").trim(),
         paymentDetails: String(formData.get("paymentDetails") ?? "").trim(),
         logoChoice: String(formData.get("logoChoice") ?? "").trim(),
+        subject: String(formData.get("subject") ?? "").trim(),
+        scopeIncludes: String(formData.get("scopeIncludes") ?? "").trim(),
+        exclusions: String(formData.get("exclusions") ?? "").trim(),
+        terms: String(formData.get("terms") ?? "").trim(),
+        showAcceptance: String(formData.get("showAcceptance") ?? "") === "on",
     });
     if (before) {
         const after = (await getQuotationById(id)) ?? before;

@@ -39,6 +39,9 @@ export async function updateAgencyProfileAction(formData: FormData) {
         bankAccountName: asStr(formData.get("bankAccountName")),
         bankAccountNo: asStr(formData.get("bankAccountNo")),
         invoiceFooter: asStr(formData.get("invoiceFooter")),
+        defaultQuoteTerms: asStr(formData.get("defaultQuoteTerms")),
+        defaultQuoteAcceptance:
+            String(formData.get("defaultQuoteAcceptance") ?? "") === "on",
     };
     await updateAgencyProfile(patch);
     revalidateDocs();

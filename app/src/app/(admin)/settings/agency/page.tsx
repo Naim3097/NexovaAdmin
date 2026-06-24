@@ -223,6 +223,34 @@ export default async function AgencyProfilePage() {
                     </p>
                 </section>
 
+                <section className="space-y-4">
+                    <h2 className="text-sm font-medium">Quotation defaults</h2>
+                    <div className="space-y-1.5">
+                        <Label htmlFor="defaultQuoteTerms">
+                            Default Terms &amp; Conditions (one per line)
+                        </Label>
+                        <Textarea
+                            id="defaultQuoteTerms"
+                            name="defaultQuoteTerms"
+                            rows={4}
+                            defaultValue={p.defaultQuoteTerms}
+                            placeholder={"This quotation is valid for 30 days from the date of issue.\nAny additional work outside the stated scope may be subject to additional charges.\nDelays in approval, content submission, or feedback may affect project timelines.\nAll pricing stated is in Malaysian Ringgit (MYR)."}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            Copied onto each new quotation (still editable per quote).
+                        </p>
+                    </div>
+                    <label className="flex items-center gap-2 text-sm">
+                        <input
+                            type="checkbox"
+                            name="defaultQuoteAcceptance"
+                            defaultChecked={p.defaultQuoteAcceptance}
+                            className="size-4 rounded border-input"
+                        />
+                        New quotations show the acceptance / signature block by default
+                    </label>
+                </section>
+
                 <div className="flex justify-end">
                     <Button type="submit">Save profile</Button>
                 </div>

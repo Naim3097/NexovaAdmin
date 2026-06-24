@@ -42,6 +42,10 @@ export type AgencyProfile = {
     logoUrl: string;
     /** Saved logo library to pick from. */
     logos: BrandLogo[];
+    /** Default Terms & Conditions copied onto each new quotation. */
+    defaultQuoteTerms: string;
+    /** Default for whether new quotes print the acceptance/signature block. */
+    defaultQuoteAcceptance: boolean;
     updatedAt: string;
 };
 
@@ -66,6 +70,8 @@ export const DEFAULT_PROFILE: AgencyProfile = {
         "Thank you for your business. Payment due within 14 days of issue.",
     logoUrl: "",
     logos: [],
+    defaultQuoteTerms: "",
+    defaultQuoteAcceptance: true,
     updatedAt: new Date(0).toISOString(),
 };
 

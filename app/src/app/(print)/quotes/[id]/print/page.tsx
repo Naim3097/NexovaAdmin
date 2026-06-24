@@ -42,6 +42,11 @@ export default async function QuotationPrintPage({
         .split("\n")
         .map((l) => l.trim())
         .filter(Boolean);
+    const toBullets = (s: string) =>
+        s.split("\n").map((l) => l.trim()).filter(Boolean);
+    const scopeLines = toBullets(quote.scopeIncludes);
+    const exclusionLines = toBullets(quote.exclusions);
+    const termsLines = toBullets(quote.terms);
 
     return (
         <>
@@ -145,6 +150,18 @@ export default async function QuotationPrintPage({
                         </div>
                     ) : null}
                 </div>
+
+                {/* Subject / project title */}
+                {quote.subject ? (
+                    <div className="mt-6">
+                        <p className="text-xs uppercase tracking-wide text-neutral-500">
+                            Project
+                        </p>
+                        <p className="mt-1 text-base font-semibold">
+                            {quote.subject}
+                        </p>
+                    </div>
+                ) : null}
 
                 {/* Items */}
                 <table className="mt-8 w-full text-sm">
@@ -252,6 +269,34 @@ export default async function QuotationPrintPage({
                     </tfoot>
                 </table>
 
+                {/* Scope includes */}
+                {scopeLines.length > 0 ? (
+                    <div className="avoid-break mt-8">
+                        <p className="text-xs uppercase tracking-wide text-neutral-500">
+                            Scope includes
+                        </p>
+                        <ul className="mt-1 list-disc space-y-0.5 pl-5 text-sm text-neutral-700">
+                            {scopeLines.map((l, i) => (
+                                <li key={i}>{l}</li>
+                            ))}
+                        </ul>
+                    </div>
+                ) : null}
+
+                {/* Exclusions */}
+                {exclusionLines.length > 0 ? (
+                    <div className="avoid-break mt-6">
+                        <p className="text-xs uppercase tracking-wide text-neutral-500">
+                            Exclusions
+                        </p>
+                        <ul className="mt-1 list-disc space-y-0.5 pl-5 text-sm text-neutral-700">
+                            {exclusionLines.map((l, i) => (
+                                <li key={i}>{l}</li>
+                            ))}
+                        </ul>
+                    </div>
+                ) : null}
+
                 {/* Notes */}
                 {quote.notes ? (
                     <div className="avoid-break mt-8">
@@ -276,11 +321,58 @@ export default async function QuotationPrintPage({
                     </div>
                 ) : null}
 
+                {/* Terms & Conditions */}
+                {termsLines.length > 0 ? (
+                    <div className="avoid-break mt-8">
+                        <p className="text-xs uppercase tracking-wide text-neutral-500">
+                            Terms &amp; Conditions
+                        </p>
+                        <ul className="mt-1 list-disc space-y-0.5 pl-5 text-sm text-neutral-700">
+                            {termsLines.map((l, i) => (
+                                <li key={i}>{l}</li>
+                            ))}
+                        </ul>
+                    </div>
+                ) : null}
+
                 {/* Validity note */}
                 <p className="mt-8 text-xs text-neutral-500">
                     This quotation is valid until {fmtDate(quote.validUntil)}.
                     Prices are quoted in MYR and subject to the terms above.
                 </p>
+
+                {/* Acceptance / signature block */}
+                {quote.showAcceptance ? (
+                    <div className="avoid-break mt-10 border-t pt-6">
+                        <p className="text-xs uppercase tracking-wide text-neutral-500">
+                            Acceptance
+                        </p>
+                        <p className="mt-2 text-sm text-neutral-700">
+                            Accepted by, for and on behalf of the client:
+                        </p>
+                        <div className="mt-6 space-y-6 text-sm text-neutral-800">
+                            {[
+                                "Name",
+                                "Designation",
+                                "Company",
+                                "Signature & Company Stamp",
+                                "Date",
+                            ].map((label) => (
+                                <div
+                                    key={label}
+                                    className="flex items-end gap-3"
+                                >
+                                    <span className="whitespace-nowrap">
+                                        {label}:
+                                    </span>
+                                    <span className="flex-1 border-b border-dotted border-neutral-400">
+                                        &nbsp;
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ) : null}
 
                 {/* Footer */}
                 {agency.invoiceFooter ? (
