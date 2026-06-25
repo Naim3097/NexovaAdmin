@@ -1,0 +1,12 @@
+[Unit]
+Description=Poll the nexova agent tool manifest every 5 minutes
+
+[Timer]
+# First check 2 min after boot, then every 5 min. Persistent=true catches up a
+# missed run if the box was asleep/off at the scheduled time.
+OnBootSec=2min
+OnUnitActiveSec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

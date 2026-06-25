@@ -1,0 +1,8 @@
+[Unit]
+Description=Restart nexova Hermes gateway when the agent tool manifest changes
+# Don't run while the gateway itself is starting up.
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.hermes/profiles/nexova/nexova-tool-watch.sh
