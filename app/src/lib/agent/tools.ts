@@ -55,8 +55,13 @@ import {
     deleteProjectTask,
 } from "@/lib/data/projects";
 import { SERVICE_CATEGORIES } from "@/lib/dev-store/services";
-import { listInvoices } from "@/lib/data/invoices";
-import { listTeamMembers } from "@/lib/data/team";
+import {
+    listInvoices,
+    createInvoice,
+    updateInvoice,
+    computeTotals,
+} from "@/lib/data/invoices";
+import { listTeamMembers, createTeamMember, TEAM_ROLES } from "@/lib/data/team";
 
 // ---------------------------------------------------------------------------
 // Tool type
@@ -1251,6 +1256,122 @@ export const invoicesList: AgentTool<
     },
 };
 
+// ---- invoices.create ------------------------------------------------------
+
+const invoiceLineItemInput = z.object({
+    description: z.string().min(1),
+    /** Optional secondary line (sub-detail / scope note) shown under the description. */
+    details: z.string().optional(),
+    quantity: z.number().positive(),
+    unitPriceMyr: z.number().nonnegative(),
+});
+
+const invoicesCreateInput = z.object({
+    clientName: z.string().min(1),
+    projectId: z.string().optional(),
+    /** Line items (description + qty + unit price in MYR). At least one. */
+    items: z.array(invoiceLineItemInput).min(1),
+    /** YYYY-MM-DD. Defaults to today. */
+    issueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    /** YYYY-MM-DD. Defaults to issue date + 14 days. */
+    dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    /** Tax/SST rate as a percent (e.g. 6 for 6%). Defaults to 6. */
+    taxRatePct: z.number().min(0).max(100).optional(),
+    notes: z.string().optional(),
+});
+const invoicesCreateResult = z.object({
+    id: z.string(),
+    number: z.string(),
+    clientName: z.string(),
+    status: z.string(),
+    issueDate: z.string(),
+    dueDate: z.string(),
+    subtotalMyr: z.number(),
+    taxMyr: z.number(),
+    totalMyr: z.number(),
+});
+
+export const invoicesCreate: AgentTool<
+    z.infer<typeof invoicesCreateInput>,
+    z.infer<typeof invoicesCreateResult>
+> = {
+    name: "invoices.create",
+    description:
+        "Create a new invoice (and its quotation line items) for a client. Starts at status 'draft' with an auto-assigned number (INV-YYYY-NNNN). Pass items[] with description/quantity/unitPriceMyr; totals are computed (taxRatePct defaults to 6% SST). Optionally link a projectId and set issueDate/dueDate (default: today / +14 days). After creating, use payments.createInvoiceLink to generate a payment link.",
+    inputSchema: invoicesCreateInput,
+    outputSchema: invoicesCreateResult,
+    invoke: async (input) => {
+        const created = await createInvoice({
+            clientName: input.clientName,
+            projectId: input.projectId ?? null,
+            issueDate: input.issueDate,
+            dueDate: input.dueDate,
+            taxRatePct: input.taxRatePct,
+        });
+        // createInvoice starts with no items/notes — fill them in one update.
+        const inv = await updateInvoice(created.id, {
+            items: input.items.map((it) => ({
+                id: "",
+                description: it.description,
+                details: it.details ?? "",
+                quantity: it.quantity,
+                unitPriceMyr: it.unitPriceMyr,
+            })),
+            ...(input.notes !== undefined ? { notes: input.notes } : {}),
+        });
+        const { subtotal, tax, total } = computeTotals(inv);
+        return {
+            id: inv.id,
+            number: inv.number,
+            clientName: inv.clientName,
+            status: inv.status,
+            issueDate: inv.issueDate,
+            dueDate: inv.dueDate,
+            subtotalMyr: subtotal,
+            taxMyr: tax,
+            totalMyr: total,
+        };
+    },
+};
+
+// ---- team.create ----------------------------------------------------------
+
+const teamCreateInput = z.object({
+    name: z.string().min(1),
+    role: z.enum(TEAM_ROLES).optional(),
+    email: z.string().optional(),
+    phone: z.string().optional(),
+    /** Free-text skills (comma-separated), used by assignment suggestions. */
+    skills: z.string().optional(),
+});
+const teamCreateResult = z.object({
+    id: z.string(),
+    name: z.string(),
+    role: z.string(),
+    active: z.boolean(),
+});
+
+export const teamCreate: AgentTool<
+    z.infer<typeof teamCreateInput>,
+    z.infer<typeof teamCreateResult>
+> = {
+    name: "team.create",
+    description:
+        "Add a new team member (starts active). role is one of CEO/Closer/Frontend/Backend/UI/UX/Content/Ads/SEO/PM/Other (defaults to Other). Use to onboard staff so work can be assigned to them via tasks.add / projects.assignStage. This only creates the member record; it does not create a login account.",
+    inputSchema: teamCreateInput,
+    outputSchema: teamCreateResult,
+    invoke: async (input) => {
+        const m = await createTeamMember({
+            name: input.name,
+            role: input.role,
+            email: input.email,
+            phone: input.phone,
+            skills: input.skills,
+        });
+        return { id: m.id, name: m.name, role: m.role, active: m.active };
+    },
+};
+
 // ---- tasks.reassign -------------------------------------------------------
 
 const tasksReassignInput = z.object({
@@ -1382,6 +1503,9 @@ export const AGENT_TOOLS: AgentTool[] = [
     clientsCreate as unknown as AgentTool,
     contentList as unknown as AgentTool,
     invoicesList as unknown as AgentTool,
+    // Billing + team writes
+    invoicesCreate as unknown as AgentTool,
+    teamCreate as unknown as AgentTool,
     // Destructive (human approval required — not in the agent key's scopes)
     projectsDelete as unknown as AgentTool,
     tasksDelete as unknown as AgentTool,
