@@ -86,6 +86,14 @@ const ServerEnvSchema = z.object({
      */
     PUBLIC_LEADS_SECRET: z.string().optional(),
 
+    /**
+     * Shared secret for scheduled cron routes (e.g. /api/cron/task-reminders).
+     * Vercel Cron automatically sends `Authorization: Bearer <CRON_SECRET>` when
+     * this env var is set on the project. If unset, the route runs unguarded in
+     * dev but rejects in production.
+     */
+    CRON_SECRET: z.string().optional(),
+
     NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),
     TURNSTILE_SECRET_KEY: z.string().optional(),
 

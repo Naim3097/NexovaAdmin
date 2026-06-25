@@ -187,6 +187,7 @@ export type ProjectStageRow = {
     ownerRole: string;
     assignee: string;
     state: "pending" | "active" | "done";
+    dueDate: string;
     startedAt: string | null;
     doneAt: string | null;
 };
@@ -418,6 +419,19 @@ export type NotificationRow = {
     read_at: string | null;
 };
 
+export type SprintTaskRow = {
+    id: string;
+    title: string;
+    pic: string;
+    details: string;
+    deadline: string;
+    status: string;
+    reminded_for: string | null;
+    created_at: string;
+    updated_at: string;
+    completed_at: string | null;
+};
+
 export type AuditEventRow = {
     id: string;
     at: string;
@@ -465,6 +479,7 @@ export type Database = {
             seo_articles: Tbl<SeoArticleRow>;
             notifications: Tbl<NotificationRow>;
             audit_events: Tbl<AuditEventRow>;
+            sprint_tasks: Tbl<SprintTaskRow>;
             report_insights: Tbl<ReportInsightsRow>;
         };
         Views: Record<string, never>;

@@ -413,6 +413,7 @@ export async function instantiateProjectStages(
         ownerRole: s.ownerRole,
         assignee: picFor(s.ownerRole),
         state: i === 0 ? "active" : "pending",
+        dueDate: "",
         startedAt: i === 0 ? now : null,
         doneAt: null,
     }));
@@ -470,7 +471,12 @@ export async function setProjectStageAssignee(
 export async function updateProjectStage(
     id: string,
     stageId: string,
-    patch: { label?: string; ownerRole?: string; assignee?: string },
+    patch: {
+        label?: string;
+        ownerRole?: string;
+        assignee?: string;
+        dueDate?: string;
+    },
 ): Promise<Project> {
     const existing = await getProjectById(id);
     if (!existing) throw new Error(`Project ${id} not found`);
@@ -494,6 +500,7 @@ export async function addProjectStage(
         state: existing.stages.some((s) => s.state === "active")
             ? "pending"
             : "active",
+        dueDate: "",
         startedAt: null,
         doneAt: null,
     };

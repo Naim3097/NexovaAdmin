@@ -213,7 +213,12 @@ export async function updateStageAction(formData: FormData) {
     const id = String(formData.get("id") ?? "");
     const stageId = String(formData.get("stageId") ?? "");
     if (!id || !stageId) return;
-    const patch: { label?: string; ownerRole?: string; assignee?: string } = {};
+    const patch: {
+        label?: string;
+        ownerRole?: string;
+        assignee?: string;
+        dueDate?: string;
+    } = {};
     const label = String(formData.get("label") ?? "").trim();
     const ownerRole = String(formData.get("ownerRole") ?? "").trim();
     if (label) patch.label = label;
@@ -224,6 +229,9 @@ export async function updateStageAction(formData: FormData) {
         const a = String(assigneeRaw).trim();
         patch.assignee = a === "none" ? "" : a;
     }
+    // dueDate may legitimately be cleared (empty input).
+    const dueRaw = formData.get("dueDate");
+    if (dueRaw !== null) patch.dueDate = String(dueRaw).trim();
     await updateProjectStage(id, stageId, patch);
     revalidateProject(id);
 }

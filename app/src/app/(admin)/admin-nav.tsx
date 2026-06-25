@@ -15,6 +15,7 @@ import {
     ClipboardList,
     UserCog,
     CheckSquare,
+    ListTodo,
     Activity,
     BarChart3,
     Bell,
@@ -31,6 +32,7 @@ const SECTIONS: { label: string; items: Item[] }[] = [
         items: [
             { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
             { href: "/my-work", label: "My work", icon: CheckSquare },
+            { href: "/tasks", label: "Tasks", icon: ListTodo },
         ],
     },
     {

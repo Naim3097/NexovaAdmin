@@ -30,6 +30,7 @@ export const ENTITY_NAMES = [
     "notifications",
     "audit",
     "reportInsights",
+    "tasks",
 ] as const;
 
 export type EntityName = (typeof ENTITY_NAMES)[number];

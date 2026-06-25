@@ -5,22 +5,6 @@ import { ContentCard } from "@/components/content-card";
 
 export const dynamic = "force-dynamic";
 
-const STATUS_LABEL: Record<string, string> = {
-    none: "In production",
-    awaiting_client: "Awaiting client",
-    changes_requested: "Changes requested",
-    approved: "Approved",
-};
-const STATUS_VARIANT: Record<
-    string,
-    "default" | "secondary" | "outline" | "destructive"
-> = {
-    none: "outline",
-    awaiting_client: "secondary",
-    changes_requested: "destructive",
-    approved: "default",
-};
-
 function currentMonth() {
     return new Date().toISOString().slice(0, 7);
 }
@@ -93,6 +77,27 @@ export default async function ContentBoardPage({
                 </Link>
             </div>
 
+            {/* Traffic-light legend */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                    <span className="flex gap-0.5">
+                        <span className="h-2 w-4 rounded-full bg-emerald-500" />
+                        <span className="h-2 w-4 rounded-full bg-emerald-500" />
+                        <span className="h-2 w-4 rounded-full bg-emerald-500" />
+                        <span className="h-2 w-4 rounded-full bg-emerald-500" />
+                    </span>
+                    Headline · Draft · Approved · Posted
+                </span>
+                <span className="flex items-center gap-1.5">
+                    <span className="h-2 w-4 rounded-full bg-amber-400" />
+                    Changes requested
+                </span>
+                <span className="flex items-center gap-1.5">
+                    <span className="h-2 w-4 rounded-full bg-neutral-200 dark:bg-neutral-700" />
+                    Pending
+                </span>
+            </div>
+
             {clientNames.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                     No clients yet. Add one in Settings → Clients.
@@ -137,14 +142,6 @@ export default async function ContentBoardPage({
                                     key={post.id}
                                     post={post}
                                     href={`/content/${post.id}`}
-                                    statusLabel={
-                                        STATUS_LABEL[post.reviewStatus] ??
-                                        post.reviewStatus
-                                    }
-                                    statusVariant={
-                                        STATUS_VARIANT[post.reviewStatus] ??
-                                        "outline"
-                                    }
                                 />
                             ))}
                         </div>

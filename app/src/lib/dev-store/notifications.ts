@@ -30,6 +30,7 @@ export const NOTIFICATION_KINDS = [
     "content_approved",
     "quote_sent",
     "quote_accepted",
+    "task_due_soon",
     "system",
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];

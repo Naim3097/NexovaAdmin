@@ -70,6 +70,8 @@ export type ProjectStage = {
     ownerRole: string;
     assignee: string;
     state: "pending" | "active" | "done";
+    /** Editable deadline for the PIC on this stage (YYYY-MM-DD). "" = none. */
+    dueDate: string;
     startedAt: string | null;
     doneAt: string | null;
 };

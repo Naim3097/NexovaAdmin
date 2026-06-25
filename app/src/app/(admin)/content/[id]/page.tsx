@@ -10,7 +10,7 @@ import {
 import { listClients } from "@/lib/data/clients";
 import { listTeamMembers } from "@/lib/data/team";
 import { ReviewTimeline } from "@/components/review-timeline";
-import { Badge } from "@/components/ui/badge";
+import { StatusLights } from "@/components/status-lights";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,22 +29,6 @@ import {
 } from "@/lib/content/actions";
 
 export const dynamic = "force-dynamic";
-
-const REVIEW_STATUS_LABEL: Record<string, string> = {
-    none: "In production",
-    awaiting_client: "Awaiting client",
-    changes_requested: "Changes requested",
-    approved: "Approved",
-};
-const REVIEW_STATUS_VARIANT: Record<
-    string,
-    "default" | "secondary" | "outline" | "destructive"
-> = {
-    none: "outline",
-    awaiting_client: "secondary",
-    changes_requested: "destructive",
-    approved: "default",
-};
 
 export default async function ContentDetailPage({
     params,
@@ -85,9 +69,7 @@ export default async function ContentDetailPage({
                     <h1 className="text-2xl font-semibold md:text-3xl">
                         {post.title}
                     </h1>
-                    <Badge variant={REVIEW_STATUS_VARIANT[post.reviewStatus]}>
-                        {REVIEW_STATUS_LABEL[post.reviewStatus]}
-                    </Badge>
+                    <StatusLights post={post} showCaption />
                 </div>
                 <p className="text-sm text-muted-foreground">
                     {post.clientName} · {post.platform} · {post.type}

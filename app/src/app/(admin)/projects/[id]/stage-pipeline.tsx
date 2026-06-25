@@ -76,6 +76,7 @@ export function StagePipeline({
     const hasStages = stages.length > 0;
     const activeIdx = stages.findIndex((s) => s.state === "active");
     const doneCount = stages.filter((s) => s.state === "done").length;
+    const today = new Date().toISOString().slice(0, 10);
 
     return (
         <section className="rounded-lg border bg-card p-4 md:p-6">
@@ -143,6 +144,18 @@ export function StagePipeline({
                                 <Badge variant="outline" className="shrink-0">
                                     {s.ownerRole}
                                 </Badge>
+                                {s.dueDate && s.state !== "done" ? (
+                                    <span
+                                        className={`shrink-0 text-xs ${
+                                            s.dueDate < today
+                                                ? "font-medium text-destructive"
+                                                : "text-muted-foreground"
+                                        }`}
+                                    >
+                                        {s.dueDate < today ? "Overdue " : "Due "}
+                                        {s.dueDate}
+                                    </span>
+                                ) : null}
                                 <span className="hidden w-32 shrink-0 truncate text-right text-xs text-muted-foreground sm:block">
                                     {s.assignee ? `@${s.assignee}` : "—"}
                                 </span>
@@ -210,6 +223,15 @@ export function StagePipeline({
                                                     ))}
                                                 </SelectContent>
                                             </Select>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label className="text-[11px]">Due</Label>
+                                            <Input
+                                                type="date"
+                                                name="dueDate"
+                                                defaultValue={s.dueDate || ""}
+                                                className="h-8 w-36"
+                                            />
                                         </div>
                                         <Button type="submit" size="sm" variant="outline">
                                             Save

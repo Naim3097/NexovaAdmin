@@ -1,18 +1,16 @@
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { AssetPreview } from "@/components/asset-preview";
 import { DraftViewer } from "@/components/draft-viewer";
 import { CopyButton } from "@/components/copy-button";
+import { StatusLights } from "@/components/status-lights";
 import {
     portalApproveAction,
     portalRequestChangesAction,
 } from "@/lib/portal/actions";
 import type { ContentPost } from "@/lib/data/content";
-
-type BadgeVariant = "default" | "secondary" | "outline" | "destructive";
 
 function latestMedia(post: ContentPost) {
     return post.drafts[post.drafts.length - 1]?.media ?? [];
@@ -29,16 +27,15 @@ function latestMedia(post: ContentPost) {
 export function ContentCard({
     post,
     href,
-    statusLabel,
-    statusVariant = "outline",
     clientReview = false,
     revisionLimit = 3,
     extraRevisionPrice = 0,
 }: {
     post: ContentPost;
     href?: string;
-    statusLabel: string;
-    statusVariant?: BadgeVariant;
+    /** Deprecated — kept so existing callers compile; the card now shows lights. */
+    statusLabel?: string;
+    statusVariant?: "default" | "secondary" | "outline" | "destructive";
     clientReview?: boolean;
     revisionLimit?: number;
     extraRevisionPrice?: number;
@@ -51,7 +48,7 @@ export function ContentCard({
             <CardHeader className="pb-2">
                 <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-sm">{post.title}</CardTitle>
-                    <Badge variant={statusVariant}>{statusLabel}</Badge>
+                    <StatusLights post={post} showCaption />
                 </div>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
