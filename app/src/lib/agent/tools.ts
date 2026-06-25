@@ -62,6 +62,11 @@ import {
     computeTotals,
 } from "@/lib/data/invoices";
 import { listTeamMembers, createTeamMember, TEAM_ROLES } from "@/lib/data/team";
+import {
+    createQuotation,
+    updateQuotation,
+    computeTotals as computeQuotationTotals,
+} from "@/lib/data/quotations";
 
 // ---------------------------------------------------------------------------
 // Tool type
@@ -1334,6 +1339,103 @@ export const invoicesCreate: AgentTool<
     },
 };
 
+// ---- quotations.create ----------------------------------------------------
+
+const quotationLineItemInput = z.object({
+    description: z.string().min(1),
+    /** Optional sub-points (one bullet per line) shown under the description. */
+    details: z.string().optional(),
+    quantity: z.number().positive(),
+    unitPriceMyr: z.number().nonnegative(),
+});
+
+const quotationsCreateInput = z.object({
+    clientName: z.string().min(1),
+    projectId: z.string().optional(),
+    /** Line items (description + qty + unit price in MYR). At least one. */
+    items: z.array(quotationLineItemInput).min(1),
+    /** Document title, e.g. "Website Enhancement & Backend Optimization". */
+    subject: z.string().optional(),
+    /** "Scope includes" bullets — one per line. */
+    scopeIncludes: z.string().optional(),
+    /** "Exclusions" bullets — one per line. */
+    exclusions: z.string().optional(),
+    /** "Terms & Conditions" bullets — one per line. */
+    terms: z.string().optional(),
+    notes: z.string().optional(),
+    /** YYYY-MM-DD. Defaults to today. */
+    issueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    /** YYYY-MM-DD. Quote validity deadline. */
+    validUntil: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    /** Tax/SST rate as a percent (e.g. 6 for 6%). Defaults to 6. */
+    taxRatePct: z.number().min(0).max(100).optional(),
+    /** Print the acceptance / signature block. */
+    showAcceptance: z.boolean().optional(),
+});
+const quotationsCreateResult = z.object({
+    id: z.string(),
+    number: z.string(),
+    clientName: z.string(),
+    status: z.string(),
+    issueDate: z.string(),
+    validUntil: z.string(),
+    subtotalMyr: z.number(),
+    taxMyr: z.number(),
+    totalMyr: z.number(),
+});
+
+export const quotationsCreate: AgentTool<
+    z.infer<typeof quotationsCreateInput>,
+    z.infer<typeof quotationsCreateResult>
+> = {
+    name: "quotations.create",
+    description:
+        "Create a new quotation (the pre-sale document, separate from an invoice) for a client. Starts at status 'draft' with an auto number (QUO-YYYY-NNNN). Pass items[] with description/quantity/unitPriceMyr; totals are computed (taxRatePct defaults to 6% SST). Optionally set subject, scopeIncludes/exclusions/terms (bullets, one per line), validUntil, and showAcceptance. Once the client accepts, a human can convert it into an invoice in the app.",
+    inputSchema: quotationsCreateInput,
+    outputSchema: quotationsCreateResult,
+    invoke: async (input) => {
+        const created = await createQuotation({
+            clientName: input.clientName,
+            projectId: input.projectId ?? null,
+            issueDate: input.issueDate,
+            validUntil: input.validUntil,
+            taxRatePct: input.taxRatePct,
+            terms: input.terms,
+            showAcceptance: input.showAcceptance,
+        });
+        // createQuotation starts with no items/sections — fill them in one update.
+        const q = await updateQuotation(created.id, {
+            items: input.items.map((it) => ({
+                id: "",
+                description: it.description,
+                details: it.details ?? "",
+                quantity: it.quantity,
+                unitPriceMyr: it.unitPriceMyr,
+            })),
+            ...(input.subject !== undefined ? { subject: input.subject } : {}),
+            ...(input.scopeIncludes !== undefined
+                ? { scopeIncludes: input.scopeIncludes }
+                : {}),
+            ...(input.exclusions !== undefined
+                ? { exclusions: input.exclusions }
+                : {}),
+            ...(input.notes !== undefined ? { notes: input.notes } : {}),
+        });
+        const { subtotal, tax, total } = computeQuotationTotals(q);
+        return {
+            id: q.id,
+            number: q.number,
+            clientName: q.clientName,
+            status: q.status,
+            issueDate: q.issueDate,
+            validUntil: q.validUntil,
+            subtotalMyr: subtotal,
+            taxMyr: tax,
+            totalMyr: total,
+        };
+    },
+};
+
 // ---- team.create ----------------------------------------------------------
 
 const teamCreateInput = z.object({
@@ -1505,6 +1607,7 @@ export const AGENT_TOOLS: AgentTool[] = [
     invoicesList as unknown as AgentTool,
     // Billing + team writes
     invoicesCreate as unknown as AgentTool,
+    quotationsCreate as unknown as AgentTool,
     teamCreate as unknown as AgentTool,
     // Destructive (human approval required — not in the agent key's scopes)
     projectsDelete as unknown as AgentTool,

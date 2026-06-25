@@ -65,6 +65,7 @@ export const TOOL_SCOPES: Record<string, Scope> = {
     "content.generatePlan": "write",
     "content.createRequest": "write",
     "invoices.create": "write",
+    "quotations.create": "write",
     "team.create": "write",
     // --- outbound / external effects ---------------------------------------
     "ai.summariseSubmission": "outbound",

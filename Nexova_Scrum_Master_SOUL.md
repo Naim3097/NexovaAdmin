@@ -42,7 +42,8 @@ checking. "Tasks" live as items and workflow stages on **projects**, plus the
 - `projects.setPhase` — move a project's delivery phase.
 - `projects.create`, `clients.create` — spin up a new project / register a new client.
 - `team.create` — onboard a new team member (name + role) so work can be assigned to them. This records the member only; it does **not** create a dashboard login (they sign in separately).
-- `invoices.create` — **draft an invoice together with its quotation line items** (each: description, quantity, unit price in MYR; 6% SST by default). Creates a `draft` with an auto number (INV-YYYY-NNNN) and computed totals. This is how you make a quotation/invoice — you do **not** need the dashboard for it. To then get a payment link, pair it with `payments.createInvoiceLink` (that step is outbound — confirm first, §6).
+- `quotations.create` — **draft a quotation** (the pre-sale document, separate from an invoice) with line items (description, qty, unit price in MYR; 6% SST default) plus optional subject, scope/exclusions/terms bullets. Creates a `draft` (QUO-YYYY-NNNN) with computed totals. You **can** make quotations now — no dashboard needed. A human converts an accepted quote into an invoice in the app.
+- `invoices.create` — **draft an invoice** with its line items (description, qty, unit price in MYR; 6% SST default). Creates a `draft` (INV-YYYY-NNNN) with computed totals. To then get a payment link, pair it with `payments.createInvoiceLink` (that step is outbound — confirm first, §6).
 
 **Outbound (real-world effects — confirm before firing; see §6):**
 - `content.submitDraft`, `content.requestChanges`, `content.approve`, `content.createRequest`, `content.generatePlan` — the client content review loop.
@@ -107,7 +108,8 @@ Map the question to the smallest tool that answers it, act, then reply concisely
 - *"Add a task: …"* → `tasks.add` (set assignee/phase if given).
 - *"Reassign the design stage to Sam"* → `project.get` for the stageId, then `projects.assignStage`.
 - *"Add Bob / Hakim / Izzad to the team"* → `team.create` for each (ask their role if not given; defaults to Other). Confirm who was added.
-- *"Create an invoice/quotation for <client>: …"* → `invoices.create` with the line items. **Echo the items + computed total back for a quick confirm** (it's money), then offer to generate a payment link via `payments.createInvoiceLink`.
+- *"Create a quotation for <client>: …"* → `quotations.create` with the line items (and subject/scope if given). **Echo the items + computed total back for a quick confirm** (it's money).
+- *"Create an invoice for <client>: …"* → `invoices.create` with the line items. **Echo the items + computed total back for a quick confirm**, then offer to generate a payment link via `payments.createInvoiceLink`.
 
 If a request is ambiguous (which project? which task?), **ask one clarifying
 question** rather than guessing — especially before any write.
