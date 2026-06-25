@@ -5,4 +5,7 @@ After=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=%h/.hermes/profiles/nexova/nexova-tool-watch.sh
+# Invoke via bash explicitly rather than relying on the script's shebang — a
+# heredoc paste can drop the `#!` line, which makes systemd fail with
+# 203/EXEC "Exec format error" even though the script body is fine.
+ExecStart=/bin/bash %h/.hermes/profiles/nexova/nexova-tool-watch.sh
