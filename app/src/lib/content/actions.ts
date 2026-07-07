@@ -167,3 +167,20 @@ export async function deleteContentPostAction(formData: FormData) {
     revalidatePath("/dashboard");
     redirect("/content");
 }
+
+/**
+ * Delete many content items at once (from the selectable list on the client
+ * profile). Stays on the current page — no redirect.
+ */
+export async function bulkDeleteContentAction(formData: FormData) {
+    const ids = formData.getAll("ids").map(String).filter(Boolean);
+    if (ids.length === 0) return;
+    for (const id of ids) {
+        await deleteContentPost(id);
+    }
+    const clientId = String(formData.get("clientId") ?? "");
+    if (clientId) revalidatePath(`/settings/clients/${clientId}`);
+    revalidatePath("/content");
+    revalidatePath("/content/calendar");
+    revalidatePath("/dashboard");
+}

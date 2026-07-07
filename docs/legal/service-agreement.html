@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Digital Services Agreement — Nexova Solutions</title>
+<style>
+  /* ============================================================
+     DIGITAL SERVICES AGREEMENT — monochrome, print-first layout
+     ============================================================ */
+  @page {
+    size: A4;
+    margin: 20mm 18mm;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #e8e8e8;
+    color: #111;
+    font-family: Georgia, "Times New Roman", "Liberation Serif", serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* On-screen page surface (mimics A4). Removed for print. */
+  .sheet {
+    background: #fff;
+    width: 210mm;
+    min-height: 297mm;
+    margin: 24px auto;
+    padding: 20mm 18mm;
+    box-shadow: 0 1px 6px rgba(0,0,0,.18);
+  }
+
+  p { margin: 0 0 8px; text-align: justify; orphans: 3; widows: 3; }
+
+  /* ---------- Masthead ---------- */
+  .masthead { text-align: center; margin-bottom: 6px; }
+  .masthead img.logo {
+    height: 40px;
+    width: auto;
+    display: block;
+    margin: 0 auto 8px;
+  }
+  .masthead .org {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 7.5pt;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #444;
+    margin-top: 3px;
+  }
+  .rule-double {
+    border: 0;
+    border-top: 2px solid #111;
+    border-bottom: 1px solid #111;
+    height: 3px;
+    margin: 10px 0 0;
+  }
+
+  .doc-title {
+    text-align: center;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 15pt;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin: 20px 0 4px;
+  }
+  .doc-sub {
+    text-align: center;
+    font-style: italic;
+    color: #444;
+    font-size: 9.5pt;
+    margin: 0 0 16px;
+  }
+
+  /* ---------- Section headings ---------- */
+  h2 {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 10.5pt;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin: 22px 0 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #111;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 9.5pt;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    margin: 14px 0 6px;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  /* ---------- Parties block ---------- */
+  .parties { width: 100%; border-collapse: collapse; margin: 0 0 4px; }
+  .parties td {
+    padding: 7px 10px;
+    vertical-align: top;
+    border-top: 1px solid #ccc;
+    font-size: 10pt;
+  }
+  .parties tr:first-child td { border-top: 0; }
+  .parties td.k {
+    width: 26%;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 8pt;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    color: #555;
+    padding-top: 9px;
+  }
+
+  /* ---------- Clauses ---------- */
+  ol.clauses {
+    counter-reset: clause;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  ol.clauses > li {
+    counter-increment: clause;
+    position: relative;
+    padding-left: 30px;
+    margin: 0 0 12px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  ol.clauses > li::before {
+    content: counter(clause) ".";
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-weight: 700;
+    font-size: 9.5pt;
+  }
+  .h { font-weight: 700; }
+
+  ol.sub {
+    counter-reset: sub;
+    list-style: none;
+    margin: 6px 0 0;
+    padding: 0;
+  }
+  ol.sub > li {
+    counter-increment: sub;
+    position: relative;
+    padding-left: 26px;
+    margin: 4px 0;
+  }
+  ol.sub > li::before {
+    content: "(" counter(sub, lower-alpha) ")";
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+
+  /* ---------- Fill-in fields ---------- */
+  .fill {
+    display: inline-block;
+    min-width: 130px;
+    border-bottom: 1px solid #111;
+    padding: 0 4px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  /* ---------- Callout ---------- */
+  .callout {
+    border: 1px solid #111;
+    padding: 9px 12px;
+    font-size: 9.3pt;
+    margin: 12px 0;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .callout .lead {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    font-size: 8pt;
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  /* ---------- Tables ---------- */
+  table.grid {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0 4px;
+    font-size: 9.5pt;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  table.grid th, table.grid td {
+    border: 1px solid #111;
+    padding: 6px 9px;
+    text-align: left;
+    vertical-align: top;
+  }
+  table.grid thead th {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 8pt;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+    font-weight: 700;
+    background: #111;
+    color: #fff;
+  }
+  table.grid td.k {
+    width: 32%;
+    font-weight: 700;
+  }
+  /* Inside a bordered cell the cell is the field, so drop the underline */
+  table.grid .fill {
+    border-bottom: 0;
+    min-width: 0;
+    padding: 0;
+    font-weight: 400;
+    font-style: italic;
+    color: #666;
+  }
+  .amt { text-align: right; white-space: nowrap; }
+  tfoot td { font-weight: 700; }
+
+  /* ---------- Signatures ---------- */
+  .signatures {
+    display: flex;
+    gap: 50px;
+    margin-top: 24px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .sig { flex: 1; }
+  .sig .party {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 8pt;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+    color: #555;
+    line-height: 1.5;
+  }
+  .sig .party strong {
+    display: block;
+    font-size: 10pt;
+    letter-spacing: .4px;
+    color: #111;
+    margin-top: 1px;
+  }
+  .sig .signspace { height: 58px; }
+  .sig .cap {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 7.5pt;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    color: #777;
+    border-top: 1px solid #111;
+    padding-top: 5px;
+  }
+  .sig .rows { margin-top: 18px; }
+  .sig .row {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 11px;
+    font-size: 10pt;
+  }
+  .sig .row .lbl {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 8pt;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    color: #555;
+    flex: 0 0 82px;
+  }
+  .sig .row .v { color: #111; }
+
+  /* ---------- Footer ---------- */
+  .colophon {
+    margin-top: 26px;
+    padding-top: 8px;
+    border-top: 1px solid #111;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 7.5pt;
+    letter-spacing: .3px;
+    color: #444;
+    text-align: center;
+  }
+
+  .page-break { break-before: page; page-break-before: always; }
+  .no-break { break-inside: avoid; page-break-inside: avoid; }
+
+  /* ---------- Screen-only toolbar ---------- */
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    text-align: center;
+    padding: 12px;
+    background: #111;
+  }
+  .toolbar button {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    background: #fff;
+    color: #111;
+    border: 1px solid #fff;
+    padding: 8px 22px;
+    font-size: 9.5pt;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .toolbar span {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    color: #bbb;
+    font-size: 8.5pt;
+    margin-left: 12px;
+  }
+
+  /* ============ PRINT ============ */
+  @media print {
+    html, body { background: #fff; font-size: 10pt; }
+    .sheet {
+      width: auto;
+      min-height: 0;
+      margin: 0;
+      padding: 0;
+      box-shadow: none;
+    }
+    .toolbar { display: none !important; }
+    a { color: inherit; text-decoration: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button onclick="window.print()">Print / Save as PDF</button>
+  <span>Save as PDF · Paper: A4 · Margins: Default · Background graphics: on</span>
+</div>
+
+<div class="sheet">
+
+  <!-- ===================== MASTHEAD ===================== -->
+  <div class="masthead">
+    <img class="logo" src="assets/nexova-logo.png" alt="Nexova Digital" />
+    <div class="org">Nexova Solutions · Trade Reg. No. 20230310415 · Shah Alam, Selangor, Malaysia</div>
+    <hr class="rule-double" />
+  </div>
+
+  <div class="doc-title">Digital Services Agreement</div>
+  <p class="doc-sub">Standing terms governing digital marketing and related services provided by Nexova to the Client.</p>
+
+  <!-- ===================== PARTIES ===================== -->
+  <table class="parties">
+    <tr>
+      <td class="k">Agreement Ref.</td>
+      <td><span class="fill">QUOT-063-R</span></td>
+      <td class="k">Date</td>
+      <td><span class="fill">1 July 2026</span></td>
+    </tr>
+    <tr>
+      <td class="k">Service Provider</td>
+      <td colspan="3"><strong>Nexova Solutions</strong> (Trade Reg. No. 20230310415), of 1F, Lot 184107 (Lot Lama 3579), Jalan Haji Taib, Batu 7&nbsp;1/2, Jln Kebun Tambahan, Kampung Jln Kebun, 40460 Shah Alam, Selangor, Malaysia (&ldquo;<strong>Nexova</strong>&rdquo;).</td>
+    </tr>
+    <tr>
+      <td class="k">Client</td>
+      <td colspan="3"><strong>Tropicor Fruit Manufacturing Sdn. Bhd.</strong> of No.&nbsp;36, Lorong Sungai Puloh 1A/KU6, Taman Teknologi Gemilang, Kawasan Perindustrian Sg. Puloh, 42100 Klang, Selangor, Malaysia (the &ldquo;<strong>Client</strong>&rdquo;).</td>
+    </tr>
+    <tr>
+      <td class="k">Engagement</td>
+      <td colspan="3">The services described in the attached Quotation / Proposal (<strong>Schedule&nbsp;1</strong>), which forms part of this Agreement.</td>
+    </tr>
+  </table>
+
+  <div class="callout">
+    <span class="lead">How this Agreement works</span>
+    This document contains the standing legal terms. The specific services, deliverables, fees and payment schedule for each
+    engagement are set out in <strong>Schedule&nbsp;1 (Scope &amp; Commercials)</strong>, which attaches the Quotation / Proposal.
+    Signing this Agreement is what accepts and incorporates that Quotation &mdash; the Quotation itself needs no separate signature.
+    Where the Quotation and these terms conflict, these terms prevail unless the Quotation expressly states otherwise.
+  </div>
+
+  <!-- ===================== CLAUSES ===================== -->
+  <h2>Terms &amp; Conditions</h2>
+  <ol class="clauses">
+
+    <li>
+      <span class="h">Scope of Services.</span>
+      Nexova will provide the services and deliverables described in Schedule&nbsp;1 (the &ldquo;<strong>Services</strong>&rdquo;).
+      Any work not expressly listed as included is out of scope and may be quoted separately. Items marked
+      &ldquo;Not Included&rdquo; in the Quotation are excluded.
+    </li>
+
+    <li>
+      <span class="h">Term &amp; Commitment.</span>
+      This Agreement begins on the date of signing (or first payment, if earlier) and continues for the term stated in
+      Schedule&nbsp;1 (the &ldquo;<strong>Term</strong>&rdquo;), including any minimum commitment period. On completion of the Term the
+      Agreement ends automatically, unless the parties agree in writing to extend or renew it.
+    </li>
+
+    <li>
+      <span class="h">Fees, Ad Spend &amp; Taxes.</span>
+      <ol class="sub">
+        <li>Fees and the payment schedule are as stated in Schedule&nbsp;1. All amounts are in Ringgit Malaysia (RM) and are exclusive of SST (currently 8%) where applicable.</li>
+        <li>Third-party media / advertising spend (e.g. Google, Meta) is paid directly to the platform on the Client&rsquo;s behalf and is <em>not</em> a fee to Nexova. Any top-up above the included budget is funded separately by the Client.</li>
+        <li>Invoices are due per Schedule&nbsp;1. Nexova may suspend the Services while any undisputed invoice remains overdue.</li>
+      </ol>
+    </li>
+
+    <li>
+      <span class="h">Client Responsibilities.</span>
+      The Client will provide timely access, content, brand assets, approvals and account access (e.g. domain, hosting,
+      analytics, ad accounts) needed to perform the Services, together with a single point of contact for approvals. Delays in
+      Client inputs may extend timelines without affecting fees.
+    </li>
+
+    <li>
+      <span class="h">Approvals &amp; Revisions.</span>
+      Deliverables are deemed approved if not rejected in writing within <span class="fill" style="min-width:34px">5</span> business days.
+      Reasonable revisions to bring a deliverable in line with the agreed brief are included; new requirements, added scope or a
+      change of direction after approval may be quoted separately.
+    </li>
+
+    <li>
+      <span class="h">Intellectual Property.</span>
+      <ol class="sub">
+        <li>Upon full payment for the relevant deliverable, ownership of the final, approved deliverables created specifically for the Client transfers to the Client.</li>
+        <li>Nexova retains ownership of its pre-existing tools, templates, code libraries, know-how and methods, and grants the Client a licence to use them as embedded in the deliverables.</li>
+        <li>Third-party assets (e.g. stock media, fonts, plugins) remain subject to their own licences.</li>
+        <li>Nexova may reference the Client and display non-confidential work in its portfolio unless the Client opts out in writing.</li>
+      </ol>
+    </li>
+
+    <li>
+      <span class="h">Confidentiality.</span>
+      Each party will keep the other&rsquo;s non-public information confidential and use it only for this engagement. This
+      obligation continues for two (2) years after the Term.
+    </li>
+
+    <li>
+      <span class="h">Data Protection (PDPA).</span>
+      Both parties will comply with the Personal Data Protection Act 2010 (Malaysia). Nexova will process personal data only to
+      deliver the Services and will apply reasonable security measures.
+    </li>
+
+    <li>
+      <span class="h">Results &amp; Third Parties.</span>
+      Nexova applies professional skill and industry best practice but does not guarantee specific rankings, traffic, leads or
+      sales, as these depend on third-party platforms and market factors outside our control. Nexova is not liable for changes
+      to third-party platforms, algorithms, policies or outages.
+    </li>
+
+    <li>
+      <span class="h">Limitation of Liability.</span>
+      To the extent permitted by law, neither party is liable for indirect or consequential loss. Nexova&rsquo;s total liability
+      under this Agreement is capped at the total fees paid by the Client in the <span class="fill" style="min-width:34px">3</span> months
+      preceding the claim (excluding ad spend).
+    </li>
+
+    <li>
+      <span class="h">Suspension &amp; Termination.</span>
+      <ol class="sub">
+        <li>Either party may terminate for material breach not remedied within fourteen (14) days of written notice.</li>
+        <li>The Client may terminate for convenience after any minimum commitment on <span class="fill" style="min-width:36px">30</span> days&rsquo; written notice.</li>
+        <li>On termination, the Client pays for all Services delivered and work-in-progress up to the termination date. Prepaid milestone amounts for completed work are non-refundable.</li>
+      </ol>
+    </li>
+
+    <li>
+      <span class="h">Force Majeure.</span>
+      Neither party is liable for delay or failure caused by events beyond reasonable control (e.g. natural disasters, outages,
+      government action).
+    </li>
+
+    <li>
+      <span class="h">Governing Law.</span>
+      This Agreement is governed by the laws of Malaysia, and the parties submit to the non-exclusive jurisdiction of the
+      Malaysian courts. The parties will attempt good-faith resolution before commencing litigation.
+    </li>
+
+    <li>
+      <span class="h">Entire Agreement.</span>
+      This Agreement and its Schedules constitute the entire agreement between the parties and supersede prior discussions.
+      Variations must be in writing and signed by both parties. If any clause is unenforceable, the remainder stays in effect.
+    </li>
+
+  </ol>
+
+  <!-- ===================== SCHEDULE 1 ===================== -->
+  <div class="page-break"></div>
+  <h2>Schedule 1 — Scope &amp; Commercials</h2>
+  <p>
+    The Services, deliverables, term and fees for this engagement are set out in the attached Quotation / Proposal
+    (Ref.&nbsp;<span class="fill" style="min-width:110px">QUOT-063-R</span>), which is incorporated into and forms part of this
+    Agreement. The Quotation does not require separate signature; the parties&rsquo; signatures on this Agreement confirm their
+    acceptance of it. The summary below is for convenience; the attached Quotation governs the detail.
+  </p>
+
+  <table class="grid">
+    <thead>
+      <tr><th style="width:32%">Item</th><th>Detail</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="k">Engagement</td><td>Nexova SEO &amp; Growth Retainer</td></tr>
+      <tr><td class="k">Term / Commitment</td><td>3 months (Months 1&ndash;3) &middot; minimum 3-month commitment</td></tr>
+      <tr><td class="k">Total Engagement Value</td><td><strong>RM 13,500.00</strong> (excl. SST)</td></tr>
+      <tr><td class="k">Included Media Spend</td><td>RM 500/month (Months 2 &amp; 3) &mdash; paid directly to Google, not a Nexova fee</td></tr>
+      <tr><td class="k">Deliverables &amp; Exclusions</td><td>As itemised in the attached Quotation (&ldquo;Full Engagement Scope&rdquo; and &ldquo;Not Included&rdquo;).</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Payment Schedule</h3>
+  <table class="grid">
+    <thead>
+      <tr><th>Invoice</th><th>Milestone</th><th class="amt">Share</th><th class="amt">Amount (RM)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>INV-063-01</td><td>Commencement &mdash; due on signing</td><td class="amt">30%</td><td class="amt">4,050.00</td></tr>
+      <tr><td>INV-063-02</td><td>Progress &mdash; due start of Month 2</td><td class="amt">35%</td><td class="amt">4,725.00</td></tr>
+      <tr><td>INV-063-03</td><td>Final &mdash; due start of Month 3</td><td class="amt">35%</td><td class="amt">4,725.00</td></tr>
+    </tbody>
+    <tfoot>
+      <tr><td colspan="2">Total</td><td class="amt">100%</td><td class="amt">13,500.00</td></tr>
+    </tfoot>
+  </table>
+
+  <div class="callout">
+    <span class="lead">Payment details</span>
+    Maybank · Account Name: Nexova Solutions · Account No: 5186&nbsp;0805&nbsp;4608 · SWIFT: MBBEMYKL. Payments are percentages
+    of the total engagement value, not standalone monthly fees. Amounts are in RM and exclusive of SST (8%) where applicable.
+  </div>
+
+  <!-- ===================== SIGNATURES ===================== -->
+  <h2>Acceptance</h2>
+  <p>By signing below, the parties agree to be bound by this Agreement and its Schedules.</p>
+
+  <div class="signatures">
+    <div class="sig">
+      <div class="party">For and on behalf of<strong>Nexova Solutions</strong></div>
+      <div class="signspace"></div>
+      <div class="cap">Authorised Signature &amp; Company Stamp</div>
+      <div class="rows">
+        <div class="row"><span class="lbl">Name</span><span class="v">Muhammad Danisy Bin Amaludin</span></div>
+        <div class="row"><span class="lbl">Designation</span><span class="v">Digital Marketing</span></div>
+        <div class="row"><span class="lbl">Date</span><span class="v">1 July 2026</span></div>
+      </div>
+    </div>
+    <div class="sig">
+      <div class="party">For and on behalf of<strong>the Client</strong></div>
+      <div class="signspace"></div>
+      <div class="cap">Authorised Signature &amp; Company Stamp</div>
+      <div class="rows">
+        <div class="row"><span class="lbl">Name</span></div>
+        <div class="row"><span class="lbl">Designation</span></div>
+        <div class="row"><span class="lbl">Date</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="colophon">
+    Nexova Solutions · Trade Reg. No. 20230310415 · sales@nexovadigital.com · +60&nbsp;17-606&nbsp;8152<br />
+    Light-form services agreement. For high-value or bespoke engagements, seek independent legal advice.
+  </div>
+
+</div>
+</body>
+</html>

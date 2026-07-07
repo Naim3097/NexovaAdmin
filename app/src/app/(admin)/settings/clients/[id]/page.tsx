@@ -24,6 +24,7 @@ import {
     updateClientAction,
 } from "@/lib/clients/actions";
 import { ClientInviteForm } from "./client-invite-form";
+import { ContentBulkList } from "./content-bulk-list";
 
 export const dynamic = "force-dynamic";
 
@@ -455,25 +456,15 @@ export default async function ClientDetailPage({
             ) : null}
 
             {myContent.length > 0 ? (
-                <Section title={`Content (${myContent.length})`}>
-                    {myContent.slice(0, 10).map((c) => (
-                        <li
-                            key={c.id}
-                            className="flex items-center justify-between p-3"
-                        >
-                            <Link
-                                href={`/content/${c.id}`}
-                                className="hover:underline"
-                            >
-                                {c.title}{" "}
-                                <span className="text-muted-foreground">
-                                    · {c.scheduledFor}
-                                </span>
-                            </Link>
-                            <Badge variant="secondary">{c.status}</Badge>
-                        </li>
-                    ))}
-                </Section>
+                <ContentBulkList
+                    clientId={client.id}
+                    items={myContent.map((c) => ({
+                        id: c.id,
+                        title: c.title,
+                        scheduledFor: c.scheduledFor,
+                        status: c.status,
+                    }))}
+                />
             ) : null}
 
             {/* Delete */}
