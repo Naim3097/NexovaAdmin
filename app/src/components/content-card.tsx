@@ -50,6 +50,11 @@ export function ContentCard({
                     <CardTitle className="text-sm">{post.title}</CardTitle>
                     <StatusLights post={post} showCaption />
                 </div>
+                {post.visualCount > 1 ? (
+                    <p className="text-xs text-muted-foreground">
+                        ⧉ Carousel · {post.visualCount} visuals
+                    </p>
+                ) : null}
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
                 {clientReview ? (

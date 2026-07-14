@@ -156,7 +156,7 @@ export default async function PortalReportMonthPage({
                                     {report.extras.contentCharge > 0 ? (
                                         <tr className="border-b">
                                             <td className="px-3 py-2">
-                                                Extra content ×{" "}
+                                                Extra visuals ×{" "}
                                                 {report.extras.contentCount}
                                             </td>
                                             <td className="px-3 py-2 text-right">

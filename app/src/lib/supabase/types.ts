@@ -374,6 +374,7 @@ export type ContentPostRow = {
     visual_headline: string;
     visual_idea: string;
     copywriting: string;
+    visual_count: number;
     billable: boolean;
     billable_revisions: number;
     review_status: string;

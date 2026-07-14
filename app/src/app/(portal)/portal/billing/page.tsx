@@ -88,7 +88,7 @@ export default async function PortalBillingPage() {
                     />
                     {extras.contentCount > 0 ? (
                         <Row
-                            label={`Extra content × ${extras.contentCount}`}
+                            label={`Extra visuals × ${extras.contentCount}`}
                             value={fmtMyr(extras.contentCharge)}
                         />
                     ) : null}

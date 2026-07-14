@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,31 +12,109 @@ import {
 
 const initial: PortalCreateState = { ok: false };
 
+/**
+ * Client content request with per-visual quota math shown up front:
+ * a single post = 1 visual; a carousel = several. Picking Carousel reveals a
+ * visuals stepper, and the live line shows exactly how many visuals remain in
+ * the plan and how many (if any) will be chargeable — before submitting.
+ */
 export function RequestContentForm({
-    overQuota = false,
+    quota = 0,
+    used = 0,
     extraPrice = 0,
 }: {
-    overQuota?: boolean;
+    /** Monthly visual quota (0 = no cap). */
+    quota?: number;
+    /** Visuals already used this month. */
+    used?: number;
     extraPrice?: number;
 }) {
     const [state, formAction, pending] = useActionState(
         portalCreateContentAction,
         initial,
     );
+    const [carousel, setCarousel] = useState(false);
+    const [visuals, setVisuals] = useState(3);
+
+    const requested = carousel ? Math.max(2, visuals) : 1;
+    const chargeable = quota > 0 ? Math.max(0, used + requested - quota) : 0;
+    const remaining = quota > 0 ? Math.max(0, quota - used) : 0;
 
     return (
         <form action={formAction} className="space-y-3">
-            {overQuota ? (
-                <p className="rounded-md border border-amber-400/40 bg-amber-50 p-3 text-xs text-amber-800">
-                    You&apos;ve used your plan for this month. Extra content is
-                    charged at <strong>MYR {extraPrice.toFixed(2)}</strong> each —
-                    submitting below means you agree to the charge.
-                </p>
-            ) : null}
             <div className="space-y-1.5">
                 <Label className="text-sm">What do you need?</Label>
                 <Input name="title" required placeholder="e.g. Raya promo post" />
             </div>
+
+            {/* Format: single visual vs carousel */}
+            <div className="space-y-1.5">
+                <Label className="text-sm">Format</Label>
+                <div className="flex flex-wrap items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={() => setCarousel(false)}
+                        className={`rounded-full border px-3 py-1 text-xs ${!carousel ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}
+                    >
+                        Single visual
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setCarousel(true)}
+                        className={`rounded-full border px-3 py-1 text-xs ${carousel ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}
+                    >
+                        Carousel
+                    </button>
+                    {carousel ? (
+                        <div className="flex items-center gap-2">
+                            <Input
+                                name="visualCount"
+                                type="number"
+                                min={2}
+                                max={20}
+                                value={requested}
+                                onChange={(e) =>
+                                    setVisuals(
+                                        Math.max(
+                                            2,
+                                            Math.min(
+                                                20,
+                                                Number(e.target.value) || 2,
+                                            ),
+                                        ),
+                                    )
+                                }
+                                className="h-8 w-20"
+                            />
+                            <span className="text-xs text-muted-foreground">
+                                visuals
+                            </span>
+                        </div>
+                    ) : (
+                        <input type="hidden" name="visualCount" value={1} />
+                    )}
+                </div>
+                {/* Live quota math — no billing surprises */}
+                {quota > 0 ? (
+                    chargeable > 0 ? (
+                        <p className="rounded-md border border-amber-400/40 bg-amber-50 p-2 text-xs text-amber-800">
+                            This uses <strong>{requested}</strong> visual
+                            {requested === 1 ? "" : "s"} — {remaining} left in
+                            your plan, so <strong>{chargeable}</strong> will be
+                            chargeable at{" "}
+                            <strong>MYR {extraPrice.toFixed(2)}</strong> each.
+                            Submitting means you agree to the charge.
+                        </p>
+                    ) : (
+                        <p className="text-xs text-muted-foreground">
+                            Uses {requested} of your {remaining} remaining
+                            visual{remaining === 1 ? "" : "s"} this month (
+                            {used}/{quota} used).
+                        </p>
+                    )
+                ) : null}
+            </div>
+
             <div className="space-y-1.5">
                 <Label className="text-sm">Direction</Label>
                 <Textarea

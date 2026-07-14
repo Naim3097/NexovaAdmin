@@ -586,7 +586,7 @@ export default async function ClientMonthlyReportPage({
                                     {report.extras.contentCount > 0 ? (
                                         <tr className="border-b last:border-b-0">
                                             <td className="px-3 py-2">
-                                                Extra content (beyond plan)
+                                                Extra visuals (beyond plan)
                                             </td>
                                             <td className="px-3 py-2 text-right">
                                                 {report.extras.contentCount}

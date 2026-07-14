@@ -129,6 +129,11 @@ export type ContentPost = {
     visualHeadline: string;
     visualIdea: string;
     copywriting: string;
+    /**
+     * How many visuals this item needs (carousel = several; single image or
+     * video = 1). Quota + chargeable extras count VISUALS: 1 visual = 1 quota.
+     */
+    visualCount: number;
     /** This item is an extra (created beyond the client's monthly quota). */
     billable: boolean;
     /** # of revisions on this item that were beyond the client's limit. */
@@ -164,6 +169,7 @@ function normalizeContentPost(p: ContentPost): ContentPost {
         visualHeadline: p.visualHeadline ?? "",
         visualIdea: p.visualIdea ?? "",
         copywriting: p.copywriting ?? "",
+        visualCount: p.visualCount ?? 1,
         billable: p.billable ?? false,
         billableRevisions: p.billableRevisions ?? 0,
         reviewStatus: p.reviewStatus ?? "none",
@@ -201,6 +207,7 @@ export async function createContentPost(input: {
     origin?: ContentOrigin;
     direction?: string;
     references?: string[];
+    visualCount?: number;
     billable?: boolean;
 }): Promise<ContentPost> {
     await ensureDir();
@@ -226,6 +233,7 @@ export async function createContentPost(input: {
         visualHeadline: "",
         visualIdea: "",
         copywriting: "",
+        visualCount: Math.max(1, input.visualCount ?? 1),
         billable: input.billable ?? false,
         billableRevisions: 0,
         reviewStatus: "none",

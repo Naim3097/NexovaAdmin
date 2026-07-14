@@ -1,5 +1,9 @@
 import Link from "next/link";
-import { listContentPosts, type ContentPost } from "@/lib/data/content";
+import {
+    listContentPosts,
+    visualsUsed,
+    type ContentPost,
+} from "@/lib/data/content";
 import { listClients } from "@/lib/data/clients";
 import { ContentCard } from "@/components/content-card";
 
@@ -54,6 +58,12 @@ export default async function ContentBoardPage({
     const monthPosts = clientPosts
         .filter((p) => p.planMonth === selectedMonth)
         .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+
+    // Per-visual quota meter for the selected client + month.
+    const clientRec = clients.find((c) => eq(c.name, selectedClient));
+    const quota = clientRec?.monthlyContentQuota ?? 0;
+    const used = visualsUsed(posts, selectedClient, selectedMonth);
+    const over = quota > 0 ? Math.max(0, used - quota) : 0;
 
     const pill = (active: boolean) =>
         `rounded-full border px-3 py-1 text-xs ${active ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`;
@@ -129,6 +139,41 @@ export default async function ContentBoardPage({
                             </Link>
                         ))}
                     </div>
+
+                    {/* Per-visual quota meter */}
+                    {quota > 0 ? (
+                        <div className="max-w-md space-y-1">
+                            <div className="flex items-baseline justify-between text-xs">
+                                <span className="text-muted-foreground">
+                                    Visuals used · {fmtMonth(selectedMonth)}
+                                </span>
+                                <span
+                                    className={
+                                        over > 0
+                                            ? "font-medium text-destructive"
+                                            : "text-muted-foreground"
+                                    }
+                                >
+                                    {used}/{quota}
+                                    {over > 0 ? ` · ${over} over (billable)` : ""}
+                                </span>
+                            </div>
+                            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                                <div
+                                    className={`h-full rounded-full ${
+                                        over > 0
+                                            ? "bg-destructive"
+                                            : used >= quota
+                                              ? "bg-amber-400"
+                                              : "bg-primary"
+                                    }`}
+                                    style={{
+                                        width: `${Math.min(100, quota > 0 ? (used / quota) * 100 : 0)}%`,
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    ) : null}
 
                     {/* Cards */}
                     {monthPosts.length === 0 ? (

@@ -74,6 +74,7 @@ function rowToPost(row: ContentPostRow): ContentPost {
         visualHeadline: row.visual_headline,
         visualIdea: row.visual_idea,
         copywriting: row.copywriting,
+        visualCount: Math.max(1, Number(row.visual_count ?? 1)),
         billable: row.billable,
         billableRevisions: row.billable_revisions,
         reviewStatus: row.review_status as ContentReviewStatus,
@@ -112,6 +113,7 @@ function postToInsert(p: ContentPost): ContentInsert {
         visual_headline: p.visualHeadline,
         visual_idea: p.visualIdea,
         copywriting: p.copywriting,
+        visual_count: p.visualCount,
         billable: p.billable,
         billable_revisions: p.billableRevisions,
         review_status: p.reviewStatus,
@@ -151,6 +153,7 @@ function patchToUpdate(patch: UpdatePatch): ContentUpdate {
         out.visual_headline = patch.visualHeadline;
     if (patch.visualIdea !== undefined) out.visual_idea = patch.visualIdea;
     if (patch.copywriting !== undefined) out.copywriting = patch.copywriting;
+    if (patch.visualCount !== undefined) out.visual_count = patch.visualCount;
     if (patch.billable !== undefined) out.billable = patch.billable;
     if (patch.billableRevisions !== undefined)
         out.billable_revisions = patch.billableRevisions;
@@ -185,6 +188,7 @@ export async function createContentPost(input: {
     origin?: ContentOrigin;
     direction?: string;
     references?: string[];
+    visualCount?: number;
     billable?: boolean;
 }): Promise<ContentPost> {
     if (!isSupabaseEnabled("content")) return devContent.createContentPost(input);
@@ -211,6 +215,7 @@ export async function createContentPost(input: {
         visualHeadline: "",
         visualIdea: "",
         copywriting: "",
+        visualCount: Math.max(1, input.visualCount ?? 1),
         billable: input.billable ?? false,
         billableRevisions: 0,
         reviewStatus: "none",
@@ -351,6 +356,19 @@ export async function submitDraft(input: {
         throw new Error("submitDraft: at least one asset is required");
     }
 
+    // Duplicate-submit guard: a slow upload + a second button click used to
+    // create the same draft twice. If the latest draft has the same stage and
+    // landed within the last 2 minutes, treat this as that double-fire and
+    // return the post unchanged.
+    const last = post.drafts[post.drafts.length - 1];
+    if (
+        last &&
+        last.draftNumber === input.draftNumber &&
+        Date.now() - Date.parse(last.submittedAt) < 2 * 60 * 1000
+    ) {
+        return post;
+    }
+
     const assetType: ContentAssetType =
         input.assetType ??
         (input.media.some((m) => m.type === "video")
@@ -488,6 +506,7 @@ export async function createContentRequest(input: {
     references?: string[];
     planMonth?: string;
     scheduledFor?: string;
+    visualCount?: number;
     billable?: boolean;
 }): Promise<ContentPost> {
     const month = input.planMonth || new Date().toISOString().slice(0, 7);
@@ -501,6 +520,8 @@ export async function createContentRequest(input: {
         references: input.references ?? [],
         planMonth: month,
         origin: "request",
+        type: (input.visualCount ?? 1) > 1 ? "carousel" : undefined,
+        visualCount: input.visualCount ?? 1,
         billable: input.billable ?? false,
     });
 
@@ -519,4 +540,25 @@ export async function deleteContentPost(id: string): Promise<void> {
     const sb = createServiceClient();
     const { error } = await sb.from(TABLE).delete().eq("id", id);
     if (error) throw new Error(`deleteContentPost: ${error.message}`);
+}
+
+/**
+ * Visuals consumed by a client in a plan month — the quota unit. Sums each
+ * item's `visualCount` (carousel = several, single = 1); archived items don't
+ * count. Pure helper: pass a pre-fetched post list.
+ */
+export function visualsUsed(
+    posts: ContentPost[],
+    clientName: string,
+    month: string,
+): number {
+    const name = clientName.trim().toLowerCase();
+    return posts
+        .filter(
+            (p) =>
+                p.clientName.trim().toLowerCase() === name &&
+                p.planMonth === month &&
+                p.status !== "archived",
+        )
+        .reduce((sum, p) => sum + Math.max(1, p.visualCount || 1), 0);
 }

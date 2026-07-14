@@ -132,7 +132,7 @@ export async function createMonthlyInvoiceAction(formData: FormData) {
         items.push({
             id: "",
             details: "",
-            description: `Extra content beyond plan — ${month}`,
+            description: `Extra visuals beyond plan — ${month}`,
             quantity: extras.contentCount,
             unitPriceMyr: extras.contentPrice,
         });

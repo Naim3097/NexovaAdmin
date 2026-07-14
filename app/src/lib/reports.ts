@@ -514,13 +514,23 @@ export async function buildClientMonthlyReport(
             inMonth(p.approvedAt, monthKey),
     );
 
-    // Chargeable extras: content created beyond the plan + revisions beyond the
-    // limit, this month, priced from the client's per-extra rates.
+    // Chargeable extras: VISUALS beyond the monthly quota (carousel = several
+    // visuals, single = 1) + revisions beyond the limit, priced from the
+    // client's per-extra rates. Exact overage: total visuals used − quota.
     const clientCfg = clients.find((c) => c.name === clientName);
     const monthContent = posts.filter(
         (p) => p.clientName === clientName && p.planMonth === monthKey,
     );
-    const extraContentCount = monthContent.filter((p) => p.billable).length;
+    const monthVisuals = monthContent
+        .filter((p) => p.status !== "archived")
+        .reduce((sum, p) => sum + Math.max(1, p.visualCount || 1), 0);
+    const quota = clientCfg?.monthlyContentQuota ?? 0;
+    const extraContentCount =
+        quota > 0
+            ? Math.max(0, monthVisuals - quota)
+            : monthContent
+                  .filter((p) => p.billable)
+                  .reduce((sum, p) => sum + Math.max(1, p.visualCount || 1), 0);
     const extraRevisionCount = monthContent.reduce(
         (n, p) => n + (p.billableRevisions || 0),
         0,

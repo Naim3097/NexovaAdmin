@@ -13,6 +13,7 @@ import {
     getContentPostById,
     listContentPosts,
     requestChanges,
+    visualsUsed,
 } from "@/lib/data/content";
 
 export type PortalCreateState = { ok: boolean; message?: string };
@@ -84,16 +85,23 @@ export async function portalCreateContentAction(
 
     const month = currentMonth();
 
-    // Over the monthly quota is ALLOWED but billable (0 quota = no cap).
-    let billable = false;
+    // Quota counts VISUALS (carousel = several, single = 1). Going over is
+    // ALLOWED but billable per extra visual (0 quota = no cap).
+    const rawVisuals = Number(formData.get("visualCount") ?? 1);
+    const visualCount =
+        Number.isFinite(rawVisuals) && rawVisuals >= 1
+            ? Math.min(20, Math.floor(rawVisuals))
+            : 1;
+
+    let chargeableVisuals = 0;
     if (client.monthlyContentQuota > 0) {
-        const used = (await listContentPosts()).filter(
-            (p) =>
-                p.clientName.trim().toLowerCase() ===
-                    client.name.trim().toLowerCase() && p.planMonth === month,
-        ).length;
-        billable = used >= client.monthlyContentQuota;
+        const used = visualsUsed(await listContentPosts(), client.name, month);
+        chargeableVisuals = Math.max(
+            0,
+            used + visualCount - client.monthlyContentQuota,
+        );
     }
+    const billable = chargeableVisuals > 0;
 
     await createContentRequest({
         clientName: client.name,
@@ -101,6 +109,7 @@ export async function portalCreateContentAction(
         direction,
         references,
         planMonth: month,
+        visualCount,
         billable,
     });
 
@@ -110,7 +119,7 @@ export async function portalCreateContentAction(
     return {
         ok: true,
         message: billable
-            ? `Request submitted. This is beyond your plan, so it's chargeable at MYR ${client.extraContentPrice.toFixed(2)}.`
+            ? `Request submitted. ${chargeableVisuals} visual${chargeableVisuals === 1 ? " is" : "s are"} beyond your plan — chargeable at MYR ${client.extraContentPrice.toFixed(2)} each.`
             : "Request submitted — we'll get on it.",
     };
 }

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getCurrentClient } from "@/lib/auth";
-import { listContentPosts } from "@/lib/data/content";
+import { listContentPosts, visualsUsed } from "@/lib/data/content";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ContentCard } from "@/components/content-card";
 import { RequestContentForm } from "./request-content-form";
@@ -84,12 +84,8 @@ export default async function PortalContentPage({
         (p) => p.reviewStatus === "awaiting_client",
     ).length;
 
-    const usedThisMonth = mine.filter(
-        (p) => p.planMonth === currentMonth(),
-    ).length;
-    const overQuota =
-        client.monthlyContentQuota > 0 &&
-        usedThisMonth >= client.monthlyContentQuota;
+    // Quota counts VISUALS (carousel = several, single = 1).
+    const usedThisMonth = visualsUsed(mine, client.name, currentMonth());
 
     const pill = (active: boolean) =>
         `rounded-full border px-3 py-1 text-xs ${active ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`;
@@ -106,6 +102,39 @@ export default async function PortalContentPage({
                         ? `${awaitingCount} item(s) waiting for your review.`
                         : "Review, approve, or request content."}
                 </p>
+                {client.monthlyContentQuota > 0 ? (
+                    <div className="mt-3 max-w-sm space-y-1">
+                        <div className="flex items-baseline justify-between text-xs">
+                            <span className="text-muted-foreground">
+                                This month&apos;s visuals
+                            </span>
+                            <span
+                                className={
+                                    usedThisMonth > client.monthlyContentQuota
+                                        ? "font-medium text-destructive"
+                                        : "text-muted-foreground"
+                                }
+                            >
+                                {usedThisMonth}/{client.monthlyContentQuota} used
+                            </span>
+                        </div>
+                        <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                            <div
+                                className={`h-full rounded-full ${
+                                    usedThisMonth > client.monthlyContentQuota
+                                        ? "bg-destructive"
+                                        : usedThisMonth >=
+                                            client.monthlyContentQuota
+                                          ? "bg-amber-400"
+                                          : "bg-primary"
+                                }`}
+                                style={{
+                                    width: `${Math.min(100, (usedThisMonth / client.monthlyContentQuota) * 100)}%`,
+                                }}
+                            />
+                        </div>
+                    </div>
+                ) : null}
             </div>
 
             <Card>
@@ -114,7 +143,8 @@ export default async function PortalContentPage({
                 </CardHeader>
                 <CardContent>
                     <RequestContentForm
-                        overQuota={overQuota}
+                        quota={client.monthlyContentQuota}
+                        used={usedThisMonth}
                         extraPrice={client.extraContentPrice}
                     />
                 </CardContent>

@@ -97,6 +97,11 @@ export async function updateContentPostAction(formData: FormData) {
         patch.visualHeadline = str("visualHeadline");
     if (formData.has("visualIdea")) patch.visualIdea = str("visualIdea");
     if (formData.has("copywriting")) patch.copywriting = str("copywriting");
+    if (formData.has("visualCount")) {
+        const n = Number(formData.get("visualCount"));
+        patch.visualCount =
+            Number.isFinite(n) && n >= 1 ? Math.min(20, Math.floor(n)) : 1;
+    }
     await updateContentPost(id, patch);
     revalidatePath(`/content/${id}`);
     revalidatePath("/content");

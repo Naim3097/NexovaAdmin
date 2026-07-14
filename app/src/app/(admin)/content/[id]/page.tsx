@@ -6,11 +6,15 @@ import {
     CONTENT_PLATFORMS,
     CONTENT_TYPES,
     getContentPostById,
+    listContentPosts,
+    visualsUsed,
 } from "@/lib/data/content";
 import { listClients } from "@/lib/data/clients";
 import { listTeamMembers } from "@/lib/data/team";
 import { ReviewTimeline } from "@/components/review-timeline";
 import { StatusLights } from "@/components/status-lights";
+import { TypeVisualsFields } from "@/components/type-visuals-fields";
+import { PendingButton } from "@/components/pending-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,15 +42,24 @@ export default async function ContentDetailPage({
     const { id } = await params;
     const post = await getContentPostById(id);
     if (!post) notFound();
-    const [team, clients] = await Promise.all([
+    const [team, clients, allPosts] = await Promise.all([
         listTeamMembers(),
         listClients(),
+        listContentPosts(),
     ]);
     const client = clients.find(
         (c) =>
             c.name.trim().toLowerCase() === post.clientName.trim().toLowerCase(),
     );
     const revisionLimit = client?.contentRevisionLimit ?? 3;
+    // Per-visual quota context for the Type/Visuals control (exclude this post).
+    const quotaMonth =
+        post.planMonth || new Date().toISOString().slice(0, 7);
+    const usedByOthers = visualsUsed(
+        allPosts.filter((p) => p.id !== post.id),
+        post.clientName,
+        quotaMonth,
+    );
     const activeTeam = team.filter((m) => m.active);
     const assigneeOptions =
         post.assignee && !activeTeam.some((m) => m.name === post.assignee)
@@ -150,21 +163,13 @@ export default async function ContentDetailPage({
                             </SelectContent>
                         </Select>
                     </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Type</Label>
-                        <Select name="type" defaultValue={post.type}>
-                            <SelectTrigger className="h-10">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {CONTENT_TYPES.map((t) => (
-                                    <SelectItem key={t} value={t}>
-                                        {t}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    <TypeVisualsFields
+                        types={CONTENT_TYPES}
+                        defaultType={post.type}
+                        defaultVisualCount={post.visualCount}
+                        quota={client?.monthlyContentQuota ?? 0}
+                        usedByOthers={usedByOthers}
+                    />
                     <div className="space-y-1.5">
                         <Label className="text-sm">Scheduled for</Label>
                         <Input
@@ -298,7 +303,9 @@ export default async function ContentDetailPage({
                             />
                         </div>
                         <div className="flex justify-end">
-                            <Button type="submit">Send draft to client</Button>
+                            <PendingButton pendingLabel="Uploading…">
+                                Send draft to client
+                            </PendingButton>
                         </div>
                     </form>
                 )}
