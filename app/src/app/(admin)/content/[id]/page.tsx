@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
-    CONTENT_ASSET_TYPES,
     CONTENT_DRAFT_STAGES,
     CONTENT_PLATFORMS,
     CONTENT_TYPES,
@@ -14,7 +13,7 @@ import { listTeamMembers } from "@/lib/data/team";
 import { ReviewTimeline } from "@/components/review-timeline";
 import { StatusLights } from "@/components/status-lights";
 import { TypeVisualsFields } from "@/components/type-visuals-fields";
-import { PendingButton } from "@/components/pending-button";
+import { DraftUploader } from "./draft-uploader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,7 +27,6 @@ import {
 } from "@/components/ui/select";
 import {
     deleteContentPostAction,
-    submitDraftAction,
     updateContentPostAction,
 } from "@/lib/content/actions";
 
@@ -250,64 +248,10 @@ export default async function ContentDetailPage({
                         Approved — no further drafts needed.
                     </p>
                 ) : (
-                    <form
-                        action={submitDraftAction}
-                        className="space-y-3 border-t pt-4"
-                    >
-                        <input type="hidden" name="id" value={post.id} />
-                        <h3 className="text-xs font-medium text-muted-foreground">
-                            Send a draft for client review
-                        </h3>
-                        <div className="grid gap-3 md:grid-cols-2">
-                            <div className="space-y-1.5">
-                                <Label className="text-sm">Draft stage</Label>
-                                <Select name="draftNumber" defaultValue="Draft 1">
-                                    <SelectTrigger className="h-10">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {CONTENT_DRAFT_STAGES.map((s) => (
-                                            <SelectItem key={s} value={s}>
-                                                {s}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-1.5">
-                                <Label className="text-sm">Asset type</Label>
-                                <Select name="assetType" defaultValue="image">
-                                    <SelectTrigger className="h-10">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {CONTENT_ASSET_TYPES.map((t) => (
-                                            <SelectItem key={t} value={t}>
-                                                {t}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">
-                                Asset file(s) — select multiple for a carousel
-                            </Label>
-                            <Input
-                                name="files"
-                                type="file"
-                                multiple
-                                required
-                                accept="image/*,video/*"
-                            />
-                        </div>
-                        <div className="flex justify-end">
-                            <PendingButton pendingLabel="Uploading…">
-                                Send draft to client
-                            </PendingButton>
-                        </div>
-                    </form>
+                    <DraftUploader
+                        postId={post.id}
+                        stages={CONTENT_DRAFT_STAGES}
+                    />
                 )}
             </section>
 

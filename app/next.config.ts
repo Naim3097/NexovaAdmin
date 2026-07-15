@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
       // 50mb gives one large logo OR ~5x10MB photos in a single submit.
       bodySizeLimit: "50mb",
     },
+    // Next 16 buffers request bodies through proxy.ts with a 10MB default —
+    // larger uploads got truncated mid-stream ("Unexpected end of form")
+    // before serverActions.bodySizeLimit was ever consulted. Match the 50mb cap.
+    proxyClientMaxBodySize: "50mb",
   },
 };
 
