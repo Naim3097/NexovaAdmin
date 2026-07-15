@@ -59,6 +59,18 @@ export function ContentCard({
             <CardContent className="space-y-3 text-sm">
                 {clientReview ? (
                     <>
+                        {/* Direction / brief — what this content is meant to do */}
+                        {post.direction ? (
+                            <div className="rounded-md border bg-muted/30 p-2">
+                                <p className="text-xs font-medium text-muted-foreground">
+                                    Direction
+                                </p>
+                                <p className="mt-0.5 max-h-20 overflow-y-auto whitespace-pre-wrap text-xs">
+                                    {post.direction}
+                                </p>
+                            </div>
+                        ) : null}
+
                         {/* Compact, navigable draft slider — bounded height */}
                         <DraftViewer
                             drafts={post.drafts}

@@ -93,6 +93,7 @@ export async function updateContentPostAction(formData: FormData) {
     if (formData.has("notes")) patch.notes = str("notes");
     if (formData.has("assignee"))
         patch.assignee = assigneeStr(formData.get("assignee"));
+    if (formData.has("direction")) patch.direction = str("direction");
     if (formData.has("visualHeadline"))
         patch.visualHeadline = str("visualHeadline");
     if (formData.has("visualIdea")) patch.visualIdea = str("visualIdea");

@@ -207,20 +207,29 @@ export default async function ContentDetailPage({
             <section className="space-y-4 rounded-lg border bg-card p-4 md:p-6">
                 <h2 className="text-sm font-medium">Client review</h2>
 
-                {/* The client's brief */}
-                <div className="rounded-md border bg-muted/40 p-3">
+                {/* The client's brief — editable, so plan-generated items the
+                    admin created (no client request) can carry a direction too.
+                    Shows on the client's portal card as well. */}
+                <form
+                    action={updateContentPostAction}
+                    className="rounded-md border bg-muted/40 p-3"
+                >
+                    <input type="hidden" name="id" value={post.id} />
                     <p className="text-xs font-medium text-muted-foreground">
-                        Client direction
+                        Direction / brief
                     </p>
-                    {post.direction ? (
-                        <p className="mt-1 whitespace-pre-wrap text-sm">
-                            {post.direction}
-                        </p>
-                    ) : (
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            No direction provided.
-                        </p>
-                    )}
+                    <Textarea
+                        name="direction"
+                        defaultValue={post.direction}
+                        rows={3}
+                        className="mt-2 bg-background"
+                        placeholder="What this content should achieve — goal, message, tone, must-haves. Visible to the client on their portal card."
+                    />
+                    <div className="mt-2 flex justify-end">
+                        <Button type="submit" size="sm" variant="outline">
+                            Save direction
+                        </Button>
+                    </div>
                     {post.references.length > 0 ? (
                         <ul className="mt-2 space-y-1">
                             {post.references.map((url, i) => (
@@ -237,7 +246,7 @@ export default async function ContentDetailPage({
                             ))}
                         </ul>
                     ) : null}
-                </div>
+                </form>
 
                 {/* Shared timeline (drafts + feedback + revision count) */}
                 <ReviewTimeline post={post} revisionLimit={revisionLimit} />
