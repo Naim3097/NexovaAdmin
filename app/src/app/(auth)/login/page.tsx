@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentClient, getCurrentUser } from "@/lib/auth";
 import { Logo } from "@/components/logo";
+import { Button } from "@/components/ui/button";
 import { LoginForm } from "./login-form";
+import { signOutAndSwitch } from "./actions";
 
 export default async function LoginPage({
     searchParams,
@@ -12,9 +14,51 @@ export default async function LoginPage({
     const sp = await searchParams;
     const next = sp.next ?? "/dashboard";
 
-    // If already signed in, bounce to the requested destination.
+    // Already signed in? Only bounce STAFF through — a client session on the
+    // team door gets an explicit switch screen instead of silently landing in
+    // their portal (one browser = one session; switching must end it).
     const user = await getCurrentUser();
-    if (user) redirect(next);
+    if (user) {
+        const client = await getCurrentClient();
+        if (!client) redirect(next);
+        return (
+            <main className="flex min-h-dvh items-center justify-center bg-muted/40 p-4">
+                <div className="w-full max-w-sm">
+                    <div className="mb-6 flex justify-center">
+                        <Logo className="h-7" />
+                    </div>
+                    <div className="space-y-4 rounded-xl border bg-card p-8 shadow-md">
+                        <h1 className="text-center text-xl font-semibold tracking-tight">
+                            Team sign in
+                        </h1>
+                        <p className="text-sm text-muted-foreground">
+                            This browser is signed in to the{" "}
+                            <strong>client portal</strong> as{" "}
+                            <strong>{client.name}</strong>. To sign in as team,
+                            that session has to end first (it will log out any
+                            open portal tabs).
+                        </p>
+                        <form action={signOutAndSwitch}>
+                            <input
+                                type="hidden"
+                                name="to"
+                                value={`/login?next=${encodeURIComponent(next)}`}
+                            />
+                            <Button type="submit" className="w-full">
+                                Sign out &amp; continue to team sign in
+                            </Button>
+                        </form>
+                        <Link
+                            href="/portal"
+                            className="block text-center text-sm text-muted-foreground hover:underline"
+                        >
+                            Stay signed in — go to the client portal
+                        </Link>
+                    </div>
+                </div>
+            </main>
+        );
+    }
 
     const errorMessage =
         sp.error === "link"

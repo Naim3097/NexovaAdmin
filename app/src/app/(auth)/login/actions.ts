@@ -39,6 +39,21 @@ export async function signIn(
     redirect(next);
 }
 
+/**
+ * End the current session and land on the given login door. Used by the
+ * role-mismatch interstitials: a CLIENT session on the team door (or a staff
+ * session on the client door) must be explicitly ended before switching —
+ * one browser holds one session, so this is the only correct way through.
+ */
+export async function signOutAndSwitch(formData: FormData) {
+    const to = String(formData.get("to") ?? "/login");
+    // Same-origin paths only.
+    const dest = to.startsWith("/") && !to.startsWith("//") ? to : "/login";
+    const supabase = await createClient();
+    await supabase.auth.signOut();
+    redirect(dest);
+}
+
 export async function signUp(
     _prev: LoginState | undefined,
     formData: FormData,
