@@ -491,12 +491,11 @@ export default async function ProjectDetailPage({
                             <Label className="text-sm">Portal URL</Label>
                             <Input
                                 readOnly
-                                value={`/p/${proj.portalToken}`}
+                                value={`${(process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/$/, "")}/p/${proj.portalToken}`}
                                 className="font-mono text-xs"
                             />
                             <p className="text-xs text-muted-foreground">
-                                Prefix with your domain when sharing (e.g.
-                                https://app.nexovadmin.com/p/{proj.portalToken.slice(0, 8)}…).
+                                Ready to share — full link on your domain.
                             </p>
                         </div>
                         <div className="flex flex-wrap gap-2">

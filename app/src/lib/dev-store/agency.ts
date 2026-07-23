@@ -56,7 +56,7 @@ export const DEFAULT_PROFILE: AgencyProfile = {
     sstNo: "",
     email: "",
     phone: "",
-    websiteUrl: "https://nexovadmin.com",
+    websiteUrl: "https://nexops.my",
     addressLine1: "",
     addressLine2: "",
     city: "",

@@ -3,6 +3,11 @@
 Things that work in development but need real configuration before going live.
 Tick them off as you tackle each one.
 
+> **OFFICIAL DOMAIN (decided 2026-08): `nexops.my`** — production URL is
+> `https://nexops.my`. All domain-dependent steps below (Vercel domain + env,
+> Supabase auth URLs, Resend DKIM/SPF, LeanX callback) use this domain. Older
+> planning docs mentioning nexovadmin.com / app.nexovadmin.com are superseded.
+
 ---
 
 ## Database — apply migration 0004 + seed

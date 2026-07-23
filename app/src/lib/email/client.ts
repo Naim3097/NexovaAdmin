@@ -25,8 +25,8 @@ export function resendClient(): Resend {
 
 /**
  * Default `from` address. Test mode uses `onboarding@resend.dev` (no DNS).
- * Production: set RESEND_FROM in env to `Nexov <noreply@nexovadigital.com>` once
- * the domain is verified — see docs/pending-production-setup.md.
+ * Production: set RESEND_FROM in env to `Nexova <noreply@nexops.my>` once the
+ * nexops.my domain is verified in Resend — see docs/pending-production-setup.md.
  */
 export function defaultFromAddress(): string {
     return env.RESEND_FROM ?? "Nexov <onboarding@resend.dev>";
