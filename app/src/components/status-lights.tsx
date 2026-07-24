@@ -21,25 +21,28 @@ export function statusLights(post: ContentPost): {
     lights: { color: LightColor; label: string }[];
     summary: string;
 } {
+    const directionDone = (post.direction ?? "").trim().length > 0;
     const headlineDone = (post.visualHeadline ?? "").trim().length > 0;
     const rs = post.reviewStatus;
-    const posted = post.status === "posted" || !!post.postedAt;
+    // A draft counts as submitted once ANY review state exists or drafts do —
+    // and shows yellow while the client has changes outstanding.
+    const hasDraft = post.drafts.length > 0;
 
-    const l1: LightColor = headlineDone ? "green" : "off";
-    const l2: LightColor =
-        rs === "approved" || rs === "awaiting_client"
-            ? "green"
-            : rs === "changes_requested"
-              ? "yellow"
+    const l1: LightColor = directionDone ? "green" : "off";
+    const l2: LightColor = headlineDone ? "green" : "off";
+    const l3: LightColor =
+        rs === "changes_requested"
+            ? "yellow"
+            : hasDraft || rs === "awaiting_client" || rs === "approved"
+              ? "green"
               : "off";
-    const l3: LightColor = rs === "approved" ? "green" : "off";
-    const l4: LightColor = posted ? "green" : "off";
+    const l4: LightColor = rs === "approved" ? "green" : "off";
 
     const lights = [
-        { color: l1, label: "Headline" },
-        { color: l2, label: "Draft" },
-        { color: l3, label: "Approved" },
-        { color: l4, label: "Posted" },
+        { color: l1, label: "Direction" },
+        { color: l2, label: "Headline" },
+        { color: l3, label: "Draft" },
+        { color: l4, label: "Approved" },
     ];
     const summary = lights
         .map((x) => `${x.label}: ${x.color === "off" ? "pending" : x.color}`)

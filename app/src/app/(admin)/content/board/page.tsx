@@ -96,7 +96,7 @@ export default async function ContentBoardPage({
                         <span className="h-2 w-4 rounded-full bg-emerald-500" />
                         <span className="h-2 w-4 rounded-full bg-emerald-500" />
                     </span>
-                    Headline · Draft · Approved · Posted
+                    Direction · Headline · Draft · Approved
                 </span>
                 <span className="flex items-center gap-1.5">
                     <span className="h-2 w-4 rounded-full bg-amber-400" />
