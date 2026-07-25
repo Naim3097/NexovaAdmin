@@ -237,3 +237,63 @@ setting due dates. Future projects route correctly now that roles are fixed.
   owed → dates refreshed (issued 2026-07-25, due 2026-08-01), drafts ready for
   Farisha to send. MNA RM 1,500 paid but amount changed — held as draft until
   founder confirms the final figure.
+- **Directory truth pass (founder tags):** BYKI is also an internal Nexova-group
+  entity (tagged; no portal/AM needed). Temenggor AM → **Naim**. **Benefigs is
+  NOT a client yet** — still an unwon lead: record set to `prospect` status with
+  a note; its pipeline lead already exists. AM coverage is now complete for
+  every real external client.
+
+## Remaining for 100% (as of 2026-07-25 — nothing left blocked on build)
+
+**A. Founder inputs — Claude executes same day they arrive:**
+1. Retainer / monthly quota / extras pricing / package name per client
+   (closes recs #1 and most of #2). Priority: LZS, MNA, Enfrasys, Tropicor,
+   Fynecta, Belumgo, Temenggor + internal entities if they bill internally.
+2. MNA invoice INV-2026-0009: confirmed final amount (money already received)
+   → set figure, mark sent + paid.
+3. MNA contact email → portal invite (rec #7's first external wave).
+4. Renewal dates (`package renews on`) per client → rec #10 pings go live.
+5. Temenggor kickoff date → its 4 open stages get due dates.
+
+**B. Founder-only external actions:**
+6. Resend custom-domain DNS (noreply@nexops.my) — deferred by founder.
+7. LeanX KYC → FPX payment links on invoices.
+8. Share Zafran's set-password link — deferred by founder.
+9. Farisha sends the two refreshed drafts (LZS RM 23,000, Lean.x RM 6,849.33).
+
+**C. Adoption (proves itself over the next cycles; SOPs + tooling all live):**
+10. AMs run SOP 2 (Mon generate/chase, Thu send) for one full week.
+11. Team routes requests through Sprint Tasks (SOP 4) instead of WhatsApp.
+12. Content lights + assignees maintained per SOP 3 (backfill done; habit next).
+13. First fully in-system billing month (follows automatically from A1 + B9).
+
+## Team briefing — what changed (founder: share/adapt this)
+
+**Access.** The system now has admin and standard access. Naim, Danisy and
+Farisha are admins. Everyone else sees delivery surfaces (dashboard, projects,
+content, tasks, weekly updates) — finance and team admin are admin-only. If a
+page you need disappeared, tell Danisy.
+
+**Roles fixed.** Danisy = PM, Bob = Content, Pokjak = UI/UX, Zafran = Ads.
+Auto-assignment now routes by these, so new work lands on the right person.
+Zafran gets a login this week.
+
+**Every client has one AM.** The AM field is on each client profile and shown
+on the clients list. AM owns the weekly update and the renewal conversation.
+
+**Weekly updates write themselves.** Reports → Weekly updates: pick your
+client, the Mon/Thu routine is SOP 2. Copy, add one human line, send.
+
+**Deadlines are now real.** Project stages have due dates and a Telegram bot
+chases them (tomorrow + day-of), same as sprint tasks. If a date is wrong,
+change it on the project — don't ignore the ping.
+
+**Content cards: keep the four lights honest.** Direction → Headline → Draft →
+Approved. Every card now has an assignee (video → Bob, design → Pokjak —
+reassign if wrong). Client review happens in the portal, never over WhatsApp.
+
+**Requests go on the board.** Anything you'd WhatsApp Danisy for becomes a
+Sprint Task with a PIC and a deadline (default 3 days). Danisy triages daily.
+
+**SOPs live in `docs/sops/`** — 7 one-pagers: onboarding, weekly AM cadence,
+content production, task requests, invoicing, offboarding, system admin.
