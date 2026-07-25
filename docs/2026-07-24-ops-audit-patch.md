@@ -151,9 +151,12 @@ at staging.nexops.my. Executed directly against production data:
 
 **Rec #1 — data-hygiene sprint (done except billing amounts):**
 - Team roles fixed to drive truthful auto-assignment: **"Danisy Test 2" →
-  Danisy (PM)**, Bob PM → **Content**, Pokjak Other → **UI/UX**, Zafran
-  Backend → **Ads**, "hakim" → **Hakim**. All 7 project-stage PIC references
-  to the old name swept to "Danisy"; lead assignees swept too.
+  Danisy (PM)**, Bob PM → **Content**, Pokjak Other → **UI/UX**, "hakim" →
+  **Hakim**. All 7 project-stage PIC references to the old name swept to
+  "Danisy"; lead assignees swept too.
+  *(Corrected 2026-07-25: the playbook's "Zafran: ads/website/SEO" is wrong —
+  **Zafran is a backend dev** (role stays Backend); **ads/website/SEO are
+  Danisy's lanes**, recorded in Danisy's skills.)*
 - 4 missing clients created: **Enfrasys** (contact Mior Nasrulah), **Tropicor**,
   **Fynecta**, **Belumgo** — active shells; package/retainer to be filled (#2).
 - **Account managers set per playbook slide 3:** Naim → Lean.x, Nexova,
@@ -274,9 +277,9 @@ Farisha are admins. Everyone else sees delivery surfaces (dashboard, projects,
 content, tasks, weekly updates) — finance and team admin are admin-only. If a
 page you need disappeared, tell Danisy.
 
-**Roles fixed.** Danisy = PM, Bob = Content, Pokjak = UI/UX, Zafran = Ads.
-Auto-assignment now routes by these, so new work lands on the right person.
-Zafran gets a login this week.
+**Roles fixed.** Danisy = PM (also owns ads/website/SEO), Bob = Content,
+Pokjak = UI/UX, Zafran = Backend. Auto-assignment now routes by these, so new
+work lands on the right person. Zafran gets a login this week.
 
 **Every client has one AM.** The AM field is on each client profile and shown
 on the clients list. AM owns the weekly update and the renewal conversation.

@@ -76,6 +76,12 @@ at creation** — the deadline bot can only chase dates that exist.
 done; dates that slipped get re-dated (never silently ignored). Plus Mon/Thu
 weekly update for Tropicor.
 
+**Ads / Website / SEO (your delivery lanes):** ad campaigns live in
+**Campaigns** — create each one, log spend/metrics there (reports and client
+updates read from it). SEO work moves through **SEO articles** (brief →
+outline → body → published). Website builds run as project stages with due
+dates, pulling Zafran in for backend stages.
+
 **As admin:** invites/resets/contact changes (SOP 7) — and train Farisha on
 each until she can run them alone.
 
@@ -109,17 +115,15 @@ revision counter, keep the four lights honest.
 
 ---
 
-## Zafran — Ads / Website / SEO
+## Zafran — Backend Developer
 
 1. **First:** set your password via the invite link and log in — you operate
    from inside the system from day one.
-2. Ad campaigns live in **Campaigns**: create each campaign, log spend/metrics
-   there — reports and client updates read from it.
-3. SEO work lives in **SEO articles** (brief → outline → body → published);
-   website work stages live on the project (e.g. Temenggor's Backend
-   Integration / Launch are yours, with due dates once it kicks off).
-4. Requests to you arrive as **Sprint Tasks** — work off the board, mark done
-   on the board.
+2. Your work lives on **project stages** (e.g. Temenggor's Backend
+   Integration is yours, dated once the project kicks off) and on **Sprint
+   Tasks** — work off the board, mark done on the board.
+3. Stage-deadline pings in Telegram are assignments: done by the date, or the
+   date gets changed openly on the project.
 
 ---
 
