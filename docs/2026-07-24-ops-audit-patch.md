@@ -184,7 +184,7 @@ at staging.nexops.my. Executed directly against production data:
 | #9 Resend DNS + LeanX KYC | External, pending founder | 0% |
 | #10 Renewal tracking | Shipped; renewal dates not yet entered per client | 80% |
 | #11 Content assignees habit | Backfilled 87/87 per playbook lanes (2026-07-25: 86 design→Pokjak, 1 reel→Bob); SOP 3 written; habit pending | 80% |
-| #12 Role-based access | Code shipped; migration 0023 + admin designation pending | 80% |
+| #12 Role-based access | DONE 2026-07-25 — 0023 applied, admins Danisy/Naim/Farisha, others standard | 100% |
 | §7 Seven SOPs | All 7 drafted | 100% |
 
 **Overall: ~65% of the audit's rec list delivered** (builds ~95% complete;
@@ -206,3 +206,23 @@ yet — add emails, then invite.
 still reflect the old corrupted auto-assignment (e.g. Creative Design→Danisy,
 Schedule & Post→Zafran on Payright/BYKI/Nexova) — worth a 10-minute sweep when
 setting due dates. Future projects route correctly now that roles are fixed.
+
+### Update 2026-07-25 (later) — 0023 live, admins set, cleanup
+
+- **Migration 0023 applied; rec #12 COMPLETE.** Admins: **Danisy, Naim,
+  Farisha**. Bob, Pokjak, Hakim, Zafran are now `standard` (no
+  finance/team/exports — reversible per member on Team pages).
+- **Dummy invoices removed** per founder: INV-2026-0001 (Burger Bakar Zam,
+  RM 8,500), INV-2026-0004 (Danisy Auto, RM 5,500). Real drafts remaining:
+  LZS RM 23,000 · MNA RM 1,500 · Lean.x RM 6,849.33 — founder to tag each
+  paid-outside / still-owed / void.
+- **Internal entities tagged** on client notes: Lean.x, Nexova, Payright MY are
+  Nexova-group entities — no client portal needed; portal wave (#7) retargets
+  external clients (MNA next; needs contact email).
+- **Name-variant merge:** 21 content items (and any rows in
+  projects/invoices/quotations/campaigns) filed under "Zakat Selangor" merged
+  into **"Lembaga Zakat Selangor"** — they were invisible to quota, portal and
+  weekly updates. LZS now correctly shows 50 content items. (The audit's
+  "Enfrasys 20+ items" was this misfiled batch.)
+- **Project dummy-vs-real triage pending founder tags** — evidence table handed
+  in chat; dummies will be deleted, real ones get due dates + PIC sweep.
