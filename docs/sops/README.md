@@ -6,6 +6,7 @@ the steps, and where the step leaves a trace in Nexov Admin (nexops.my).
 
 | # | SOP | Owner |
 |---|---|---|
+| 0 | [Per-person MUST-DOs](00-per-person-must-dos.md) | Everyone (start here) |
 | 1 | [Client onboarding](01-client-onboarding.md) | Farisha |
 | 2 | [Weekly AM cadence](02-weekly-am-cadence.md) | Every AM |
 | 3 | [Content production](03-content-production.md) | Bob / Pokjak |
