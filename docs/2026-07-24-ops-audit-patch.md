@@ -178,7 +178,7 @@ at staging.nexops.my. Executed directly against production data:
 | #3 AM field | Shipped + data populated | 100% |
 | #4 Auto weekly update | Shipped (/reports/weekly) | 100% |
 | #5 Task-request routing | SOP 4 written; adoption pending | 50% |
-| #6 Stage deadline pings | Bot shipped; kickoff SOP written; due dates still unset on existing projects | 70% |
+| #6 Stage deadline pings | DONE 2026-07-25 — bot shipped + 24 open stages dated + PICs corrected (Temenggor/BYKI intentionally undated) | 100% |
 | #7 Portal rollout wave | Not started (process) | 0% |
 | #8 Deposit invoices | Shipped (lead → deposit invoice); SOP 1 encodes deposit-before-work | 100% |
 | #9 Resend DNS + LeanX KYC | External, pending founder | 0% |
@@ -187,7 +187,7 @@ at staging.nexops.my. Executed directly against production data:
 | #12 Role-based access | DONE 2026-07-25 — 0023 applied, admins Danisy/Naim/Farisha, others standard | 100% |
 | §7 Seven SOPs | All 7 drafted | 100% |
 
-**Overall: ~65% of the audit's rec list delivered** (builds ~95% complete;
+**Overall: ~75% of the audit's rec list delivered** (builds 100% complete;
 remaining weight is founder-side data entry, external services, and process
 adoption — nothing left blocked on code except applying migration 0023).
 
@@ -224,5 +224,16 @@ setting due dates. Future projects route correctly now that roles are fixed.
   into **"Lembaga Zakat Selangor"** — they were invisible to quota, portal and
   weekly updates. LZS now correctly shows 50 content items. (The audit's
   "Enfrasys 20+ items" was this misfiled batch.)
-- **Project dummy-vs-real triage pending founder tags** — evidence table handed
-  in chat; dummies will be deleted, real ones get due dates + PIC sweep.
+- **Project triage resolved (founder tags): all 8 projects are REAL.**
+  Executed same day:
+  - Stage due dates set (weekly stagger from Aug 1) on LZS, MNA, Payright,
+    Nexova, Lean.x; **Enfrasys staggered from Aug 7** (system start in Aug per
+    founder). 24 open stages now dated — the deadline bot has work.
+  - PIC corruption fixed on open stages: Creative Design → Pokjak,
+    Schedule & Post → Bob (was Danisy/Zafran from the old broken roles).
+  - **BYKI → on_hold** (real client, engagement paused). **Temenggor** real but
+    not started — left undated until kickoff.
+- **Invoice dispositions (founder):** LZS RM 23,000 + Lean.x RM 6,849.33 still
+  owed → dates refreshed (issued 2026-07-25, due 2026-08-01), drafts ready for
+  Farisha to send. MNA RM 1,500 paid but amount changed — held as draft until
+  founder confirms the final figure.
