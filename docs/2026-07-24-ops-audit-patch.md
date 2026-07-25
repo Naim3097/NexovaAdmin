@@ -183,10 +183,26 @@ at staging.nexops.my. Executed directly against production data:
 | #8 Deposit invoices | Shipped (lead → deposit invoice); SOP 1 encodes deposit-before-work | 100% |
 | #9 Resend DNS + LeanX KYC | External, pending founder | 0% |
 | #10 Renewal tracking | Shipped; renewal dates not yet entered per client | 80% |
-| #11 Content assignees habit | SOP 3 written; adoption pending | 50% |
+| #11 Content assignees habit | Backfilled 87/87 per playbook lanes (2026-07-25: 86 design→Pokjak, 1 reel→Bob); SOP 3 written; habit pending | 80% |
 | #12 Role-based access | Code shipped; migration 0023 + admin designation pending | 80% |
 | §7 Seven SOPs | All 7 drafted | 100% |
 
-**Overall: ~62% of the audit's rec list delivered** (builds ~95% complete;
+**Overall: ~65% of the audit's rec list delivered** (builds ~95% complete;
 remaining weight is founder-side data entry, external services, and process
 adoption — nothing left blocked on code except applying migration 0023).
+
+### Decision data pulled 2026-07-25 (for the founder)
+
+**Rec #2 — the 5 stuck draft invoices** (send, edit, or void):
+INV-2026-0001 Burger Bakar Zam RM 8,500 (Jun 15) · INV-2026-0004 Danisy Auto
+RM 5,500 (Jun 18) · INV-2026-0007 LZS RM 23,000 (Jun 22) · INV-2026-0009 MNA
+RM 1,500 (Jul 31) · INV-2026-0010 Lean.x RM 6,849.33 (Jul 1).
+
+**Rec #7 — portal wave candidates** (most content, no login): Lean.x (8),
+Nexova (8), Payright MY (8), then MNA (4). None have a contact email on record
+yet — add emails, then invite.
+
+**Rec #6 — 32 open stages undated across all 8 projects**; several stage PICs
+still reflect the old corrupted auto-assignment (e.g. Creative Design→Danisy,
+Schedule & Post→Zafran on Payright/BYKI/Nexova) — worth a 10-minute sweep when
+setting due dates. Future projects route correctly now that roles are fixed.
