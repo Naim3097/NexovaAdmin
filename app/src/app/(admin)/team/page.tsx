@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { requireAdminAccess } from "@/lib/auth";
 import { TEAM_ROLES, listTeamMembers } from "@/lib/data/team";
 import { Badge } from "@/components/ui/badge";
 import { InviteForm } from "./invite-form";
@@ -6,6 +7,7 @@ import { InviteForm } from "./invite-form";
 export const dynamic = "force-dynamic";
 
 export default async function TeamPage() {
+    await requireAdminAccess();
     const members = await listTeamMembers();
     const active = members.filter((m) => m.active).length;
     return (

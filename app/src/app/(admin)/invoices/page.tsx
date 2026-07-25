@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { requireAdminAccess } from "@/lib/auth";
 import {
     INVOICE_STATUSES,
     computeTotals,
@@ -40,6 +41,7 @@ function fmtMyr(n: number) {
 }
 
 export default async function InvoicesPage() {
+    await requireAdminAccess();
     const [invoices, projects] = await Promise.all([
         listInvoices(),
         listProjects(),

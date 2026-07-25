@@ -70,6 +70,11 @@ export async function updateClientAction(formData: FormData) {
         extraRevisionPrice: asMoney(formData.get("extraRevisionPrice")),
         monthlyRetainerMyr: asMoney(formData.get("monthlyRetainerMyr")),
         packageName: String(formData.get("packageName") ?? "").trim(),
+        packageRenewsOn: String(formData.get("packageRenewsOn") ?? "").trim(),
+        accountManager:
+            String(formData.get("accountManager") ?? "").trim() === "none"
+                ? ""
+                : String(formData.get("accountManager") ?? "").trim(),
     });
     revalidatePath(`/settings/clients/${id}`);
     revalidatePath("/settings/clients");

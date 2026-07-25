@@ -13,11 +13,12 @@ import {
     listCampaigns,
 } from "@/lib/data/reads";
 import { listActivityFiltered } from "@/lib/activity";
+import { listClients } from "@/lib/data/clients";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-    const [leads, submissions, projects, invoices, quotes, content, campaigns, recentActivity] =
+    const [leads, submissions, projects, invoices, quotes, content, campaigns, recentActivity, clients] =
         await Promise.all([
             listLeads(),
             listSubmissions(),
@@ -27,6 +28,7 @@ export default async function DashboardPage() {
             listContentPosts(),
             listCampaigns(),
             listActivityFiltered({ limit: 8 }),
+            listClients(),
         ]);
 
     // eslint-disable-next-line react-hooks/purity -- server component, runs per request
@@ -53,6 +55,19 @@ export default async function DashboardPage() {
         .reduce((sum, i) => sum + computeTotals(i).total, 0);
     const overdueCount = invoices.filter(
         (i) => i.status === "sent" && i.dueDate < today,
+    ).length;
+
+    // Package renewals inside 30 days (active clients with a date set).
+    // eslint-disable-next-line react-hooks/purity -- server component, runs per request
+    const in30 = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 10);
+    const renewalsSoon = clients.filter(
+        (c) =>
+            c.status === 'active' &&
+            c.packageRenewsOn &&
+            c.packageRenewsOn >= today &&
+            c.packageRenewsOn <= in30,
     ).length;
 
     // Quotes awaiting a decision (sent, not past validity).
@@ -127,6 +142,11 @@ export default async function DashboardPage() {
             label: "Onboardings open",
             value: String(draftOnboardings),
             href: "/onboarding",
+        },
+        {
+            label: "Renewals ≤ 30d",
+            value: String(renewalsSoon),
+            href: "/settings/clients",
         },
         {
             label: "Quotes out (MYR)",

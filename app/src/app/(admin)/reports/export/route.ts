@@ -1,4 +1,4 @@
-import { getCurrentUser } from "@/lib/auth";
+import { getAccessLevel, getCurrentUser } from "@/lib/auth";
 import {
     REPORT_KINDS,
     buildReportCsv,
@@ -16,6 +16,10 @@ export async function GET(req: Request) {
     const user = await getCurrentUser();
     if (!user) {
         return new Response("Unauthorized", { status: 401 });
+    }
+    // Financial exports are admin-only (audit rec #12).
+    if ((await getAccessLevel()) !== "admin") {
+        return new Response("Forbidden", { status: 403 });
     }
 
     const url = new URL(req.url);

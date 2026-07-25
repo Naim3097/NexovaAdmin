@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { requireAdminAccess } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import {
     INVOICE_STATUSES,
@@ -51,6 +52,7 @@ export default async function InvoiceDetailPage({
 }: {
     params: Promise<{ id: string }>;
 }) {
+    await requireAdminAccess();
     const { id } = await params;
     const inv = await getInvoiceById(id);
     if (!inv) notFound();

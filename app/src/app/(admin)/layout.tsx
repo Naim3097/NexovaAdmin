@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Bell } from "lucide-react";
-import { getCurrentUser, getCurrentTeamMember, getCurrentClient } from "@/lib/auth";
+import { getCurrentUser, getCurrentTeamMember, getCurrentClient, getAccessLevel } from "@/lib/auth";
 import { Logo } from "@/components/logo";
 import { ClientNameDatalist } from "@/components/client-name-datalist";
 import { ServiceNameDatalist } from "@/components/service-name-datalist";
@@ -23,10 +23,12 @@ export default async function AdminLayout({
     // is what stops a client account from reaching agency data.)
     const client = await getCurrentClient();
     if (client) redirect("/portal");
-    const [member, unread] = await Promise.all([
+    const [member, unread, access] = await Promise.all([
         getCurrentTeamMember(),
         unreadCount().catch(() => 0),
+        getAccessLevel(),
     ]);
+    const isAdmin = access === "admin";
     const displayName = member?.name ?? user.email ?? "Account";
     const initial = (member?.name ?? user.email ?? "?").charAt(0).toUpperCase();
 
@@ -47,7 +49,7 @@ export default async function AdminLayout({
                         <Logo className="h-6" />
                     </Link>
                 </div>
-                <SidebarNav unread={unread} />
+                <SidebarNav unread={unread} isAdmin={isAdmin} />
                 <div className="border-t p-3">
                     <div className="flex items-center gap-2.5">
                         <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-gradient text-xs font-semibold text-white">
@@ -106,7 +108,7 @@ export default async function AdminLayout({
                 <ServiceNameDatalist />
             </main>
 
-            <MobileNav unread={unread} />
+            <MobileNav unread={unread} isAdmin={isAdmin} />
         </div>
     );
 }

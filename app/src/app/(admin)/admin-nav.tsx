@@ -93,11 +93,47 @@ function isActive(pathname: string, href: string) {
     return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function SidebarNav({ unread }: { unread: number }) {
+/**
+ * Access-filtered sections: standard (non-admin) users lose Finance and Team,
+ * and their Reports entry points at the AM-facing Weekly updates instead of
+ * the financial reports page. The pages themselves are guarded server-side —
+ * this only keeps the nav honest.
+ */
+function sectionsFor(isAdmin: boolean) {
+    if (isAdmin) return SECTIONS;
+    return SECTIONS.map((sec) => {
+        if (sec.label === "Finance") return null;
+        if (sec.label === "Admin") {
+            return {
+                ...sec,
+                items: sec.items.filter((i) => i.href !== "/team"),
+            };
+        }
+        if (sec.label === "Workspace") {
+            return {
+                ...sec,
+                items: sec.items.map((i) =>
+                    i.href === "/reports"
+                        ? { ...i, href: "/reports/weekly", label: "Weekly updates" }
+                        : i,
+                ),
+            };
+        }
+        return sec;
+    }).filter((s): s is (typeof SECTIONS)[number] => s !== null);
+}
+
+export function SidebarNav({
+    unread,
+    isAdmin = true,
+}: {
+    unread: number;
+    isAdmin?: boolean;
+}) {
     const pathname = usePathname();
     return (
         <nav aria-label="Primary" className="flex-1 space-y-4 overflow-y-auto px-3 py-4">
-            {SECTIONS.map((section) => (
+            {sectionsFor(isAdmin).map((section) => (
                 <div key={section.label}>
                     <p className="px-3 pb-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/60">
                         {section.label}
@@ -143,14 +179,27 @@ export function SidebarNav({ unread }: { unread: number }) {
     );
 }
 
-export function MobileNav({ unread }: { unread: number }) {
+export function MobileNav({
+    unread,
+    isAdmin = true,
+}: {
+    unread: number;
+    isAdmin?: boolean;
+}) {
     const pathname = usePathname();
+    const items = isAdmin
+        ? MOBILE
+        : MOBILE.map((i) =>
+              i.href === "/invoices"
+                  ? { href: "/tasks", label: "Tasks", icon: ListTodo }
+                  : i,
+          );
     return (
         <nav
             aria-label="Primary"
             className="fixed inset-x-0 bottom-0 z-10 grid grid-cols-5 border-t bg-background/95 backdrop-blur md:hidden"
         >
-            {MOBILE.map(({ href, label, icon: Icon }) => {
+            {items.map(({ href, label, icon: Icon }) => {
                 const active = isActive(pathname, href);
                 return (
                     <Link

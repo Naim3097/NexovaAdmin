@@ -31,6 +31,7 @@ const KIND_LABEL: Record<NotificationKind, string> = {
     quote_sent: "Quotation sent",
     quote_accepted: "Quotation accepted",
     task_due_soon: "Task due soon",
+    renewal_due: "Renewal due",
     system: "System",
 };
 
@@ -54,6 +55,7 @@ const KIND_TONE: Record<
     quote_sent: "secondary",
     quote_accepted: "default",
     task_due_soon: "secondary",
+    renewal_due: "default",
     system: "outline",
 };
 

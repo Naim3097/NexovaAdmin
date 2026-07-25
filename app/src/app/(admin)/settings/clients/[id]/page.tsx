@@ -6,6 +6,7 @@ import { listProjects } from "@/lib/data/projects";
 import { listContentPosts } from "@/lib/data/content";
 import { computeTotals, listInvoices } from "@/lib/data/invoices";
 import { listSubmissions } from "@/lib/data/onboarding";
+import { listTeamMembers } from "@/lib/data/team";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,15 +48,15 @@ export default async function ClientDetailPage({
     const client = await getClientById(id);
     if (!client) notFound();
 
-    const [leads, projects, content, invoices, submissions] = await Promise.all(
-        [
+    const [leads, projects, content, invoices, submissions, team] =
+        await Promise.all([
             listLeads(),
             listProjects(),
             listContentPosts(),
             listInvoices(),
             listSubmissions(),
-        ],
-    );
+            listTeamMembers(),
+        ]);
 
     const myLeads = leads.filter((l) => eq(l.company, client.name));
     const myProjects = projects.filter((p) => eq(p.clientName, client.name));
@@ -109,16 +110,25 @@ export default async function ClientDetailPage({
                         {client.status}
                     </Badge>
                 </div>
-                {client.website ? (
-                    <a
-                        href={client.website}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-xs text-muted-foreground underline"
-                    >
-                        {client.website}
-                    </a>
-                ) : null}
+                <p className="text-xs text-muted-foreground">
+                    AM:{" "}
+                    <span className={client.accountManager ? "font-medium text-foreground" : ""}>
+                        {client.accountManager || "unassigned"}
+                    </span>
+                    {client.website ? (
+                        <>
+                            {" · "}
+                            <a
+                                href={client.website}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="underline"
+                            >
+                                {client.website}
+                            </a>
+                        </>
+                    ) : null}
+                </p>
             </div>
 
             {/* Aggregate KPIs */}
@@ -184,6 +194,31 @@ export default async function ClientDetailPage({
                         </Select>
                     </div>
                     <div className="space-y-1.5">
+                        <Label className="text-sm">Account manager</Label>
+                        <Select
+                            name="accountManager"
+                            defaultValue={client.accountManager || "none"}
+                        >
+                            <SelectTrigger className="h-10">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="none">— Unassigned —</SelectItem>
+                                {team
+                                    .filter((m) => m.active)
+                                    .map((m) => (
+                                        <SelectItem key={m.id} value={m.name}>
+                                            {m.name} ({m.role})
+                                        </SelectItem>
+                                    ))}
+                            </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                            Single point of contact — owns updates, approvals,
+                            renewals.
+                        </p>
+                    </div>
+                    <div className="space-y-1.5">
                         <Label className="text-sm">Contact name</Label>
                         <Input
                             name="contactName"
@@ -235,6 +270,18 @@ export default async function ClientDetailPage({
                             defaultValue={client.packageName}
                             placeholder="e.g. Growth"
                         />
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label className="text-sm">Package renews on</Label>
+                        <Input
+                            name="packageRenewsOn"
+                            type="date"
+                            defaultValue={client.packageRenewsOn}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            Telegram heads-up at 30 days, 7 days, and day-of —
+                            feeds the renewal/upsell conversation.
+                        </p>
                     </div>
                     <div className="space-y-1.5">
                         <Label className="text-sm">

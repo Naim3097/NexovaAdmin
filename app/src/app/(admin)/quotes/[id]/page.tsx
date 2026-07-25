@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { requireAdminAccess } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import {
     computeTotals,
@@ -61,6 +62,7 @@ export default async function QuotationDetailPage({
 }: {
     params: Promise<{ id: string }>;
 }) {
+    await requireAdminAccess();
     const { id } = await params;
     const quote = await getQuotationById(id);
     if (!quote) notFound();

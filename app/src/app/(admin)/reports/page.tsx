@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { requireAdminAccess } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +34,7 @@ export default async function ReportsPage({
 }: {
     searchParams: Promise<{ year?: string }>;
 }) {
+    await requireAdminAccess();
     const sp = await searchParams;
     const currentYear = new Date().getFullYear();
     const requested = sp.year ? Number.parseInt(sp.year, 10) : currentYear;
@@ -131,6 +133,12 @@ export default async function ReportsPage({
                     Numbers.
                 </p>
                 <div className="mt-3">
+                    <Link
+                        href="/reports/weekly"
+                        className={buttonVariants({ variant: "outline", size: "sm" })}
+                    >
+                        Weekly updates
+                    </Link>{" "}
                     <Link
                         href="/reports/client"
                         className={buttonVariants({

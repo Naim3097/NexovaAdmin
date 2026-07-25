@@ -29,6 +29,7 @@ function rowToMember(row: TeamMemberRow): TeamMember {
         skills: row.skills,
         active: row.active,
         userId: row.user_id,
+        accessLevel: (row.access_level === "admin" ? "admin" : "standard") as "admin" | "standard",
         createdAt: row.created_at,
         updatedAt: row.updated_at,
     };
@@ -44,6 +45,7 @@ function memberToInsert(m: TeamMember): TeamInsert {
         skills: m.skills,
         active: m.active,
         user_id: m.userId,
+        access_level: m.accessLevel,
         created_at: m.createdAt,
         updated_at: m.updatedAt,
     };
@@ -58,6 +60,7 @@ function patchToUpdate(patch: UpdatePatch): TeamUpdate {
     if (patch.skills !== undefined) out.skills = patch.skills;
     if (patch.active !== undefined) out.active = patch.active;
     if (patch.userId !== undefined) out.user_id = patch.userId;
+    if (patch.accessLevel !== undefined) out.access_level = patch.accessLevel;
     if (patch.updatedAt !== undefined) out.updated_at = patch.updatedAt;
     return out;
 }
@@ -69,6 +72,7 @@ export async function createTeamMember(input: {
     phone?: string;
     skills?: string;
     userId?: string | null;
+    accessLevel?: "admin" | "standard";
 }): Promise<TeamMember> {
     if (!isSupabaseEnabled("team")) return devTeam.createTeamMember(input);
     const now = new Date().toISOString();
@@ -81,6 +85,7 @@ export async function createTeamMember(input: {
         skills: input.skills ?? "",
         active: true,
         userId: input.userId ?? null,
+        accessLevel: input.accessLevel ?? "standard",
         createdAt: now,
         updatedAt: now,
     };

@@ -117,6 +117,7 @@ export type ClientRow = {
     id: string;
     name: string;
     status: string;
+    account_manager: string;
     contact_name: string;
     contact_email: string;
     contact_phone: string;
@@ -131,6 +132,7 @@ export type ClientRow = {
     extra_revision_price: number;
     monthly_retainer_myr: number;
     package_name: string;
+    package_renews_on: string | null;
     created_at: string;
     updated_at: string;
 };
@@ -139,6 +141,7 @@ export type TeamMemberRow = {
     id: string;
     name: string;
     role: string;
+    access_level: string;
     email: string;
     phone: string;
     skills: string;

@@ -24,6 +24,7 @@ import {
 import {
     convertLeadToOnboardingAction,
     deleteLeadAction,
+    createDepositInvoiceAction,
     promoteLeadToClientAction,
     rescoreLeadAction,
     setLeadAssigneeAction,
@@ -317,6 +318,12 @@ export default async function LeadDetailPage({
                         <input type="hidden" name="id" value={lead.id} />
                         <Button type="submit" variant="outline">
                             Promote to client
+                        </Button>
+                    </form>
+                    <form action={createDepositInvoiceAction}>
+                        <input type="hidden" name="id" value={lead.id} />
+                        <Button type="submit" variant="outline">
+                            Create deposit invoice
                         </Button>
                     </form>
                     {lead.onboardingSubmissionId ? (

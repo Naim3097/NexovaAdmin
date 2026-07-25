@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { requireAdminAccess } from "@/lib/auth";
 import Link from "next/link";
 import { TEAM_ROLES, getTeamMemberById } from "@/lib/data/team";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ export default async function TeamMemberPage({
 }: {
     params: Promise<{ id: string }>;
 }) {
+    await requireAdminAccess();
     const { id } = await params;
     const m = await getTeamMemberById(id);
     if (!m) notFound();
@@ -77,6 +79,29 @@ export default async function TeamMemberPage({
                                 ))}
                             </SelectContent>
                         </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label className="text-sm">Access</Label>
+                        <Select
+                            name="accessLevel"
+                            defaultValue={m.accessLevel}
+                        >
+                            <SelectTrigger className="h-10">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="standard">
+                                    standard — delivery only
+                                </SelectItem>
+                                <SelectItem value="admin">
+                                    admin — incl. finance &amp; settings
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                            Until one active admin is set, everyone has full
+                            access (bootstrap).
+                        </p>
                     </div>
                     <div className="space-y-1.5">
                         <Label className="text-sm">Email</Label>

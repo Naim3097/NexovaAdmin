@@ -20,6 +20,7 @@ import {
     createClient as createClientRecord,
     listClients,
 } from "@/lib/data/clients";
+import { addInvoiceItem, createInvoice } from "@/lib/data/invoices";
 import { pickAssignee, scoreLead } from "@/lib/leads/scoring";
 import { notify } from "@/lib/data/notifications";
 import { diffFields, recordAudit } from "@/lib/data/audit";
@@ -261,6 +262,40 @@ export async function promoteLeadToClientAction(formData: FormData) {
     revalidatePath("/dashboard");
     revalidateTag("clients", "max");
     redirect(`/settings/clients/${client.id}`);
+}
+
+/**
+ * Deposit-before-work, made real (playbook: Closed → Deposit received).
+ * Creates a DRAFT deposit invoice for the lead's client — 50% of the estimated
+ * value as a starting line (fully editable on the invoice) — and lands you on
+ * it to adjust + send. Work should kick off once this is paid.
+ */
+export async function createDepositInvoiceAction(formData: FormData) {
+    const id = String(formData.get("id") ?? "");
+    if (!id) return;
+    const lead = await getLeadById(id);
+    if (!lead) return;
+
+    const clientName = (lead.company || lead.name).trim();
+    const inv = await createInvoice({ clientName });
+    const deposit =
+        Math.round(Math.max(0, lead.estValueMyr || 0) * 0.5 * 100) / 100;
+    await addInvoiceItem(inv.id, {
+        description: `Project deposit (50%)${lead.interestedIn ? ` — ${lead.interestedIn}` : ""}`,
+        quantity: 1,
+        unitPriceMyr: deposit,
+    });
+
+    await recordAudit({
+        entity: "lead",
+        entityId: id,
+        kind: "update",
+        summary: `Deposit invoice ${inv.number} created (MYR ${deposit.toFixed(2)})`,
+    });
+
+    revalidatePath("/invoices");
+    revalidatePath(`/leads/${id}`);
+    redirect(`/invoices/${inv.id}`);
 }
 
 export async function convertLeadToOnboardingAction(formData: FormData) {

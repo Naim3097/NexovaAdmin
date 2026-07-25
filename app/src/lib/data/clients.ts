@@ -29,6 +29,7 @@ function rowToClient(row: ClientRow): Client {
         id: row.id,
         name: row.name,
         status: row.status as ClientStatus,
+        accountManager: row.account_manager ?? "",
         contactName: row.contact_name,
         contactEmail: row.contact_email,
         contactPhone: row.contact_phone,
@@ -43,6 +44,7 @@ function rowToClient(row: ClientRow): Client {
         extraRevisionPrice: Number(row.extra_revision_price),
         monthlyRetainerMyr: Number(row.monthly_retainer_myr),
         packageName: row.package_name,
+        packageRenewsOn: row.package_renews_on ?? "",
         createdAt: row.created_at,
         updatedAt: row.updated_at,
     };
@@ -53,6 +55,7 @@ function clientToInsert(c: Client): ClientInsert {
         id: c.id,
         name: c.name,
         status: c.status,
+        account_manager: c.accountManager,
         contact_name: c.contactName,
         contact_email: c.contactEmail,
         contact_phone: c.contactPhone,
@@ -67,6 +70,7 @@ function clientToInsert(c: Client): ClientInsert {
         extra_revision_price: c.extraRevisionPrice,
         monthly_retainer_myr: c.monthlyRetainerMyr,
         package_name: c.packageName,
+        package_renews_on: c.packageRenewsOn || null,
         created_at: c.createdAt,
         updated_at: c.updatedAt,
     };
@@ -76,6 +80,7 @@ function patchToUpdate(patch: UpdatePatch): ClientUpdate {
     const out: ClientUpdate = {};
     if (patch.name !== undefined) out.name = patch.name;
     if (patch.status !== undefined) out.status = patch.status;
+    if (patch.accountManager !== undefined) out.account_manager = patch.accountManager;
     if (patch.contactName !== undefined) out.contact_name = patch.contactName;
     if (patch.contactEmail !== undefined)
         out.contact_email = patch.contactEmail;
@@ -97,6 +102,8 @@ function patchToUpdate(patch: UpdatePatch): ClientUpdate {
     if (patch.monthlyRetainerMyr !== undefined)
         out.monthly_retainer_myr = patch.monthlyRetainerMyr;
     if (patch.packageName !== undefined) out.package_name = patch.packageName;
+    if (patch.packageRenewsOn !== undefined)
+        out.package_renews_on = patch.packageRenewsOn || null;
     if (patch.updatedAt !== undefined) out.updated_at = patch.updatedAt;
     return out;
 }
@@ -104,6 +111,7 @@ function patchToUpdate(patch: UpdatePatch): ClientUpdate {
 export async function createClient(input: {
     name: string;
     status?: ClientStatus;
+    accountManager?: string;
     contactName?: string;
     contactEmail?: string;
     contactPhone?: string;
@@ -118,6 +126,7 @@ export async function createClient(input: {
     extraRevisionPrice?: number;
     monthlyRetainerMyr?: number;
     packageName?: string;
+    packageRenewsOn?: string;
 }): Promise<Client> {
     if (!isSupabaseEnabled("clients")) return devClients.createClient(input);
     const now = new Date().toISOString();
@@ -125,6 +134,7 @@ export async function createClient(input: {
         id: randomUUID(),
         name: input.name,
         status: input.status ?? "prospect",
+        accountManager: input.accountManager ?? "",
         contactName: input.contactName ?? "",
         contactEmail: input.contactEmail ?? "",
         contactPhone: input.contactPhone ?? "",
@@ -139,6 +149,7 @@ export async function createClient(input: {
         extraRevisionPrice: input.extraRevisionPrice ?? 0,
         monthlyRetainerMyr: input.monthlyRetainerMyr ?? 0,
         packageName: input.packageName ?? "",
+        packageRenewsOn: input.packageRenewsOn ?? "",
         createdAt: now,
         updatedAt: now,
     };

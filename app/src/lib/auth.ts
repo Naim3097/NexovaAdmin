@@ -84,6 +84,39 @@ export const getCurrentClient = cache(async () => {
 });
 
 /**
+ * Access level (lean RBAC, audit rec #12):
+ *   admin    — everything, incl. finance (invoices/quotes/reports), agency
+ *              settings, team management
+ *   standard — delivery surfaces only
+ * Bootstrap rule: until at least one ACTIVE member is marked admin, EVERYONE
+ * is treated as admin — so enabling the feature can never lock the team out.
+ */
+export const getAccessLevel = cache(
+    async (): Promise<"admin" | "standard"> => {
+        if (devBypassUser()) return "admin";
+        const { listTeamMembers } = await import("@/lib/data/team");
+        const team = await listTeamMembers().catch(() => []);
+        const configured = team.some(
+            (m) => m.active && m.accessLevel === "admin",
+        );
+        if (!configured) return "admin"; // bootstrap — not configured yet
+        const member = await getCurrentTeamMember();
+        return member?.active && member.accessLevel === "admin"
+            ? "admin"
+            : "standard";
+    },
+);
+
+/** Server-component guard for admin-only pages (finance, agency, team). */
+export async function requireAdminAccess() {
+    const level = await getAccessLevel();
+    if (level !== "admin") {
+        const { redirect } = await import("next/navigation");
+        redirect("/dashboard");
+    }
+}
+
+/**
  * Permissions are intentionally OPEN: any signed-in user (or the dev-bypass
  * user) can do anything. We only check authentication, not authorization.
  * Restore role/permission checks here when the team needs them.

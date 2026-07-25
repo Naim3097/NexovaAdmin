@@ -33,6 +33,7 @@ const EMOJI: Partial<Record<NotificationKind, string>> = {
     quote_sent: "📄",
     quote_accepted: "🤝",
     task_due_soon: "⏰",
+    renewal_due: "🔁",
 };
 
 /** Which kinds should ping Telegram. The rest stay in-app only. */
@@ -48,6 +49,7 @@ const TELEGRAM_KINDS = new Set<NotificationKind>([
     "stage_advanced",
     "quote_accepted",
     "task_due_soon",
+    "renewal_due",
 ]);
 
 export function renderTelegramFromNotify(args: {

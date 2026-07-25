@@ -105,9 +105,9 @@ export default async function SettingsClientsPage() {
                                         {c.name}
                                     </Link>
                                     <p className="truncate text-xs text-muted-foreground">
-                                        {c.contactName || "—"}
+                                        AM: {c.accountManager || "unassigned"}
+                                        {c.contactName ? ` · ${c.contactName}` : ""}
                                         {c.contactEmail ? ` · ${c.contactEmail}` : ""}
-                                        {c.industry ? ` · ${c.industry}` : ""}
                                     </p>
                                 </div>
                                 <Badge

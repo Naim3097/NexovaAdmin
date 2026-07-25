@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { requireAdminAccess } from "@/lib/auth";
 import {
     QUOTATION_STATUSES,
     computeTotals,
@@ -41,6 +42,7 @@ function fmtMyr(n: number) {
 }
 
 export default async function QuotationsPage() {
+    await requireAdminAccess();
     const [quotes, projects] = await Promise.all([
         listQuotations(),
         listProjects(),

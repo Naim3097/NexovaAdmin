@@ -25,6 +25,8 @@ export type Client = {
     id: string;
     name: string;
     status: ClientStatus;
+    /** Team member name who owns this account (single point of contact). */
+    accountManager: string;
     contactName: string;
     contactEmail: string;
     contactPhone: string;
@@ -47,6 +49,8 @@ export type Client = {
     monthlyRetainerMyr: number;
     /** Package label, e.g. "Growth". */
     packageName: string;
+    /** Package renewal date (YYYY-MM-DD). "" = not tracked. */
+    packageRenewsOn: string;
     createdAt: string;
     updatedAt: string;
 };
@@ -91,6 +95,7 @@ export async function createClient(input: {
     extraRevisionPrice?: number;
     monthlyRetainerMyr?: number;
     packageName?: string;
+    accountManager?: string;
 }): Promise<Client> {
     await ensureDir();
     const now = new Date().toISOString();
@@ -98,6 +103,7 @@ export async function createClient(input: {
         id: randomUUID(),
         name: input.name,
         status: input.status ?? "prospect",
+        accountManager: input.accountManager ?? "",
         contactName: input.contactName ?? "",
         contactEmail: input.contactEmail ?? "",
         contactPhone: input.contactPhone ?? "",
@@ -112,6 +118,7 @@ export async function createClient(input: {
         extraRevisionPrice: input.extraRevisionPrice ?? 0,
         monthlyRetainerMyr: input.monthlyRetainerMyr ?? 0,
         packageName: input.packageName ?? "",
+        packageRenewsOn: "",
         createdAt: now,
         updatedAt: now,
     };

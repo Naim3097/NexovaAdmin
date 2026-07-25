@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { requireAdminAccess } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +18,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function AgencyProfilePage() {
+    await requireAdminAccess();
     const p = await getAgencyProfile();
     const lastSaved =
         p.updatedAt && p.updatedAt > new Date(0).toISOString()

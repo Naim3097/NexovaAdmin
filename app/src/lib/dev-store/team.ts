@@ -35,6 +35,8 @@ export type TeamMember = {
     skills: string; // comma-separated for now
     active: boolean;
     userId: string | null; // linked Supabase auth user, if invited
+    /** admin = everything incl. finance; standard = delivery surfaces only. */
+    accessLevel: "admin" | "standard";
     createdAt: string;
     updatedAt: string;
 };
@@ -54,6 +56,7 @@ export async function createTeamMember(input: {
     phone?: string;
     skills?: string;
     userId?: string | null;
+    accessLevel?: "admin" | "standard";
 }): Promise<TeamMember> {
     await ensureDir();
     const now = new Date().toISOString();
@@ -66,6 +69,7 @@ export async function createTeamMember(input: {
         skills: input.skills ?? "",
         active: true,
         userId: input.userId ?? null,
+        accessLevel: input.accessLevel ?? "standard",
         createdAt: now,
         updatedAt: now,
     };
