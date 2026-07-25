@@ -141,3 +141,52 @@ views + weekly updates work read-only meanwhile).
 **Still open from the rec list:** #1–#2 (data-hygiene + arm billing — founder
 task, no code), #5/#7/#11 (process adoption), #9 (Resend DNS + LeanX KYC),
 #12 (role-based access — build later, before headcount 8).
+
+---
+
+## Update 2026-07-25 — data-hygiene executed + SOPs drafted
+
+Migrations 0021 + 0022 applied (0023 access-levels still pending). Staging live
+at staging.nexops.my. Executed directly against production data:
+
+**Rec #1 — data-hygiene sprint (done except billing amounts):**
+- Team roles fixed to drive truthful auto-assignment: **"Danisy Test 2" →
+  Danisy (PM)**, Bob PM → **Content**, Pokjak Other → **UI/UX**, Zafran
+  Backend → **Ads**, "hakim" → **Hakim**. All 7 project-stage PIC references
+  to the old name swept to "Danisy"; lead assignees swept too.
+- 4 missing clients created: **Enfrasys** (contact Mior Nasrulah), **Tropicor**,
+  **Fynecta**, **Belumgo** — active shells; package/retainer to be filled (#2).
+- **Account managers set per playbook slide 3:** Naim → Lean.x, Nexova,
+  Payright MY, KALIMA, Fynecta · Hakim → MNA, Nanorev, Belumgo · Danisy →
+  Tropicor · Pokjak → Enfrasys · Bob → Lembaga Zakat Selangor. (BYKI,
+  Temenggor, Benefigs not on slide 3 — founder to assign.)
+- **Zafran login minted** (zafrang@gmail.com, linked to his team row,
+  set-password link handed to founder).
+- Note: the founder's working login (danisyamldn@gmail.com) is attached to the
+  now-renamed **Danisy** team row — the old dummy "Client Testing" client was
+  deleted, so the collision is gone. Link real emails before setting admins.
+
+**SOPs (§7) — all 7 drafted** in `docs/sops/` (01-client-onboarding …
+07-system-admin-basics + README index).
+
+### Completion scoreboard
+
+| Rec | Status | % |
+|---|---|---|
+| #1 Data-hygiene sprint | Roles/renames/sweeps/clients/AMs/Zafran done; retainer & quota amounts still unset | 80% |
+| #2 Arm billing | Not started — needs founder's retainer/extras figures + first invoice run | 0% |
+| #3 AM field | Shipped + data populated | 100% |
+| #4 Auto weekly update | Shipped (/reports/weekly) | 100% |
+| #5 Task-request routing | SOP 4 written; adoption pending | 50% |
+| #6 Stage deadline pings | Bot shipped; kickoff SOP written; due dates still unset on existing projects | 70% |
+| #7 Portal rollout wave | Not started (process) | 0% |
+| #8 Deposit invoices | Shipped (lead → deposit invoice); SOP 1 encodes deposit-before-work | 100% |
+| #9 Resend DNS + LeanX KYC | External, pending founder | 0% |
+| #10 Renewal tracking | Shipped; renewal dates not yet entered per client | 80% |
+| #11 Content assignees habit | SOP 3 written; adoption pending | 50% |
+| #12 Role-based access | Code shipped; migration 0023 + admin designation pending | 80% |
+| §7 Seven SOPs | All 7 drafted | 100% |
+
+**Overall: ~62% of the audit's rec list delivered** (builds ~95% complete;
+remaining weight is founder-side data entry, external services, and process
+adoption — nothing left blocked on code except applying migration 0023).
