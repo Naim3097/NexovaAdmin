@@ -10,6 +10,7 @@ import {
     INVOICE_STATUSES,
     setInvoiceStatus,
     updateInvoice,
+    updateInvoiceItem,
     type InvoiceStatus,
 } from "@/lib/data/invoices";
 import { computeTotals, getInvoiceById, listInvoices } from "@/lib/data/invoices";
@@ -183,6 +184,24 @@ export async function deleteInvoiceItemAction(formData: FormData) {
     const itemId = String(formData.get("itemId") ?? "");
     if (!id || !itemId) return;
     await deleteInvoiceItem(id, itemId);
+    revalidatePath(`/invoices/${id}`);
+    revalidatePath("/invoices");
+    revalidatePath("/dashboard");
+}
+
+export async function updateInvoiceItemAction(formData: FormData) {
+    const id = String(formData.get("id") ?? "");
+    const itemId = String(formData.get("itemId") ?? "");
+    if (!id || !itemId) return;
+    const description = String(formData.get("description") ?? "").trim();
+    if (!description) return;
+    const quantity = Number(formData.get("quantity"));
+    const unitPriceMyr = Number(formData.get("unitPriceMyr"));
+    await updateInvoiceItem(id, itemId, {
+        description,
+        quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
+        unitPriceMyr: Number.isFinite(unitPriceMyr) ? unitPriceMyr : 0,
+    });
     revalidatePath(`/invoices/${id}`);
     revalidatePath("/invoices");
     revalidatePath("/dashboard");

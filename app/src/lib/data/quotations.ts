@@ -366,3 +366,22 @@ export async function deleteQuotationItem(
         items: existing.items.filter((it) => it.id !== itemId),
     });
 }
+
+export async function updateQuotationItem(
+    id: string,
+    itemId: string,
+    patch: {
+        description?: string;
+        details?: string;
+        quantity?: number;
+        unitPriceMyr?: number;
+    },
+): Promise<Quotation> {
+    const existing = await getQuotationById(id);
+    if (!existing) throw new Error(`Quotation ${id} not found`);
+    return updateQuotation(id, {
+        items: existing.items.map((it) =>
+            it.id === itemId ? { ...it, ...patch } : it,
+        ),
+    });
+}

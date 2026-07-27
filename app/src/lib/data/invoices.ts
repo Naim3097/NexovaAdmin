@@ -349,3 +349,22 @@ export async function deleteInvoiceItem(
         items: existing.items.filter((it) => it.id !== itemId),
     });
 }
+
+export async function updateInvoiceItem(
+    id: string,
+    itemId: string,
+    patch: {
+        description?: string;
+        details?: string;
+        quantity?: number;
+        unitPriceMyr?: number;
+    },
+): Promise<Invoice> {
+    const existing = await getInvoiceById(id);
+    if (!existing) throw new Error(`Invoice ${id} not found`);
+    return updateInvoice(id, {
+        items: existing.items.map((it) =>
+            it.id === itemId ? { ...it, ...patch } : it,
+        ),
+    });
+}

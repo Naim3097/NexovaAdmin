@@ -158,22 +158,49 @@ export function buildWeeklyUpdate(input: {
     };
 }
 
-/** WhatsApp/email-ready plain text of the update. */
+/**
+ * WhatsApp/email-ready plain text of the update, written for the CLIENT:
+ * long lists collapse to a count (nobody reads 20 identical lines), empty
+ * sections say something human, and the notes section only appears when
+ * there's actually something to flag.
+ */
 export function weeklyUpdateText(u: WeeklyUpdate): string {
-    const sec = (title: string, items: string[]) =>
-        `*${title}*\n${items.length ? items.map((i) => `• ${i}`).join("\n") : "• —"}`;
-    return [
+    const bullets = (items: string[], empty: string) => {
+        if (items.length === 0) return `• ${empty}`;
+        if (items.length <= 5) return items.map((i) => `• ${i}`).join("\n");
+        return [
+            ...items.slice(0, 3).map((i) => `• ${i}`),
+            `• …and ${items.length - 3} more`,
+        ].join("\n");
+    };
+
+    // A batch of scheduled posts reads better as one line than as a wall.
+    const nextWeekBlock = (() => {
+        if (u.nextWeek.length === 0) return "• Nothing scheduled yet";
+        if (u.nextWeek.length <= 5)
+            return u.nextWeek.map((i) => `• ${i}`).join("\n");
+        const firstDate = u.nextWeek[0]?.split("— scheduled ")[1];
+        return `• ${u.nextWeek.length} posts lined up${firstDate ? ` — first goes out ${firstDate}` : ""}`;
+    })();
+
+    const out = [
         `*Weekly update — ${u.clientName}*`,
         `_${u.rangeLabel}${u.accountManager ? ` · ${u.accountManager}` : ""}_`,
         "",
-        sec("Completed this week", u.completed),
+        `*✅ Done this week*`,
+        bullets(u.completed, "Nothing wrapped this week — see In progress"),
         "",
-        sec("In progress", u.inProgress),
+        `*🔄 In progress*`,
+        bullets(u.inProgress, "Nothing in flight right now"),
         "",
-        sec("Waiting on your side", u.waitingFor),
+        `*👀 Waiting on you*`,
+        bullets(u.waitingFor, "Nothing — you're all caught up"),
         "",
-        sec("Next week", u.nextWeek),
-        "",
-        sec("Issues / notes", u.issues),
-    ].join("\n");
+        `*📅 Coming up*`,
+        nextWeekBlock,
+    ];
+    if (u.issues.length > 0) {
+        out.push("", `*⚠️ Notes*`, bullets(u.issues, ""));
+    }
+    return out.join("\n");
 }

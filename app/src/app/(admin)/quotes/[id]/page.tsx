@@ -36,8 +36,10 @@ import {
     deleteQuotationItemAction,
     setQuotationStatusAction,
     updateQuotationAction,
+    updateQuotationItemAction,
 } from "@/lib/quotations/actions";
 import { SaveButton } from "@/components/save-button";
+import { EditableItemRow } from "@/components/editable-item-row";
 
 export const dynamic = "force-dynamic";
 
@@ -209,9 +211,10 @@ export default async function QuotationDetailPage({
             <section className="rounded-lg border bg-card p-4 md:p-6">
                 <h2 className="text-sm font-medium">Line items</h2>
                 <p className="mt-1 text-xs text-muted-foreground">
-                    Items save instantly when you Add or Remove them — to change
-                    one, remove it and add it again. The Save changes button
-                    below is for the document details.
+                    Edit any item&apos;s description, qty or price right in the
+                    table, then hit Update on that row. Add/Remove/Update save
+                    instantly — the Save changes button below is only for the
+                    document details.
                 </p>
 
                 <LineItemForm
@@ -237,63 +240,16 @@ export default async function QuotationDetailPage({
                                 </tr>
                             </thead>
                             <tbody className="divide-y">
-                                {quote.items.map((it) => {
-                                    const line = it.quantity * it.unitPriceMyr;
-                                    const bullets = it.details
-                                        .split("\n")
-                                        .map((b) => b.trim())
-                                        .filter(Boolean);
-                                    return (
-                                        <tr key={it.id}>
-                                            <td className="py-2 pr-2">
-                                                {it.description}
-                                                {bullets.length > 0 ? (
-                                                    <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-muted-foreground">
-                                                        {bullets.map((b, bi) => (
-                                                            <li key={bi}>{b}</li>
-                                                        ))}
-                                                    </ul>
-                                                ) : null}
-                                            </td>
-                                            <td className="py-2 pr-2 text-right">
-                                                {it.quantity}
-                                            </td>
-                                            <td className="py-2 pr-2 text-right">
-                                                {fmtMyr(it.unitPriceMyr)}
-                                            </td>
-                                            <td className="py-2 pr-2 text-right">
-                                                {fmtMyr(line)}
-                                            </td>
-                                            <td className="py-2 text-right">
-                                                <form
-                                                    action={
-                                                        deleteQuotationItemAction
-                                                    }
-                                                    className="inline"
-                                                >
-                                                    <input
-                                                        type="hidden"
-                                                        name="id"
-                                                        value={quote.id}
-                                                    />
-                                                    <input
-                                                        type="hidden"
-                                                        name="itemId"
-                                                        value={it.id}
-                                                    />
-                                                    <Button
-                                                        type="submit"
-                                                        size="sm"
-                                                        variant="ghost"
-                                                        className="h-7 text-xs text-muted-foreground"
-                                                    >
-                                                        Remove
-                                                    </Button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
+                                {quote.items.map((it) => (
+                                    <EditableItemRow
+                                        key={it.id}
+                                        docId={quote.id}
+                                        item={it}
+                                        updateAction={updateQuotationItemAction}
+                                        deleteAction={deleteQuotationItemAction}
+                                        fmt={fmtMyr}
+                                    />
+                                ))}
                             </tbody>
                             <tfoot className="border-t text-sm">
                                 <tr>

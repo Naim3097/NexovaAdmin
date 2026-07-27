@@ -33,7 +33,9 @@ import {
     deleteInvoiceItemAction,
     setInvoiceStatusAction,
     updateInvoiceAction,
+    updateInvoiceItemAction,
 } from "@/lib/invoices/actions";
+import { EditableItemRow } from "@/components/editable-item-row";
 import { LineItemForm } from "@/components/line-item-form";
 import { DocumentOverrideFields } from "@/components/document-override-fields";
 import { PaymentSection } from "./payment-section";
@@ -190,61 +192,16 @@ export default async function InvoiceDetailPage({
                                 </tr>
                             </thead>
                             <tbody className="divide-y">
-                                {inv.items.map((it) => {
-                                    const line = it.quantity * it.unitPriceMyr;
-                                    const bullets = it.details
-                                        .split("\n")
-                                        .map((b) => b.trim())
-                                        .filter(Boolean);
-                                    return (
-                                        <tr key={it.id}>
-                                            <td className="py-2 pr-2">
-                                                {it.description}
-                                                {bullets.length > 0 ? (
-                                                    <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-muted-foreground">
-                                                        {bullets.map((b, bi) => (
-                                                            <li key={bi}>{b}</li>
-                                                        ))}
-                                                    </ul>
-                                                ) : null}
-                                            </td>
-                                            <td className="py-2 pr-2 text-right">
-                                                {it.quantity}
-                                            </td>
-                                            <td className="py-2 pr-2 text-right">
-                                                {fmtMyr(it.unitPriceMyr)}
-                                            </td>
-                                            <td className="py-2 pr-2 text-right">
-                                                {fmtMyr(line)}
-                                            </td>
-                                            <td className="py-2 text-right">
-                                                <form
-                                                    action={deleteInvoiceItemAction}
-                                                    className="inline"
-                                                >
-                                                    <input
-                                                        type="hidden"
-                                                        name="id"
-                                                        value={inv.id}
-                                                    />
-                                                    <input
-                                                        type="hidden"
-                                                        name="itemId"
-                                                        value={it.id}
-                                                    />
-                                                    <Button
-                                                        type="submit"
-                                                        size="sm"
-                                                        variant="ghost"
-                                                        className="h-7 text-xs text-muted-foreground"
-                                                    >
-                                                        Remove
-                                                    </Button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
+                                {inv.items.map((it) => (
+                                    <EditableItemRow
+                                        key={it.id}
+                                        docId={inv.id}
+                                        item={it}
+                                        updateAction={updateInvoiceItemAction}
+                                        deleteAction={deleteInvoiceItemAction}
+                                        fmt={fmtMyr}
+                                    />
+                                ))}
                             </tbody>
                             <tfoot className="border-t text-sm">
                                 <tr>

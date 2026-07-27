@@ -12,6 +12,7 @@ import {
     QUOTATION_STATUSES,
     setQuotationStatus,
     updateQuotation,
+    updateQuotationItem,
     type QuotationStatus,
 } from "@/lib/data/quotations";
 import {
@@ -178,6 +179,24 @@ export async function deleteQuotationItemAction(formData: FormData) {
     const itemId = String(formData.get("itemId") ?? "");
     if (!id || !itemId) return;
     await deleteQuotationItem(id, itemId);
+    revalidatePath(`/quotes/${id}`);
+    revalidatePath("/quotes");
+    revalidatePath("/dashboard");
+}
+
+export async function updateQuotationItemAction(formData: FormData) {
+    const id = String(formData.get("id") ?? "");
+    const itemId = String(formData.get("itemId") ?? "");
+    if (!id || !itemId) return;
+    const description = String(formData.get("description") ?? "").trim();
+    if (!description) return;
+    const quantity = Number(formData.get("quantity"));
+    const unitPriceMyr = Number(formData.get("unitPriceMyr"));
+    await updateQuotationItem(id, itemId, {
+        description,
+        quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
+        unitPriceMyr: Number.isFinite(unitPriceMyr) ? unitPriceMyr : 0,
+    });
     revalidatePath(`/quotes/${id}`);
     revalidatePath("/quotes");
     revalidatePath("/dashboard");
