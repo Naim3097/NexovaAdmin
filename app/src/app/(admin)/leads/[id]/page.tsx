@@ -304,23 +304,28 @@ export default async function LeadDetailPage({
                 </div>
             </form>
 
-            {/* Convert + delete */}
-            <section className="flex flex-col gap-3 rounded-lg border bg-card p-4 md:flex-row md:items-center md:justify-between md:p-6">
-                <div>
-                    <h2 className="text-sm font-medium">Actions</h2>
-                    <p className="text-xs text-muted-foreground">
-                        {lead.onboardingSubmissionId
-                            ? "Already converted to onboarding."
-                            : "Convert this lead into an onboarding submission and mark as won."}
+            {/* Closing the deal — the three steps in the order they happen. */}
+            <section className="rounded-lg border bg-card">
+                <div className="border-b p-4 md:px-6">
+                    <h2 className="text-sm font-medium">Close the deal</h2>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                        Three steps, in order. No work starts before the money
+                        lands.
                     </p>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                    <form action={promoteLeadToClientAction}>
-                        <input type="hidden" name="id" value={lead.id} />
-                        <Button type="submit" variant="outline">
-                            Promote to client
-                        </Button>
-                    </form>
+
+                {/* 1 · Get paid first */}
+                <div className="flex flex-col gap-3 border-b p-4 md:flex-row md:items-end md:justify-between md:px-6">
+                    <div className="max-w-sm">
+                        <p className="text-sm font-medium">
+                            <span className="mr-2 font-mono text-xs text-primary">1</span>
+                            Get paid first
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                            One-off work takes a 50% deposit. Retainers take
+                            the full first payment.
+                        </p>
+                    </div>
                     <form
                         action={createDepositInvoiceAction}
                         className="flex flex-wrap items-end gap-2"
@@ -354,30 +359,81 @@ export default async function LeadDetailPage({
                                 className="w-32"
                             />
                         </div>
-                        <Button type="submit" variant="outline">
-                            Create upfront invoice
-                        </Button>
+                        <Button type="submit">Create invoice</Button>
                     </form>
-                    {lead.onboardingSubmissionId ? (
-                        <Link
-                            href={`/onboarding/${lead.onboardingSubmissionId}`}
-                            className="text-sm underline"
-                        >
-                            Open onboarding
-                        </Link>
-                    ) : (
-                        <form action={convertLeadToOnboardingAction}>
-                            <input type="hidden" name="id" value={lead.id} />
-                            <Button type="submit">Convert to onboarding</Button>
-                        </form>
-                    )}
-                    <form action={deleteLeadAction}>
+                </div>
+
+                {/* 2 · Make them a client */}
+                <div className="flex flex-col gap-3 border-b p-4 md:flex-row md:items-center md:justify-between md:px-6">
+                    <div className="max-w-sm">
+                        <p className="text-sm font-medium">
+                            <span className="mr-2 font-mono text-xs text-primary">2</span>
+                            Make them a client
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                            Creates the client record (or links an existing
+                            one) and marks this lead won.
+                        </p>
+                    </div>
+                    <form action={promoteLeadToClientAction}>
                         <input type="hidden" name="id" value={lead.id} />
-                        <Button type="submit" variant="destructive">
-                            Delete lead
+                        <Button type="submit" variant="outline">
+                            Promote to client
                         </Button>
                     </form>
                 </div>
+
+                {/* 3 · Start onboarding */}
+                <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between md:px-6">
+                    <div className="max-w-sm">
+                        <p className="text-sm font-medium">
+                            <span className="mr-2 font-mono text-xs text-primary">3</span>
+                            Start onboarding
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                            {lead.onboardingSubmissionId
+                                ? "Onboarding form already created."
+                                : "Creates the onboarding form to send the client."}
+                        </p>
+                    </div>
+                    {lead.onboardingSubmissionId ? (
+                        <Button
+                            variant="outline"
+                            render={
+                                <Link
+                                    href={`/onboarding/${lead.onboardingSubmissionId}`}
+                                />
+                            }
+                        >
+                            Open onboarding
+                        </Button>
+                    ) : (
+                        <form action={convertLeadToOnboardingAction}>
+                            <input type="hidden" name="id" value={lead.id} />
+                            <Button type="submit" variant="outline">
+                                Convert to onboarding
+                            </Button>
+                        </form>
+                    )}
+                </div>
+            </section>
+
+            {/* Danger zone — away from the workflow buttons. */}
+            <section className="flex items-center justify-between rounded-lg border border-destructive/30 bg-destructive/[0.03] p-4 md:px-6">
+                <div>
+                    <h2 className="text-sm font-medium text-destructive">
+                        Danger zone
+                    </h2>
+                    <p className="text-xs text-muted-foreground">
+                        Deleting removes this lead permanently.
+                    </p>
+                </div>
+                <form action={deleteLeadAction}>
+                    <input type="hidden" name="id" value={lead.id} />
+                    <Button type="submit" variant="destructive">
+                        Delete lead
+                    </Button>
+                </form>
             </section>
 
             <HistoryPanel entity="lead" entityId={lead.id} />
