@@ -55,8 +55,9 @@
 }
 
 :root {
-  /* Neutral canvas with a faint cool tint so grays harmonise with the blue. */
-  --background: oklch(1 0 0);
+  /* Soft cool-washed canvas: cards read as elevated white surfaces on it,
+     giving depth without heavy borders. */
+  --background: oklch(0.977 0.005 250);
   --foreground: oklch(0.18 0.012 264);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.18 0.012 264);
@@ -89,7 +90,7 @@
   --chart-3: oklch(0.62 0.15 285);
   --chart-4: oklch(0.55 0.02 264);
   --chart-5: oklch(0.75 0.02 264);
-  --radius: 0.625rem;
+  --radius: 0.8rem;
 
   --sidebar: oklch(0.988 0.003 264);
   --sidebar-foreground: oklch(0.18 0.012 264);
@@ -102,8 +103,8 @@
 }
 
 .dark {
-  /* Near-black with a faint cool cast — premium, not pure black. */
-  --background: oklch(0.17 0.012 264);
+  /* Near-black with a faint cool cast — cards sit one elevation above. */
+  --background: oklch(0.152 0.012 262);
   --foreground: oklch(0.97 0.004 264);
   --card: oklch(0.205 0.014 264);
   --card-foreground: oklch(0.97 0.004 264);
@@ -183,4 +184,38 @@
   .border-gradient-brand {
     border-color: color-mix(in oklab, var(--brand-to) 40%, var(--border));
   }
+  /* Ambient brand glow on the app canvas — two faint radials, top-right and
+     bottom-left, so pages feel lit rather than flat. Works in both themes. */
+  .canvas-glow {
+    background-image:
+      radial-gradient(
+        900px 420px at 85% -8%,
+        color-mix(in oklab, var(--primary) 7%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        700px 400px at -12% 108%,
+        color-mix(in oklab, var(--brand-from) 5%, transparent),
+        transparent 70%
+      );
+    background-attachment: fixed;
+  }
+}
+
+/* Slim, quiet scrollbars everywhere. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--muted-foreground) 28%, transparent)
+    transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--muted-foreground) 28%, transparent);
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
 }

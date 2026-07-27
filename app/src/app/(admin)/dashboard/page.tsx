@@ -220,12 +220,12 @@ export default async function DashboardPage() {
                     ...(isAdmin
                         ? [{ href: "/settings/clients", label: "Clients" }]
                         : []),
-                ].map((a) => (
+                ].map((a, i) => (
                     <Link
                         key={a.href + a.label}
                         href={a.href}
                         className={buttonVariants({
-                            variant: "outline",
+                            variant: i === 0 ? "default" : "outline",
                             size: "sm",
                         })}
                     >

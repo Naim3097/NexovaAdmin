@@ -20,18 +20,22 @@ export default async function PortalLayout({
     if (!user) redirect("/portal-login");
 
     return (
-        <div className="flex min-h-dvh flex-col">
-            <header className="flex h-14 items-center justify-between border-b bg-card px-4">
+        <div className="canvas-glow flex min-h-dvh flex-col bg-background">
+            <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-border/60 bg-background/70 px-4 backdrop-blur-xl">
                 <span className="font-semibold">Nexova Portal</span>
                 <span className="text-xs text-muted-foreground">{user.email}</span>
             </header>
-            <main className="flex-1 overflow-y-auto p-4 pb-24">{children}</main>
-            <nav className="fixed inset-x-0 bottom-0 z-10 grid grid-cols-5 border-t bg-background">
+            <main className="flex-1 overflow-y-auto p-4 pb-24">
+                <div className="mx-auto w-full max-w-2xl motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300">
+                    {children}
+                </div>
+            </main>
+            <nav className="fixed inset-x-0 bottom-0 z-10 grid grid-cols-5 border-t border-border/60 bg-background/70 backdrop-blur-xl">
                 {NAV.map(({ href, label, icon: Icon }) => (
                     <Link
                         key={href}
                         href={href}
-                        className="flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] text-muted-foreground hover:text-foreground"
+                        className="flex min-h-14 flex-col items-center justify-center gap-0.5 py-2 text-[10px] text-muted-foreground transition-colors hover:text-foreground"
                     >
                         <Icon className="size-5" />
                         {label}

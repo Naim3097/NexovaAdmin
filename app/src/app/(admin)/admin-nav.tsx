@@ -163,12 +163,18 @@ export function SidebarNav({
                                         href={href}
                                         aria-current={active ? "page" : undefined}
                                         className={cn(
-                                            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                                            "relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                                             active
-                                                ? "bg-primary/10 font-medium text-primary"
+                                                ? "bg-gradient-to-r from-primary/12 to-primary/[0.04] font-medium text-primary"
                                                 : "text-muted-foreground hover:bg-accent hover:text-foreground",
                                         )}
                                     >
+                                        {active ? (
+                                            <span
+                                                aria-hidden="true"
+                                                className="absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-full bg-brand-gradient"
+                                            />
+                                        ) : null}
                                         <Icon
                                             className={cn(
                                                 "size-4 shrink-0",
@@ -214,7 +220,7 @@ export function MobileNav({
         <>
             {moreOpen ? (
                 <div
-                    className="fixed inset-0 z-40 bg-background md:hidden"
+                    className="canvas-glow fixed inset-0 z-40 bg-background md:hidden"
                     role="dialog"
                     aria-label="All pages"
                 >
@@ -255,10 +261,10 @@ export function MobileNav({
                                                             : undefined
                                                     }
                                                     className={cn(
-                                                        "relative flex flex-col items-center gap-1.5 rounded-lg border p-3 text-center text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                                                        "relative flex flex-col items-center gap-1.5 rounded-xl border p-3 text-center text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                                                         active
                                                             ? "border-primary/40 bg-primary/10 text-primary"
-                                                            : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                                                            : "border-border/60 bg-card text-muted-foreground shadow-xs hover:bg-accent hover:text-foreground",
                                                     )}
                                                 >
                                                     <Icon className="size-5" />
@@ -285,7 +291,7 @@ export function MobileNav({
 
             <nav
                 aria-label="Primary"
-                className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t bg-background/95 backdrop-blur md:hidden"
+                className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-border/60 bg-background/70 backdrop-blur-xl md:hidden"
             >
                 {items.map(({ href, label, icon: Icon }) => {
                     const active = !moreOpen && isActive(pathname, href);
@@ -300,6 +306,12 @@ export function MobileNav({
                                 active ? "text-primary" : "text-muted-foreground",
                             )}
                         >
+                            {active ? (
+                                <span
+                                    aria-hidden="true"
+                                    className="absolute top-0 h-0.5 w-8 rounded-full bg-brand-gradient"
+                                />
+                            ) : null}
                             <Icon className="size-5" aria-hidden="true" />
                             {label}
                         </Link>

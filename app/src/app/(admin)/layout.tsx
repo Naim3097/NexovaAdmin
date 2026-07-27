@@ -33,7 +33,7 @@ export default async function AdminLayout({
     const initial = (member?.name ?? user.email ?? "?").charAt(0).toUpperCase();
 
     return (
-        <div className="flex min-h-dvh flex-col md:flex-row">
+        <div className="canvas-glow flex min-h-dvh flex-col bg-background md:flex-row">
             {/* Skip link for keyboard users */}
             <a
                 href="#main-content"
@@ -42,34 +42,36 @@ export default async function AdminLayout({
                 Skip to content
             </a>
 
-            {/* Desktop sidebar */}
-            <aside className="sticky top-0 hidden h-dvh md:flex md:w-64 md:flex-col md:border-r md:bg-sidebar">
-                <div className="flex h-16 items-center border-b px-5">
-                    <Link href="/dashboard" aria-label="Nexova — dashboard">
-                        <Logo className="h-6" />
-                    </Link>
-                </div>
-                <SidebarNav unread={unread} isAdmin={isAdmin} />
-                <div className="border-t p-3">
-                    <div className="flex items-center gap-2.5">
-                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-gradient text-xs font-semibold text-white">
-                            {initial}
-                        </span>
-                        <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium">
-                                {displayName}
-                            </p>
-                            <p className="truncate text-xs text-muted-foreground">
-                                {member?.role ?? user.email}
-                            </p>
+            {/* Desktop sidebar — floating glass panel */}
+            <aside className="sticky top-0 hidden h-dvh shrink-0 md:flex md:w-[17.5rem] md:flex-col md:p-3 md:pr-0">
+                <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card/70 shadow-sm backdrop-blur-xl">
+                    <div className="flex h-16 items-center border-b border-border/60 px-5">
+                        <Link href="/dashboard" aria-label="Nexova — dashboard">
+                            <Logo className="h-6" />
+                        </Link>
+                    </div>
+                    <SidebarNav unread={unread} isAdmin={isAdmin} />
+                    <div className="p-3">
+                        <div className="flex items-center gap-2.5 rounded-xl bg-muted/60 p-2.5">
+                            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-gradient text-xs font-semibold text-white shadow-sm">
+                                {initial}
+                            </span>
+                            <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-medium">
+                                    {displayName}
+                                </p>
+                                <p className="truncate text-xs text-muted-foreground">
+                                    {member?.role ?? user.email}
+                                </p>
+                            </div>
+                            <SignOutButton />
                         </div>
-                        <SignOutButton />
                     </div>
                 </div>
             </aside>
 
-            {/* Top bar (mobile) */}
-            <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur md:hidden">
+            {/* Top bar (mobile) — glass */}
+            <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-border/60 bg-background/70 px-4 backdrop-blur-xl md:hidden">
                 <Link href="/dashboard" aria-label="Nexova — dashboard">
                     <Logo className="h-5" />
                 </Link>
@@ -88,7 +90,7 @@ export default async function AdminLayout({
                     </Link>
                     <Link
                         href="/settings"
-                        className="flex size-8 items-center justify-center rounded-full bg-brand-gradient text-xs font-semibold text-white"
+                        className="flex size-8 items-center justify-center rounded-full bg-brand-gradient text-xs font-semibold text-white shadow-sm"
                         aria-label={`Open settings (signed in as ${displayName})`}
                     >
                         {initial}
@@ -98,9 +100,9 @@ export default async function AdminLayout({
 
             <main
                 id="main-content"
-                className="flex-1 overflow-y-auto bg-muted/40 p-4 pb-24 md:p-8 md:pb-10"
+                className="flex-1 overflow-y-auto p-4 pb-24 md:p-8 md:pb-10"
             >
-                <div className="mx-auto w-full max-w-6xl">
+                <div className="mx-auto w-full max-w-6xl motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300">
                     {children}
                 </div>
                 {/* Shared datalists used by autocomplete inputs across forms */}
