@@ -121,6 +121,7 @@ export type ClientRow = {
     contact_name: string;
     contact_email: string;
     contact_phone: string;
+    billing_address: string;
     website: string;
     industry: string;
     notes: string;

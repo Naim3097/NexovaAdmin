@@ -30,6 +30,8 @@ export type Client = {
     contactName: string;
     contactEmail: string;
     contactPhone: string;
+    /** Formal billing address — prefills "Bill to" on new invoices/quotes. */
+    billingAddress: string;
     website: string;
     industry: string;
     notes: string;
@@ -59,6 +61,7 @@ export type Client = {
 function normalizeClient(c: Client): Client {
     return {
         ...c,
+        billingAddress: c.billingAddress ?? "",
         contentRevisionLimit: c.contentRevisionLimit ?? 3,
         monthlyContentQuota: c.monthlyContentQuota ?? 0,
         portalToken: c.portalToken ?? "",
@@ -84,6 +87,7 @@ export async function createClient(input: {
     contactName?: string;
     contactEmail?: string;
     contactPhone?: string;
+    billingAddress?: string;
     website?: string;
     industry?: string;
     notes?: string;
@@ -107,6 +111,7 @@ export async function createClient(input: {
         contactName: input.contactName ?? "",
         contactEmail: input.contactEmail ?? "",
         contactPhone: input.contactPhone ?? "",
+        billingAddress: input.billingAddress ?? "",
         website: input.website ?? "",
         industry: input.industry ?? "",
         notes: input.notes ?? "",

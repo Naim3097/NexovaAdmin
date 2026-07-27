@@ -22,6 +22,7 @@ import {
     computeTotals as invoiceTotals,
 } from "@/lib/data/invoices";
 import { getAgencyProfile } from "@/lib/data/agency";
+import { billingAddressFor } from "@/lib/data/clients";
 import { notify } from "@/lib/data/notifications";
 import { diffFields, recordAudit } from "@/lib/data/audit";
 
@@ -60,6 +61,9 @@ export async function createQuotationAction(formData: FormData) {
         terms: agency.defaultQuoteTerms,
         showAcceptance: agency.defaultQuoteAcceptance,
     });
+    // Prefill "Bill to" from the client record (still editable per quote).
+    const billTo = await billingAddressFor(clientName);
+    if (billTo) await updateQuotation(quote.id, { billToAddress: billTo });
     revalidatePath("/quotes");
     revalidatePath("/dashboard");
     if (projectId) revalidatePath(`/projects/${projectId}`);

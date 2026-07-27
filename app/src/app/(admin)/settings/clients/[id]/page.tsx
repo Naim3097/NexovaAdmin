@@ -256,6 +256,19 @@ export default async function ClientDetailPage({
                             defaultValue={client.website}
                         />
                     </div>
+                    <div className="space-y-1.5 md:col-span-2">
+                        <Label className="text-sm">Billing address</Label>
+                        <Textarea
+                            name="billingAddress"
+                            defaultValue={client.billingAddress}
+                            rows={3}
+                            placeholder={"Company Sdn Bhd\nJalan …, 50480 Kuala Lumpur"}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            Auto-fills &quot;Bill to&quot; on every new invoice
+                            and quotation for this client.
+                        </p>
+                    </div>
                     <div className="md:col-span-2">
                         <p className="text-sm font-medium">Service package</p>
                         <p className="text-xs text-muted-foreground">

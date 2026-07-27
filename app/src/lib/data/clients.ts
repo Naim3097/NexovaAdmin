@@ -33,6 +33,7 @@ function rowToClient(row: ClientRow): Client {
         contactName: row.contact_name,
         contactEmail: row.contact_email,
         contactPhone: row.contact_phone,
+        billingAddress: row.billing_address ?? "",
         website: row.website,
         industry: row.industry,
         notes: row.notes,
@@ -59,6 +60,7 @@ function clientToInsert(c: Client): ClientInsert {
         contact_name: c.contactName,
         contact_email: c.contactEmail,
         contact_phone: c.contactPhone,
+        billing_address: c.billingAddress,
         website: c.website,
         industry: c.industry,
         notes: c.notes,
@@ -86,6 +88,8 @@ function patchToUpdate(patch: UpdatePatch): ClientUpdate {
         out.contact_email = patch.contactEmail;
     if (patch.contactPhone !== undefined)
         out.contact_phone = patch.contactPhone;
+    if (patch.billingAddress !== undefined)
+        out.billing_address = patch.billingAddress;
     if (patch.website !== undefined) out.website = patch.website;
     if (patch.industry !== undefined) out.industry = patch.industry;
     if (patch.notes !== undefined) out.notes = patch.notes;
@@ -115,6 +119,7 @@ export async function createClient(input: {
     contactName?: string;
     contactEmail?: string;
     contactPhone?: string;
+    billingAddress?: string;
     website?: string;
     industry?: string;
     notes?: string;
@@ -138,6 +143,7 @@ export async function createClient(input: {
         contactName: input.contactName ?? "",
         contactEmail: input.contactEmail ?? "",
         contactPhone: input.contactPhone ?? "",
+        billingAddress: input.billingAddress ?? "",
         website: input.website ?? "",
         industry: input.industry ?? "",
         notes: input.notes ?? "",
@@ -241,4 +247,22 @@ export async function deleteClient(id: string): Promise<void> {
     const sb = createServiceClient();
     const { error } = await sb.from(TABLE).delete().eq("id", id);
     if (error) throw new Error(`deleteClient: ${error.message}`);
+}
+
+/**
+ * Billing address for a client name (case-insensitive), or "" when the client
+ * doesn't exist / has none. Used to prefill "Bill to" on new invoices/quotes.
+ */
+export async function billingAddressFor(clientName: string): Promise<string> {
+    const name = clientName.trim().toLowerCase();
+    if (!name) return "";
+    try {
+        const all = await listClients();
+        return (
+            all.find((c) => c.name.trim().toLowerCase() === name)
+                ?.billingAddress ?? ""
+        );
+    } catch {
+        return "";
+    }
 }

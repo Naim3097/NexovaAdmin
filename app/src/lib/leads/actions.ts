@@ -17,10 +17,11 @@ import {
 import { listTeamMembers } from "@/lib/data/team";
 import { createSubmission } from "@/lib/data/onboarding";
 import {
+    billingAddressFor,
     createClient as createClientRecord,
     listClients,
 } from "@/lib/data/clients";
-import { addInvoiceItem, createInvoice } from "@/lib/data/invoices";
+import { addInvoiceItem, createInvoice, updateInvoice } from "@/lib/data/invoices";
 import { pickAssignee, scoreLead } from "@/lib/leads/scoring";
 import { notify } from "@/lib/data/notifications";
 import { diffFields, recordAudit } from "@/lib/data/audit";
@@ -295,6 +296,8 @@ export async function createDepositInvoiceAction(formData: FormData) {
 
     const clientName = (lead.company || lead.name).trim();
     const inv = await createInvoice({ clientName });
+    const billTo = await billingAddressFor(clientName);
+    if (billTo) await updateInvoice(inv.id, { billToAddress: billTo });
     const label =
         pct >= 100
             ? "Full upfront payment"

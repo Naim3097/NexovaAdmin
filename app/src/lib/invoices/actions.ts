@@ -13,7 +13,7 @@ import {
     type InvoiceStatus,
 } from "@/lib/data/invoices";
 import { computeTotals, getInvoiceById, listInvoices } from "@/lib/data/invoices";
-import { listClients } from "@/lib/data/clients";
+import { billingAddressFor, listClients } from "@/lib/data/clients";
 import { listContentPosts, visualsUsed } from "@/lib/data/content";
 import { notify } from "@/lib/data/notifications";
 import { diffFields, recordAudit } from "@/lib/data/audit";
@@ -57,6 +57,9 @@ export async function createInvoiceAction(formData: FormData) {
         dueDate,
         taxRatePct: Number.isFinite(taxRatePct) ? taxRatePct : 6,
     });
+    // Prefill "Bill to" from the client record (still editable per invoice).
+    const billTo = await billingAddressFor(clientName);
+    if (billTo) await updateInvoice(inv.id, { billToAddress: billTo });
     revalidatePath("/invoices");
     revalidatePath("/dashboard");
     if (projectId) revalidatePath(`/projects/${projectId}`);
@@ -372,6 +375,7 @@ export async function generateRetainerInvoicesAction(
         });
         await updateInvoice(inv.id, {
             notes: `Monthly retainer for ${month}. ${marker}`,
+            billToAddress: c.billingAddress || "",
         });
         await addInvoiceItem(inv.id, {
             description: `Monthly retainer — ${c.packageName || "service package"} (${month})`,
