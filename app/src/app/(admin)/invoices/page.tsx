@@ -19,6 +19,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { createInvoiceAction } from "@/lib/invoices/actions";
+import { RetainerRunButton } from "./retainer-run-button";
 
 export const dynamic = "force-dynamic";
 
@@ -61,10 +62,12 @@ export default async function InvoicesPage() {
                 <div>
                     <h1 className="text-2xl font-semibold md:text-3xl">Invoices</h1>
                     <p className="text-sm text-muted-foreground">
-                        Local-only for now. Lean.x / Stripe integration is on hold.
+                        Monthly run: generate retainers on the 1st, send all by
+                        the 3rd (SOP 5).
                     </p>
                 </div>
-                <div className="flex gap-3 text-sm">
+                <div className="flex flex-wrap items-start gap-3 text-sm">
+                    <RetainerRunButton />
                     <div className="rounded-md border bg-card px-3 py-2">
                         AR open: <strong>{fmtMyr(arOpen)}</strong>
                     </div>

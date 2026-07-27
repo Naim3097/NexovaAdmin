@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
     inviteClientAction,
+    revokeClientPortalAction,
     type ClientInviteState,
 } from "@/lib/clients/actions";
 
@@ -67,6 +68,31 @@ export function ClientInviteForm({
                 >
                     {state.message}
                 </p>
+            ) : null}
+
+            {linked ? (
+                <form
+                    action={revokeClientPortalAction}
+                    onSubmit={(e) => {
+                        if (
+                            !window.confirm(
+                                "Revoke this client's portal access? Their login stops working; data is kept and a re-invite relinks it.",
+                            )
+                        ) {
+                            e.preventDefault();
+                        }
+                    }}
+                >
+                    <input type="hidden" name="id" value={clientId} />
+                    <Button
+                        type="submit"
+                        variant="outline"
+                        size="sm"
+                        className="text-destructive"
+                    >
+                        Revoke portal access
+                    </Button>
+                </form>
             ) : null}
 
             {state.ok && state.inviteLink ? (

@@ -12,7 +12,9 @@ import {
     updateInvoice,
     type InvoiceStatus,
 } from "@/lib/data/invoices";
-import { computeTotals, getInvoiceById } from "@/lib/data/invoices";
+import { computeTotals, getInvoiceById, listInvoices } from "@/lib/data/invoices";
+import { listClients } from "@/lib/data/clients";
+import { listContentPosts, visualsUsed } from "@/lib/data/content";
 import { notify } from "@/lib/data/notifications";
 import { diffFields, recordAudit } from "@/lib/data/audit";
 import {
@@ -321,4 +323,95 @@ export async function refreshPaymentStatusAction(
     } catch (e) {
         return { ok: false, message: (e as Error).message };
     }
+}
+
+/**
+ * Monthly retainer run (audit rec #2): one click drafts this month's retainer
+ * invoice for every active client with a retainer amount configured.
+ *
+ * Idempotent via a notes marker `[retainer:YYYY-MM]` — re-running skips clients
+ * already invoiced this month. Adds a quota-overage line when the month's
+ * visuals exceed the client's quota and an extra-visual price is set.
+ * Invoices land as DRAFTS for Farisha to review and send (SOP 5).
+ */
+export async function generateRetainerInvoicesAction(
+    _prev: ActionResult,
+    _formData: FormData,
+): Promise<ActionResult> {
+    const month = new Date().toISOString().slice(0, 7);
+    const today = new Date().toISOString().slice(0, 10);
+    const due = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 10);
+    const marker = `[retainer:${month}]`;
+
+    const [clients, invoices, posts] = await Promise.all([
+        listClients(),
+        listInvoices(),
+        listContentPosts(),
+    ]);
+
+    let created = 0;
+    let skipped = 0;
+    const names: string[] = [];
+
+    for (const c of clients) {
+        if (c.status !== "active" || !(c.monthlyRetainerMyr > 0)) continue;
+        const already = invoices.some(
+            (i) => i.clientName === c.name && i.notes.includes(marker),
+        );
+        if (already) {
+            skipped++;
+            continue;
+        }
+
+        const inv = await createInvoice({
+            clientName: c.name,
+            issueDate: today,
+            dueDate: due,
+        });
+        await updateInvoice(inv.id, {
+            notes: `Monthly retainer for ${month}. ${marker}`,
+        });
+        await addInvoiceItem(inv.id, {
+            description: `Monthly retainer — ${c.packageName || "service package"} (${month})`,
+            quantity: 1,
+            unitPriceMyr: c.monthlyRetainerMyr,
+        });
+
+        // Quota overage → billable extras line (per-visual pricing).
+        const used = visualsUsed(posts, c.name, month);
+        const over = Math.max(0, used - (c.monthlyContentQuota || 0));
+        if (over > 0 && c.monthlyContentQuota > 0 && c.extraContentPrice > 0) {
+            await addInvoiceItem(inv.id, {
+                description: `Additional visuals beyond quota (${used}/${c.monthlyContentQuota} used in ${month})`,
+                quantity: over,
+                unitPriceMyr: c.extraContentPrice,
+            });
+        }
+
+        await recordAudit({
+            entity: "invoice",
+            entityId: inv.id,
+            kind: "create",
+            summary: `Retainer invoice drafted for ${c.name} (${month})`,
+        });
+        names.push(c.name);
+        created++;
+    }
+
+    revalidatePath("/invoices");
+    if (created === 0 && skipped === 0) {
+        return {
+            ok: false,
+            message:
+                "No active clients have a retainer amount set — fill 'Monthly retainer' on client records first.",
+        };
+    }
+    return {
+        ok: true,
+        message: `${created} draft${created === 1 ? "" : "s"} created${
+            names.length ? ` (${names.join(", ")})` : ""
+        }${skipped ? ` · ${skipped} already invoiced for ${month}` : ""}. Review each, then Send.`,
+    };
 }

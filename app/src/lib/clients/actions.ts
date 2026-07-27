@@ -11,6 +11,7 @@ import {
     type ClientStatus,
 } from "@/lib/data/clients";
 import { generateMonthlyPlan } from "@/lib/data/content";
+import { recordAudit } from "@/lib/data/audit";
 import { createServiceClient } from "@/lib/supabase/server";
 
 function asStatus(v: FormDataEntryValue | null): ClientStatus {
@@ -180,6 +181,28 @@ export async function inviteClientAction(
         message: `Invited ${client.name}. Share the link below so they can set a password.`,
         inviteLink,
     };
+}
+
+/**
+ * Revoke a client's portal access (offboarding SOP 6): unlink the auth user
+ * from the client record. Their login then resolves to no client and the
+ * role-aware door bounces them — no data is deleted, and a later re-invite
+ * (same email) relinks cleanly.
+ */
+export async function revokeClientPortalAction(formData: FormData) {
+    const id = String(formData.get("id") ?? "");
+    if (!id) return;
+    const client = await getClientById(id);
+    if (!client || !client.userId) return;
+    await updateClient(id, { userId: null });
+    await recordAudit({
+        entity: "client",
+        entityId: id,
+        kind: "update",
+        summary: `Portal access revoked for ${client.name}`,
+    });
+    revalidatePath(`/settings/clients/${id}`);
+    revalidateTag("clients", "max");
 }
 
 /**

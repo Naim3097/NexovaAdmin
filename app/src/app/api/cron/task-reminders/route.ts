@@ -15,6 +15,12 @@ import { env } from "@/lib/env";
 import { listTasksDueOn, updateSprintTask } from "@/lib/data/sprint-tasks";
 import { listProjects } from "@/lib/data/projects";
 import { listClients } from "@/lib/data/clients";
+import {
+    computeTotals,
+    listInvoices,
+    setInvoiceStatus,
+} from "@/lib/data/invoices";
+import { recordAudit } from "@/lib/data/audit";
 import { notify } from "@/lib/data/notifications";
 
 export const dynamic = "force-dynamic";
@@ -88,6 +94,28 @@ async function run(req: NextRequest) {
             title: `Renewal ${label}: ${c.name}`,
             body: `${c.packageName || "Package"} renews ${c.packageRenewsOn}${c.accountManager ? ` · AM: ${c.accountManager}` : ""}`,
             link: `/settings/clients/${c.id}`,
+        });
+        pinged++;
+    }
+
+    // 4) Invoices past due — flip sent → overdue (once; the status change is the
+    //    dedup) and ping Telegram so the collection ladder (SOP 5) starts.
+    const invoices = await listInvoices();
+    for (const inv of invoices) {
+        if (inv.status !== "sent" || !inv.dueDate || inv.dueDate >= today) continue;
+        await setInvoiceStatus(inv.id, "overdue");
+        await recordAudit({
+            entity: "invoice",
+            entityId: inv.id,
+            kind: "status",
+            summary: `Status: sent → overdue (auto, due ${inv.dueDate})`,
+            changes: [{ field: "status", before: "sent", after: "overdue" }],
+        });
+        await notify({
+            kind: "invoice_overdue",
+            title: `Invoice overdue: ${inv.number} — ${inv.clientName}`,
+            body: `MYR ${computeTotals(inv).total.toLocaleString()} was due ${inv.dueDate}`,
+            link: `/invoices/${inv.id}`,
         });
         pinged++;
     }
