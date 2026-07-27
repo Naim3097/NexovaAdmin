@@ -165,9 +165,14 @@ at staging.nexops.my. Executed directly against production data:
   Temenggor, Benefigs not on slide 3 — founder to assign.)
 - **Zafran login minted** (zafrang@gmail.com, linked to his team row,
   set-password link handed to founder).
-- Note: the founder's working login (danisyamldn@gmail.com) is attached to the
-  now-renamed **Danisy** team row — the old dummy "Client Testing" client was
-  deleted, so the collision is gone. Link real emails before setting admins.
+- Note: the founder's working login is attached to the now-renamed **Danisy**
+  team row — the old dummy "Client Testing" client was deleted, so the
+  collision is gone. Link real emails before setting admins.
+  *(Corrected 2026-07-27: the row was linked to the DUMMY account
+  danisyamldn@gmail.com; the founder's real login is
+  **danisyamaludin@gmail.com** — relinked + admin. All 7 rows now verified
+  row-email == auth-email. The dummy auth user is orphaned; delete when
+  convenient.)*
 
 **SOPs (§7) — all 7 drafted** in `docs/sops/` (01-client-onboarding …
 07-system-admin-basics + README index).
