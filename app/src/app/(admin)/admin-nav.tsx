@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import {
     LayoutDashboard,
     Users,
@@ -20,6 +21,9 @@ import {
     BarChart3,
     Bell,
     Search,
+    Building2,
+    LayoutGrid,
+    X,
     type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -45,6 +49,7 @@ const SECTIONS: { label: string; items: Item[] }[] = [
     {
         label: "Delivery",
         items: [
+            { href: "/settings/clients", label: "Clients", icon: Building2 },
             { href: "/onboarding", label: "Onboarding", icon: ClipboardList },
             { href: "/projects", label: "Projects", icon: Briefcase },
         ],
@@ -81,15 +86,26 @@ const SECTIONS: { label: string; items: Item[] }[] = [
     },
 ];
 
-const MOBILE: Item[] = [
+/** Four fixed tabs + "More" (everything else). Role-aware. */
+const MOBILE_ADMIN: Item[] = [
     { href: "/dashboard", label: "Home", icon: LayoutDashboard },
     { href: "/leads", label: "Leads", icon: Users },
     { href: "/projects", label: "Projects", icon: Briefcase },
     { href: "/invoices", label: "Invoices", icon: Receipt },
-    { href: "/notifications", label: "Inbox", icon: Bell },
+];
+const MOBILE_STANDARD: Item[] = [
+    { href: "/dashboard", label: "Home", icon: LayoutDashboard },
+    { href: "/tasks", label: "Tasks", icon: ListTodo },
+    { href: "/content", label: "Content", icon: FileText },
+    { href: "/projects", label: "Projects", icon: Briefcase },
 ];
 
 function isActive(pathname: string, href: string) {
+    // Clients lives at /settings/clients but is its own nav entry — don't
+    // light up Settings for it.
+    if (href === "/settings" && pathname.startsWith("/settings/clients")) {
+        return false;
+    }
     return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -187,40 +203,128 @@ export function MobileNav({
     isAdmin?: boolean;
 }) {
     const pathname = usePathname();
-    const items = isAdmin
-        ? MOBILE
-        : MOBILE.map((i) =>
-              i.href === "/invoices"
-                  ? { href: "/tasks", label: "Tasks", icon: ListTodo }
-                  : i,
-          );
+    const [moreOpen, setMoreOpen] = useState(false);
+    const items = isAdmin ? MOBILE_ADMIN : MOBILE_STANDARD;
+    const tabHrefs = new Set(items.map((i) => i.href));
+    // "More" is active when the current page isn't one of the fixed tabs.
+    const moreActive =
+        !moreOpen && !items.some((i) => isActive(pathname, i.href));
+
     return (
-        <nav
-            aria-label="Primary"
-            className="fixed inset-x-0 bottom-0 z-10 grid grid-cols-5 border-t bg-background/95 backdrop-blur md:hidden"
-        >
-            {items.map(({ href, label, icon: Icon }) => {
-                const active = isActive(pathname, href);
-                return (
-                    <Link
-                        key={href}
-                        href={href}
-                        aria-current={active ? "page" : undefined}
-                        className={cn(
-                            "relative flex min-h-14 flex-col items-center justify-center gap-0.5 py-2 text-[10px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                            active ? "text-primary" : "text-muted-foreground",
-                        )}
-                    >
-                        <Icon className="size-5" aria-hidden="true" />
-                        {label}
-                        {href === "/notifications" && unread > 0 ? (
-                            <span className="absolute right-[22%] top-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-semibold text-primary-foreground">
-                                {unread > 9 ? "9+" : unread}
-                            </span>
-                        ) : null}
-                    </Link>
-                );
-            })}
-        </nav>
+        <>
+            {moreOpen ? (
+                <div
+                    className="fixed inset-0 z-40 bg-background md:hidden"
+                    role="dialog"
+                    aria-label="All pages"
+                >
+                    <div className="flex h-14 items-center justify-between border-b px-4">
+                        <span className="font-semibold">Menu</span>
+                        <button
+                            type="button"
+                            onClick={() => setMoreOpen(false)}
+                            aria-label="Close menu"
+                            className="rounded-md p-2 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                            <X className="size-5" />
+                        </button>
+                    </div>
+                    <div className="space-y-5 overflow-y-auto p-4 pb-24" style={{ maxHeight: "calc(100dvh - 3.5rem)" }}>
+                        {sectionsFor(isAdmin).map((section) => (
+                            <div key={section.label}>
+                                <p className="pb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/60">
+                                    {section.label}
+                                </p>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {section.items.map(
+                                        ({ href, label, icon: Icon }) => {
+                                            const active = isActive(
+                                                pathname,
+                                                href,
+                                            );
+                                            return (
+                                                <Link
+                                                    key={href}
+                                                    href={href}
+                                                    onClick={() =>
+                                                        setMoreOpen(false)
+                                                    }
+                                                    aria-current={
+                                                        active
+                                                            ? "page"
+                                                            : undefined
+                                                    }
+                                                    className={cn(
+                                                        "relative flex flex-col items-center gap-1.5 rounded-lg border p-3 text-center text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                                                        active
+                                                            ? "border-primary/40 bg-primary/10 text-primary"
+                                                            : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                                                    )}
+                                                >
+                                                    <Icon className="size-5" />
+                                                    {label}
+                                                    {href ===
+                                                        "/notifications" &&
+                                                    unread > 0 ? (
+                                                        <span className="absolute right-2 top-2 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-semibold text-primary-foreground">
+                                                            {unread > 9
+                                                                ? "9+"
+                                                                : unread}
+                                                        </span>
+                                                    ) : null}
+                                                </Link>
+                                            );
+                                        },
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            ) : null}
+
+            <nav
+                aria-label="Primary"
+                className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t bg-background/95 backdrop-blur md:hidden"
+            >
+                {items.map(({ href, label, icon: Icon }) => {
+                    const active = !moreOpen && isActive(pathname, href);
+                    return (
+                        <Link
+                            key={href}
+                            href={href}
+                            onClick={() => setMoreOpen(false)}
+                            aria-current={active ? "page" : undefined}
+                            className={cn(
+                                "relative flex min-h-14 flex-col items-center justify-center gap-0.5 py-2 text-[10px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                                active ? "text-primary" : "text-muted-foreground",
+                            )}
+                        >
+                            <Icon className="size-5" aria-hidden="true" />
+                            {label}
+                        </Link>
+                    );
+                })}
+                <button
+                    type="button"
+                    onClick={() => setMoreOpen((v) => !v)}
+                    aria-expanded={moreOpen}
+                    className={cn(
+                        "relative flex min-h-14 flex-col items-center justify-center gap-0.5 py-2 text-[10px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        moreOpen || moreActive
+                            ? "text-primary"
+                            : "text-muted-foreground",
+                    )}
+                >
+                    <LayoutGrid className="size-5" aria-hidden="true" />
+                    More
+                    {unread > 0 && !tabHrefs.has("/notifications") ? (
+                        <span className="absolute right-[22%] top-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-semibold text-primary-foreground">
+                            {unread > 9 ? "9+" : unread}
+                        </span>
+                    ) : null}
+                </button>
+            </nav>
+        </>
     );
 }

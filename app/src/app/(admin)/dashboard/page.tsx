@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { buttonVariants } from "@/components/ui/button";
+import { getAccessLevel } from "@/lib/auth";
 import { computeTotals } from "@/lib/data/invoices";
 import { computeTotals as quoteTotals } from "@/lib/data/quotations";
 import { totalsFor } from "@/lib/data/campaigns";
@@ -18,7 +20,7 @@ import { listClients } from "@/lib/data/clients";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-    const [leads, submissions, projects, invoices, quotes, content, campaigns, recentActivity, clients] =
+    const [leads, submissions, projects, invoices, quotes, content, campaigns, recentActivity, clients, access] =
         await Promise.all([
             listLeads(),
             listSubmissions(),
@@ -29,7 +31,9 @@ export default async function DashboardPage() {
             listCampaigns(),
             listActivityFiltered({ limit: 8 }),
             listClients(),
+            getAccessLevel(),
         ]);
+    const isAdmin = access === "admin";
 
     // eslint-disable-next-line react-hooks/purity -- server component, runs per request
     const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
@@ -197,6 +201,37 @@ export default async function DashboardPage() {
                 <p className="text-sm text-muted-foreground">
                     Live overview of leads, deals, projects, and revenue.
                 </p>
+            </div>
+
+            {/* Quick actions — the common "I want to make a thing" starts,
+                so nobody hunts the sidebar for them. Role-aware. */}
+            <div className="flex flex-wrap gap-2">
+                {[
+                    { href: "/leads", label: "+ Lead" },
+                    ...(isAdmin
+                        ? [
+                              { href: "/quotes", label: "+ Quotation" },
+                              { href: "/invoices", label: "+ Invoice" },
+                          ]
+                        : []),
+                    { href: "/tasks", label: "+ Task" },
+                    { href: "/content", label: "Content board" },
+                    { href: "/reports/weekly", label: "Weekly update" },
+                    ...(isAdmin
+                        ? [{ href: "/settings/clients", label: "Clients" }]
+                        : []),
+                ].map((a) => (
+                    <Link
+                        key={a.href + a.label}
+                        href={a.href}
+                        className={buttonVariants({
+                            variant: "outline",
+                            size: "sm",
+                        })}
+                    >
+                        {a.label}
+                    </Link>
+                ))}
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
