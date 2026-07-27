@@ -18,6 +18,8 @@ import {
     createInvoice,
     updateInvoice,
     getInvoiceById,
+    listInvoices,
+    computeTotals as invoiceTotals,
 } from "@/lib/data/invoices";
 import { getAgencyProfile } from "@/lib/data/agency";
 import { notify } from "@/lib/data/notifications";
@@ -201,15 +203,39 @@ export async function convertQuotationToInvoiceAction(formData: FormData) {
         projectId: quote.projectId,
         taxRatePct: quote.taxRatePct,
     });
+
+    // One-off flow: if a deposit was already invoiced (sent/paid) for this
+    // client, deduct it so the converted invoice bills the BALANCE, not the
+    // full amount again. Deduct the deposit's pre-tax subtotal so tax nets out.
+    const deposits = (await listInvoices()).filter(
+        (i) =>
+            i.clientName.trim().toLowerCase() ===
+                quote.clientName.trim().toLowerCase() &&
+            (i.status === "sent" || i.status === "paid") &&
+            i.items.some((it) =>
+                it.description.toLowerCase().includes("deposit"),
+            ),
+    );
+    const deductions = deposits.map((dep) => ({
+        id: "",
+        description: `Less: deposit ${dep.status === "paid" ? "received" : "invoiced"} (${dep.number})`,
+        details: "",
+        quantity: 1,
+        unitPriceMyr: -invoiceTotals(dep).subtotal,
+    }));
+
     // Copy line items + notes onto the fresh invoice in one replace-all write.
     await updateInvoice(invoice.id, {
-        items: quote.items.map((it) => ({
-            id: "", // new id minted by the adapter
-            description: it.description,
-            details: it.details,
-            quantity: it.quantity,
-            unitPriceMyr: it.unitPriceMyr,
-        })),
+        items: [
+            ...quote.items.map((it) => ({
+                id: "", // new id minted by the adapter
+                description: it.description,
+                details: it.details,
+                quantity: it.quantity,
+                unitPriceMyr: it.unitPriceMyr,
+            })),
+            ...deductions,
+        ],
         notes: quote.notes
             ? `${quote.notes}\n\n(From quotation ${quote.number})`
             : `From quotation ${quote.number}`,
