@@ -16,6 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { HistoryPanel } from "@/components/history-panel";
 import { Button } from "@/components/ui/button";
+import { SaveButton } from "@/components/save-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -363,7 +364,7 @@ export default async function InvoiceDetailPage({
                 </div>
 
                 <div className="flex justify-end">
-                    <Button type="submit">Save changes</Button>
+                    <SaveButton />
                 </div>
             </form>
 

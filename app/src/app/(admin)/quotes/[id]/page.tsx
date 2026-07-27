@@ -37,6 +37,7 @@ import {
     setQuotationStatusAction,
     updateQuotationAction,
 } from "@/lib/quotations/actions";
+import { SaveButton } from "@/components/save-button";
 
 export const dynamic = "force-dynamic";
 
@@ -155,12 +156,19 @@ export default async function QuotationDetailPage({
                     ) : (
                         <form action={convertQuotationToInvoiceAction}>
                             <input type="hidden" name="id" value={quote.id} />
-                            <Button
-                                type="submit"
-                                disabled={quote.items.length === 0}
-                            >
-                                Convert to invoice
-                            </Button>
+                            <div className="flex flex-col items-end gap-1">
+                                <Button
+                                    type="submit"
+                                    disabled={quote.items.length === 0}
+                                >
+                                    Convert to invoice
+                                </Button>
+                                {quote.items.length === 0 ? (
+                                    <p className="text-xs text-muted-foreground">
+                                        Add at least one line item first.
+                                    </p>
+                                ) : null}
+                            </div>
                         </form>
                     )}
                 </div>
@@ -200,6 +208,11 @@ export default async function QuotationDetailPage({
             {/* Line items */}
             <section className="rounded-lg border bg-card p-4 md:p-6">
                 <h2 className="text-sm font-medium">Line items</h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                    Items save instantly when you Add or Remove them — to change
+                    one, remove it and add it again. The Save changes button
+                    below is for the document details.
+                </p>
 
                 <LineItemForm
                     docId={quote.id}
@@ -453,7 +466,7 @@ export default async function QuotationDetailPage({
                 </div>
 
                 <div className="flex justify-end">
-                    <Button type="submit">Save changes</Button>
+                    <SaveButton />
                 </div>
             </form>
 

@@ -11,6 +11,7 @@ import {
 } from "@/lib/data/campaigns";
 import { listLeads } from "@/lib/data/leads";
 import { Button } from "@/components/ui/button";
+import { SaveButton } from "@/components/save-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -367,7 +368,7 @@ export default async function CampaignDetailPage({
                     />
                 </div>
                 <div className="flex justify-end">
-                    <Button type="submit">Save changes</Button>
+                    <SaveButton />
                 </div>
             </form>
 

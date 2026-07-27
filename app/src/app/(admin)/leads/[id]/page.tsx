@@ -9,6 +9,7 @@ import { listCampaigns } from "@/lib/data/campaigns";
 import { listTeamMembers } from "@/lib/data/team";
 import { scoreLead } from "@/lib/leads/scoring";
 import { Button } from "@/components/ui/button";
+import { SaveButton } from "@/components/save-button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -299,7 +300,7 @@ export default async function LeadDetailPage({
                     <Textarea name="notes" defaultValue={lead.notes} rows={3} />
                 </div>
                 <div className="flex justify-end">
-                    <Button type="submit">Save changes</Button>
+                    <SaveButton />
                 </div>
             </form>
 
