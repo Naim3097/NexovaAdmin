@@ -270,27 +270,50 @@ export async function promoteLeadToClientAction(formData: FormData) {
  * value as a starting line (fully editable on the invoice) — and lands you on
  * it to adjust + send. Work should kick off once this is paid.
  */
+/**
+ * Upfront invoice from a won lead. Flexible by deal type:
+ *   one-off project → 50% deposit (default)
+ *   retainer        → 100% (full first payment before work starts)
+ * The closer picks the % and can override the base amount (defaults to the
+ * lead's estimated value). The line's sub-points state the base so "% of
+ * what" is always visible on the invoice.
+ */
 export async function createDepositInvoiceAction(formData: FormData) {
     const id = String(formData.get("id") ?? "");
     if (!id) return;
     const lead = await getLeadById(id);
     if (!lead) return;
 
+    const pctRaw = Number(formData.get("pct"));
+    const pct = Number.isFinite(pctRaw) ? Math.min(100, Math.max(1, pctRaw)) : 50;
+    const baseRaw = Number(formData.get("baseMyr"));
+    const base =
+        Number.isFinite(baseRaw) && baseRaw > 0
+            ? baseRaw
+            : Math.max(0, lead.estValueMyr || 0);
+    const amount = Math.round(base * (pct / 100) * 100) / 100;
+
     const clientName = (lead.company || lead.name).trim();
     const inv = await createInvoice({ clientName });
-    const deposit =
-        Math.round(Math.max(0, lead.estValueMyr || 0) * 0.5 * 100) / 100;
+    const label =
+        pct >= 100
+            ? "Full upfront payment"
+            : `Project deposit (${pct}%)`;
     await addInvoiceItem(inv.id, {
-        description: `Project deposit (50%)${lead.interestedIn ? ` — ${lead.interestedIn}` : ""}`,
+        description: `${label}${lead.interestedIn ? ` — ${lead.interestedIn}` : ""}`,
+        details:
+            pct >= 100
+                ? ""
+                : `${pct}% of MYR ${base.toLocaleString(undefined, { minimumFractionDigits: 2 })} total`,
         quantity: 1,
-        unitPriceMyr: deposit,
+        unitPriceMyr: amount,
     });
 
     await recordAudit({
         entity: "lead",
         entityId: id,
         kind: "update",
-        summary: `Deposit invoice ${inv.number} created (MYR ${deposit.toFixed(2)})`,
+        summary: `${label} invoice ${inv.number} created (MYR ${amount.toFixed(2)})`,
     });
 
     revalidatePath("/invoices");

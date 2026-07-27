@@ -321,10 +321,41 @@ export default async function LeadDetailPage({
                             Promote to client
                         </Button>
                     </form>
-                    <form action={createDepositInvoiceAction}>
+                    <form
+                        action={createDepositInvoiceAction}
+                        className="flex flex-wrap items-end gap-2"
+                    >
                         <input type="hidden" name="id" value={lead.id} />
+                        <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">
+                                Upfront
+                            </Label>
+                            <select
+                                name="pct"
+                                defaultValue="50"
+                                className="h-10 rounded-lg border border-border bg-background px-2 text-sm"
+                            >
+                                <option value="50">50% deposit (one-off)</option>
+                                <option value="100">100% full (retainer)</option>
+                                <option value="30">30% deposit</option>
+                                <option value="70">70% deposit</option>
+                            </select>
+                        </div>
+                        <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">
+                                Of amount (MYR)
+                            </Label>
+                            <Input
+                                name="baseMyr"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                defaultValue={lead.estValueMyr || ""}
+                                className="w-32"
+                            />
+                        </div>
                         <Button type="submit" variant="outline">
-                            Create deposit invoice
+                            Create upfront invoice
                         </Button>
                     </form>
                     {lead.onboardingSubmissionId ? (

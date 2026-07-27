@@ -213,12 +213,12 @@ export async function convertQuotationToInvoiceAction(formData: FormData) {
                 quote.clientName.trim().toLowerCase() &&
             (i.status === "sent" || i.status === "paid") &&
             i.items.some((it) =>
-                it.description.toLowerCase().includes("deposit"),
+                /deposit|upfront/i.test(it.description),
             ),
     );
     const deductions = deposits.map((dep) => ({
         id: "",
-        description: `Less: deposit ${dep.status === "paid" ? "received" : "invoiced"} (${dep.number})`,
+        description: `Less: ${/upfront/i.test(dep.items[0]?.description ?? "") ? "upfront payment" : "deposit"} ${dep.status === "paid" ? "received" : "invoiced"} (${dep.number})`,
         details: "",
         quantity: 1,
         unitPriceMyr: -invoiceTotals(dep).subtotal,
