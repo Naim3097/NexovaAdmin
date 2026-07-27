@@ -246,6 +246,36 @@ setting due dates. Future projects route correctly now that roles are fixed.
   a note; its pipeline lead already exists. AM coverage is now complete for
   every real external client.
 
+## Readiness audit 2026-07-25 — "can the system accommodate every workflow step?"
+
+Verified end-to-end against code + production DB (all 20 tables respond;
+USE_SUPABASE=1 → every entity on Supabase; all 17 admin surfaces + portal +
+print routes present; quotation engine, invoice engine incl. LeanX links +
+manual payments, reports incl. weekly/CSV/A-R, content pipeline, sprint tasks,
+campaigns, SEO, notifications, audit trail, access levels — all real).
+
+Four gaps found, **all fixed same day** (commit 4009ca1):
+
+1. **Monthly retainer generator was missing** (SOP 5 step 1 had no button) →
+   built: Invoices → "Generate retainer invoices" drafts one invoice per active
+   client with a retainer set, adds a quota-overage extras line automatically,
+   idempotent per month.
+2. **No automatic overdue flip** (SOP 5's ladder assumed it) → daily cron now
+   flips sent → overdue past due date + Telegram ping.
+3. **Stage auto-assignment mismatch**: default templates referenced roles
+   nobody holds after the re-roling (Frontend/Ads/SEO) → template overrides
+   seeded in DB per real lanes (Danisy = web/ads/SEO stages, Zafran = backend
+   stages). All service categories now auto-route to real people.
+4. **No portal revoke** (offboarding SOP 6 step 3 had no button) → built:
+   client profile → "Revoke portal access" (unlinks login; data kept;
+   re-invite relinks).
+
+Bonus find: the audit_events entity constraint was missing 'quotation' since
+0007 — **quotation audit rows have been silently dropped** (recordAudit is
+deliberately non-fatal). Migration **0024_audit_entities.sql** fixes the
+constraint (adds quotation/content/client). Until applied, portal-revoke and
+quotation audits are skipped silently; everything else unaffected.
+
 ## Remaining for 100% (as of 2026-07-25 — nothing left blocked on build)
 
 **A. Founder inputs — Claude executes same day they arrive:**
