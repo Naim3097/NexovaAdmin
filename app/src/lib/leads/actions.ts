@@ -20,6 +20,7 @@ import {
     billingAddressFor,
     createClient as createClientRecord,
     listClients,
+    updateClient as updateClientRecord,
 } from "@/lib/data/clients";
 import { addInvoiceItem, createInvoice, updateInvoice } from "@/lib/data/invoices";
 import { pickAssignee, scoreLead } from "@/lib/leads/scoring";
@@ -103,6 +104,7 @@ export async function updateLeadAction(formData: FormData) {
         sourceCampaignId: nullableId(formData.get("sourceCampaignId")),
         interestedIn: String(formData.get("interestedIn") ?? "").trim(),
         estValueMyr: Number(formData.get("estValueMyr") ?? 0) || 0,
+        billingAddress: String(formData.get("billingAddress") ?? "").trim(),
         notes: String(formData.get("notes") ?? "").trim(),
     };
     // Re-score whenever scoring inputs change.
@@ -234,8 +236,15 @@ export async function promoteLeadToClientAction(formData: FormData) {
             contactName: lead.name,
             contactEmail: lead.email,
             contactPhone: lead.phone,
+            billingAddress: lead.billingAddress,
             notes: lead.interestedIn ? `Interested in: ${lead.interestedIn}` : "",
         }));
+    // Existing client without an address yet? Carry the lead's forward.
+    if (existing && !existing.billingAddress && lead.billingAddress) {
+        await updateClientRecord(existing.id, {
+            billingAddress: lead.billingAddress,
+        });
+    }
 
     if (lead.status !== "won") {
         await updateLead(id, { status: "won" });
@@ -296,7 +305,9 @@ export async function createDepositInvoiceAction(formData: FormData) {
 
     const clientName = (lead.company || lead.name).trim();
     const inv = await createInvoice({ clientName });
-    const billTo = await billingAddressFor(clientName);
+    // Bill-to: the lead's own address first (deal may predate the client
+    // record), else whatever the client record has.
+    const billTo = lead.billingAddress || (await billingAddressFor(clientName));
     if (billTo) await updateInvoice(inv.id, { billToAddress: billTo });
     const label =
         pct >= 100

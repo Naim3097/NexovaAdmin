@@ -44,6 +44,9 @@ export type Lead = {
     interestedIn: string; // free text or comma-list of services
     estValueMyr: number; // 0 if unknown
     status: LeadStatus;
+    /** Formal billing address — used on the deposit invoice and carried onto
+     * the client record at promotion. */
+    billingAddress: string;
     notes: string;
     onboardingSubmissionId: string | null;
     /** Team member name owning the lead. Empty = unassigned. */
@@ -88,6 +91,7 @@ export async function createLead(input: {
         interestedIn: input.interestedIn ?? "",
         estValueMyr: input.estValueMyr ?? 0,
         status: "new",
+        billingAddress: "",
         notes: input.notes ?? "",
         onboardingSubmissionId: null,
         assignedTo: input.assignedTo ?? "",

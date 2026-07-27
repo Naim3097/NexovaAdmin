@@ -296,6 +296,19 @@ export default async function LeadDetailPage({
                     <Input name="interestedIn" defaultValue={lead.interestedIn} />
                 </div>
                 <div className="space-y-1.5">
+                    <Label className="text-sm">Billing address</Label>
+                    <Textarea
+                        name="billingAddress"
+                        defaultValue={lead.billingAddress}
+                        rows={3}
+                        placeholder={"Company Sdn Bhd\nJalan …, 50480 Kuala Lumpur"}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                        Fills &quot;Bill to&quot; on the deposit invoice and
+                        follows them onto the client record when promoted.
+                    </p>
+                </div>
+                <div className="space-y-1.5">
                     <Label className="text-sm">Notes</Label>
                     <Textarea name="notes" defaultValue={lead.notes} rows={3} />
                 </div>

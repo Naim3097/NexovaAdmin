@@ -163,6 +163,7 @@ export type LeadRow = {
     interested_in: string;
     est_value_myr: number;
     status: string;
+    billing_address: string;
     notes: string;
     onboarding_submission_id: string | null;
     assigned_to: string;

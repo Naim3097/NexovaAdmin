@@ -250,17 +250,28 @@ export async function deleteClient(id: string): Promise<void> {
 }
 
 /**
- * Billing address for a client name (case-insensitive), or "" when the client
- * doesn't exist / has none. Used to prefill "Bill to" on new invoices/quotes.
+ * Billing address for a client name (case-insensitive), or "" when nothing is
+ * on file. Checks the client record first, then falls back to a matching LEAD
+ * (deals often need a quote/deposit before the client record exists).
+ * Used to prefill "Bill to" on new invoices/quotations.
  */
 export async function billingAddressFor(clientName: string): Promise<string> {
     const name = clientName.trim().toLowerCase();
     if (!name) return "";
     try {
         const all = await listClients();
+        const fromClient = all.find(
+            (c) => c.name.trim().toLowerCase() === name,
+        )?.billingAddress;
+        if (fromClient) return fromClient;
+        const { listLeads } = await import("@/lib/data/leads");
+        const leads = await listLeads();
         return (
-            all.find((c) => c.name.trim().toLowerCase() === name)
-                ?.billingAddress ?? ""
+            leads.find(
+                (l) =>
+                    (l.company || l.name).trim().toLowerCase() === name &&
+                    l.billingAddress,
+            )?.billingAddress ?? ""
         );
     } catch {
         return "";

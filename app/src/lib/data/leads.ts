@@ -44,6 +44,7 @@ function rowToLead(row: LeadRow): Lead {
         interestedIn: row.interested_in,
         estValueMyr: Number(row.est_value_myr),
         status: row.status as LeadStatus,
+        billingAddress: row.billing_address ?? "",
         notes: row.notes,
         onboardingSubmissionId: row.onboarding_submission_id,
         assignedTo: row.assigned_to,
@@ -65,6 +66,7 @@ function leadToInsert(lead: Lead): LeadInsert {
         interested_in: lead.interestedIn,
         est_value_myr: lead.estValueMyr,
         status: lead.status,
+        billing_address: lead.billingAddress,
         notes: lead.notes,
         onboarding_submission_id: lead.onboardingSubmissionId,
         assigned_to: lead.assignedTo,
@@ -85,6 +87,8 @@ function patchToUpdate(patch: UpdateLeadPatch): LeadUpdate {
     if (patch.interestedIn !== undefined) out.interested_in = patch.interestedIn;
     if (patch.estValueMyr !== undefined) out.est_value_myr = patch.estValueMyr;
     if (patch.status !== undefined) out.status = patch.status;
+    if (patch.billingAddress !== undefined)
+        out.billing_address = patch.billingAddress;
     if (patch.notes !== undefined) out.notes = patch.notes;
     if (patch.onboardingSubmissionId !== undefined)
         out.onboarding_submission_id = patch.onboardingSubmissionId;
@@ -114,6 +118,7 @@ export async function createLead(input: CreateLeadInput): Promise<Lead> {
         interestedIn: input.interestedIn ?? "",
         estValueMyr: input.estValueMyr ?? 0,
         status: "new",
+        billingAddress: "",
         notes: input.notes ?? "",
         onboardingSubmissionId: null,
         assignedTo: input.assignedTo ?? "",
