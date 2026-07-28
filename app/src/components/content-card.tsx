@@ -6,6 +6,8 @@ import { AssetPreview } from "@/components/asset-preview";
 import { DraftViewer } from "@/components/draft-viewer";
 import { CopyButton } from "@/components/copy-button";
 import { StatusLights } from "@/components/status-lights";
+import { ReferenceGallery } from "@/components/reference-gallery";
+import { ReferenceUploader } from "@/components/reference-uploader";
 import {
     portalApproveAction,
     portalRequestChangesAction,
@@ -60,14 +62,17 @@ export function ContentCard({
                 {clientReview ? (
                     <>
                         {/* Direction / brief — what this content is meant to do */}
-                        {post.direction ? (
-                            <div className="rounded-md border bg-muted/30 p-2">
+                        {post.direction || post.references.length > 0 ? (
+                            <div className="space-y-1.5 rounded-md border bg-muted/30 p-2">
                                 <p className="text-xs font-medium text-muted-foreground">
                                     Direction
                                 </p>
-                                <p className="mt-0.5 max-h-20 overflow-y-auto whitespace-pre-wrap text-xs">
-                                    {post.direction}
-                                </p>
+                                {post.direction ? (
+                                    <p className="max-h-20 overflow-y-auto whitespace-pre-wrap text-xs">
+                                        {post.direction}
+                                    </p>
+                                ) : null}
+                                <ReferenceGallery urls={post.references} />
                             </div>
                         ) : null}
 
@@ -141,6 +146,10 @@ export function ContentCard({
                                         rows={2}
                                         required
                                         placeholder="Request changes…"
+                                    />
+                                    <ReferenceUploader
+                                        max={1}
+                                        label="Attach an image (optional)"
                                     />
                                     <Button
                                         type="submit"

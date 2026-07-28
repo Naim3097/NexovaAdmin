@@ -11,6 +11,7 @@ import {
 import { listClients } from "@/lib/data/clients";
 import { listTeamMembers } from "@/lib/data/team";
 import { ReviewTimeline } from "@/components/review-timeline";
+import { ReferenceGallery } from "@/components/reference-gallery";
 import { StatusLights } from "@/components/status-lights";
 import { TypeVisualsFields } from "@/components/type-visuals-fields";
 import { DraftUploader } from "./draft-uploader";
@@ -231,20 +232,9 @@ export default async function ContentDetailPage({
                         </Button>
                     </div>
                     {post.references.length > 0 ? (
-                        <ul className="mt-2 space-y-1">
-                            {post.references.map((url, i) => (
-                                <li key={i}>
-                                    <a
-                                        href={url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="break-all text-xs text-primary hover:underline"
-                                    >
-                                        {url}
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
+                        <div className="mt-2">
+                            <ReferenceGallery urls={post.references} />
+                        </div>
                     ) : null}
                 </form>
 

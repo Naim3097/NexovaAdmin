@@ -103,6 +103,22 @@ export function ReviewTimeline({
                                     <p className="whitespace-pre-wrap text-sm text-muted-foreground">
                                         {n.fb.body}
                                     </p>
+                                    {n.fb.fileUrl ? (
+                                        <a
+                                            href={n.fb.fileUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="block w-fit pt-1"
+                                        >
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img
+                                                src={n.fb.fileUrl}
+                                                alt="Attached reference"
+                                                loading="lazy"
+                                                className="max-h-28 rounded-md border object-cover"
+                                            />
+                                        </a>
+                                    ) : null}
                                 </div>
                             </li>
                         ),

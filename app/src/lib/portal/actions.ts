@@ -7,6 +7,7 @@
  */
 import { revalidatePath } from "next/cache";
 import { getCurrentClient } from "@/lib/auth";
+import { createServiceClient } from "@/lib/supabase/server";
 import {
     approveContent,
     createContentRequest,
@@ -15,6 +16,31 @@ import {
     requestChanges,
     visualsUsed,
 } from "@/lib/data/content";
+
+/**
+ * Turn uploaded reference paths (from the form's hidden input) into public
+ * URLs. Only accepts objects under the signed prefix for THIS client —
+ * anything else is dropped.
+ */
+function referenceUrls(raw: FormDataEntryValue | null, clientId: string): string[] {
+    if (!raw) return [];
+    let paths: unknown;
+    try {
+        paths = JSON.parse(String(raw));
+    } catch {
+        return [];
+    }
+    if (!Array.isArray(paths)) return [];
+    const prefix = `refs/${clientId}/`;
+    const valid = paths.filter(
+        (p): p is string => typeof p === "string" && p.startsWith(prefix),
+    );
+    if (valid.length === 0) return [];
+    const sb = createServiceClient();
+    return valid.map(
+        (p) => sb.storage.from("content-assets").getPublicUrl(p).data.publicUrl,
+    );
+}
 
 export type PortalCreateState = { ok: boolean; message?: string };
 
@@ -51,14 +77,15 @@ export async function portalApproveAction(formData: FormData) {
     revalidatePath("/dashboard");
 }
 
-/** Logged-in client requests changes on the current draft. */
+/** Logged-in client requests changes on the current draft (optional image). */
 export async function portalRequestChangesAction(formData: FormData) {
     const id = String(formData.get("id") ?? "");
     const body = String(formData.get("body") ?? "").trim();
     if (!id || !body) return;
     const owned = await ownContent(id);
     if (!owned) return;
-    await requestChanges({ id, body });
+    const [fileUrl] = referenceUrls(formData.get("refPaths"), owned.client.id);
+    await requestChanges({ id, body, fileUrl });
     revalidatePath("/portal/content");
     revalidatePath("/content");
     revalidatePath("/dashboard");
@@ -78,10 +105,14 @@ export async function portalCreateContentAction(
     const direction = String(formData.get("direction") ?? "").trim();
     if (!title) return { ok: false, message: "Give your request a short title." };
 
-    const references = String(formData.get("references") ?? "")
-        .split(/\r?\n/)
-        .map((s) => s.trim())
-        .filter(Boolean);
+    const references = [
+        ...String(formData.get("references") ?? "")
+            .split(/\r?\n/)
+            .map((s) => s.trim())
+            .filter(Boolean),
+        // Uploaded visual references become links alongside the pasted ones.
+        ...referenceUrls(formData.get("refPaths"), client.id),
+    ];
 
     const month = currentMonth();
 

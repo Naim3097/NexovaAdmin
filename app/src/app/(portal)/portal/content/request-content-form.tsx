@@ -9,6 +9,7 @@ import {
     portalCreateContentAction,
     type PortalCreateState,
 } from "@/lib/portal/actions";
+import { ReferenceUploader } from "@/components/reference-uploader";
 
 const initial: PortalCreateState = { ok: false };
 
@@ -131,6 +132,7 @@ export function RequestContentForm({
                     placeholder={"https://…\nhttps://…"}
                 />
             </div>
+            <ReferenceUploader max={6} label="Upload reference images" />
             <div className="flex items-center justify-between gap-3">
                 {state.message ? (
                     <p

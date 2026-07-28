@@ -82,9 +82,27 @@ export function DraftViewer({
                         Your note on this draft
                     </p>
                     {notes.map((n) => (
-                        <p key={n.id} className="whitespace-pre-wrap text-xs">
-                            {n.body}
-                        </p>
+                        <div key={n.id} className="space-y-1">
+                            <p className="whitespace-pre-wrap text-xs">
+                                {n.body}
+                            </p>
+                            {n.fileUrl ? (
+                                <a
+                                    href={n.fileUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="block w-fit"
+                                >
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                        src={n.fileUrl}
+                                        alt="Attached reference"
+                                        loading="lazy"
+                                        className="max-h-24 rounded-md border object-cover"
+                                    />
+                                </a>
+                            ) : null}
+                        </div>
                     ))}
                 </div>
             ) : null}
