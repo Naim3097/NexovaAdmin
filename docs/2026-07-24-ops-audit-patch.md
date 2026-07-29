@@ -281,6 +281,21 @@ deliberately non-fatal). Migration **0024_audit_entities.sql** fixes the
 constraint (adds quotation/content/client). Until applied, portal-revoke and
 quotation audits are skipped silently; everything else unaffected.
 
+### Update 2026-07-27 — test data purged, directory aligned
+
+- **All "Aiman Property" test data removed** (lead, client, QUO-2026-0002,
+  INV-2026-0016/0017, a test content post, 4 storage files, 3 audit rows, 10
+  notifications, and the dummy portal login `aimanproperty@gmail.com`).
+  Verified zero traces remain.
+- **Client renamed Tropicor → "Tropicorfoods"** (canonical per founder; matches
+  INV-2026-0012) and swept across every table — no orphaned name strings left.
+  Lembaga Zakat Selangor confirmed consistent everywhere.
+- **QUO-2026-0001 (FTECH Solutions Sdn Bhd, MYR 1,500) is a REAL outstanding
+  quote**, not test data: marked **sent**, validity extended to 2026-08-26
+  (originally lapsed 2026-07-24), and a matching **lead created at proposal
+  stage** so the deal is visible in the pipeline. FTECH has no client record by
+  design — that comes at win + deposit (SOP 1).
+
 ## Remaining for 100% (as of 2026-07-25 — nothing left blocked on build)
 
 **A. Founder inputs — Claude executes same day they arrive:**
