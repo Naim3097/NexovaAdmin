@@ -39,6 +39,24 @@ function rowToEvent(row: AuditEventRow): AuditEvent {
     };
 }
 
+/**
+ * Who is performing this action. Resolves the signed-in user to their team
+ * member name (falling back to their email); returns "" outside a request,
+ * e.g. cron jobs. Dynamic import keeps lib/auth out of this module's import
+ * graph, and every failure degrades to "" rather than breaking the workflow.
+ */
+async function currentActor(): Promise<string> {
+    try {
+        const { getCurrentTeamMember, getCurrentUser } = await import("@/lib/auth");
+        const member = await getCurrentTeamMember();
+        if (member?.name) return member.name;
+        const user = await getCurrentUser();
+        return user?.email ?? "";
+    } catch {
+        return "";
+    }
+}
+
 export async function recordAudit(input: {
     entity: AuditEntity;
     entityId: string;
@@ -47,7 +65,12 @@ export async function recordAudit(input: {
     actor?: string;
     changes?: AuditChange[];
 }): Promise<void> {
-    if (!isSupabaseEnabled("audit")) return devAudit.recordAudit(input);
+    // Stamp WHO unless the caller named someone explicitly. Without this the
+    // trail says what changed but never who changed it.
+    const actor = input.actor ?? (await currentActor());
+    if (!isSupabaseEnabled("audit")) {
+        return devAudit.recordAudit({ ...input, actor });
+    }
     try {
         const sb = createServiceClient();
         const insert: AuditInsert = {
@@ -56,7 +79,7 @@ export async function recordAudit(input: {
             entity_id: input.entityId,
             kind: input.kind,
             summary: input.summary,
-            actor: input.actor ?? "",
+            actor,
             changes: input.changes ?? [],
         };
         await sb.from(TABLE).insert(insert);
