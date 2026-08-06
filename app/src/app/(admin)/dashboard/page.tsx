@@ -269,35 +269,62 @@ export default async function DashboardPage() {
                             No open receivables — everything billed is paid. 🎉
                         </p>
                     ) : (
-                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                            {[
-                                { label: "Current", value: aging.current, tone: "" },
-                                { label: "1–30 days", value: aging.d1to30, tone: "" },
-                                {
-                                    label: "31–60 days",
-                                    value: aging.d31to60,
-                                    tone: "text-amber-600",
-                                },
-                                {
-                                    label: "60+ days",
-                                    value: aging.d60plus,
-                                    tone: "text-destructive",
-                                },
-                            ].map((b) => (
-                                <div
-                                    key={b.label}
-                                    className="rounded-lg border bg-card p-3"
-                                >
-                                    <p className="text-xs text-muted-foreground">
-                                        {b.label}
-                                    </p>
-                                    <p
-                                        className={`mt-1 text-lg font-semibold tabular-nums ${b.tone}`}
+                        <div className="space-y-4">
+                            {/* Distribution bar — grey ramp, darker = older debt. */}
+                            <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted">
+                                {[
+                                    { value: aging.current, cls: "bg-chart-4" },
+                                    { value: aging.d1to30, cls: "bg-chart-3" },
+                                    { value: aging.d31to60, cls: "bg-chart-2" },
+                                    { value: aging.d60plus, cls: "bg-chart-1" },
+                                ]
+                                    .filter((s) => s.value > 0)
+                                    .map((s, i) => (
+                                        <div
+                                            key={i}
+                                            className={s.cls}
+                                            style={{
+                                                width: `${(s.value / arOpen) * 100}%`,
+                                            }}
+                                        />
+                                    ))}
+                            </div>
+                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                                {[
+                                    { label: "Current", value: aging.current, dot: "bg-chart-4", tone: "" },
+                                    { label: "1–30 days", value: aging.d1to30, dot: "bg-chart-3", tone: "" },
+                                    {
+                                        label: "31–60 days",
+                                        value: aging.d31to60,
+                                        dot: "bg-chart-2",
+                                        tone: "text-amber-600",
+                                    },
+                                    {
+                                        label: "60+ days",
+                                        value: aging.d60plus,
+                                        dot: "bg-chart-1",
+                                        tone: "text-destructive",
+                                    },
+                                ].map((b) => (
+                                    <div
+                                        key={b.label}
+                                        className="rounded-lg border bg-card p-3"
                                     >
-                                        {fmtMyr(b.value)}
-                                    </p>
-                                </div>
-                            ))}
+                                        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                            <span
+                                                aria-hidden="true"
+                                                className={`size-2 rounded-full ${b.dot}`}
+                                            />
+                                            {b.label}
+                                        </p>
+                                        <p
+                                            className={`mt-1 text-lg font-semibold tabular-nums ${b.tone}`}
+                                        >
+                                            {fmtMyr(b.value)}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
                 </CardContent>

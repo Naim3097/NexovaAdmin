@@ -6,7 +6,7 @@ import { z } from "zod";
 
 const ServerEnvSchema = z.object({
     NEXT_PUBLIC_SITE_URL: z.string().url(),
-    NEXT_PUBLIC_SITE_NAME: z.string().default("Nexova Admin"),
+    NEXT_PUBLIC_SITE_NAME: z.string().default("NexOps"),
 
     NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
     NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
@@ -135,7 +135,7 @@ export const env: ServerEnv =
  */
 export const publicEnv = {
     siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3001",
-    siteName: process.env.NEXT_PUBLIC_SITE_NAME ?? "Nexova Admin",
+    siteName: process.env.NEXT_PUBLIC_SITE_NAME ?? "NexOps",
     supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
     supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
     turnstileSiteKey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,

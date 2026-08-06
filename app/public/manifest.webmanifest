@@ -1,11 +1,11 @@
 {
-    "name": "Nexova Admin",
-    "short_name": "Nexova",
-    "description": "Operations & client portal for Nexova.",
+    "name": "NexOps",
+    "short_name": "NexOps",
+    "description": "Operations & client portal for NexOps.",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",
-    "theme_color": "#1d6ae0",
+    "theme_color": "#0a0a0a",
     "orientation": "portrait",
     "scope": "/",
     "icons": [

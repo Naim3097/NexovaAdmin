@@ -14,11 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Nexova Admin", template: "%s · Nexova" },
-  description: "Operations & client portal for Nexova.",
-  applicationName: "Nexova Admin",
+  title: { default: "NexOps", template: "%s · NexOps" },
+  description: "Operations & client portal for NexOps.",
+  applicationName: "NexOps",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, title: "Nexova", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "NexOps", statusBarStyle: "default" },
   formatDetection: { telephone: false },
 };
 

@@ -46,7 +46,7 @@ export default async function AdminLayout({
             <aside className="sticky top-0 hidden h-dvh shrink-0 md:flex md:w-[17.5rem] md:flex-col md:p-3 md:pr-0">
                 <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card/70 shadow-sm backdrop-blur-xl">
                     <div className="flex h-16 items-center border-b border-border/60 px-5">
-                        <Link href="/dashboard" aria-label="Nexova — dashboard">
+                        <Link href="/dashboard" aria-label="NexOps — dashboard">
                             <Logo className="h-6" />
                         </Link>
                     </div>
@@ -72,7 +72,7 @@ export default async function AdminLayout({
 
             {/* Top bar (mobile) — glass */}
             <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-border/60 bg-background/70 px-4 backdrop-blur-xl md:hidden">
-                <Link href="/dashboard" aria-label="Nexova — dashboard">
+                <Link href="/dashboard" aria-label="NexOps — dashboard">
                     <Logo className="h-5" />
                 </Link>
                 <div className="flex items-center gap-3">

@@ -22,7 +22,7 @@ export default async function PortalLayout({
     return (
         <div className="canvas-glow flex min-h-dvh flex-col bg-background">
             <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-border/60 bg-background/70 px-4 backdrop-blur-xl">
-                <span className="font-semibold">Nexova Portal</span>
+                <span className="font-semibold">NexOps Portal</span>
                 <span className="text-xs text-muted-foreground">{user.email}</span>
             </header>
             <main className="flex-1 overflow-y-auto p-4 pb-24">
