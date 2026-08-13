@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
+import { Logo } from "@/components/logo";
 
 export default function HomePage() {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-6 p-6 text-center">
-      <div className="space-y-2">
-        <p className="text-xs uppercase tracking-widest text-muted-foreground">
-          NexOps
-        </p>
+      <div className="space-y-4">
+        <div className="flex justify-center">
+          <Logo className="h-8 sm:h-10" />
+        </div>
         <h1 className="text-3xl font-semibold sm:text-5xl">
           Operations & Client Portal
         </h1>

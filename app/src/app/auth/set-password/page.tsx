@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -57,6 +58,9 @@ export default function SetPasswordPage() {
     return (
         <main className="flex min-h-dvh items-center justify-center p-6">
             <div className="w-full max-w-sm space-y-6">
+                <div className="flex justify-center">
+                    <Logo className="h-7" />
+                </div>
                 <div className="space-y-1 text-center">
                     <h1 className="text-xl font-semibold">Set your password</h1>
                     <p className="text-sm text-muted-foreground">
