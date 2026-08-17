@@ -107,6 +107,24 @@ export const getAccessLevel = cache(
     },
 );
 
+/**
+ * Server-component guard for TEAM-WIDE pages — any signed-in agency user,
+ * admin or standard. Client-portal users are bounced to their own portal.
+ *
+ * Use this for surfaces the whole delivery team is meant to reach (client
+ * monthly reports). Finance surfaces — invoices, quotes, CSV exports, agency
+ * settings, team management — use `requireAdminAccess` instead. Stating the
+ * rule per page (rather than leaning on the (admin) layout's implicit
+ * "signed-in, not a client") keeps the intent visible and survives layout
+ * changes.
+ */
+export async function requireTeamAccess() {
+    const { redirect } = await import("next/navigation");
+    const user = await getCurrentUser();
+    if (!user) redirect("/login");
+    if (await getCurrentClient()) redirect("/portal");
+}
+
 /** Server-component guard for admin-only pages (finance, agency, team). */
 export async function requireAdminAccess() {
     const level = await getAccessLevel();

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { requireTeamAccess } from "@/lib/auth";
 import { buildClientMonthlyReport } from "@/lib/reports";
 import { getAgencyProfile, formatAddress } from "@/lib/data/agency";
 import { type ContentPost } from "@/lib/data/content";
@@ -54,6 +55,7 @@ export default async function ClientMonthlyReportPage({
 }: {
     params: Promise<{ client: string; month: string }>;
 }) {
+    await requireTeamAccess();
     const { client: clientRaw, month } = await params;
     if (!/^\d{4}-\d{2}$/.test(month)) notFound();
     const client = decodeURIComponent(clientRaw);

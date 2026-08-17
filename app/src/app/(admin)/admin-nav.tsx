@@ -23,6 +23,7 @@ import {
     Search,
     Building2,
     LayoutGrid,
+    FileBarChart,
     X,
     type LucideIcon,
 } from "lucide-react";
@@ -111,9 +112,10 @@ function isActive(pathname: string, href: string) {
 
 /**
  * Access-filtered sections: standard (non-admin) users lose Finance and Team,
- * and their Reports entry points at the AM-facing Weekly updates instead of
- * the financial reports page. The pages themselves are guarded server-side —
- * this only keeps the nav honest.
+ * and the admin-only financial Reports hub is replaced by the two surfaces
+ * they can use — Weekly updates and Client reports. The pages themselves are
+ * guarded server-side (requireAdminAccess / requireTeamAccess) — this only
+ * keeps the nav honest.
  */
 function sectionsFor(isAdmin: boolean) {
     if (isAdmin) return SECTIONS;
@@ -126,12 +128,26 @@ function sectionsFor(isAdmin: boolean) {
             };
         }
         if (sec.label === "Workspace") {
+            // The financial Reports hub is admin-only, but client monthly
+            // reports are the whole team's deliverable — surface them
+            // directly so standard members don't need the hub (or a URL).
             return {
                 ...sec,
-                items: sec.items.map((i) =>
+                items: sec.items.flatMap((i) =>
                     i.href === "/reports"
-                        ? { ...i, href: "/reports/weekly", label: "Weekly updates" }
-                        : i,
+                        ? [
+                              {
+                                  ...i,
+                                  href: "/reports/weekly",
+                                  label: "Weekly updates",
+                              },
+                              {
+                                  href: "/reports/client",
+                                  label: "Client reports",
+                                  icon: FileBarChart,
+                              },
+                          ]
+                        : [i],
                 ),
             };
         }

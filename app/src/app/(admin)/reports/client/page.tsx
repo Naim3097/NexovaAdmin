@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { requireTeamAccess } from "@/lib/auth";
 import { listAllClientNames } from "@/lib/reports";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -37,6 +38,7 @@ async function openClientReportAction(formData: FormData) {
 }
 
 export default async function ClientReportPickerPage() {
+    await requireTeamAccess();
     const clients = (await listAllClientNames()).filter(
         (c) => c !== "Nexov",
     );

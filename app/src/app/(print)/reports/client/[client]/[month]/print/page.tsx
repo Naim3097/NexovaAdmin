@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAccessLevel, getCurrentClient } from "@/lib/auth";
+import { getCurrentClient, getCurrentUser } from "@/lib/auth";
 import { buildClientMonthlyReport } from "@/lib/reports";
 import { getAgencyProfile, formatAddress } from "@/lib/data/agency";
 import { getReportInsights } from "@/lib/data/report-insights";
@@ -88,10 +88,12 @@ export default async function ClientReportPrintPage({
     const client = decodeURIComponent(clientRaw);
 
     // Two audiences, two rules:
-    //   agency  — admins only (same bar as the rest of finance/reporting)
-    //   client  — their OWN report, and only once it has been published
-    // Anything else is a 404 (not a redirect): a client probing another
-    // client's URL should learn nothing about whether it exists.
+    //   agency  — any signed-in team member, matching the working view.
+    //             (Finance surfaces stay admin-only; a client's monthly
+    //             report is the whole delivery team's deliverable.)
+    //   client  — their OWN report, and only once it has been published.
+    // A failed client check is a 404 (not a redirect): probing another
+    // client's URL should reveal nothing about whether it exists.
     const viewer = await getCurrentClient();
     const isClientViewer = viewer !== null;
     if (isClientViewer) {
@@ -100,7 +102,9 @@ export default async function ClientReportPrintPage({
         if (!ownReport) notFound();
         const published = await getReportInsights(client, month);
         if (!published?.published) notFound();
-    } else if ((await getAccessLevel()) !== "admin") {
+    } else if (!(await getCurrentUser())) {
+        // The (print) layout redirects signed-out users, but don't depend on
+        // a layout for an access decision.
         notFound();
     }
 
