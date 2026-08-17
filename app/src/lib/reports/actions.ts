@@ -65,7 +65,7 @@ export async function generateReportInsightsAction(
             clientName,
             month,
             packageName: report.billing.packageName,
-            delivered: report.contentApproved.map((p) => ({
+            delivered: report.contentDelivered.map((p) => ({
                 title: p.title,
                 platform: p.platform,
                 type: p.type,

@@ -105,13 +105,13 @@ export default async function PortalReportMonthPage({
                 </section>
 
                 {/* Content delivered */}
-                {report.contentApproved.length > 0 ? (
+                {report.contentDelivered.length > 0 ? (
                     <section className="space-y-3">
                         <h2 className="text-lg font-semibold">
-                            Content delivered ({report.contentApproved.length})
+                            Content delivered ({report.contentDelivered.length})
                         </h2>
                         <div className="grid gap-4 sm:grid-cols-2">
-                            {report.contentApproved.map((p) => (
+                            {report.contentDelivered.map((p) => (
                                 <div
                                     key={p.id}
                                     className="space-y-2 rounded-lg border p-3"

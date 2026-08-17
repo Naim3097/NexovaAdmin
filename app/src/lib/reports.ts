@@ -385,7 +385,14 @@ export type ClientMonthlyReport = {
         signedOffInMonth: boolean;
     }>;
     contentPostsPublished: ContentPost[];
-    contentApproved: ContentPost[];
+    /**
+     * Every deliverable of the month: items in the client's plan month (plus
+     * unplanned items whose delivery landed in the month) that have produced
+     * output (at least one draft/file) and aren't archived — regardless of
+     * whether the client's formal approval click happened in the same
+     * calendar month.
+     */
+    contentDelivered: ContentPost[];
     /** Chargeable extras beyond the client's plan this month. */
     extras: {
         contentCount: number;
@@ -441,9 +448,13 @@ export async function buildClientMonthlyReport(
     const monthStart = `${monthKey}-01`;
     const monthEnd = lastDayOfMonth(monthKey);
 
-    const clientCampaigns = campaigns.filter(
-        (c) => c.clientName === clientName,
-    );
+    // Client names are entered by hand in several places — match them the way
+    // the quota/limit helpers do (trim + case-insensitive), or records drop
+    // out of the report over a stray space or capital letter.
+    const wanted = clientName.trim().toLowerCase();
+    const isClient = (name: string) => name.trim().toLowerCase() === wanted;
+
+    const clientCampaigns = campaigns.filter((c) => isClient(c.clientName));
     const campaignRows = clientCampaigns.map((c) => {
         const t = totalsFor(c.metrics, monthStart, monthEnd);
         const crmLeads = leads.filter(
@@ -492,7 +503,7 @@ export async function buildClientMonthlyReport(
     totals.billableMyr = +(totals.spendMyr + totals.mgmtFeeMyr).toFixed(2);
 
     const clientProjects = projects
-        .filter((p) => p.clientName === clientName)
+        .filter((p) => isClient(p.clientName))
         .map((p) => ({
             project: p,
             deliverablesApprovedInMonth: p.deliverables.filter((d) =>
@@ -503,23 +514,38 @@ export async function buildClientMonthlyReport(
 
     const contentPostsPublished = posts.filter(
         (p) =>
-            p.clientName === clientName &&
+            isClient(p.clientName) &&
             p.status === "posted" &&
             inMonth(p.postedAt ?? p.scheduledFor, monthKey),
     );
-    const contentApproved = posts.filter(
-        (p) =>
-            p.clientName === clientName &&
-            p.reviewStatus === "approved" &&
-            inMonth(p.approvedAt, monthKey),
-    );
+
+    // A deliverable belongs to the month via its PLAN (the same key billing
+    // counts against the quota). Items without a plan month fall back to when
+    // their delivery actually landed. Approval date is NOT the gate: a July
+    // deliverable the client only clicked "approve" on in August is still a
+    // July deliverable.
+    const belongsToMonth = (p: ContentPost) =>
+        p.planMonth
+            ? p.planMonth === monthKey
+            : inMonth(p.approvedAt ?? p.postedAt ?? p.scheduledFor, monthKey);
+    const hasOutput = (p: ContentPost) =>
+        p.drafts.length > 0 || Boolean(p.currentFileUrl);
+    const contentDelivered = posts
+        .filter(
+            (p) =>
+                isClient(p.clientName) &&
+                p.status !== "archived" &&
+                belongsToMonth(p) &&
+                hasOutput(p),
+        )
+        .sort((a, b) => a.scheduledFor.localeCompare(b.scheduledFor));
 
     // Chargeable extras: VISUALS beyond the monthly quota (carousel = several
     // visuals, single = 1) + revisions beyond the limit, priced from the
     // client's per-extra rates. Exact overage: total visuals used − quota.
-    const clientCfg = clients.find((c) => c.name === clientName);
+    const clientCfg = clients.find((c) => isClient(c.name));
     const monthContent = posts.filter(
-        (p) => p.clientName === clientName && p.planMonth === monthKey,
+        (p) => isClient(p.clientName) && p.planMonth === monthKey,
     );
     const monthVisuals = monthContent
         .filter((p) => p.status !== "archived")
@@ -555,20 +581,20 @@ export async function buildClientMonthlyReport(
         packageName: clientCfg?.packageName ?? "",
         retainer,
         includedContents: clientCfg?.monthlyContentQuota ?? 0,
-        deliveredContents: monthContent.length,
+        deliveredContents: monthContent.filter(
+            (p) => p.status !== "archived" && hasOutput(p),
+        ).length,
         extrasTotal: extras.total,
         total: +(retainer + extras.total).toFixed(2),
     };
     const seoArticlesPublished = articles.filter(
         (a) =>
-            a.clientName === clientName &&
+            isClient(a.clientName) &&
             a.stage === "published" &&
             inMonth(a.publishedAt, monthKey),
     );
 
-    const clientInvoices = invoices.filter(
-        (i) => i.clientName === clientName,
-    );
+    const clientInvoices = invoices.filter((i) => isClient(i.clientName));
     const invoicesIssued = clientInvoices.filter(
         (i) =>
             i.status !== "draft" &&
@@ -596,7 +622,7 @@ export async function buildClientMonthlyReport(
         totals,
         projects: clientProjects,
         contentPostsPublished,
-        contentApproved,
+        contentDelivered,
         extras,
         billing,
         seoArticlesPublished,

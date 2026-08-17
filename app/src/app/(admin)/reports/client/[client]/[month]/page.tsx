@@ -4,7 +4,7 @@ import { buildClientMonthlyReport } from "@/lib/reports";
 import { getAgencyProfile, formatAddress } from "@/lib/data/agency";
 import { type ContentPost } from "@/lib/data/content";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { AssetPreview } from "@/components/asset-preview";
@@ -14,7 +14,6 @@ import {
     setReportPublishedAction,
 } from "@/lib/reports/actions";
 import { getReportInsights } from "@/lib/data/report-insights";
-import { PrintButton } from "./print-button";
 import { GenerateInsightsButton } from "./generate-insights-button";
 
 export const dynamic = "force-dynamic";
@@ -69,7 +68,7 @@ export default async function ClientMonthlyReportPage({
         report.campaigns.length > 0 ||
         report.projects.length > 0 ||
         report.contentPostsPublished.length > 0 ||
-        report.contentApproved.length > 0 ||
+        report.contentDelivered.length > 0 ||
         report.billing.total > 0 ||
         report.seoArticlesPublished.length > 0 ||
         report.invoicesIssued.length > 0;
@@ -102,9 +101,14 @@ export default async function ClientMonthlyReportPage({
                 </Link>
                 <div className="flex items-center gap-2">
                     <span className="hidden text-xs text-muted-foreground md:inline">
-                        Use browser &quot;Save as PDF&quot; when printing.
+                        Opens the client-facing document for PDF export.
                     </span>
-                    <PrintButton />
+                    <Link
+                        href={`/reports/client/${encodeURIComponent(report.clientName)}/${report.monthKey}/print`}
+                        className={buttonVariants({ size: "sm" })}
+                    >
+                        Client report (PDF)
+                    </Link>
                 </div>
             </div>
 
@@ -474,13 +478,13 @@ export default async function ClientMonthlyReportPage({
                 ) : null}
 
                 {/* Content delivered — visual showcase */}
-                {report.contentApproved.length > 0 ? (
+                {report.contentDelivered.length > 0 ? (
                     <section className="space-y-3">
                         <h2 className="text-lg font-semibold">
-                            Content delivered ({report.contentApproved.length})
+                            Content delivered ({report.contentDelivered.length})
                         </h2>
                         <div className="grid gap-4 sm:grid-cols-2">
-                            {report.contentApproved.map((p) => (
+                            {report.contentDelivered.map((p) => (
                                 <div
                                     key={p.id}
                                     className="space-y-2 rounded-lg border p-3"
@@ -491,10 +495,28 @@ export default async function ClientMonthlyReportPage({
                                         </span>
                                         <span className="text-xs text-muted-foreground">
                                             {p.platform} · {p.type}
-                                            {p.approvedAt
-                                                ? ` · ${p.approvedAt.slice(0, 10)}`
-                                                : ""}
                                         </span>
+                                    </div>
+                                    <div>
+                                        {p.status === "posted" ? (
+                                            <Badge>
+                                                Published
+                                                {p.postedAt
+                                                    ? ` · ${p.postedAt.slice(0, 10)}`
+                                                    : ""}
+                                            </Badge>
+                                        ) : p.reviewStatus === "approved" ? (
+                                            <Badge variant="secondary">
+                                                Approved
+                                                {p.approvedAt
+                                                    ? ` · ${p.approvedAt.slice(0, 10)}`
+                                                    : ""}
+                                            </Badge>
+                                        ) : (
+                                            <Badge variant="outline">
+                                                In review
+                                            </Badge>
+                                        )}
                                     </div>
                                     <AssetPreview
                                         media={latestMedia(p)}
