@@ -185,6 +185,40 @@ export default async function ClientMonthlyReportPage({
                         </div>
                     </div>
 
+                    {/* Client visibility is the single thing people get wrong:
+                        generating an overview does NOT send it. Say so plainly. */}
+                    <div
+                        className={`no-print rounded-lg border p-3 text-sm ${
+                            insights?.published
+                                ? "border-foreground/20 bg-muted/50"
+                                : "border-dashed"
+                        }`}
+                    >
+                        {insights?.published ? (
+                            <p>
+                                <span className="font-medium">
+                                    Visible to the client.
+                                </span>{" "}
+                                <span className="text-muted-foreground">
+                                    {report.clientName} can read this report and
+                                    download the PDF from their portal. Use
+                                    Unpublish to withdraw it.
+                                </span>
+                            </p>
+                        ) : (
+                            <p>
+                                <span className="font-medium">
+                                    Not visible to the client yet.
+                                </span>{" "}
+                                <span className="text-muted-foreground">
+                                    {insights
+                                        ? `Click "Publish to client" to release it to ${report.clientName}'s portal.`
+                                        : "Generate the overview first, then publish it to release this report to the client."}
+                                </span>
+                            </p>
+                        )}
+                    </div>
+
                     {insights ? (
                         <div className="space-y-4">
                             <div>

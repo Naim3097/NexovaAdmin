@@ -20,11 +20,35 @@ export type ReportInsights = {
     generatedAt: string;
 };
 
+const norm = (s: string) => s.trim().toLowerCase();
+
 function keyFor(clientName: string, month: string) {
-    return `${clientName}__${month}`.replace(/[^\w.-]+/g, "_");
+    return `${clientName.trim()}__${month}`.replace(/[^\w.-]+/g, "_");
 }
 function fileFor(clientName: string, month: string) {
     return path.join(DIR, `${keyFor(clientName, month)}.json`);
+}
+
+/** Every stored record, newest-irrelevant order. */
+async function readAll(): Promise<ReportInsights[]> {
+    let entries: string[];
+    try {
+        entries = await fs.readdir(DIR);
+    } catch {
+        return [];
+    }
+    const out: ReportInsights[] = [];
+    for (const e of entries) {
+        if (!e.endsWith(".json")) continue;
+        try {
+            const raw = await fs.readFile(path.join(DIR, e), "utf8");
+            const r = JSON.parse(raw) as ReportInsights;
+            out.push({ ...r, published: r.published ?? false });
+        } catch {
+            // skip unreadable
+        }
+    }
+    return out;
 }
 
 export async function getReportInsights(
@@ -36,7 +60,15 @@ export async function getReportInsights(
         const r = JSON.parse(raw) as ReportInsights;
         return { ...r, published: r.published ?? false };
     } catch {
-        return null;
+        // Fall back to a scan — the record may be stored under a differently
+        // cased/spaced spelling of the same client name (mirrors the Supabase
+        // adapter's tolerant matching).
+        const want = norm(clientName);
+        const all = await readAll();
+        return (
+            all.find((r) => norm(r.clientName) === want && r.month === month) ??
+            null
+        );
     }
 }
 
@@ -71,24 +103,11 @@ export async function saveReportInsights(input: {
 export async function listPublishedReports(
     clientName: string,
 ): Promise<ReportInsights[]> {
-    let entries: string[];
-    try {
-        entries = await fs.readdir(DIR);
-    } catch {
-        return [];
-    }
-    const out: ReportInsights[] = [];
-    for (const e of entries) {
-        if (!e.endsWith(".json")) continue;
-        try {
-            const raw = await fs.readFile(path.join(DIR, e), "utf8");
-            const r = JSON.parse(raw) as ReportInsights;
-            if (r.clientName === clientName && r.published) out.push(r);
-        } catch {
-            // skip
-        }
-    }
-    return out.sort((a, b) => (a.month < b.month ? 1 : -1));
+    const want = norm(clientName);
+    const all = await readAll();
+    return all
+        .filter((r) => norm(r.clientName) === want && r.published)
+        .sort((a, b) => (a.month < b.month ? 1 : -1));
 }
 
 export async function setReportPublished(
@@ -99,8 +118,11 @@ export async function setReportPublished(
     const existing = await getReportInsights(clientName, month);
     if (!existing) return null;
     const rec: ReportInsights = { ...existing, published };
+    // Write back under the record's OWN name, not the caller's spelling, or a
+    // mismatched spelling would fork a second file and the flag would appear
+    // not to stick.
     await fs.writeFile(
-        fileFor(clientName, month),
+        fileFor(rec.clientName, month),
         JSON.stringify(rec, null, 2),
         "utf8",
     );
