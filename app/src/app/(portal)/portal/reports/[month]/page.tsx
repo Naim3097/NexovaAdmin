@@ -5,7 +5,7 @@ import { buildClientMonthlyReport } from "@/lib/reports";
 import { getReportInsights } from "@/lib/data/report-insights";
 import { type ContentPost } from "@/lib/data/content";
 import { AssetPreview } from "@/components/asset-preview";
-import { PrintButton } from "@/components/print-button";
+import { buttonVariants } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
@@ -55,14 +55,21 @@ export default async function PortalReportMonthPage({
                 }
             `}</style>
 
-            <div className="no-print flex items-center justify-between">
+            <div className="no-print flex items-center justify-between gap-3">
                 <Link
                     href="/portal/reports"
                     className="text-sm text-muted-foreground hover:underline"
                 >
                     ← All reports
                 </Link>
-                <PrintButton />
+                {/* The formatted document (letterhead, sections, pagination) —
+                    the same file the agency sends out. */}
+                <Link
+                    href={`/reports/client/${encodeURIComponent(client.name)}/${month}/print`}
+                    className={buttonVariants({ size: "sm" })}
+                >
+                    Download PDF
+                </Link>
             </div>
 
             <article className="space-y-8">

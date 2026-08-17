@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { requireAdminAccess } from "@/lib/auth";
+import { getAccessLevel, getCurrentClient } from "@/lib/auth";
 import { buildClientMonthlyReport } from "@/lib/reports";
 import { getAgencyProfile, formatAddress } from "@/lib/data/agency";
 import { getReportInsights } from "@/lib/data/report-insights";
@@ -83,10 +83,26 @@ export default async function ClientReportPrintPage({
 }: {
     params: Promise<{ client: string; month: string }>;
 }) {
-    await requireAdminAccess();
     const { client: clientRaw, month } = await params;
     if (!/^\d{4}-\d{2}$/.test(month)) notFound();
     const client = decodeURIComponent(clientRaw);
+
+    // Two audiences, two rules:
+    //   agency  — admins only (same bar as the rest of finance/reporting)
+    //   client  — their OWN report, and only once it has been published
+    // Anything else is a 404 (not a redirect): a client probing another
+    // client's URL should learn nothing about whether it exists.
+    const viewer = await getCurrentClient();
+    const isClientViewer = viewer !== null;
+    if (isClientViewer) {
+        const ownReport =
+            viewer.name.trim().toLowerCase() === client.trim().toLowerCase();
+        if (!ownReport) notFound();
+        const published = await getReportInsights(client, month);
+        if (!published?.published) notFound();
+    } else if ((await getAccessLevel()) !== "admin") {
+        notFound();
+    }
 
     const [report, agency, insights] = await Promise.all([
         buildClientMonthlyReport(client, month),
@@ -166,10 +182,14 @@ export default async function ClientReportPrintPage({
             {/* Action bar — screen only */}
             <div className="no-print sticky top-0 z-10 flex items-center justify-between gap-4 border-b bg-card px-6 py-3">
                 <Link
-                    href={`/reports/client/${encodeURIComponent(client)}/${month}`}
+                    href={
+                        isClientViewer
+                            ? `/portal/reports/${month}`
+                            : `/reports/client/${encodeURIComponent(client)}/${month}`
+                    }
                     className="text-sm text-muted-foreground hover:underline"
                 >
-                    Back to working view
+                    {isClientViewer ? "Back to my reports" : "Back to working view"}
                 </Link>
                 <div className="flex items-center gap-3">
                     <span className="hidden text-xs text-muted-foreground md:inline">
