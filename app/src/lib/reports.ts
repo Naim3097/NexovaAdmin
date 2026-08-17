@@ -512,12 +512,26 @@ export async function buildClientMonthlyReport(
             signedOffInMonth: inMonth(p.signoff.signedAt, monthKey),
         }));
 
-    const contentPostsPublished = posts.filter(
-        (p) =>
-            isClient(p.clientName) &&
-            p.status === "posted" &&
-            inMonth(p.postedAt ?? p.scheduledFor, monthKey),
-    );
+    // Deterministic content sequence: scheduled date first, then NATURAL title
+    // order so "Video 2" sorts before "Video 10" (plan items often share the
+    // same scheduled date, where raw DB order is arbitrary), then creation
+    // time as the final tiebreak.
+    const bySequence = (a: ContentPost, b: ContentPost) =>
+        a.scheduledFor.localeCompare(b.scheduledFor) ||
+        a.title.localeCompare(b.title, undefined, {
+            numeric: true,
+            sensitivity: "base",
+        }) ||
+        a.createdAt.localeCompare(b.createdAt);
+
+    const contentPostsPublished = posts
+        .filter(
+            (p) =>
+                isClient(p.clientName) &&
+                p.status === "posted" &&
+                inMonth(p.postedAt ?? p.scheduledFor, monthKey),
+        )
+        .sort(bySequence);
 
     // A deliverable belongs to the month via its PLAN (the same key billing
     // counts against the quota). Items without a plan month fall back to when
@@ -538,7 +552,7 @@ export async function buildClientMonthlyReport(
                 belongsToMonth(p) &&
                 hasOutput(p),
         )
-        .sort((a, b) => a.scheduledFor.localeCompare(b.scheduledFor));
+        .sort(bySequence);
 
     // Chargeable extras: VISUALS beyond the monthly quota (carousel = several
     // visuals, single = 1) + revisions beyond the limit, priced from the

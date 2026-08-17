@@ -114,22 +114,25 @@ export function ReportAssetThumb({
 
     if (items.length === 0) {
         return (
-            <div className="flex aspect-[4/3] w-full items-center justify-center rounded-md border bg-muted/40">
+            <div className="flex aspect-video w-full items-center justify-center rounded-md border bg-muted/40">
                 <span className="text-xs text-muted-foreground">No asset</span>
             </div>
         );
     }
 
     return (
-        <div className="relative w-full overflow-hidden rounded-md border bg-muted/30">
+        // Same treatment as the content card's AssetPreview: never crop or
+        // stretch. Portrait media keeps its full height (capped) and sits on
+        // black side bars; landscape fills the width with no bars.
+        <div className="relative w-full overflow-hidden rounded-md border bg-neutral-950">
             {cover ? (
                 <img
                     src={cover}
                     alt={alt}
-                    className="aspect-[4/3] w-full object-cover"
+                    className="max-h-80 w-full object-contain"
                 />
             ) : (
-                <div className="flex aspect-[4/3] w-full items-center justify-center bg-neutral-900">
+                <div className="flex aspect-video w-full items-center justify-center">
                     <Play
                         className="size-8 text-white/80"
                         aria-hidden="true"
