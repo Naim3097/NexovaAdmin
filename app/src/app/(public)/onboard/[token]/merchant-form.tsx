@@ -40,6 +40,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import {
+    BRAND_ASSETS,
     DECLARATION_TEXT,
     DELIVERY_TIMELINES,
     EMPTY_DIRECTOR,
@@ -51,6 +52,7 @@ import {
     MALAYSIAN_STATES,
     OPERATING_MODELS,
     PDPA_CONSENT_TEXT,
+    PRODUCT_MATERIALS_DOC,
     VOLUME_OPTIONS,
     filledDirectors,
     hasOutlet,
@@ -66,6 +68,7 @@ import {
 import {
     saveMerchantStepAction,
     submitMerchantAction,
+    uploadMerchantAssetsAction,
     uploadMerchantDocAction,
     type MerchantFormState,
 } from "@/lib/onboarding/merchant-actions";
@@ -77,12 +80,14 @@ type Props = {
     clientName: string;
     initialData: Record<string, unknown>;
     initialFiles: Record<string, StoredFile>;
+    initialMaterials: StoredFile[];
 };
 
 type StepKey =
     | "you"
     | "business"
     | "gate"
+    | "brand"
     | "profile"
     | "directors"
     | "bank"
@@ -93,6 +98,7 @@ const STEP_TITLES: Record<StepKey, string> = {
     you: "About you",
     business: "Your business",
     gate: "Payments",
+    brand: "Brand & links",
     profile: "Payment profile",
     directors: "Directors & owners",
     bank: "Settlement account",
@@ -118,7 +124,6 @@ const STEP_KEYS: Record<string, string[]> = {
         "registered_name",
         "what_you_sell",
         "industry",
-        "website_or_social",
         "address_line1",
         "address_line2",
         "postcode",
@@ -129,6 +134,7 @@ const STEP_KEYS: Record<string, string[]> = {
         "outlet_address",
     ],
     gate: ["gate_answer"],
+    brand: ["links"],
     profile: [
         "date_of_incorporation",
         "avg_transaction_value",
@@ -148,6 +154,7 @@ export function MerchantForm({
     clientName,
     initialData,
     initialFiles,
+    initialMaterials,
 }: Props) {
     const s = (key: string, fallback = "") => {
         const x = initialData[key];
@@ -168,7 +175,7 @@ export function MerchantForm({
         registered_name: s("registered_name"),
         what_you_sell: s("what_you_sell"),
         industry: s("industry"),
-        website_or_social: s("website_or_social"),
+        links: s("links"),
         address_line1: s("address_line1"),
         address_line2: s("address_line2"),
         postcode: s("postcode"),
@@ -196,6 +203,7 @@ export function MerchantForm({
     });
     const [files, setFiles] =
         useState<Record<string, StoredFile>>(initialFiles);
+    const [materials, setMaterials] = useState<StoredFile[]>(initialMaterials);
     const [stepIdx, setStepIdx] = useState(() => (s("owner_name") ? 0 : -1));
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [saving, startSaving] = useTransition();
@@ -216,12 +224,13 @@ export function MerchantForm({
     const outlet = hasOutlet(values.operating_model);
     const picIsOwner = values.pic_is_owner !== "0";
 
-    /** Dynamic step order — Stage 2 exists only for gate A/B. */
+    /** Dynamic step order — brand assets for everyone, KYC only for gate A/B. */
     const steps: StepKey[] = useMemo(
         () => [
             "you",
             "business",
             "gate",
+            "brand",
             ...(stage2
                 ? (["profile", "directors", "bank", "docs"] as StepKey[])
                 : []),
@@ -349,6 +358,25 @@ export function MerchantForm({
 
     function next() {
         if (step && !validateStep(step)) return;
+        // Entering the directors step with nothing filled: the owner is almost
+        // always a director — prefill them so nobody types the same person twice.
+        if (
+            steps[stepIdx + 1] === "directors" &&
+            filledDirectors(directors).length === 0
+        ) {
+            const prefill: DirectorRow = {
+                ...EMPTY_DIRECTOR,
+                name: values.owner_name,
+                phone: values.owner_phone,
+                email: values.owner_email,
+                is_pic: picIsOwner,
+            };
+            setDirectors([prefill]);
+            setValues((v) => ({
+                ...v,
+                directors_json: JSON.stringify(filledDirectors([prefill])),
+            }));
+        }
         persistStep(step, () => setStepIdx((v) => v + 1));
     }
     function back() {
@@ -639,20 +667,6 @@ export function MerchantForm({
                                 </SelectContent>
                             </Select>
                         </Field>
-                        <Field
-                            label="Website or social link"
-                            optional
-                            help="Instagram, Facebook, TikTok or website — whichever customers see."
-                        >
-                            <Input
-                                value={values.website_or_social}
-                                onChange={(e) =>
-                                    set("website_or_social", e.target.value)
-                                }
-                                placeholder="e.g. instagram.com/yourbusiness"
-                            />
-                        </Field>
-
                         <div className="space-y-4 border-t pt-4">
                             <Field
                                 label="Business address"
@@ -850,6 +864,51 @@ export function MerchantForm({
                     </div>
                 ) : null}
 
+                {/* ---- Brand & links (all tracks, everything optional) ---- */}
+                {step === "brand" ? (
+                    <div className="space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                            Helps our marketing team represent you properly —
+                            everything here is optional.
+                        </p>
+                        <Field
+                            label="Website & social links"
+                            optional
+                            help="Website, Instagram, Facebook, TikTok, Shopee — one per line."
+                        >
+                            <Textarea
+                                rows={3}
+                                value={values.links}
+                                onChange={(e) => set("links", e.target.value)}
+                                placeholder={"yourstore.com\ninstagram.com/yourbusiness"}
+                            />
+                        </Field>
+                        {BRAND_ASSETS.map((d) => (
+                            <DocCard
+                                key={d.key}
+                                token={token}
+                                docKey={d.key}
+                                label={d.label}
+                                help={d.help}
+                                optional
+                                file={files[d.key] ?? null}
+                                onUploaded={(f) =>
+                                    setFiles((prev) => ({ ...prev, [d.key]: f }))
+                                }
+                            />
+                        ))}
+                        <MultiAssetCard
+                            token={token}
+                            label={PRODUCT_MATERIALS_DOC.label}
+                            help={PRODUCT_MATERIALS_DOC.help}
+                            items={materials}
+                            onUploaded={(fs) =>
+                                setMaterials((prev) => [...prev, ...fs])
+                            }
+                        />
+                    </div>
+                ) : null}
+
                 {/* ---- Stage 2 explainer (first KYC step) ---- */}
                 {step === "profile" ? (
                     <div className="space-y-4">
@@ -965,6 +1024,19 @@ export function MerchantForm({
                             <Input
                                 value={values.payment_url}
                                 onChange={(e) => set("payment_url", e.target.value)}
+                                onFocus={() => {
+                                    // They probably already gave us this link in
+                                    // Brand & links — don't make them retype it.
+                                    if (!values.payment_url) {
+                                        const firstLink = values.links
+                                            .split(/\r?\n/)
+                                            .map((l) => l.trim())
+                                            .filter(Boolean)[0];
+                                        if (firstLink) {
+                                            set("payment_url", firstLink);
+                                        }
+                                    }
+                                }}
                                 placeholder="e.g. yourstore.com or instagram.com/yourbusiness"
                             />
                         </Field>
@@ -1230,6 +1302,7 @@ export function MerchantForm({
                                 docKey={d.key}
                                 label={d.label}
                                 help={d.help}
+                                pdfOnly={d.accept === "pdf"}
                                 file={files[d.key] ?? null}
                                 highlight={missingDocs.includes(d.key)}
                                 optional={!enforced}
@@ -1238,17 +1311,6 @@ export function MerchantForm({
                                 }
                             />
                         ))}
-                        <DocCard
-                            token={token}
-                            docKey="logo"
-                            label="Logo"
-                            help="Optional — you can add or change it anytime."
-                            optional
-                            file={files.logo ?? null}
-                            onUploaded={(f) =>
-                                setFiles((prev) => ({ ...prev, logo: f }))
-                            }
-                        />
                     </div>
                 ) : null}
 
@@ -1316,6 +1378,38 @@ export function MerchantForm({
                                 ]
                                     .filter(Boolean)
                                     .join(", ")}
+                            />
+                        </ReviewGroup>
+
+                        <ReviewGroup
+                            title="Brand & links"
+                            onEdit={() => jumpTo("brand")}
+                        >
+                            <ReviewRow
+                                label="Links"
+                                value={
+                                    values.links
+                                        .split(/\r?\n/)
+                                        .map((l) => l.trim())
+                                        .filter(Boolean)
+                                        .join(" · ") || "—"
+                                }
+                            />
+                            <ReviewRow
+                                label="Logo"
+                                value={files.logo?.name ?? "—"}
+                            />
+                            <ReviewRow
+                                label="Brand kit"
+                                value={files.brand_kit?.name ?? "—"}
+                            />
+                            <ReviewRow
+                                label="Materials"
+                                value={
+                                    materials.length > 0
+                                        ? `${materials.length} file${materials.length === 1 ? "" : "s"}`
+                                        : "—"
+                                }
                             />
                         </ReviewGroup>
 
@@ -1612,6 +1706,7 @@ function DocCard({
     file,
     optional,
     highlight,
+    pdfOnly,
     onUploaded,
 }: {
     token: string;
@@ -1621,6 +1716,7 @@ function DocCard({
     file: StoredFile | null;
     optional?: boolean;
     highlight?: boolean;
+    pdfOnly?: boolean;
     onUploaded: (f: StoredFile) => void;
 }) {
     const inputRef = useRef<HTMLInputElement>(null);
@@ -1657,7 +1753,7 @@ function DocCard({
             <input
                 ref={inputRef}
                 type="file"
-                accept="image/*,.pdf"
+                accept={pdfOnly ? "application/pdf,.pdf" : "image/*,.pdf"}
                 className="hidden"
                 onChange={(e) => {
                     void onPick(e.target.files?.[0] ?? null);
@@ -1714,6 +1810,110 @@ function DocCard({
                     )}
                 </Button>
             </div>
+        </div>
+    );
+}
+
+function MultiAssetCard({
+    token,
+    label,
+    help,
+    items,
+    onUploaded,
+}: {
+    token: string;
+    label: string;
+    help: string;
+    items: StoredFile[];
+    onUploaded: (fs: StoredFile[]) => void;
+}) {
+    const inputRef = useRef<HTMLInputElement>(null);
+    const [busy, setBusy] = useState(false);
+
+    async function onPick(picked: FileList | null) {
+        if (!picked || picked.length === 0) return;
+        setBusy(true);
+        try {
+            const fd = new FormData();
+            for (const f of picked) fd.append("files", f);
+            const res = await uploadMerchantAssetsAction(
+                token,
+                "product_materials",
+                fd,
+            );
+            if (res.ok) {
+                onUploaded(
+                    res.files.map((f) => ({ url: f.url, name: f.name })),
+                );
+                toast.success(
+                    `${res.files.length} file${res.files.length === 1 ? "" : "s"} uploaded`,
+                );
+            } else {
+                toast.error(res.message);
+            }
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    return (
+        <div className="rounded-lg border p-3">
+            <input
+                ref={inputRef}
+                type="file"
+                accept="image/*,.pdf"
+                multiple
+                className="hidden"
+                onChange={(e) => {
+                    void onPick(e.target.files);
+                    e.target.value = "";
+                }}
+            />
+            <div className="flex items-center gap-3">
+                <span className="flex size-14 shrink-0 items-center justify-center rounded-md border border-dashed">
+                    <Upload className="size-5 text-muted-foreground" />
+                </span>
+                <div className="min-w-0 flex-1">
+                    <p className="flex items-baseline gap-2 text-sm font-medium">
+                        {label}
+                        <span className="text-xs font-normal text-muted-foreground">
+                            optional
+                        </span>
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                        {items.length > 0
+                            ? `${items.length} file${items.length === 1 ? "" : "s"} uploaded`
+                            : help}
+                    </p>
+                </div>
+                <Button
+                    type="button"
+                    size="sm"
+                    variant={items.length > 0 ? "outline" : "default"}
+                    disabled={busy}
+                    onClick={() => inputRef.current?.click()}
+                >
+                    {busy ? (
+                        <Loader2 className="size-4 animate-spin" />
+                    ) : items.length > 0 ? (
+                        "Add more"
+                    ) : (
+                        "Upload"
+                    )}
+                </Button>
+            </div>
+            {items.length > 0 ? (
+                <ul className="mt-2 flex flex-wrap gap-2">
+                    {items.map((f, i) => (
+                        <li
+                            key={i}
+                            className="max-w-40 truncate rounded-md bg-muted/50 px-2 py-1 text-xs text-muted-foreground"
+                        >
+                            {f.name}
+                        </li>
+                    ))}
+                </ul>
+            ) : null}
         </div>
     );
 }

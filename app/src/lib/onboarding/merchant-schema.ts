@@ -250,19 +250,22 @@ export function stateFromPostcode(postcode: string): string {
 
 export type MerchantDocKey =
     | "nric"
-    | "bank_statement"
+    | "bank_statement_header"
     | "ssm_certificate"
-    | "ssm_company_profile"
     | "letter_of_authorisation"
     | "utility_bill"
     | "outlet_exterior"
     | "outlet_interior"
-    | "logo";
+    | "logo"
+    | "brand_kit"
+    | "product_materials";
 
 export type MerchantDocDef = {
     key: MerchantDocKey;
     label: string;
     help: string;
+    /** Restrict the file picker/validation (e.g. header must be a PDF). */
+    accept?: "pdf";
 };
 
 const DOCS_BASE: MerchantDocDef[] = [
@@ -272,9 +275,10 @@ const DOCS_BASE: MerchantDocDef[] = [
         help: "Front and back in one photo or PDF. All text readable.",
     },
     {
-        key: "bank_statement",
-        label: "Bank statement (latest 3 months)",
-        help: "Must show the account name and number. PDF from your banking app is perfect.",
+        key: "bank_statement_header",
+        label: "Bank statement header (PDF)",
+        help: "Just the header page showing your account name and account number — most banking apps can export this as PDF.",
+        accept: "pdf",
     },
 ];
 
@@ -282,12 +286,6 @@ const DOC_SSM: MerchantDocDef = {
     key: "ssm_certificate",
     label: "SSM certificate",
     help: "Sdn Bhd: Section 14/17 + Superform (or Form 9/24/49). Enterprise: Form A + Form D.",
-};
-
-const DOC_SSM_PROFILE: MerchantDocDef = {
-    key: "ssm_company_profile",
-    label: "SSM company profile (e-Info)",
-    help: "Latest printout, dated within the last 6 months.",
 };
 
 const DOC_AUTH_LETTER: MerchantDocDef = {
@@ -328,11 +326,33 @@ export function requiredDocs(input: {
     return [
         ...DOCS_BASE,
         ...(isRegisteredEntity(input.entityType) ? [DOC_SSM] : []),
-        ...(input.entityType === "sdn_bhd" ? [DOC_SSM_PROFILE] : []),
         ...(input.picIsOwner ? [] : [DOC_AUTH_LETTER]),
         ...(hasOutlet(input.operatingModel) ? DOCS_OUTLET : []),
     ];
 }
+
+/**
+ * Marketing/brand assets — collected on every track (a marketing-only client
+ * is exactly who we need them from), all optional, never blocking.
+ */
+export const BRAND_ASSETS: MerchantDocDef[] = [
+    {
+        key: "logo",
+        label: "Business logo",
+        help: "PNG with transparent background if you have it — any format works.",
+    },
+    {
+        key: "brand_kit",
+        label: "Brand kit / guidelines",
+        help: "If you have one — colours, fonts, do's and don'ts (PDF or images).",
+    },
+];
+
+export const PRODUCT_MATERIALS_DOC: MerchantDocDef = {
+    key: "product_materials",
+    label: "Product / service materials",
+    help: "Photos, menus, brochures, price lists — anything that shows what you offer.",
+};
 
 // ---------------------------------------------------------------------------
 // Validation
@@ -373,7 +393,8 @@ export const merchantFormSchema = z
         registered_name: z.string().trim().default(""),
         what_you_sell: req("Tell us in one line what you sell."),
         industry: req("Choose an industry."),
-        website_or_social: z.string().trim().default(""),
+        /** Website + social + marketplace URLs, one per line (optional). */
+        links: z.string().trim().default(""),
         address_line1: req("Enter your street address."),
         address_line2: z.string().trim().default(""),
         postcode: z
@@ -508,7 +529,7 @@ export const MERCHANT_DATA_KEYS: readonly string[] = [
     "registered_name",
     "what_you_sell",
     "industry",
-    "website_or_social",
+    "links",
     "address_line1",
     "address_line2",
     "postcode",

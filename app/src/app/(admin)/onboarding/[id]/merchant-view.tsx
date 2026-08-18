@@ -146,10 +146,7 @@ export function MerchantSubmissionView({
                         </>
                     ) : null}
                     <Item label="Industry" value={str(d, "industry")} />
-                    <Item
-                        label="Website / social"
-                        value={str(d, "website_or_social")}
-                    />
+                    <Item label="Links" value={str(d, "links")} />
                     <Item
                         label="Operating model"
                         value={label(OPERATING_MODELS, model)}
@@ -236,6 +233,44 @@ export function MerchantSubmissionView({
                         </table>
                     </div>
                 ) : null}
+            </section>
+
+            {/* Brand & marketing assets — team-wide */}
+            <section className="rounded-lg border bg-card p-4 md:p-6">
+                <h2 className="text-sm font-medium">Brand &amp; marketing</h2>
+                <ul className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <AssetRow label="Logo" file={single("logo")} />
+                    <AssetRow
+                        label="Brand kit / guidelines"
+                        file={single("brand_kit")}
+                    />
+                </ul>
+                {(() => {
+                    const mats = files.product_materials;
+                    const list = Array.isArray(mats) ? mats : [];
+                    if (list.length === 0) return null;
+                    return (
+                        <div className="mt-3">
+                            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                Product / service materials ({list.length})
+                            </p>
+                            <ul className="mt-2 flex flex-wrap gap-2">
+                                {list.map((f, i) => (
+                                    <li key={i}>
+                                        <a
+                                            href={f.url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="inline-block max-w-52 truncate rounded-md border px-2 py-1 text-xs hover:bg-accent"
+                                        >
+                                            {f.name}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    );
+                })()}
             </section>
 
             {/* Transaction profile */}
@@ -383,6 +418,37 @@ export function MerchantSubmissionView({
                 </section>
             ) : null}
         </>
+    );
+}
+
+function AssetRow({
+    label,
+    file,
+}: {
+    label: string;
+    file: StoredFile | null;
+}) {
+    return (
+        <li className="flex items-center justify-between gap-3 rounded-md border p-3">
+            <div className="min-w-0">
+                <p className="text-sm font-medium">{label}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                    {file?.name ?? "Not provided"}
+                </p>
+            </div>
+            {file ? (
+                <a
+                    href={file.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="shrink-0 text-sm text-primary underline"
+                >
+                    View
+                </a>
+            ) : (
+                <Badge variant="secondary">none</Badge>
+            )}
+        </li>
     );
 }
 

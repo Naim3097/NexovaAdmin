@@ -10,6 +10,7 @@
  */
 import { revalidatePath } from "next/cache";
 import {
+    appendUploads,
     getSubmissionByToken,
     saveUpload,
     updateSubmission,
@@ -96,7 +97,17 @@ export async function uploadMerchantDocAction(
             message: "That file is over 15 MB — try a smaller photo or PDF.",
         };
     }
-    if (file.type && !UPLOAD_TYPES.test(file.type)) {
+    // The bank statement header must be the exported PDF, not a photo — the
+    // gateway rejects screenshots.
+    if (field === "bank_statement_header") {
+        if (file.type !== "application/pdf") {
+            return {
+                ok: false,
+                message:
+                    "The statement header needs to be a PDF — export it from your banking app.",
+            };
+        }
+    } else if (file.type && !UPLOAD_TYPES.test(file.type)) {
         return {
             ok: false,
             message: "Upload a photo (JPG/PNG) or a PDF.",
@@ -106,6 +117,49 @@ export async function uploadMerchantDocAction(
     const stored = await saveUpload(sub.id, file);
     await updateSubmission(sub.id, { files: { [field]: stored } });
     return { ok: true, file: stored };
+}
+
+/**
+ * Append one or more files to a MULTI-file asset field (product/service
+ * materials). Unlike documents, these accumulate instead of replacing.
+ */
+export async function uploadMerchantAssetsAction(
+    token: string,
+    field: "product_materials",
+    formData: FormData,
+): Promise<
+    { ok: true; files: UploadedFile[] } | { ok: false; message: string }
+> {
+    const sub = await requireMerchantSubmission(token);
+    if (!sub) return { ok: false, message: "This link is no longer valid." };
+    if (sub.status === "submitted") {
+        return { ok: false, message: "This registration was already submitted." };
+    }
+
+    const files = formData
+        .getAll("files")
+        .filter((f): f is File => f instanceof File && f.size > 0);
+    if (files.length === 0) {
+        return { ok: false, message: "Choose at least one file." };
+    }
+    for (const f of files) {
+        if (f.size > MAX_UPLOAD_BYTES) {
+            return {
+                ok: false,
+                message: `"${f.name}" is over 15 MB — try a smaller file.`,
+            };
+        }
+        if (f.type && !UPLOAD_TYPES.test(f.type)) {
+            return {
+                ok: false,
+                message: `"${f.name}" isn't a photo or PDF.`,
+            };
+        }
+    }
+
+    const stored = await Promise.all(files.map((f) => saveUpload(sub.id, f)));
+    await appendUploads(sub.id, field, stored);
+    return { ok: true, files: stored };
 }
 
 /** Final submit: full zod validation + adaptive document completeness. */

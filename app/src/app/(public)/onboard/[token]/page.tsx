@@ -34,10 +34,16 @@ export default async function OnboardPage({
     }
 
     if (isMerchant) {
-        // Single-file document fields only (arrays never occur in this flow).
+        // Documents are single files; product materials accumulate as an array.
         const files: Record<string, StoredFile> = {};
+        let materials: StoredFile[] = [];
         for (const [key, value] of Object.entries(submission.files)) {
-            if (value && !Array.isArray(value)) {
+            if (!value) continue;
+            if (Array.isArray(value)) {
+                if (key === "product_materials") {
+                    materials = value.map((v) => ({ url: v.url, name: v.name }));
+                }
+            } else {
                 files[key] = { url: value.url, name: value.name };
             }
         }
@@ -48,6 +54,7 @@ export default async function OnboardPage({
                     clientName={submission.clientName}
                     initialData={submission.data}
                     initialFiles={files}
+                    initialMaterials={materials}
                 />
             </div>
         );
