@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
+import { getAccessLevel } from "@/lib/auth";
 import { getSubmissionById } from "@/lib/data/onboarding";
+import { MerchantSubmissionView } from "./merchant-view";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -49,6 +51,8 @@ export default async function OnboardingDetailPage({
     const host = h.get("host") ?? "localhost:3000";
     const link = `${proto}://${host}/onboard/${sub.token}`;
 
+    const isMerchant = sub.checklistSlug === "merchant-registration";
+    const isAdmin = (await getAccessLevel()) === "admin";
     const logo = sub.files.logo as { url: string; name: string } | undefined;
     const photos = (sub.files.photos as { url: string; name: string }[] | undefined) ?? [];
     const ai = (sub.data._ai as AiSummary | undefined) ?? undefined;
@@ -61,15 +65,20 @@ export default async function OnboardingDetailPage({
                     Back to onboarding
                 </Link>
                 <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                    <h1 className="text-2xl font-semibold md:text-3xl">{sub.clientName}</h1>
+                    <div className="flex items-baseline gap-3">
+                        <h1 className="text-2xl font-semibold md:text-3xl">{sub.clientName}</h1>
+                        <span className="text-sm text-muted-foreground">
+                            {isMerchant ? "Merchant registration" : "Website brief"}
+                        </span>
+                    </div>
                     <Badge variant={sub.status === "submitted" ? "default" : "secondary"}>
                         {sub.status}
                     </Badge>
                 </div>
             </div>
 
-            {/* AI brief + suggested tasks */}
-            {sub.status === "submitted" || ai ? (
+            {/* AI brief + suggested tasks (website flow only) */}
+            {!isMerchant && (sub.status === "submitted" || ai) ? (
                 <section className="rounded-lg border bg-card p-4 md:p-6">
                     <div className="mb-3 flex items-center justify-between gap-3">
                         <div>
@@ -168,8 +177,13 @@ export default async function OnboardingDetailPage({
                 </form>
             </section>
 
+            {/* Merchant profile — structured view */}
+            {isMerchant ? (
+                <MerchantSubmissionView sub={sub} isAdmin={isAdmin} />
+            ) : null}
+
             {/* Logo */}
-            {logo ? (
+            {!isMerchant && logo ? (
                 <section className="rounded-lg border bg-card p-4 md:p-6">
                     <h2 className="text-sm font-medium">Logo</h2>
                     <div className="mt-3 flex items-center gap-3">
@@ -181,7 +195,7 @@ export default async function OnboardingDetailPage({
             ) : null}
 
             {/* Photos */}
-            {photos.length > 0 ? (
+            {!isMerchant && photos.length > 0 ? (
                 <section className="rounded-lg border bg-card p-4 md:p-6">
                     <h2 className="text-sm font-medium">Photos ({photos.length})</h2>
                     <ul className="mt-3 grid grid-cols-3 gap-2 md:grid-cols-6">
@@ -202,15 +216,18 @@ export default async function OnboardingDetailPage({
             ) : null}
 
             {/* Repeaters */}
-            {REPEATER_KEYS.map((key) => (
-                <RepeaterSection
-                    key={key}
-                    label={key.replace(/_json$/, "").replace(/_/g, " ")}
-                    raw={sub.data[key]}
-                />
-            ))}
+            {!isMerchant
+                ? REPEATER_KEYS.map((key) => (
+                      <RepeaterSection
+                          key={key}
+                          label={key.replace(/_json$/, "").replace(/_/g, " ")}
+                          raw={sub.data[key]}
+                      />
+                  ))
+                : null}
 
             {/* Plain key/value submitted data */}
+            {!isMerchant ? (
             <section className="rounded-lg border bg-card p-4 md:p-6">
                 <h2 className="mb-3 text-sm font-medium">Submitted fields</h2>
                 {Object.keys(sub.data).filter((k) => !REPEATER_KEYS.includes(k) && !HIDDEN_KEYS.has(k) && !k.startsWith("$")).length === 0 ? (
@@ -251,6 +268,7 @@ export default async function OnboardingDetailPage({
                     </div>
                 ) : null}
             </section>
+            ) : null}
 
             {/* Convert + delete */}
             <section className="flex flex-col gap-3 rounded-lg border bg-card p-4 md:flex-row md:items-center md:justify-between md:p-6">

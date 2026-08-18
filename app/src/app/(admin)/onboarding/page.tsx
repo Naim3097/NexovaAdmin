@@ -4,6 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { createOnboardingLinkAction } from "@/lib/onboarding/actions";
 import { Input } from "@/components/ui/input";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +23,8 @@ export default async function OnboardingListPage() {
                 <div>
                     <h1 className="text-2xl font-semibold md:text-3xl">Onboarding</h1>
                     <p className="text-sm text-muted-foreground">
-                        Send a client a link to fill in their website brief.
+                        Send a client a link to fill in their website brief or
+                        register as a merchant.
                     </p>
                 </div>
             </div>
@@ -28,6 +36,22 @@ export default async function OnboardingListPage() {
                 <div className="flex-1 space-y-1.5">
                     <label className="text-sm font-medium">Client name</label>
                     <Input name="clientName" list="clients-datalist" placeholder="e.g. Lean.x Sdn Bhd" required />
+                </div>
+                <div className="space-y-1.5 md:w-56">
+                    <label className="text-sm font-medium">Flow</label>
+                    <Select name="checklistSlug" defaultValue="website-creation">
+                        <SelectTrigger className="h-10">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="website-creation">
+                                Website brief
+                            </SelectItem>
+                            <SelectItem value="merchant-registration">
+                                Merchant registration
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
                 <Button type="submit" className="md:w-auto">
                     Create onboarding link
@@ -52,7 +76,10 @@ export default async function OnboardingListPage() {
                                         {s.clientName}
                                     </Link>
                                     <p className="text-xs text-muted-foreground">
-                                        Created {new Date(s.createdAt).toLocaleString()}
+                                        {s.checklistSlug === "merchant-registration"
+                                            ? "Merchant registration"
+                                            : "Website brief"}{" "}
+                                        · Created {new Date(s.createdAt).toLocaleString()}
                                     </p>
                                 </div>
                                 <Badge

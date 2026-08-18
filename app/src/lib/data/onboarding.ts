@@ -21,12 +21,14 @@ import { isSupabaseEnabled } from "@/lib/data/flag";
 import * as devOnboarding from "@/lib/dev-store/onboarding";
 
 export type {
+    ChecklistSlug,
     OnboardingStatus,
     OnboardingSubmission,
     UploadedFile,
 } from "@/lib/dev-store/onboarding";
 
 type OnboardingSubmission = devOnboarding.OnboardingSubmission;
+type ChecklistSlug = devOnboarding.ChecklistSlug;
 type UploadedFile = devOnboarding.UploadedFile;
 type UpdatePatch = Partial<
     Pick<
@@ -47,7 +49,10 @@ function rowToSubmission(row: OnboardingSubmissionRow): OnboardingSubmission {
     return {
         id: row.id,
         token: row.token,
-        checklistSlug: "website-creation",
+        checklistSlug:
+            row.checklist_slug === "merchant-registration"
+                ? "merchant-registration"
+                : "website-creation",
         clientName: row.client_name,
         status: row.status as OnboardingSubmission["status"],
         data: row.data ?? {},
@@ -83,6 +88,7 @@ function submissionToInsert(s: OnboardingSubmission): OnboardingInsert {
 
 export async function createSubmission(input: {
     clientName: string;
+    checklistSlug?: ChecklistSlug;
 }): Promise<OnboardingSubmission> {
     if (!isSupabaseEnabled("onboarding")) {
         return devOnboarding.createSubmission(input);
@@ -91,7 +97,7 @@ export async function createSubmission(input: {
     const sub: OnboardingSubmission = {
         id: randomUUID(),
         token: randomBytes(16).toString("base64url"),
-        checklistSlug: "website-creation",
+        checklistSlug: input.checklistSlug ?? "website-creation",
         clientName: input.clientName,
         status: "draft",
         data: {},

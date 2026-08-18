@@ -16,6 +16,9 @@ const UPLOADS_DIR = path.join(ROOT, "uploads");
 
 export type OnboardingStatus = "draft" | "submitted";
 
+/** Which onboarding flow this link renders + validates. */
+export type ChecklistSlug = "website-creation" | "merchant-registration";
+
 export type UploadedFile = {
     name: string;
     size: number;
@@ -27,7 +30,7 @@ export type UploadedFile = {
 export type OnboardingSubmission = {
     id: string;
     token: string;
-    checklistSlug: "website-creation";
+    checklistSlug: ChecklistSlug;
     clientName: string;
     status: OnboardingStatus;
     data: Record<string, unknown>;
@@ -49,13 +52,14 @@ function fileFor(id: string) {
 
 export async function createSubmission(input: {
     clientName: string;
+    checklistSlug?: ChecklistSlug;
 }): Promise<OnboardingSubmission> {
     await ensureDirs();
     const now = new Date().toISOString();
     const sub: OnboardingSubmission = {
         id: randomUUID(),
         token: randomBytes(16).toString("base64url"),
-        checklistSlug: "website-creation",
+        checklistSlug: input.checklistSlug ?? "website-creation",
         clientName: input.clientName,
         status: "draft",
         data: {},

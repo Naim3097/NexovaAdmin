@@ -270,7 +270,11 @@ export async function sendOnboardingLinkAction(
 export async function createOnboardingLinkAction(formData: FormData) {
     const clientName = String(formData.get("clientName") ?? "").trim();
     if (!clientName) return;
-    const sub = await createSubmission({ clientName });
+    const checklistSlug =
+        String(formData.get("checklistSlug") ?? "") === "merchant-registration"
+            ? ("merchant-registration" as const)
+            : ("website-creation" as const);
+    const sub = await createSubmission({ clientName, checklistSlug });
     revalidatePath("/onboarding");
     redirect(`/onboarding/${sub.id}`);
 }

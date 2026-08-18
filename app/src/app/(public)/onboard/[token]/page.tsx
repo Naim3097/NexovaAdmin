@@ -1,8 +1,11 @@
 import { notFound } from "next/navigation";
 import { getSubmissionByToken } from "@/lib/data/onboarding";
 import { OnboardingForm } from "./onboarding-form";
+import { MerchantForm } from "./merchant-form";
 
 export const dynamic = "force-dynamic";
+
+type StoredFile = { url: string; name: string };
 
 export default async function OnboardPage({
     params,
@@ -13,16 +16,39 @@ export default async function OnboardPage({
     const submission = await getSubmissionByToken(token);
     if (!submission) notFound();
 
+    const isMerchant = submission.checklistSlug === "merchant-registration";
+
     if (submission.status === "submitted") {
         return (
             <div className="mx-auto max-w-2xl p-6">
                 <div className="rounded-lg border bg-card p-6 text-center">
                     <h1 className="text-2xl font-semibold">Thanks, {submission.clientName}!</h1>
                     <p className="mt-2 text-muted-foreground">
-                        Your onboarding details have been received. Our team will
-                        be in touch shortly to kick off the build.
+                        {isMerchant
+                            ? "Your registration has been received. We'll verify your details within 1–2 business days and let you know when you're live."
+                            : "Your onboarding details have been received. Our team will be in touch shortly to kick off the build."}
                     </p>
                 </div>
+            </div>
+        );
+    }
+
+    if (isMerchant) {
+        // Single-file document fields only (arrays never occur in this flow).
+        const files: Record<string, StoredFile> = {};
+        for (const [key, value] of Object.entries(submission.files)) {
+            if (value && !Array.isArray(value)) {
+                files[key] = { url: value.url, name: value.name };
+            }
+        }
+        return (
+            <div className="mx-auto max-w-xl p-4 md:p-6">
+                <MerchantForm
+                    token={token}
+                    clientName={submission.clientName}
+                    initialData={submission.data}
+                    initialFiles={files}
+                />
             </div>
         );
     }
