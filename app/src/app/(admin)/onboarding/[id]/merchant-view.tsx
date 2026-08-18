@@ -39,6 +39,39 @@ function maskIc(ic: string): string {
     return `••••••${ic.slice(-4)}`;
 }
 
+/**
+ * Download URL for an uploaded file: `?download=<name>` makes Supabase Storage
+ * serve Content-Disposition: attachment (the plain `download` attribute is
+ * ignored cross-origin); harmless for same-origin dev-files URLs, where the
+ * attribute forces it anyway. Same trick as AssetPreview.
+ */
+function downloadHref(f: StoredFile): string {
+    const sep = f.url.includes("?") ? "&" : "?";
+    return `${f.url}${sep}download=${encodeURIComponent(f.name || "file")}`;
+}
+
+function FileLinks({ file }: { file: StoredFile }) {
+    return (
+        <span className="flex shrink-0 items-center gap-2 text-sm">
+            <a
+                href={file.url}
+                target="_blank"
+                rel="noreferrer"
+                className="text-primary underline"
+            >
+                View
+            </a>
+            <a
+                href={downloadHref(file)}
+                download={file.name || true}
+                className="text-muted-foreground underline"
+            >
+                Download
+            </a>
+        </span>
+    );
+}
+
 const STATUS_LABELS: Record<string, string> = {
     active_merchant_pending: "Payment setup — verify & submit to gateway",
     pre_approved: "Pre-approved — docs on file",
@@ -256,14 +289,25 @@ export function MerchantSubmissionView({
                             </p>
                             <ul className="mt-2 flex flex-wrap gap-2">
                                 {list.map((f, i) => (
-                                    <li key={i}>
+                                    <li
+                                        key={i}
+                                        className="flex items-center overflow-hidden rounded-md border text-xs"
+                                    >
                                         <a
                                             href={f.url}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="inline-block max-w-52 truncate rounded-md border px-2 py-1 text-xs hover:bg-accent"
+                                            className="max-w-52 truncate px-2 py-1 hover:bg-accent"
                                         >
                                             {f.name}
+                                        </a>
+                                        <a
+                                            href={downloadHref(f)}
+                                            download={f.name || true}
+                                            aria-label={`Download ${f.name}`}
+                                            className="border-l px-1.5 py-1 text-muted-foreground hover:bg-accent"
+                                        >
+                                            ↓
                                         </a>
                                     </li>
                                 ))}
@@ -378,14 +422,7 @@ export function MerchantSubmissionView({
                                         </p>
                                     </div>
                                     {f && !restricted ? (
-                                        <a
-                                            href={f.url}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="shrink-0 text-sm text-primary underline"
-                                        >
-                                            View
-                                        </a>
+                                        <FileLinks file={f} />
                                     ) : (
                                         <Badge
                                             variant={
@@ -445,14 +482,7 @@ function AssetRow({
                 </p>
             </div>
             {file ? (
-                <a
-                    href={file.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="shrink-0 text-sm text-primary underline"
-                >
-                    View
-                </a>
+                <FileLinks file={file} />
             ) : (
                 <Badge variant="secondary">none</Badge>
             )}

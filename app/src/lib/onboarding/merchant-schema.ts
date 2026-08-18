@@ -276,9 +276,8 @@ const DOCS_BASE: MerchantDocDef[] = [
     },
     {
         key: "bank_statement_header",
-        label: "Bank statement header (PDF)",
-        help: "Just the header page showing your account name and account number — most banking apps can export this as PDF.",
-        accept: "pdf",
+        label: "Bank statement header",
+        help: "Just the header showing your account name and account number — a PDF export or a clear photo both work.",
     },
 ];
 

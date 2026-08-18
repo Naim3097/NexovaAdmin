@@ -1778,8 +1778,10 @@ function ReviewRow({
     return (
         <div className="flex items-baseline justify-between gap-4 text-sm">
             <dt className="shrink-0 text-muted-foreground">{label}</dt>
+            {/* min-w-0 + break-all: long filenames wrap inside the card
+                instead of overflowing past its edge. */}
             <dd
-                className={`text-right ${
+                className={`min-w-0 break-all text-right ${
                     bad ? "font-medium text-destructive" : ""
                 }`}
             >

@@ -97,17 +97,7 @@ export async function uploadMerchantDocAction(
             message: "That file is over 15 MB — try a smaller photo or PDF.",
         };
     }
-    // The bank statement header must be the exported PDF, not a photo — the
-    // gateway rejects screenshots.
-    if (field === "bank_statement_header") {
-        if (file.type !== "application/pdf") {
-            return {
-                ok: false,
-                message:
-                    "The statement header needs to be a PDF — export it from your banking app.",
-            };
-        }
-    } else if (file.type && !UPLOAD_TYPES.test(file.type)) {
+    if (file.type && !UPLOAD_TYPES.test(file.type)) {
         return {
             ok: false,
             message: "Upload a photo (JPG/PNG) or a PDF.",
