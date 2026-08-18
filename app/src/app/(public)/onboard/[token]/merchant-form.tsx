@@ -42,7 +42,6 @@ import {
 import {
     BRAND_ASSETS,
     DECLARATION_TEXT,
-    DELIVERY_TIMELINES,
     EMPTY_DIRECTOR,
     ENTITY_TYPES,
     GATE_OPTIONS,
@@ -53,7 +52,6 @@ import {
     OPERATING_MODELS,
     PDPA_CONSENT_TEXT,
     PRODUCT_MATERIALS_DOC,
-    VOLUME_OPTIONS,
     filledDirectors,
     hasOutlet,
     isRegisteredEntity,
@@ -88,7 +86,6 @@ type StepKey =
     | "business"
     | "gate"
     | "brand"
-    | "profile"
     | "directors"
     | "bank"
     | "docs"
@@ -99,7 +96,6 @@ const STEP_TITLES: Record<StepKey, string> = {
     business: "Your business",
     gate: "Payments",
     brand: "Brand & links",
-    profile: "Payment profile",
     directors: "Directors & owners",
     bank: "Settlement account",
     docs: "Verification documents",
@@ -135,14 +131,6 @@ const STEP_KEYS: Record<string, string[]> = {
     ],
     gate: ["gate_answer"],
     brand: ["links"],
-    profile: [
-        "date_of_incorporation",
-        "avg_transaction_value",
-        "est_monthly_volume",
-        "delivery_timeline",
-        "refund_policy",
-        "payment_url",
-    ],
     directors: ["directors_json"],
     bank: ["bank_name", "bank_account_number", "bank_account_name", "tin"],
 };
@@ -232,7 +220,7 @@ export function MerchantForm({
             "gate",
             "brand",
             ...(stage2
-                ? (["profile", "directors", "bank", "docs"] as StepKey[])
+                ? (["directors", "bank", "docs"] as StepKey[])
                 : []),
             "review",
         ],
@@ -304,19 +292,6 @@ export function MerchantForm({
         }
         if (key === "gate") {
             need("gate_answer", "Choose one to continue.");
-        }
-        if (key === "profile" && enforced) {
-            if (!/^\d+(\.\d+)?$/.test(values.avg_transaction_value.trim())) {
-                missing.avg_transaction_value =
-                    "Enter your average sale in RM (numbers only).";
-            }
-            need("est_monthly_volume", "Choose a range.");
-            need("delivery_timeline", "Choose one.");
-            need("refund_policy", "Describe or link your policy.");
-            need("payment_url", "Enter the page where customers will pay.");
-            if (registered) {
-                need("date_of_incorporation", "Enter the incorporation date.");
-            }
         }
         if (key === "directors" && enforced) {
             const filled = filledDirectors(directors);
@@ -909,143 +884,10 @@ export function MerchantForm({
                     </div>
                 ) : null}
 
-                {/* ---- Stage 2 explainer (first KYC step) ---- */}
-                {step === "profile" ? (
-                    <div className="space-y-4">
-                        <KycExplainer />
-                        {registered ? (
-                            <Field
-                                label="Date of incorporation"
-                                error={
-                                    errors.date_of_incorporation ??
-                                    first(serverErrors.date_of_incorporation)
-                                }
-                            >
-                                <Input
-                                    type="date"
-                                    value={values.date_of_incorporation}
-                                    onChange={(e) =>
-                                        set("date_of_incorporation", e.target.value)
-                                    }
-                                />
-                            </Field>
-                        ) : null}
-                        <Field
-                            label="Average sale amount (RM)"
-                            error={
-                                errors.avg_transaction_value ??
-                                first(serverErrors.avg_transaction_value)
-                            }
-                        >
-                            <Input
-                                inputMode="decimal"
-                                value={values.avg_transaction_value}
-                                onChange={(e) =>
-                                    set(
-                                        "avg_transaction_value",
-                                        e.target.value.replace(/[^\d.]/g, ""),
-                                    )
-                                }
-                                placeholder="e.g. 150"
-                            />
-                        </Field>
-                        <Field
-                            label="Expected monthly sales"
-                            error={
-                                errors.est_monthly_volume ??
-                                first(serverErrors.est_monthly_volume)
-                            }
-                        >
-                            <Select
-                                value={values.est_monthly_volume || null}
-                                onValueChange={(v) =>
-                                    set("est_monthly_volume", v ?? "")
-                                }
-                            >
-                                <SelectTrigger className="h-10">
-                                    <SelectValue placeholder="Choose a range" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {VOLUME_OPTIONS.map((o) => (
-                                        <SelectItem key={o.value} value={o.value}>
-                                            {o.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </Field>
-                        <Field
-                            label="How quickly do customers receive their order?"
-                            error={
-                                errors.delivery_timeline ??
-                                first(serverErrors.delivery_timeline)
-                            }
-                        >
-                            <Select
-                                value={values.delivery_timeline || null}
-                                onValueChange={(v) =>
-                                    set("delivery_timeline", v ?? "")
-                                }
-                            >
-                                <SelectTrigger className="h-10">
-                                    <SelectValue placeholder="Choose one" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {DELIVERY_TIMELINES.map((o) => (
-                                        <SelectItem key={o.value} value={o.value}>
-                                            {o.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </Field>
-                        <Field
-                            label="Refund & cancellation policy"
-                            help="A short description, or a link to the policy page."
-                            error={
-                                errors.refund_policy ??
-                                first(serverErrors.refund_policy)
-                            }
-                        >
-                            <Textarea
-                                rows={2}
-                                value={values.refund_policy}
-                                onChange={(e) => set("refund_policy", e.target.value)}
-                            />
-                        </Field>
-                        <Field
-                            label="Where will customers pay?"
-                            help="The website, store page, or app where checkout will live."
-                            error={
-                                errors.payment_url ??
-                                first(serverErrors.payment_url)
-                            }
-                        >
-                            <Input
-                                value={values.payment_url}
-                                onChange={(e) => set("payment_url", e.target.value)}
-                                onFocus={() => {
-                                    // They probably already gave us this link in
-                                    // Brand & links — don't make them retype it.
-                                    if (!values.payment_url) {
-                                        const firstLink = values.links
-                                            .split(/\r?\n/)
-                                            .map((l) => l.trim())
-                                            .filter(Boolean)[0];
-                                        if (firstLink) {
-                                            set("payment_url", firstLink);
-                                        }
-                                    }
-                                }}
-                                placeholder="e.g. yourstore.com or instagram.com/yourbusiness"
-                            />
-                        </Field>
-                    </div>
-                ) : null}
-
-                {/* ---- Directors ---- */}
+                {/* ---- Directors (first KYC step — carries the explainer) ---- */}
                 {step === "directors" ? (
                     <div className="space-y-4">
+                        <KycExplainer />
                         <p className="text-sm text-muted-foreground">
                             The gateway needs every director/owner on record
                             {values.entity_type === "sdn_bhd"
@@ -1423,28 +1265,6 @@ export function MerchantForm({
                             />
                             {stage2 ? (
                                 <>
-                                    <ReviewRow
-                                        label="Avg sale"
-                                        value={
-                                            values.avg_transaction_value
-                                                ? `RM ${values.avg_transaction_value}`
-                                                : ""
-                                        }
-                                    />
-                                    <ReviewRow
-                                        label="Monthly volume"
-                                        value={
-                                            VOLUME_OPTIONS.find(
-                                                (o) =>
-                                                    o.value ===
-                                                    values.est_monthly_volume,
-                                            )?.label ?? ""
-                                        }
-                                    />
-                                    <ReviewRow
-                                        label="Pay at"
-                                        value={values.payment_url}
-                                    />
                                     <ReviewRow
                                         label="Directors"
                                         value={

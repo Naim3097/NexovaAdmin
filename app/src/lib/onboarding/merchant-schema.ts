@@ -462,27 +462,12 @@ export const merchantFormSchema = z
             issue("outlet_address", "Enter your outlet address.");
         }
 
-        // Stage 2 is enforced only for "set up now".
+        // Stage 2 is enforced only for "set up now". The transaction profile
+        // (avg sale, volume, delivery, refund policy, payment URL) and the
+        // incorporation date are NOT collected from the merchant — ops fills
+        // them during gateway submission if the acquirer asks; the fields stay
+        // in the schema as optional so the record can hold them.
         if (kycRequired(data.gate_answer)) {
-            if (!/^\d+(\.\d+)?$/.test(data.avg_transaction_value)) {
-                issue("avg_transaction_value", "Enter your average sale amount in RM (numbers only).");
-            }
-            if (!data.est_monthly_volume) {
-                issue("est_monthly_volume", "Choose your expected monthly volume.");
-            }
-            if (!data.delivery_timeline) {
-                issue("delivery_timeline", "Choose how quickly customers receive their order.");
-            }
-            if (!data.refund_policy) {
-                issue("refund_policy", "Describe or link your refund/cancellation policy.");
-            }
-            if (!data.payment_url) {
-                issue("payment_url", "Enter the website or page where customers will pay.");
-            }
-            if (isRegisteredEntity(data.entity_type) && !data.date_of_incorporation) {
-                issue("date_of_incorporation", "Enter your date of incorporation.");
-            }
-
             const directors = filledDirectors(parseDirectors(data.directors_json));
             if (directors.length === 0) {
                 issue("directors_json", "Add at least one director or owner.");

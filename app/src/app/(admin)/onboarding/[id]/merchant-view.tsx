@@ -273,8 +273,16 @@ export function MerchantSubmissionView({
                 })()}
             </section>
 
-            {/* Transaction profile */}
-            {stage2 ? (
+            {/* Transaction profile — no longer collected from the merchant;
+                shown only when ops has filled it on the record. */}
+            {stage2 &&
+            [
+                "avg_transaction_value",
+                "est_monthly_volume",
+                "delivery_timeline",
+                "refund_policy",
+                "payment_url",
+            ].some((k) => str(d, k)) ? (
                 <section className="rounded-lg border bg-card p-4 md:p-6">
                     <h2 className="text-sm font-medium">Transaction profile</h2>
                     <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-3 text-sm md:grid-cols-2">
