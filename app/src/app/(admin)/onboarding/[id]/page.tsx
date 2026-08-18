@@ -21,6 +21,7 @@ import {
     deleteSubmissionAction,
     regenerateSummaryAction,
     regenerateTokenAction,
+    reopenSubmissionAction,
     saveNotesAction,
 } from "@/lib/onboarding/actions";
 import { CopyLinkButton } from "./copy-link-button";
@@ -281,6 +282,18 @@ export default async function OnboardingDetailPage({
                     </p>
                 </div>
                 <div className="flex flex-wrap items-end gap-2">
+                    {sub.status === "submitted" ? (
+                        <form action={reopenSubmissionAction}>
+                            <input type="hidden" name="id" value={sub.id} />
+                            <Button
+                                type="submit"
+                                variant="outline"
+                                title="The same link becomes editable again with everything prefilled — the client updates what they need and re-submits."
+                            >
+                                Reopen for client
+                            </Button>
+                        </form>
+                    ) : null}
                     <form action={convertToProjectAction} className="flex items-end gap-2">
                         <input type="hidden" name="id" value={sub.id} />
                         <div className="space-y-1">

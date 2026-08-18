@@ -294,6 +294,29 @@ export async function regenerateTokenAction(formData: FormData) {
     revalidatePath(`/onboarding/${id}`);
 }
 
+/**
+ * Reopen a SUBMITTED submission for the client: status flips back to draft so
+ * the same link renders the form again — every field and uploaded file stays
+ * intact and editable. Covers "fix a typo" on any flow and the merchant
+ * track-C case ("marketing only" client later ready to add payments).
+ */
+export async function reopenSubmissionAction(formData: FormData) {
+    const id = String(formData.get("id") ?? "");
+    if (!id) return;
+    const sub = await getSubmissionById(id);
+    if (!sub || sub.status !== "submitted") return;
+    await updateSubmission(id, { status: "draft", submittedAt: null });
+    await notify({
+        kind: "system",
+        title: `Onboarding reopened: ${sub.clientName}`,
+        body: "The client's link is editable again. They'll need to re-submit when done.",
+        link: `/onboarding/${id}`,
+    });
+    revalidatePath(`/onboarding/${id}`);
+    revalidatePath("/onboarding");
+    revalidatePath(`/onboard/${sub.token}`);
+}
+
 export async function saveNotesAction(formData: FormData) {
     const id = String(formData.get("id") ?? "");
     const notes = String(formData.get("notes") ?? "");
