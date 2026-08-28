@@ -168,6 +168,9 @@ export type LeadRow = {
     onboarding_submission_id: string | null;
     assigned_to: string;
     score: number;
+    /** True for leads inserted by automation (Meta webhook, public API);
+     * cleared on the first human action. Added in migration 0026. */
+    auto_intake: boolean;
     created_at: string;
     updated_at: string;
 };

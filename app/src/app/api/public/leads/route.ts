@@ -143,6 +143,7 @@ export async function POST(req: NextRequest) {
             company: input.company,
             email: input.email,
             phone: input.phone,
+            autoIntake: true,
             source: asSource(input.source),
             interestedIn,
             estValueMyr: input.estValueMyr,

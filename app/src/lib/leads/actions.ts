@@ -106,6 +106,8 @@ export async function updateLeadAction(formData: FormData) {
         estValueMyr: Number(formData.get("estValueMyr") ?? 0) || 0,
         billingAddress: String(formData.get("billingAddress") ?? "").trim(),
         notes: String(formData.get("notes") ?? "").trim(),
+        // Any human edit acknowledges an auto-intake lead — the "New" remark goes.
+        autoIntake: false,
     };
     // Re-score whenever scoring inputs change.
     const existing = await getLeadById(id);
@@ -152,7 +154,7 @@ export async function setLeadStatusAction(formData: FormData) {
     const status = asStatus(formData.get("status"));
     if (!id) return;
     const before = await getLeadById(id);
-    await updateLead(id, { status });
+    await updateLead(id, { status, autoIntake: false });
     if (before && before.status !== status) {
         await recordAudit({
             entity: "lead",
@@ -194,7 +196,7 @@ export async function setLeadAssigneeAction(formData: FormData) {
     if (!id) return;
     const raw = String(formData.get("assignedTo") ?? "").trim();
     const assignedTo = raw === "none" ? "" : raw;
-    await updateLead(id, { assignedTo });
+    await updateLead(id, { assignedTo, autoIntake: false });
     revalidatePath(`/leads/${id}`);
     revalidatePath("/leads");
     revalidatePath("/pipeline");
@@ -206,7 +208,7 @@ export async function rescoreLeadAction(formData: FormData) {
     const lead = await getLeadById(id);
     if (!lead) return;
     const breakdown = scoreLead(lead);
-    await updateLead(id, { score: breakdown.score });
+    await updateLead(id, { score: breakdown.score, autoIntake: false });
     revalidatePath(`/leads/${id}`);
     revalidatePath("/leads");
     revalidatePath("/pipeline");
@@ -246,9 +248,7 @@ export async function promoteLeadToClientAction(formData: FormData) {
         });
     }
 
-    if (lead.status !== "won") {
-        await updateLead(id, { status: "won" });
-    }
+    await updateLead(id, { status: "won", autoIntake: false });
 
     await recordAudit({
         entity: "lead",
@@ -329,6 +329,7 @@ export async function createDepositInvoiceAction(formData: FormData) {
         kind: "update",
         summary: `${label} invoice ${inv.number} created (MYR ${amount.toFixed(2)})`,
     });
+    if (lead.autoIntake) await updateLead(id, { autoIntake: false });
 
     revalidatePath("/invoices");
     revalidatePath(`/leads/${id}`);
@@ -346,6 +347,7 @@ export async function convertLeadToOnboardingAction(formData: FormData) {
     await updateLead(id, {
         onboardingSubmissionId: sub.id,
         status: "won",
+        autoIntake: false,
     });
     revalidatePath(`/leads/${id}`);
     revalidatePath("/leads");

@@ -175,6 +175,7 @@ async function storeLead(leadgenId: string): Promise<"created" | "duplicate"> {
         company,
         email,
         phone,
+        autoIntake: true,
         source: "facebook",
         interestedIn: extra
             .map(({ a }) => a)

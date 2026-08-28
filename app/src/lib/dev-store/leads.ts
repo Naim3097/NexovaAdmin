@@ -53,6 +53,10 @@ export type Lead = {
     assignedTo: string;
     /** Cached score 0–100 (computed from heuristics, see lib/leads/scoring.ts). */
     score: number;
+    /** True when the lead arrived via automation (Meta Lead Ads webhook,
+     * public website API) — shown as a "New" remark in the UI until any
+     * human action on the lead clears it. Manual leads are always false. */
+    autoIntake: boolean;
     createdAt: string;
     updatedAt: string;
 };
@@ -77,6 +81,7 @@ export async function createLead(input: {
     notes?: string;
     assignedTo?: string;
     score?: number;
+    autoIntake?: boolean;
 }): Promise<Lead> {
     await ensureDir();
     const now = new Date().toISOString();
@@ -96,6 +101,7 @@ export async function createLead(input: {
         onboardingSubmissionId: null,
         assignedTo: input.assignedTo ?? "",
         score: input.score ?? 0,
+        autoIntake: input.autoIntake ?? false,
         createdAt: now,
         updatedAt: now,
     };
@@ -115,6 +121,7 @@ export async function listLeads(): Promise<Lead[]> {
         if (parsed.sourceCampaignId === undefined) parsed.sourceCampaignId = null;
         if (parsed.assignedTo === undefined) parsed.assignedTo = "";
         if (parsed.score === undefined) parsed.score = 0;
+        if (parsed.autoIntake === undefined) parsed.autoIntake = false;
         out.push(parsed);
     }
     return out.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -127,6 +134,7 @@ export async function getLeadById(id: string): Promise<Lead | null> {
         if (parsed.sourceCampaignId === undefined) parsed.sourceCampaignId = null;
         if (parsed.assignedTo === undefined) parsed.assignedTo = "";
         if (parsed.score === undefined) parsed.score = 0;
+        if (parsed.autoIntake === undefined) parsed.autoIntake = false;
         return parsed;
     } catch {
         return null;

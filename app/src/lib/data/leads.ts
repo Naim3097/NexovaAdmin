@@ -49,6 +49,7 @@ function rowToLead(row: LeadRow): Lead {
         onboardingSubmissionId: row.onboarding_submission_id,
         assignedTo: row.assigned_to,
         score: row.score,
+        autoIntake: row.auto_intake ?? false,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
     };
@@ -71,6 +72,7 @@ function leadToInsert(lead: Lead): LeadInsert {
         onboarding_submission_id: lead.onboardingSubmissionId,
         assigned_to: lead.assignedTo,
         score: lead.score,
+        auto_intake: lead.autoIntake,
         created_at: lead.createdAt,
         updated_at: lead.updatedAt,
     };
@@ -94,6 +96,7 @@ function patchToUpdate(patch: UpdateLeadPatch): LeadUpdate {
         out.onboarding_submission_id = patch.onboardingSubmissionId;
     if (patch.assignedTo !== undefined) out.assigned_to = patch.assignedTo;
     if (patch.score !== undefined) out.score = patch.score;
+    if (patch.autoIntake !== undefined) out.auto_intake = patch.autoIntake;
     if (patch.updatedAt !== undefined) out.updated_at = patch.updatedAt;
     // updated_at is also auto-bumped by the trigger; setting it here is harmless.
     return out;
@@ -123,16 +126,28 @@ export async function createLead(input: CreateLeadInput): Promise<Lead> {
         onboardingSubmissionId: null,
         assignedTo: input.assignedTo ?? "",
         score: input.score ?? 0,
+        autoIntake: input.autoIntake ?? false,
         createdAt: now,
         updatedAt: now,
     };
 
     const sb = createServiceClient();
-    const { data, error } = await sb
+    let { data, error } = await sb
         .from(TABLE)
         .insert(leadToInsert(lead))
         .select("*")
         .single();
+    if (error && /auto_intake/.test(error.message)) {
+        // Migration 0026 not applied yet — retry without the column so intake
+        // (webhooks, public API) never drops a lead over a missing flag.
+        const { auto_intake: _omit, ...rest } = leadToInsert(lead);
+        void _omit;
+        ({ data, error } = await sb
+            .from(TABLE)
+            .insert(rest as LeadInsert)
+            .select("*")
+            .single());
+    }
     if (error) throw new Error(`createLead: ${error.message}`);
     return rowToLead(data as LeadRow);
 }
@@ -163,12 +178,28 @@ export async function getLeadById(id: string): Promise<Lead | null> {
 export async function updateLead(id: string, patch: UpdateLeadPatch): Promise<Lead> {
     if (!isSupabaseEnabled("leads")) return devLeads.updateLead(id, patch);
     const sb = createServiceClient();
-    const { data, error } = await sb
+    let { data, error } = await sb
         .from(TABLE)
         .update(patchToUpdate(patch))
         .eq("id", id)
         .select("*")
         .single();
+    if (error && /auto_intake/.test(error.message)) {
+        // Migration 0026 not applied yet — drop the flag from the patch and
+        // retry so ordinary edits keep working.
+        const rest = patchToUpdate(patch);
+        delete rest.auto_intake;
+        if (Object.keys(rest).length === 0) {
+            const current = await getLeadById(id);
+            if (current) return current;
+        }
+        ({ data, error } = await sb
+            .from(TABLE)
+            .update(rest)
+            .eq("id", id)
+            .select("*")
+            .single());
+    }
     if (error) throw new Error(`updateLead: ${error.message}`);
     return rowToLead(data as LeadRow);
 }

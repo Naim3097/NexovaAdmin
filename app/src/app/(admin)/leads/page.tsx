@@ -173,6 +173,9 @@ export default async function LeadsPage() {
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-2">
+                                        {l.autoIntake ? (
+                                            <Badge>New</Badge>
+                                        ) : null}
                                         <Badge variant={bandTone}>
                                             {band} · {l.score}
                                         </Badge>
