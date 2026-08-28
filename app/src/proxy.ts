@@ -8,7 +8,14 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const PUBLIC_PATHS = ["/", "/login", "/portal-login", "/signup", "/api/health"];
+const PUBLIC_PATHS = [
+    "/",
+    "/login",
+    "/portal-login",
+    "/signup",
+    "/privacy",
+    "/api/health",
+];
 
 function isPublic(pathname: string) {
     if (PUBLIC_PATHS.includes(pathname)) return true;
