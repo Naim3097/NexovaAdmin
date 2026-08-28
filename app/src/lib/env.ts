@@ -77,6 +77,13 @@ const ServerEnvSchema = z.object({
 
     CALCOM_WEBHOOK_SECRET: z.string().optional(),
 
+    // ---- Meta Lead Ads webhook (POST /api/webhooks/meta-leads) -----------
+    // All three must be set for the endpoint to accept events (else 503).
+    META_APP_SECRET: z.string().optional(),        // app dashboard → Settings → Basic
+    META_VERIFY_TOKEN: z.string().optional(),      // any random string; pasted into the webhook subscribe form
+    META_PAGE_ACCESS_TOKEN: z.string().optional(), // System User token with leads_retrieval (never expires)
+    META_GRAPH_VERSION: z.string().optional(),     // e.g. "v23.0" (default)
+
     /**
      * Shared secret for the public lead-intake endpoint (POST /api/public/leads).
      * When set, callers must send it as `x-api-key` (or `Authorization: Bearer`).
