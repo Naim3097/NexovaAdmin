@@ -101,6 +101,29 @@ const MOBILE_STANDARD: Item[] = [
     { href: "/projects", label: "Projects", icon: Briefcase },
 ];
 
+/** Neon count pill for unattended auto-intake leads on the Leads nav item. */
+function FreshLeadsPill({
+    count,
+    small = false,
+}: {
+    count: number;
+    small?: boolean;
+}) {
+    if (count <= 0) return null;
+    return (
+        <span
+            className={cn(
+                "inline-flex items-center justify-center rounded-full bg-[#39FF14] font-semibold text-black shadow-[0_0_8px_rgba(57,255,20,0.6)]",
+                small
+                    ? "h-4 min-w-4 px-1 text-[9px]"
+                    : "h-5 min-w-5 px-1.5 text-[10px]",
+            )}
+        >
+            {count > 99 ? "99+" : count}
+        </span>
+    );
+}
+
 function isActive(pathname: string, href: string) {
     // Clients lives at /settings/clients but is its own nav entry — don't
     // light up Settings for it.
@@ -157,9 +180,12 @@ function sectionsFor(isAdmin: boolean) {
 
 export function SidebarNav({
     unread,
+    freshLeads = 0,
     isAdmin = true,
 }: {
     unread: number;
+    /** Unattended auto-intake leads — neon pill on the Leads item while > 0. */
+    freshLeads?: number;
     isAdmin?: boolean;
 }) {
     const pathname = usePathname();
@@ -201,6 +227,9 @@ export function SidebarNav({
                                             aria-hidden="true"
                                         />
                                         <span className="flex-1">{label}</span>
+                                        {href === "/leads" ? (
+                                            <FreshLeadsPill count={freshLeads} />
+                                        ) : null}
                                         {href === "/notifications" && unread > 0 ? (
                                             <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
                                                 {unread > 99 ? "99+" : unread}
@@ -219,9 +248,12 @@ export function SidebarNav({
 
 export function MobileNav({
     unread,
+    freshLeads = 0,
     isAdmin = true,
 }: {
     unread: number;
+    /** Unattended auto-intake leads — neon pill on the Leads item while > 0. */
+    freshLeads?: number;
     isAdmin?: boolean;
 }) {
     const pathname = usePathname();
@@ -285,6 +317,17 @@ export function MobileNav({
                                                 >
                                                     <Icon className="size-5" />
                                                     {label}
+                                                    {href === "/leads" &&
+                                                    freshLeads > 0 ? (
+                                                        <span className="absolute right-2 top-2">
+                                                            <FreshLeadsPill
+                                                                count={
+                                                                    freshLeads
+                                                                }
+                                                                small
+                                                            />
+                                                        </span>
+                                                    ) : null}
                                                     {href ===
                                                         "/notifications" &&
                                                     unread > 0 ? (
@@ -330,6 +373,11 @@ export function MobileNav({
                             ) : null}
                             <Icon className="size-5" aria-hidden="true" />
                             {label}
+                            {href === "/leads" && freshLeads > 0 ? (
+                                <span className="absolute right-[22%] top-1.5">
+                                    <FreshLeadsPill count={freshLeads} small />
+                                </span>
+                            ) : null}
                         </Link>
                     );
                 })}

@@ -174,7 +174,9 @@ export default async function LeadsPage() {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         {l.autoIntake ? (
-                                            <Badge>New</Badge>
+                                            <Badge className="border-transparent bg-[#39FF14] text-black shadow-[0_0_8px_rgba(57,255,20,0.55)]">
+                                                New
+                                            </Badge>
                                         ) : null}
                                         <Badge variant={bandTone}>
                                             {band} · {l.score}

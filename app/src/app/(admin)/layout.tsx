@@ -7,6 +7,7 @@ import { ClientNameDatalist } from "@/components/client-name-datalist";
 import { ServiceNameDatalist } from "@/components/service-name-datalist";
 import { SignOutButton } from "@/components/sign-out-button";
 import { unreadCount } from "@/lib/data/notifications";
+import { listLeads } from "@/lib/data/leads";
 import { SidebarNav, MobileNav } from "./admin-nav";
 
 export default async function AdminLayout({
@@ -23,10 +24,15 @@ export default async function AdminLayout({
     // is what stops a client account from reaching agency data.)
     const client = await getCurrentClient();
     if (client) redirect("/portal");
-    const [member, unread, access] = await Promise.all([
+    const [member, unread, access, freshLeads] = await Promise.all([
         getCurrentTeamMember(),
         unreadCount().catch(() => 0),
         getAccessLevel(),
+        // Unattended auto-intake leads — drives the neon "new" count on the
+        // Leads nav item until every one of them has been acted on.
+        listLeads()
+            .then((ls) => ls.filter((l) => l.autoIntake).length)
+            .catch(() => 0),
     ]);
     const isAdmin = access === "admin";
     const displayName = member?.name ?? user.email ?? "Account";
@@ -50,7 +56,11 @@ export default async function AdminLayout({
                             <Logo className="h-6" />
                         </Link>
                     </div>
-                    <SidebarNav unread={unread} isAdmin={isAdmin} />
+                    <SidebarNav
+                        unread={unread}
+                        freshLeads={freshLeads}
+                        isAdmin={isAdmin}
+                    />
                     <div className="p-3">
                         <div className="flex items-center gap-2.5 rounded-xl bg-muted/60 p-2.5">
                             <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-gradient text-xs font-semibold text-white shadow-sm">
@@ -110,7 +120,7 @@ export default async function AdminLayout({
                 <ServiceNameDatalist />
             </main>
 
-            <MobileNav unread={unread} isAdmin={isAdmin} />
+            <MobileNav unread={unread} freshLeads={freshLeads} isAdmin={isAdmin} />
         </div>
     );
 }
