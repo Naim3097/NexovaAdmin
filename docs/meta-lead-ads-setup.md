@@ -59,7 +59,9 @@ Redeploy after saving (env changes need a redeploy).
 ## Part 4 — Subscribe the webhook (once, ~5 min)
 
 1. Meta app dashboard → **Add product → Webhooks** → object: **Page**.
-2. **Callback URL:** `https://nexops.my/api/webhooks/meta-leads`
+2. **Callback URL:** `https://www.nexops.my/api/webhooks/meta-leads`
+   (www is the canonical domain — the apex `nexops.my` answers with a 308
+   redirect, which Meta's verification may refuse to follow.)
    **Verify token:** the exact `META_VERIFY_TOKEN` string from Part 3.
    Click **Verify and save** — Meta sends a GET handshake; the route answers
    it. (Fails? The env vars aren't deployed yet, or the token differs.)
