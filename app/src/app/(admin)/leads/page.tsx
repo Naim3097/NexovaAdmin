@@ -19,6 +19,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { createLeadAction } from "@/lib/leads/actions";
+import { WhatsAppButton } from "@/components/whatsapp-button";
 
 export const dynamic = "force-dynamic";
 
@@ -173,6 +174,7 @@ export default async function LeadsPage() {
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-2">
+                                        <WhatsAppButton phone={l.phone} name={l.name} />
                                         {l.autoIntake ? (
                                             <Badge className="border-transparent bg-[#39FF14] text-black shadow-[0_0_8px_rgba(57,255,20,0.55)]">
                                                 New

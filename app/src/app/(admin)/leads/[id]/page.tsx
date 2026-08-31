@@ -22,6 +22,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { WhatsAppButton } from "@/components/whatsapp-button";
 import {
     convertLeadToOnboardingAction,
     deleteLeadAction,
@@ -71,7 +72,12 @@ export default async function LeadDetailPage({
                             <span className="text-muted-foreground"> · {lead.company}</span>
                         ) : null}
                     </h1>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <WhatsAppButton
+                            phone={lead.phone}
+                            name={lead.name}
+                            label="WhatsApp"
+                        />
                         <Badge variant={bandTone}>
                             {breakdown.band} · {breakdown.score}
                         </Badge>
