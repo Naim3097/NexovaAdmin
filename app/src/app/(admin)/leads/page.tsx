@@ -183,9 +183,11 @@ export default async function LeadsPage() {
                                         <Badge variant={bandTone}>
                                             {band} · {l.score}
                                         </Badge>
-                                        <Badge variant={STATUS_VARIANT[l.status]}>
-                                            {l.status}
-                                        </Badge>
+                                        {l.autoIntake && l.status === "new" ? null : (
+                                            <Badge variant={STATUS_VARIANT[l.status]}>
+                                                {l.status}
+                                            </Badge>
+                                        )}
                                     </div>
                                 </li>
                             );

@@ -33,11 +33,11 @@ export function WhatsAppButton({
             title={`WhatsApp ${phone}`}
             className={
                 label
-                    ? "inline-flex h-10 items-center gap-2 rounded-md bg-[#25D366] px-4 text-sm font-medium text-white shadow-sm transition-opacity hover:opacity-90"
-                    : "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-[#25D366] text-white shadow-sm transition-opacity hover:opacity-90 md:h-9 md:w-9"
+                    ? "inline-flex h-9 shrink-0 items-center gap-2 rounded-full bg-[#25D366] px-4 text-sm font-medium text-white transition-opacity hover:opacity-90"
+                    : "inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white transition-opacity hover:opacity-90"
             }
         >
-            <WhatsAppGlyph className="h-5 w-5" />
+            <WhatsAppGlyph className="size-5 shrink-0" />
             {label ? <span>{label}</span> : null}
         </a>
     );
