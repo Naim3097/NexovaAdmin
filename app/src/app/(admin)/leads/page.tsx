@@ -173,18 +173,29 @@ export default async function LeadsPage() {
                                                 : " · unassigned"}
                                         </p>
                                     </div>
+                                    {/* Fixed 3-column meta grid so every row lines
+                                        up: icon slot (kept even without a phone),
+                                        band chip, then ONE last chip — neon New for
+                                        untouched auto leads, status otherwise. */}
                                     <div className="flex items-center gap-2">
-                                        <WhatsAppButton phone={l.phone} name={l.name} />
-                                        {l.autoIntake ? (
-                                            <Badge className="border-transparent bg-[#39FF14] text-black shadow-[0_0_8px_rgba(57,255,20,0.55)]">
-                                                New
-                                            </Badge>
-                                        ) : null}
-                                        <Badge variant={bandTone}>
+                                        <span className="flex w-9 shrink-0 justify-center">
+                                            <WhatsAppButton phone={l.phone} name={l.name} />
+                                        </span>
+                                        <Badge
+                                            variant={bandTone}
+                                            className="w-[84px] justify-center tabular-nums"
+                                        >
                                             {band} · {l.score}
                                         </Badge>
-                                        {l.autoIntake && l.status === "new" ? null : (
-                                            <Badge variant={STATUS_VARIANT[l.status]}>
+                                        {l.autoIntake ? (
+                                            <Badge className="w-[84px] justify-center border-transparent bg-[#39FF14] text-black shadow-[0_0_8px_rgba(57,255,20,0.55)]">
+                                                New
+                                            </Badge>
+                                        ) : (
+                                            <Badge
+                                                variant={STATUS_VARIANT[l.status]}
+                                                className="w-[84px] justify-center"
+                                            >
                                                 {l.status}
                                             </Badge>
                                         )}
