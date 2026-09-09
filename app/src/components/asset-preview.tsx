@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { Download } from "lucide-react";
 import type { ContentMedia } from "@/lib/data/content";
+import { VideoPlayer } from "@/components/video-player";
 
 /**
  * Renders a draft's asset: single image, carousel (multiple images), or video —
@@ -64,11 +65,14 @@ export function AssetPreview({
 
     const video = items.find((m) => m.type === "video");
     if (video) {
+        // The auto-captured cover (or a hand-uploaded one) doubles as the
+        // poster — visible even on devices that can't decode the codec.
+        const cover = items.find((m) => m.type === "image")?.url;
         return (
             <div className={`space-y-2 ${className}`}>
-                <video
-                    controls
+                <VideoPlayer
                     src={video.url}
+                    poster={cover}
                     className="max-h-80 w-full rounded-md border bg-black"
                 />
                 <DownloadLink m={video} label="Download video" />

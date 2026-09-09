@@ -14,6 +14,75 @@ import { Label } from "@/components/ui/label";
 const BUCKET = "content-assets";
 
 /**
+ * Capture a poster frame from a video file in THIS browser. The uploader's
+ * machine can always decode its own export (they just previewed it), so this
+ * is the one reliable place to make a cover. Clients whose devices can't play
+ * the codec (.mov on Firefox, HEVC without hardware support) then still see
+ * the cover + a download prompt instead of a blank box. Resolves null when
+ * capture isn't possible — the draft simply uploads without a cover.
+ */
+function captureVideoCover(file: File): Promise<File | null> {
+    return new Promise((resolve) => {
+        const url = URL.createObjectURL(file);
+        const v = document.createElement("video");
+        let done = false;
+        let timer: ReturnType<typeof setTimeout> | null = null;
+        const finish = (out: File | null) => {
+            if (done) return;
+            done = true;
+            if (timer) clearTimeout(timer);
+            URL.revokeObjectURL(url);
+            v.removeAttribute("src");
+            v.load();
+            resolve(out);
+        };
+        timer = setTimeout(() => finish(null), 8000);
+        v.muted = true;
+        v.playsInline = true;
+        v.preload = "auto";
+        v.addEventListener("loadedmetadata", () => {
+            // Nudge past t=0 — some encoders put a black frame there.
+            try {
+                v.currentTime = Math.min(0.1, v.duration || 0.1);
+            } catch {
+                finish(null);
+            }
+        });
+        v.addEventListener("seeked", () => {
+            try {
+                if (!v.videoWidth || !v.videoHeight) return finish(null);
+                const canvas = document.createElement("canvas");
+                canvas.width = v.videoWidth;
+                canvas.height = v.videoHeight;
+                const ctx = canvas.getContext("2d");
+                if (!ctx) return finish(null);
+                ctx.drawImage(v, 0, 0);
+                canvas.toBlob(
+                    (blob) => {
+                        if (!blob) return finish(null);
+                        const base = (file.name || "video").replace(
+                            /\.[^.]+$/,
+                            "",
+                        );
+                        finish(
+                            new File([blob], `${base}-cover.jpg`, {
+                                type: "image/jpeg",
+                            }),
+                        );
+                    },
+                    "image/jpeg",
+                    0.85,
+                );
+            } catch {
+                finish(null);
+            }
+        });
+        v.addEventListener("error", () => finish(null));
+        v.src = url;
+    });
+}
+
+/**
  * Draft submission with DIRECT-TO-STORAGE uploads: files go browser → Supabase
  * Storage via signed URLs (with per-file progress), then only a tiny JSON of
  * paths hits the server. No proxy/server-action/Vercel body limits — videos
@@ -35,7 +104,7 @@ export function DraftUploader({
     const [error, setError] = useState("");
 
     async function send() {
-        const files = Array.from(fileRef.current?.files ?? []);
+        let files = Array.from(fileRef.current?.files ?? []);
         if (files.length === 0) {
             setError("Pick at least one file.");
             return;
@@ -43,6 +112,18 @@ export function DraftUploader({
         setBusy(true);
         setError("");
         try {
+            // Video draft with no image alongside → auto-capture a cover here
+            // so every viewer gets a poster (and the report thumb an image),
+            // codec support or not. Video stays first: fileUrl/back-compat
+            // keeps pointing at the video itself.
+            const hasImage = files.some((f) => f.type.startsWith("image"));
+            const firstVideo = files.find((f) => f.type.startsWith("video"));
+            if (firstVideo && !hasImage) {
+                setProgress("Capturing video cover…");
+                const cover = await captureVideoCover(firstVideo);
+                if (cover) files = [...files, cover];
+            }
+
             setProgress("Preparing upload…");
             const prep = await createDraftUploadTargetsAction(
                 postId,
