@@ -24,6 +24,7 @@ import {
     Building2,
     LayoutGrid,
     FileBarChart,
+    Package,
     X,
     type LucideIcon,
 } from "lucide-react";
@@ -81,6 +82,7 @@ const SECTIONS: { label: string; items: Item[] }[] = [
     {
         label: "Admin",
         items: [
+            { href: "/settings/packages", label: "Packages", icon: Package },
             { href: "/team", label: "Team", icon: UserCog },
             { href: "/settings", label: "Settings", icon: Settings },
         ],
@@ -125,9 +127,13 @@ function FreshLeadsPill({
 }
 
 function isActive(pathname: string, href: string) {
-    // Clients lives at /settings/clients but is its own nav entry — don't
-    // light up Settings for it.
-    if (href === "/settings" && pathname.startsWith("/settings/clients")) {
+    // Clients and Packages live under /settings/* but are their own nav
+    // entries — don't light up Settings for them.
+    if (
+        href === "/settings" &&
+        (pathname.startsWith("/settings/clients") ||
+            pathname.startsWith("/settings/packages"))
+    ) {
         return false;
     }
     return pathname === href || pathname.startsWith(`${href}/`);
@@ -147,7 +153,9 @@ function sectionsFor(isAdmin: boolean) {
         if (sec.label === "Admin") {
             return {
                 ...sec,
-                items: sec.items.filter((i) => i.href !== "/team"),
+                items: sec.items.filter(
+                    (i) => i.href !== "/team" && i.href !== "/settings/packages",
+                ),
             };
         }
         if (sec.label === "Workspace") {

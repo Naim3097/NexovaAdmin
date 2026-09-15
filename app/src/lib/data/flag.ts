@@ -16,6 +16,7 @@
 export const ENTITY_NAMES = [
     "agency",
     "services",
+    "packages",
     "clients",
     "team",
     "leads",

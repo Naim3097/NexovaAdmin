@@ -113,6 +113,28 @@ export type ServiceRow = {
     updated_at: string;
 };
 
+export type PackageRow = {
+    id: string;
+    code: string;
+    name: string;
+    version: number;
+    active: boolean;
+    tagline: string;
+    monthly_fee_myr: number;
+    minimum_term_months: number;
+    /** jsonb — array of "meta" | "google" | "tiktok". */
+    platforms: string[];
+    website_included: boolean;
+    website_label: string;
+    report_cadence: string;
+    /** jsonb — [{ type, qtyPerMonth }]. */
+    deliverables: { type: string; qtyPerMonth: number }[];
+    includes: string;
+    not_included: string;
+    created_at: string;
+    updated_at: string;
+};
+
 export type ClientRow = {
     id: string;
     name: string;
@@ -474,6 +496,7 @@ export type Database = {
             services: Tbl<ServiceRow>;
             clients: Tbl<ClientRow>;
             team_members: Tbl<TeamMemberRow>;
+            packages: Tbl<PackageRow>;
             leads: Tbl<LeadRow>;
             onboarding_submissions: Tbl<OnboardingSubmissionRow>;
             projects: Tbl<ProjectRow>;

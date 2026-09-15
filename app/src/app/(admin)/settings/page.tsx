@@ -2,21 +2,24 @@ import Link from "next/link";
 import {
     Building2,
     Boxes,
+    Package,
     UserCog,
     SlidersHorizontal,
     Workflow,
 } from "lucide-react";
 import { listClients } from "@/lib/data/clients";
 import { listServices } from "@/lib/data/services";
+import { listPackages } from "@/lib/data/packages";
 import { listTeamMembers } from "@/lib/data/team";
 import { getAgencyProfile } from "@/lib/data/agency";
 
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
-    const [clients, services, team, agency] = await Promise.all([
+    const [clients, services, packages, team, agency] = await Promise.all([
         listClients(),
         listServices(),
+        listPackages().catch(() => []),
         listTeamMembers(),
         getAgencyProfile(),
     ]);
@@ -91,6 +94,14 @@ export default async function SettingsPage() {
             description:
                 "Profile, contact, status. Linked by name to leads / projects / content / invoices.",
             icon: Building2,
+        },
+        {
+            href: "/settings/packages",
+            label: "Packages",
+            count: `${packages.filter((p) => p.active).length} on offer`,
+            description:
+                "Fixed-price managed-growth packages (Growth, Scale). Versioned so sold clients keep their terms.",
+            icon: Package,
         },
         {
             href: "/settings/services",
