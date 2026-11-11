@@ -1,0 +1,47 @@
+{
+  "id": "c757fee4-c1c0-4768-9e29-0bc9e19d071b",
+  "contractId": "037ed49f-c145-4c4f-8015-48d83157409d",
+  "clientName": "Zenith Properties",
+  "accountManager": "Naim",
+  "plannerLineId": "req:custom:2026-09:2:1",
+  "addendumVersion": 0,
+  "type": "custom",
+  "title": "Stakeholder demo — build review",
+  "channel": "Meeting",
+  "month": "2026-12",
+  "phaseKey": "build",
+  "phaseName": "Build",
+  "dueDate": "2026-12-24",
+  "defaultDueDate": "2026-12-24",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "am",
+      "member": "Naim",
+      "pct": 100,
+      "hours": 1.5
+    }
+  ],
+  "approver": "client",
+  "milestone": true,
+  "linked": null,
+  "requestedAt": null,
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "createdAt": "2026-09-26T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.902Z"
+}

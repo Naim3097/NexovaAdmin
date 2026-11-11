@@ -1,0 +1,56 @@
+{
+  "id": "1793df7a-e92e-499d-9a12-b4ef1c937346",
+  "contractId": "361d9eb1-fc59-469e-83cd-cb215a4b207c",
+  "clientName": "Lean.x Sdn Bhd",
+  "accountManager": "Aina",
+  "plannerLineId": "req:post:2027-03:0:7",
+  "addendumVersion": 0,
+  "type": "post",
+  "title": "Reel: Team spotlight",
+  "channel": "Instagram",
+  "month": "2027-03",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2027-03-24",
+  "defaultDueDate": "2027-03-24",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Syafiq",
+      "pct": 50,
+      "hours": 1.5
+    },
+    {
+      "seat": "creative",
+      "member": "Mei Ling",
+      "pct": 50,
+      "hours": 2.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "0f31bef7-18f1-4f3b-8e46-30941c38fb28"
+  },
+  "requestedAt": null,
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "createdAt": "2026-10-01T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.697Z"
+}

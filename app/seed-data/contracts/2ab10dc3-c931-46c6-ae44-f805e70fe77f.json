@@ -1,0 +1,76 @@
+{
+  "id": "2ab10dc3-c931-46c6-ae44-f805e70fe77f",
+  "code": "CON-2026-0005",
+  "name": "Kopi Kita — brand website",
+  "clientName": "Kopi Kita Café",
+  "accountManager": "Aina",
+  "status": "completed",
+  "phases": [
+    {
+      "key": "discovery",
+      "name": "Discovery",
+      "summary": "Requirements, sitemap, content inventory.",
+      "startMonth": "2026-10",
+      "endMonth": "2026-10"
+    },
+    {
+      "key": "design",
+      "name": "Design",
+      "summary": "Wireframes, visual design, client sign-off.",
+      "startMonth": "2026-10",
+      "endMonth": "2026-10"
+    },
+    {
+      "key": "build",
+      "name": "Build",
+      "summary": "Development, content entry, integrations.",
+      "startMonth": "2026-10",
+      "endMonth": "2026-11"
+    },
+    {
+      "key": "qa-launch",
+      "name": "QA & launch",
+      "summary": "Testing, fixes, go-live and handover.",
+      "startMonth": "2026-11",
+      "endMonth": "2026-11"
+    }
+  ],
+  "requirements": [
+    {
+      "type": "branding",
+      "count": 1,
+      "cadence": "once",
+      "channel": "Brand"
+    },
+    {
+      "type": "website",
+      "count": 2,
+      "cadence": "once",
+      "channel": "Website"
+    }
+  ],
+  "crew": {
+    "dev": "Farid",
+    "creative": "Mei Ling",
+    "am": "Aina"
+  },
+  "handover": null,
+  "stage": "completed",
+  "startDate": "2026-10-01",
+  "endDate": "2026-11-03",
+  "reference": "KK-WEB-01",
+  "quotationId": null,
+  "valueMyr": 8000,
+  "signedAt": "2026-09-30",
+  "signedBy": "Client director",
+  "fileUrl": "https://drive.example.com/contracts/signed.pdf",
+  "terms": "Brand website: wireframes, hi-fi design, build and launch.",
+  "billing": {
+    "cadence": "one_off",
+    "amountMyr": 8000,
+    "invoiceDay": 2
+  },
+  "notes": "",
+  "createdAt": "2026-10-01T04:34:02.666Z",
+  "updatedAt": "2026-10-01T04:34:02.666Z"
+}

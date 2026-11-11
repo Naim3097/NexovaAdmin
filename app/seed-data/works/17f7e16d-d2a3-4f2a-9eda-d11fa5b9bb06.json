@@ -1,0 +1,56 @@
+{
+  "id": "17f7e16d-d2a3-4f2a-9eda-d11fa5b9bb06",
+  "contractId": "34acfe70-b3a6-493c-bf02-c0f709b91153",
+  "clientName": "Nusa Fitness Studio",
+  "accountManager": "Aina",
+  "plannerLineId": "req:post:2026-10:0:4",
+  "addendumVersion": 0,
+  "type": "post",
+  "title": "Carousel: Membership perks",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-22",
+  "defaultDueDate": "2026-10-22",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Syafiq",
+      "pct": 50,
+      "hours": 1.5
+    },
+    {
+      "seat": "creative",
+      "member": "Mei Ling",
+      "pct": 50,
+      "hours": 2.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "28b720a8-d8ea-4107-af1a-9978f347626d"
+  },
+  "requestedAt": "2026-10-02T04:34:02.666Z",
+  "startedAt": "2026-10-16T04:34:02.666Z",
+  "submittedAt": "2026-10-20T04:34:02.666Z",
+  "submission": {
+    "url": "https://drive.example.com/work/17f7e16d",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Aina)",
+    "at": "2026-10-21T04:34:02.666Z"
+  },
+  "completedAt": "2026-10-21T04:34:02.666Z",
+  "notes": "",
+  "createdAt": "2026-10-01T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:04.017Z"
+}

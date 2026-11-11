@@ -1,7 +1,6 @@
 /**
- * Public read-only client portal layout. NO admin auth — access is gated
- * by the unguessable token in the URL. Each project's portal page does
- * its own token lookup via getProjectByPortalToken.
+ * Client portal layout: the signed-in client sees their contracts, content
+ * and billing. Access is gated by the client login in proxy.ts.
  *
  * Sibling to (admin) and (print) route groups so it bypasses the admin
  * chrome (sidebar, etc.) entirely.
@@ -25,8 +24,8 @@ export default function PortalLayout({
             </header>
             <main className="mx-auto max-w-3xl px-4 py-8">{children}</main>
             <footer className="mx-auto max-w-3xl px-4 py-6 text-xs text-muted-foreground">
-                Private link — do not share publicly. It grants access to your
-                project status and content.
+                Private — do not share your login. It grants access to your
+                contract progress, content and billing.
             </footer>
         </div>
     );

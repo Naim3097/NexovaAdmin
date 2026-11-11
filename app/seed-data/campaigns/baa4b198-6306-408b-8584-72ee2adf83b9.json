@@ -1,0 +1,21 @@
+{
+  "id": "baa4b198-6306-408b-8584-72ee2adf83b9",
+  "name": "Zenith Homes search",
+  "clientName": "Zenith Properties",
+  "contractId": "037ed49f-c145-4c4f-8015-48d83157409d",
+  "platform": "google",
+  "objective": "leads",
+  "status": "planning",
+  "startDate": "2026-11-24",
+  "endDate": "",
+  "monthlyBudgetMyr": 5000,
+  "feeModel": "percent",
+  "flatFeeMyr": 0,
+  "percentFee": 15,
+  "externalId": "",
+  "landingUrl": "",
+  "notes": "",
+  "metrics": [],
+  "createdAt": "2026-11-10T04:34:04.043Z",
+  "updatedAt": "2026-11-10T04:34:04.043Z"
+}

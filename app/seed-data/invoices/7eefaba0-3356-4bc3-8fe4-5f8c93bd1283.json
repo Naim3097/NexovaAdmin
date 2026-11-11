@@ -1,0 +1,31 @@
+{
+  "id": "7eefaba0-3356-4bc3-8fe4-5f8c93bd1283",
+  "number": "INV-2026-0010",
+  "clientName": "Harmoni Dental Clinic",
+  "contractId": null,
+  "status": "paid",
+  "issueDate": "2026-08-03",
+  "dueDate": "2026-08-17",
+  "items": [
+    {
+      "id": "10affaf8-ef85-48ce-8564-3516379c2c26",
+      "description": "Previous retainer — 2026-08",
+      "details": "",
+      "quantity": 1,
+      "unitPriceMyr": 3200
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "createdAt": "2026-08-03T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:04.096Z",
+  "paidAt": "2026-08-14T04:34:02.666Z",
+  "paymentProvider": null,
+  "paymentLink": null,
+  "paymentExternalId": null,
+  "paymentMeta": {},
+  "paymentLinkCreatedAt": null
+}

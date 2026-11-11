@@ -18,9 +18,10 @@ import { createClient } from "@/lib/supabase/server";
 export async function confirmLinkAction(formData: FormData) {
     const tokenHash = String(formData.get("token_hash") ?? "");
     const type = String(formData.get("type") ?? "") as EmailOtpType;
-    const rawNext = String(formData.get("next") ?? "/dashboard");
+    // "/" resolves the home of their role once the session exists.
+    const rawNext = String(formData.get("next") ?? "/");
     // Only allow same-site paths through.
-    const next = rawNext.startsWith("/") ? rawNext : "/dashboard";
+    const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
 
     const supabase = await createClient();
     await supabase.auth.signOut().catch(() => {});

@@ -2,23 +2,25 @@ import Link from "next/link";
 import {
     Building2,
     Boxes,
+    Milestone,
     UserCog,
     SlidersHorizontal,
-    Workflow,
 } from "lucide-react";
 import { listClients } from "@/lib/data/clients";
 import { listServices } from "@/lib/data/services";
 import { listTeamMembers } from "@/lib/data/team";
 import { getAgencyProfile } from "@/lib/data/agency";
+import { listPhaseTemplates } from "@/lib/data/phase-templates";
 
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
-    const [clients, services, team, agency] = await Promise.all([
+    const [clients, services, team, agency, phaseTemplates] = await Promise.all([
         listClients(),
         listServices(),
         listTeamMembers(),
         getAgencyProfile(),
+        listPhaseTemplates(),
     ]);
 
     const agencyConfigured =
@@ -89,39 +91,39 @@ export default async function SettingsPage() {
             label: "Clients",
             count: `${clients.length} record${clients.length === 1 ? "" : "s"}`,
             description:
-                "Profile, contact, status. Linked by name to leads / projects / content / invoices.",
+                "Profile, contact and status, linked by name to leads, contracts, content and invoices.",
             icon: Building2,
         },
         {
             href: "/settings/services",
-            label: "Services catalog",
+            label: "Services",
             count: `${services.filter((s) => s.active).length} active`,
             description:
-                "Default offerings + unit pricing (MYR). Used as suggestions on new invoices.",
+                "What you sell and unit prices (MYR), suggested on new invoices.",
             icon: Boxes,
+        },
+        {
+            href: "/settings/phases",
+            label: "Phase templates",
+            count: `${phaseTemplates.length} template${phaseTemplates.length === 1 ? "" : "s"}`,
+            description:
+                "Reusable phase sets for quotes and contracts (Website build, Social retainer…).",
+            icon: Milestone,
         },
         {
             href: "/team",
             label: "Team",
             count: `${team.filter((m) => m.active).length} active`,
             description:
-                "Members, roles, contact. Source of assignee dropdowns across the app.",
+                "Members, jobs and contact; feeds the owner dropdowns across the app.",
             icon: UserCog,
-        },
-        {
-            href: "/settings/workflows",
-            label: "Delivery workflows",
-            count: "per service",
-            description:
-                "The standard ordered stage pipeline (owner role per stage) each service follows. New projects instantiate these.",
-            icon: Workflow,
         },
         {
             href: "/settings/agency",
             label: "Agency profile",
-            count: agencyConfigured ? "configured" : "not set",
+            count: agencyConfigured ? "set up" : "not set",
             description:
-                "Legal name, SST no., contact, address, bank details, default invoice footer. Used on invoice headers and exported reports.",
+                "Legal name, SST no., contact, address, bank details and invoice footer, used on invoices and reports.",
             icon: SlidersHorizontal,
         },
     ];
@@ -131,7 +133,7 @@ export default async function SettingsPage() {
             <div>
                 <h1 className="text-2xl font-semibold md:text-3xl">Settings</h1>
                 <p className="text-sm text-muted-foreground">
-                    Structured directories that everything else references.
+                    The lists everything else draws on.
                 </p>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
@@ -174,8 +176,7 @@ export default async function SettingsPage() {
                 <div className="border-b p-4">
                     <p className="text-sm font-medium">Setup status</p>
                     <p className="text-xs text-muted-foreground">
-                        External services needed to go fully live. Staff invite
-                        emails also need Supabase Auth SMTP configured (see docs).
+                        Outside services needed to go live; staff invite emails also need Supabase Auth SMTP set up.
                     </p>
                 </div>
                 <ul className="divide-y">

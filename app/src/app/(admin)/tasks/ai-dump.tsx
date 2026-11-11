@@ -20,7 +20,7 @@ export function AiDump() {
     return (
         <form action={formAction} className="space-y-2">
             <Label className="text-sm">
-                Brain-dump — AI splits it into tasks per PIC
+                Brain-dump — AI splits it into to-dos per owner
             </Label>
             <Textarea
                 name="dump"

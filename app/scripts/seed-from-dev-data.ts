@@ -30,7 +30,6 @@ import * as devInvoices from "@/lib/dev-store/invoices";
 import * as devLeads from "@/lib/dev-store/leads";
 import * as devNotifications from "@/lib/dev-store/notifications";
 import * as devOnboarding from "@/lib/dev-store/onboarding";
-import * as devProjects from "@/lib/dev-store/projects";
 import * as devSeo from "@/lib/dev-store/seo-articles";
 import * as devServices from "@/lib/dev-store/services";
 import * as devTeam from "@/lib/dev-store/team";
@@ -68,7 +67,6 @@ const TRUNCATE_ORDER = [
     "invoices",
     "content_posts",
     "seo_articles",
-    "projects",
     "onboarding_submissions",
     "leads",
     "team_members",
@@ -174,28 +172,6 @@ async function seedOnboarding() {
     );
 }
 
-async function seedProjects() {
-    const list = await devProjects.listProjects();
-    await insertRows(
-        "projects",
-        list.map((p) => ({
-            id: p.id,
-            name: p.name,
-            client_name: p.clientName,
-            status: p.status,
-            phase: p.phase,
-            onboarding_submission_id: p.onboardingSubmissionId,
-            notes: p.notes,
-            tasks: p.tasks,
-            deliverables: p.deliverables,
-            signoff: p.signoff,
-            portal_token: p.portalToken,
-            created_at: p.createdAt,
-            updated_at: p.updatedAt,
-        })),
-    );
-}
-
 async function seedInvoices() {
     const list = await devInvoices.listInvoices();
     await insertRows(
@@ -204,7 +180,6 @@ async function seedInvoices() {
             id: inv.id,
             number: inv.number,
             client_name: inv.clientName,
-            project_id: inv.projectId,
             status: inv.status,
             issue_date: inv.issueDate,
             due_date: inv.dueDate,
@@ -278,7 +253,6 @@ async function seedContent() {
             id: p.id,
             title: p.title,
             client_name: p.clientName,
-            project_id: p.projectId,
             platform: p.platform,
             type: p.type,
             status: p.status,
@@ -371,7 +345,6 @@ async function main() {
     await seedTeam();
     await seedLeads();
     await seedOnboarding();
-    await seedProjects();
     await seedInvoices();
     await seedCampaigns();
     await seedContent();

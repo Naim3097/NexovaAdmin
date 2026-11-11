@@ -1,0 +1,47 @@
+{
+  "id": "9e89a936-ee29-44f9-96ec-c90d2c8f9eb7",
+  "contractId": "34acfe70-b3a6-493c-bf02-c0f709b91153",
+  "clientName": "Nusa Fitness Studio",
+  "accountManager": "Aina",
+  "plannerLineId": "req:branding:2026-10:1:1",
+  "addendumVersion": 0,
+  "type": "branding",
+  "title": "Instagram profile refresh",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "foundation",
+  "phaseName": "Foundation",
+  "dueDate": "2026-10-08",
+  "defaultDueDate": "2026-10-08",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Mei Ling",
+      "pct": 100,
+      "hours": 8
+    }
+  ],
+  "approver": "client",
+  "milestone": true,
+  "linked": null,
+  "requestedAt": "2026-10-01T04:34:02.666Z",
+  "startedAt": "2026-10-02T04:34:02.666Z",
+  "submittedAt": "2026-10-06T04:34:02.666Z",
+  "submission": {
+    "url": "https://drive.example.com/work/9e89a936",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Aina)",
+    "at": "2026-10-07T04:34:02.666Z"
+  },
+  "completedAt": "2026-10-07T04:34:02.666Z",
+  "notes": "",
+  "createdAt": "2026-10-01T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:04.012Z"
+}

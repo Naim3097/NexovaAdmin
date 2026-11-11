@@ -1,0 +1,16 @@
+{
+  "id": "159fef6b-1b20-42d9-afa6-5ffa2edf9619",
+  "at": "2026-10-28T04:07:22.676Z",
+  "entity": "commission",
+  "entityId": "c4e4c9a4-e216-4d23-ad9f-f6133fca28b6",
+  "kind": "status",
+  "summary": "Website v2 — backend integration: delivered to client — Sent staging link + release notes by email",
+  "actor": "Aina",
+  "changes": [
+    {
+      "field": "status",
+      "before": "approved",
+      "after": "delivered"
+    }
+  ]
+}

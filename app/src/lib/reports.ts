@@ -17,10 +17,19 @@ import {
     type Quotation,
 } from "@/lib/data/quotations";
 import {
-    listProjects,
-    PROJECT_PHASES,
-    type Project,
-} from "@/lib/data/projects";
+    CONTRACT_STAGE_LABEL,
+    listContracts,
+    type Contract,
+} from "@/lib/data/contracts";
+import { listWorks, type Work } from "@/lib/data/works";
+import { SEAT_LABEL } from "@/lib/data/planners";
+import {
+    isOpen,
+    isOverdue,
+    nextDue,
+    progress,
+    todayKey,
+} from "@/lib/works/helpers";
 import {
     computeManagementFee,
     listCampaigns,
@@ -62,8 +71,8 @@ export type MonthlySummaryRow = {
     month: string; // YYYY-MM
     leadsCreated: number;
     leadsWon: number;
-    projectsCreated: number;
-    projectsDelivered: number;
+    contractsStarted: number; // contracts whose start date falls in month
+    tasksCompleted: number; // contract tasks completed in month
     quotesSent: number; // quotes issued (status past draft) in month
     quotesAccepted: number; // quotes accepted/converted in month
     quotedMyr: number; // total MYR on quotes issued in month
@@ -85,8 +94,8 @@ function emptyRow(month: string): MonthlySummaryRow {
         month,
         leadsCreated: 0,
         leadsWon: 0,
-        projectsCreated: 0,
-        projectsDelivered: 0,
+        contractsStarted: 0,
+        tasksCompleted: 0,
         quotesSent: 0,
         quotesAccepted: 0,
         quotedMyr: 0,
@@ -105,13 +114,15 @@ function monthOf(iso: string | null | undefined): string {
 export async function buildMonthlySummary(
     year: number,
 ): Promise<MonthlySummaryRow[]> {
-    const [leads, projects, invoices, quotes, campaigns] = await Promise.all([
-        listLeads(),
-        listProjects(),
-        listInvoices(),
-        listQuotations(),
-        listCampaigns(),
-    ]);
+    const [leads, contracts, works, invoices, quotes, campaigns] =
+        await Promise.all([
+            listLeads(),
+            listContracts(),
+            listWorks(),
+            listInvoices(),
+            listQuotations(),
+            listCampaigns(),
+        ]);
     const yearPrefix = String(year);
     const rows = new Map<string, MonthlySummaryRow>();
     for (const m of monthsOfYear(year)) rows.set(m, emptyRow(m));
@@ -128,10 +139,13 @@ export async function buildMonthlySummary(
             bump(monthOf(l.updatedAt), (r) => r.leadsWon++);
         }
     }
-    for (const p of projects) {
-        bump(monthOf(p.createdAt), (r) => r.projectsCreated++);
-        if (p.status === "delivered") {
-            bump(monthOf(p.updatedAt), (r) => r.projectsDelivered++);
+    for (const c of contracts) {
+        if (c.status === "cancelled") continue;
+        bump(monthOf(c.startDate), (r) => r.contractsStarted++);
+    }
+    for (const w of works) {
+        if (w.status === "completed" && w.completedAt) {
+            bump(monthOf(w.completedAt), (r) => r.tasksCompleted++);
         }
     }
     for (const inv of invoices) {
@@ -199,7 +213,6 @@ export function invoicesToRows(
             taxRatePct: i.taxRatePct,
             taxMyr: t.tax,
             totalMyr: t.total,
-            projectId: i.projectId ?? "",
             createdAt: i.createdAt,
         };
     });
@@ -223,7 +236,6 @@ export function quotationsToRows(
             taxRatePct: q.taxRatePct,
             taxMyr: t.tax,
             totalMyr: t.total,
-            projectId: q.projectId ?? "",
             createdAt: q.createdAt,
         };
     });
@@ -245,23 +257,31 @@ export function leadsToRows(leads: Lead[]): Array<Record<string, unknown>> {
     }));
 }
 
-export function projectsToRows(
-    projects: Project[],
+/** "Aisha 50% / Mei 50%" — seat label stands in while nobody holds the seat. */
+function assigneesLabel(w: Work): string {
+    return w.split
+        .map((s) => `${s.member || SEAT_LABEL[s.seat]} ${s.pct}%`)
+        .join(" / ");
+}
+
+/** One row per contract task. `contracts` resolves the human contract code. */
+export function tasksToRows(
+    works: Work[],
+    contracts: Contract[],
 ): Array<Record<string, unknown>> {
-    return projects.map((p) => ({
-        name: p.name,
-        client: p.clientName,
-        status: p.status,
-        phase: p.phase,
-        phaseIndex: PROJECT_PHASES.indexOf(p.phase),
-        taskCount: p.tasks.length,
-        deliverableCount: p.deliverables.length,
-        deliverablesApproved: p.deliverables.filter((d) => d.approvedAt).length,
-        signedOff: p.signoff.signedAt ? "yes" : "no",
-        signedBy: p.signoff.signedBy,
-        signedAt: p.signoff.signedAt ?? "",
-        createdAt: p.createdAt,
-        updatedAt: p.updatedAt,
+    const codeById = new Map(contracts.map((c) => [c.id, c.code]));
+    return works.map((w) => ({
+        id: w.id,
+        contractCode: codeById.get(w.contractId) ?? "",
+        client: w.clientName,
+        type: w.type,
+        title: w.title,
+        month: w.month,
+        phase: w.phaseName,
+        dueDate: w.dueDate,
+        status: w.status,
+        assignees: assigneesLabel(w),
+        completedAt: w.completedAt ?? "",
     }));
 }
 
@@ -306,7 +326,7 @@ export const REPORT_KINDS = [
     "quotations",
     "invoices",
     "leads",
-    "projects",
+    "tasks",
     "campaigns",
 ] as const;
 export type ReportKind = (typeof REPORT_KINDS)[number];
@@ -326,8 +346,13 @@ export async function buildReportCsv(
             return toCsv(invoicesToRows(await listInvoices()));
         case "leads":
             return toCsv(leadsToRows(await listLeads()));
-        case "projects":
-            return toCsv(projectsToRows(await listProjects()));
+        case "tasks": {
+            const [works, contracts] = await Promise.all([
+                listWorks(),
+                listContracts(),
+            ]);
+            return toCsv(tasksToRows(works, contracts));
+        }
         case "campaigns":
             return toCsv(
                 campaignsToRows(
@@ -354,6 +379,27 @@ export function reportFilename(
 // ---------------------------------------------------------------------------
 // Per-client monthly report (client-facing)
 
+export type ClientReportContract = {
+    contract: Contract;
+    code: string;
+    name: string;
+    stageLabel: string;
+    startDate: string;
+    /** "" = open-ended. */
+    endDate: string;
+    valueMyr: number;
+    /** Over every task on the contract, not just the month. */
+    progress: { done: number; total: number; pct: number };
+    /** Phase of the earliest open task by due date; "" when nothing is open. */
+    currentPhase: string;
+    /** Earliest open task by due date. */
+    nextDue: Work | undefined;
+    /** Open tasks past their due date (as of today). */
+    overdueCount: number;
+    /** Tasks whose completion landed in the report month. */
+    completedInMonth: number;
+};
+
 export type ClientMonthlyReport = {
     clientName: string;
     monthKey: string; // YYYY-MM
@@ -379,11 +425,11 @@ export type ClientMonthlyReport = {
         mgmtFeeMyr: number;
         billableMyr: number; // spend + mgmtFee
     };
-    projects: Array<{
-        project: Project;
-        deliverablesApprovedInMonth: number;
-        signedOffInMonth: boolean;
-    }>;
+    /**
+     * The client's contracts that run during the month (not cancelled, not
+     * started after it, not ended before it), each with its task progress.
+     */
+    contracts: ClientReportContract[];
     contentPostsPublished: ContentPost[];
     /**
      * Every deliverable of the month: items in the client's plan month (plus
@@ -434,16 +480,25 @@ export async function buildClientMonthlyReport(
     clientName: string,
     monthKey: string,
 ): Promise<ClientMonthlyReport> {
-    const [campaigns, projects, invoices, leads, posts, articles, clients] =
-        await Promise.all([
-            listCampaigns(),
-            listProjects(),
-            listInvoices(),
-            listLeads(),
-            listContentPosts(),
-            listSeoArticles(),
-            listClients(),
-        ]);
+    const [
+        campaigns,
+        contracts,
+        works,
+        invoices,
+        leads,
+        posts,
+        articles,
+        clients,
+    ] = await Promise.all([
+        listCampaigns(),
+        listContracts(),
+        listWorks(),
+        listInvoices(),
+        listLeads(),
+        listContentPosts(),
+        listSeoArticles(),
+        listClients(),
+    ]);
 
     const monthStart = `${monthKey}-01`;
     const monthEnd = lastDayOfMonth(monthKey);
@@ -502,15 +557,35 @@ export async function buildClientMonthlyReport(
     totals.mgmtFeeMyr = +totals.mgmtFeeMyr.toFixed(2);
     totals.billableMyr = +(totals.spendMyr + totals.mgmtFeeMyr).toFixed(2);
 
-    const clientProjects = projects
-        .filter((p) => isClient(p.clientName))
-        .map((p) => ({
-            project: p,
-            deliverablesApprovedInMonth: p.deliverables.filter((d) =>
-                inMonth(d.approvedAt, monthKey),
-            ).length,
-            signedOffInMonth: inMonth(p.signoff.signedAt, monthKey),
-        }));
+    // Contracts running during the month, each rolled up from its tasks.
+    const today = todayKey();
+    const runsInMonth = (c: Contract) =>
+        c.status !== "cancelled" &&
+        (!c.startDate || c.startDate <= monthEnd) &&
+        (!c.endDate || c.endDate >= monthStart);
+    const clientContracts: ClientReportContract[] = contracts
+        .filter((c) => isClient(c.clientName) && runsInMonth(c))
+        .map((c) => {
+            const tasks = works.filter((w) => w.contractId === c.id);
+            const upcoming = nextDue(tasks);
+            const { done, total, pct } = progress(tasks);
+            return {
+                contract: c,
+                code: c.code,
+                name: c.name,
+                stageLabel: CONTRACT_STAGE_LABEL[c.stage],
+                startDate: c.startDate,
+                endDate: c.endDate,
+                valueMyr: c.valueMyr,
+                progress: { done, total, pct },
+                currentPhase: upcoming?.phaseName ?? "",
+                nextDue: upcoming,
+                overdueCount: tasks.filter((w) => isOverdue(w, today)).length,
+                completedInMonth: tasks.filter(
+                    (w) => !isOpen(w) && inMonth(w.completedAt, monthKey),
+                ).length,
+            };
+        });
 
     // Deterministic content sequence: scheduled date first, then NATURAL title
     // order so "Video 2" sorts before "Video 10" (plan items often share the
@@ -634,7 +709,7 @@ export async function buildClientMonthlyReport(
         monthEnd,
         campaigns: campaignRows,
         totals,
-        projects: clientProjects,
+        contracts: clientContracts,
         contentPostsPublished,
         contentDelivered,
         extras,
@@ -648,16 +723,16 @@ export async function buildClientMonthlyReport(
 
 /** All distinct client names that have *any* activity (for the picker). */
 export async function listAllClientNames(): Promise<string[]> {
-    const [campaigns, projects, invoices, posts, articles] = await Promise.all([
+    const [campaigns, contracts, invoices, posts, articles] = await Promise.all([
         listCampaigns(),
-        listProjects(),
+        listContracts(),
         listInvoices(),
         listContentPosts(),
         listSeoArticles(),
     ]);
     const set = new Set<string>();
     for (const c of campaigns) if (c.clientName) set.add(c.clientName);
-    for (const p of projects) if (p.clientName) set.add(p.clientName);
+    for (const c of contracts) if (c.clientName) set.add(c.clientName);
     for (const i of invoices) if (i.clientName) set.add(i.clientName);
     for (const p of posts) if (p.clientName) set.add(p.clientName);
     for (const a of articles) if (a.clientName) set.add(a.clientName);

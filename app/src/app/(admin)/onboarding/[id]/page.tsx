@@ -8,16 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { listContracts } from "@/lib/data/contracts";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { SERVICE_CATEGORIES } from "@/lib/dev-store/services";
-import {
-    convertToProjectAction,
     deleteSubmissionAction,
     regenerateSummaryAction,
     regenerateTokenAction,
@@ -46,6 +38,11 @@ export default async function OnboardingDetailPage({
     const { id } = await params;
     const sub = await getSubmissionById(id);
     if (!sub) notFound();
+
+    const clientKey = sub.clientName.trim().toLowerCase();
+    const clientContracts = (await listContracts()).filter(
+        (c) => c.clientName.trim().toLowerCase() === clientKey,
+    );
 
     const h = await headers();
     const proto = h.get("x-forwarded-proto") ?? "http";
@@ -85,7 +82,7 @@ export default async function OnboardingDetailPage({
                         <div>
                             <h2 className="text-sm font-medium">AI brief</h2>
                             <p className="text-xs text-muted-foreground">
-                                Auto-generated from the submission. Review before sharing with the team.
+                                Auto-generated from the form; review before sharing with the team.
                             </p>
                         </div>
                         {canRegenerate ? (
@@ -112,8 +109,7 @@ export default async function OnboardingDetailPage({
                                 {ai.brief}
                             </p>
                             <p className="mt-3 text-xs text-muted-foreground">
-                                Delivery tasks come from the project&apos;s workflow
-                                pipeline (set when you convert), not the AI.
+                                Tasks come from the client&apos;s contract, not the AI.
                             </p>
                             {ai.generatedAt ? (
                                 <p className="mt-3 text-xs text-muted-foreground">
@@ -150,7 +146,7 @@ export default async function OnboardingDetailPage({
                     </form>
                 </div>
                 <p className="mt-2 text-xs text-muted-foreground">
-                    Regenerating invalidates the old link. Use this if a link was sent to the wrong person.
+                    Regenerating kills the old link — use it if a link went to the wrong person.
                 </p>
 
                 <div className="mt-4 border-t pt-4">
@@ -271,14 +267,29 @@ export default async function OnboardingDetailPage({
             </section>
             ) : null}
 
-            {/* Convert + delete */}
+            {/* Contract + delete */}
             <section className="flex flex-col gap-3 rounded-lg border bg-card p-4 md:flex-row md:items-center md:justify-between md:p-6">
                 <div>
                     <h2 className="text-sm font-medium">Actions</h2>
                     <p className="text-xs text-muted-foreground">
-                        {sub.status === "submitted"
-                            ? "Convert this submission into a tracked project."
-                            : "Submission is still a draft — you can convert it once submitted."}
+                        {clientContracts.length > 0 ? (
+                            <>
+                                Work runs under{" "}
+                                {clientContracts.map((c, i) => (
+                                    <span key={c.id}>
+                                        {i > 0 ? ", " : ""}
+                                        <Link href={`/contracts/${c.id}`} className="underline">
+                                            {c.code}
+                                        </Link>
+                                    </span>
+                                ))}
+                                ; tasks come from the contract.
+                            </>
+                        ) : sub.status === "submitted" ? (
+                            "No contract for this client yet — accept a quote on the pipeline deal to create one."
+                        ) : (
+                            "The form is still a draft."
+                        )}
                     </p>
                 </div>
                 <div className="flex flex-wrap items-end gap-2">
@@ -294,31 +305,10 @@ export default async function OnboardingDetailPage({
                             </Button>
                         </form>
                     ) : null}
-                    <form action={convertToProjectAction} className="flex items-end gap-2">
-                        <input type="hidden" name="id" value={sub.id} />
-                        <div className="space-y-1">
-                            <Label className="text-xs">Service / workflow</Label>
-                            <Select name="serviceCategory" defaultValue="website">
-                                <SelectTrigger className="h-9 w-40">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {SERVICE_CATEGORIES.map((c) => (
-                                        <SelectItem key={c} value={c}>
-                                            {c}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <Button type="submit" disabled={sub.status !== "submitted"}>
-                            Convert to project
-                        </Button>
-                    </form>
                     <form action={deleteSubmissionAction}>
                         <input type="hidden" name="id" value={sub.id} />
                         <Button type="submit" variant="destructive">
-                            Delete submission
+                            Delete form
                         </Button>
                     </form>
                 </div>

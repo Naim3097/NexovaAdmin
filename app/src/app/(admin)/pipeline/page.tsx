@@ -1,16 +1,29 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowRight } from "lucide-react";
+import { getActingMember } from "@/lib/auth";
 import { LEAD_STATUSES, listLeads, type LeadStatus } from "@/lib/data/leads";
+import { listContracts, type Contract } from "@/lib/data/contracts";
+import { listQuotations, type Quotation } from "@/lib/data/quotations";
+import { seesPipeline } from "@/lib/scope";
+import { fmtMyrShort, fmtMyrWhole } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { setLeadStatusAction } from "@/lib/leads/actions";
 
 export const dynamic = "force-dynamic";
 
+type SearchParams = Record<string, string | string[] | undefined>;
+
+function one(sp: SearchParams, key: string): string {
+    const v = sp[key];
+    return ((Array.isArray(v) ? v[0] : v) ?? "").trim();
+}
+
 const COLUMN_LABELS: Record<LeadStatus, string> = {
     new: "New",
     contacted: "Contacted",
     qualified: "Qualified",
-    proposal: "Proposal",
+    proposal: "Quoted",
     won: "Won",
     lost: "Lost",
 };
@@ -22,8 +35,34 @@ function nextStatus(current: LeadStatus): LeadStatus | null {
     return order[i + 1];
 }
 
-export default async function PipelinePage() {
-    const leads = await listLeads();
+const norm = (s: string) => s.trim().toLowerCase();
+
+export default async function PipelinePage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+    const sp = await searchParams;
+    const me = await getActingMember(one(sp, "as"));
+    if (!seesPipeline(me)) redirect("/home");
+
+    const [leads, contracts, quotations] = await Promise.all([listLeads(), listContracts(), listQuotations()]);
+    // The client's contract (the deal's company, or the contact's name when
+    // there is no company), newest first; and the latest quotation on it.
+    const contractByClient = new Map<string, Contract>();
+    for (const c of contracts) {
+        if (c.status === "cancelled") continue;
+        const key = norm(c.clientName);
+        const cur = contractByClient.get(key);
+        if (!cur || c.createdAt > cur.createdAt) contractByClient.set(key, c);
+    }
+    const quoteByClient = new Map<string, Quotation>();
+    for (const q of quotations) {
+        const key = norm(q.clientName);
+        const cur = quoteByClient.get(key);
+        if (!cur || q.updatedAt > cur.updatedAt) quoteByClient.set(key, q);
+    }
+    // A contract's own quotation beats the latest one on the client.
+    for (const [key, c] of contractByClient) {
+        const q = c.quotationId ? quotations.find((x) => x.id === c.quotationId) : undefined;
+        if (q) quoteByClient.set(key, q);
+    }
     const grouped: Record<LeadStatus, typeof leads> = {
         new: [],
         contacted: [],
@@ -44,12 +83,11 @@ export default async function PipelinePage() {
                 <div>
                     <h1 className="text-2xl font-semibold md:text-3xl">Pipeline</h1>
                     <p className="text-sm text-muted-foreground">
-                        Use the Advance button on a card to move it through the
-                        pipeline.
+                        Move deals along with the button; price them on a quote, and once won the account manager creates the contract.
                     </p>
                 </div>
                 <div className="rounded-md border bg-card px-3 py-2 text-sm">
-                    Open pipeline value: <strong>MYR {totalValue.toLocaleString()}</strong>
+                    Open pipeline: <strong>{fmtMyrShort(totalValue)}</strong>
                 </div>
             </div>
 
@@ -66,6 +104,9 @@ export default async function PipelinePage() {
                             <ul className="space-y-2">
                                 {grouped[s].map((l) => {
                                     const next = nextStatus(l.status);
+                                    const clientName = l.company || l.name;
+                                    const contract = contractByClient.get(norm(clientName));
+                                    const quote = quoteByClient.get(norm(clientName));
                                     return (
                                         <li
                                             key={l.id}
@@ -84,7 +125,7 @@ export default async function PipelinePage() {
                                             ) : null}
                                             {l.estValueMyr > 0 ? (
                                                 <p className="mt-1.5 text-xs font-medium tabular-nums">
-                                                    MYR {l.estValueMyr.toLocaleString()}
+                                                    {fmtMyrWhole(l.estValueMyr)}
                                                 </p>
                                             ) : null}
                                             {next || (l.status !== "lost" && l.status !== "won") ? (
@@ -97,7 +138,7 @@ export default async function PipelinePage() {
                                                                 type="submit"
                                                                 size="sm"
                                                                 className="h-7 w-full text-xs"
-                                                                title={`Advance to ${COLUMN_LABELS[next]}`}
+                                                                title={`Move to ${COLUMN_LABELS[next]}`}
                                                             >
                                                                 {COLUMN_LABELS[next]}
                                                                 <ArrowRight className="size-3.5" />
@@ -117,6 +158,42 @@ export default async function PipelinePage() {
                                                                 Mark lost
                                                             </Button>
                                                         </form>
+                                                    ) : null}
+                                                </div>
+                                            ) : null}
+                                            {l.status !== "lost" && (quote || l.status === "won" || l.status === "proposal") ? (
+                                                <div className="mt-2.5 space-y-1 border-t pt-2.5 text-xs">
+                                                    {quote ? (
+                                                        <Link
+                                                            href={`/quotes/${quote.id}`}
+                                                            className="block font-medium text-primary hover:underline"
+                                                        >
+                                                            Quote {quote.number} · {quote.status}
+                                                        </Link>
+                                                    ) : (
+                                                        <Link
+                                                            href="/quotes"
+                                                            className="block text-muted-foreground hover:underline"
+                                                        >
+                                                            Write a quote
+                                                        </Link>
+                                                    )}
+                                                    {l.status === "won" ? (
+                                                        contract ? (
+                                                            <Link
+                                                                href={`/contracts/${contract.id}`}
+                                                                className="block font-medium text-primary hover:underline"
+                                                            >
+                                                                Contract {contract.code} →
+                                                            </Link>
+                                                        ) : (
+                                                            <Link
+                                                                href={`/contracts/new?client=${encodeURIComponent(clientName)}`}
+                                                                className="block font-medium text-primary hover:underline"
+                                                            >
+                                                                Create contract
+                                                            </Link>
+                                                        )
                                                     ) : null}
                                                 </div>
                                             ) : null}

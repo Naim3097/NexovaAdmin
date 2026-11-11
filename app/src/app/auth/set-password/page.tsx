@@ -52,7 +52,8 @@ export default function SetPasswordPage() {
             setError(error.message);
             return;
         }
-        router.replace("/dashboard");
+        // "/" resolves the home of their role server-side.
+        router.replace("/");
     }
 
     return (

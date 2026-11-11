@@ -1,0 +1,26 @@
+{
+  "id": "8d489cc8-1c0b-4e81-9b9d-edf9db32fdb4",
+  "name": "Syafiq",
+  "role": "Content",
+  "email": "syafiq@nexova.local",
+  "phone": "",
+  "skills": "copywriting, social, video",
+  "active": true,
+  "userId": null,
+  "accessLevel": "standard",
+  "systemRoles": [
+    "user"
+  ],
+  "functions": [],
+  "weeklyHours": 32,
+  "reservedHours": {},
+  "hoursByType": {
+    "post": 1.5,
+    "seo": 3,
+    "campaign": 2,
+    "custom": 2
+  },
+  "costRateMyr": 0,
+  "createdAt": "2026-11-10T04:34:03.242Z",
+  "updatedAt": "2026-11-10T04:34:03.242Z"
+}

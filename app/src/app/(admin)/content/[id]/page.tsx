@@ -9,7 +9,10 @@ import {
     visualsUsed,
 } from "@/lib/data/content";
 import { listClients } from "@/lib/data/clients";
+import { listContracts } from "@/lib/data/contracts";
 import { listTeamMembers } from "@/lib/data/team";
+import { listWorks } from "@/lib/data/works";
+import { TASK_STATUS_LABEL } from "@/lib/works/helpers";
 import { ReviewTimeline } from "@/components/review-timeline";
 import { ReferenceGallery } from "@/components/reference-gallery";
 import { StatusLights } from "@/components/status-lights";
@@ -41,11 +44,18 @@ export default async function ContentDetailPage({
     const { id } = await params;
     const post = await getContentPostById(id);
     if (!post) notFound();
-    const [team, clients, allPosts] = await Promise.all([
+    const [team, clients, allPosts, contracts, works] = await Promise.all([
         listTeamMembers(),
         listClients(),
         listContentPosts(),
+        listContracts(),
+        listWorks(),
     ]);
+    // The contract task this post is the work for, if it came from a planner line.
+    const task = works.find((w) => w.linked?.kind === "content" && w.linked.id === post.id);
+    const contractOptions = contracts.filter(
+        (c) => c.id === post.contractId || (c.clientName === post.clientName && (c.status === "active" || c.status === "draft")),
+    );
     const client = clients.find(
         (c) =>
             c.name.trim().toLowerCase() === post.clientName.trim().toLowerCase(),
@@ -87,6 +97,16 @@ export default async function ContentDetailPage({
                     {post.clientName} · {post.platform} · {post.type}
                     {post.draftNumber ? ` · ${post.draftNumber}` : ""}
                 </p>
+                {task ? (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                        Contract task:{" "}
+                        <Link href={`/works/${task.id}`} className="underline">
+                            {task.title}
+                        </Link>
+                        {" · "}
+                        {TASK_STATUS_LABEL[task.status]} · due {task.dueDate || "TBC"}
+                    </p>
+                ) : null}
             </div>
 
             {/* ① Concept (internal — headline, idea, copy) */}
@@ -148,6 +168,22 @@ export default async function ContentDetailPage({
                         />
                     </div>
                     <div className="space-y-1.5">
+                        <Label className="text-sm">Contract (optional)</Label>
+                        <Select name="contractId" defaultValue={post.contractId ?? "none"}>
+                            <SelectTrigger className="h-10">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="none">— none —</SelectItem>
+                                {contractOptions.map((c) => (
+                                    <SelectItem key={c.id} value={c.id}>
+                                        {c.clientName} · {c.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-1.5">
                         <Label className="text-sm">Platform</Label>
                         <Select name="platform" defaultValue={post.platform}>
                             <SelectTrigger className="h-10">
@@ -178,7 +214,7 @@ export default async function ContentDetailPage({
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <Label className="text-sm">Assignee</Label>
+                        <Label className="text-sm">Owner</Label>
                         <Select
                             name="assignee"
                             defaultValue={post.assignee || "none"}
@@ -187,7 +223,7 @@ export default async function ContentDetailPage({
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="none">— Unassigned —</SelectItem>
+                                <SelectItem value="none">— No owner —</SelectItem>
                                 {assigneeOptions.map((m) => (
                                     <SelectItem key={m.id} value={m.name}>
                                         {m.name} ({m.role})

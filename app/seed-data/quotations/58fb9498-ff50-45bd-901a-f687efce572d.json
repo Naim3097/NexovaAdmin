@@ -1,0 +1,31 @@
+{
+  "id": "58fb9498-ff50-45bd-901a-f687efce572d",
+  "number": "QUO-2026-0004",
+  "clientName": "Selangor Tutors",
+  "status": "sent",
+  "issueDate": "2026-10-29",
+  "validUntil": "2026-11-12",
+  "items": [
+    {
+      "id": "9cbdd8f9-85f9-4d17-a923-6dd4df2c038d",
+      "description": "Tuition centre website + Google Ads setup",
+      "details": "",
+      "quantity": 1,
+      "unitPriceMyr": 12000
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "subject": "Tuition centre website + Google Ads setup",
+  "scopeIncludes": "",
+  "exclusions": "",
+  "terms": "",
+  "showAcceptance": true,
+  "convertedInvoiceId": null,
+  "createdAt": "2026-10-29T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.301Z",
+  "acceptedAt": null
+}

@@ -56,7 +56,7 @@ export async function createContentPostAction(formData: FormData) {
     const post = await createContentPost({
         title,
         clientName,
-        projectId: nullableId(formData.get("projectId")),
+        contractId: nullableId(formData.get("contractId")),
         platform: asPlatform(formData.get("platform")),
         type: asType(formData.get("type")),
         scheduledFor,
@@ -81,8 +81,8 @@ export async function updateContentPostAction(formData: FormData) {
     const str = (k: string) => String(formData.get(k) ?? "").trim();
     if (formData.has("title")) patch.title = str("title");
     if (formData.has("clientName")) patch.clientName = str("clientName");
-    if (formData.has("projectId"))
-        patch.projectId = nullableId(formData.get("projectId"));
+    if (formData.has("contractId"))
+        patch.contractId = nullableId(formData.get("contractId"));
     if (formData.has("platform"))
         patch.platform = asPlatform(formData.get("platform"));
     if (formData.has("type")) patch.type = asType(formData.get("type"));

@@ -83,6 +83,7 @@ function rowToCampaign(
         id: row.id,
         name: row.name,
         clientName: row.client_name,
+        contractId: row.contract_id ?? null,
         platform: row.platform as CampaignPlatform,
         objective: row.objective as CampaignObjective,
         status: row.status as CampaignStatus,
@@ -109,6 +110,7 @@ function campaignToInsert(c: Campaign): CampaignInsert {
         id: c.id,
         name: c.name,
         client_name: c.clientName,
+        contract_id: c.contractId,
         platform: c.platform,
         objective: c.objective,
         status: c.status,
@@ -130,6 +132,7 @@ function patchToUpdate(patch: UpdatePatch): CampaignUpdate {
     const out: CampaignUpdate = {};
     if (patch.name !== undefined) out.name = patch.name;
     if (patch.clientName !== undefined) out.client_name = patch.clientName;
+    if (patch.contractId !== undefined) out.contract_id = patch.contractId;
     if (patch.platform !== undefined) out.platform = patch.platform;
     if (patch.objective !== undefined) out.objective = patch.objective;
     if (patch.status !== undefined) out.status = patch.status;
@@ -154,6 +157,7 @@ function patchToUpdate(patch: UpdatePatch): CampaignUpdate {
 export async function createCampaign(input: {
     name: string;
     clientName: string;
+    contractId?: string | null;
     platform?: CampaignPlatform;
     objective?: CampaignObjective;
     startDate?: string;
@@ -173,6 +177,7 @@ export async function createCampaign(input: {
         id: randomUUID(),
         name: input.name,
         clientName: input.clientName,
+        contractId: input.contractId ?? null,
         platform: input.platform ?? "meta",
         objective: input.objective ?? "leads",
         status: "planning",

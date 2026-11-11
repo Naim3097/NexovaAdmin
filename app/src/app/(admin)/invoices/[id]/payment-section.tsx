@@ -71,7 +71,7 @@ export function PaymentSection({
                 </div>
             ) : (
                 <p className="mt-2 text-sm text-muted-foreground">
-                    No payment link yet. Generate one to send the client.
+                    No payment link yet — generate one to send the client.
                 </p>
             )}
 

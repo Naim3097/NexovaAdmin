@@ -1,0 +1,56 @@
+{
+  "id": "96c8da20-4c47-4378-90a1-e15f676557bd",
+  "contractId": "361d9eb1-fc59-469e-83cd-cb215a4b207c",
+  "clientName": "Lean.x Sdn Bhd",
+  "accountManager": "Aina",
+  "plannerLineId": "req:post:2026-12:0:1",
+  "addendumVersion": 0,
+  "type": "post",
+  "title": "Reel: Founder story",
+  "channel": "Instagram",
+  "month": "2026-12",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-12-03",
+  "defaultDueDate": "2026-12-03",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Syafiq",
+      "pct": 50,
+      "hours": 1.5
+    },
+    {
+      "seat": "creative",
+      "member": "Mei Ling",
+      "pct": 50,
+      "hours": 2.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "3964494f-a195-4c07-bedd-07fd5d39eb9b"
+  },
+  "requestedAt": null,
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "createdAt": "2026-10-01T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.620Z"
+}

@@ -1,0 +1,56 @@
+{
+  "id": "cedbc5d5-db32-4861-8083-41b0af8b235c",
+  "contractId": "361d9eb1-fc59-469e-83cd-cb215a4b207c",
+  "clientName": "Lean.x Sdn Bhd",
+  "accountManager": "Aina",
+  "plannerLineId": "req:post:2026-11:0:5",
+  "addendumVersion": 0,
+  "type": "post",
+  "title": "Reel: Product update",
+  "channel": "Instagram",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-17",
+  "defaultDueDate": "2026-11-17",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "pending_approval",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Syafiq",
+      "pct": 50,
+      "hours": 1.5
+    },
+    {
+      "seat": "creative",
+      "member": "Mei Ling",
+      "pct": 50,
+      "hours": 2.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "2edabc45-c628-472a-8d57-ee8110d9c3a1"
+  },
+  "requestedAt": "2026-11-02T04:34:02.666Z",
+  "startedAt": "2026-11-03T04:34:02.666Z",
+  "submittedAt": "2026-11-07T04:34:02.666Z",
+  "submission": {
+    "url": "https://drive.example.com/work/cedbc5d5",
+    "note": "Ready for review."
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "createdAt": "2026-10-01T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.999Z"
+}

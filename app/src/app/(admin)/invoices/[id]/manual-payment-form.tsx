@@ -57,8 +57,7 @@ export function ManualPaymentForm({ invoiceId, invoiceTotal, isPaid }: Props) {
 
             {isPaid ? (
                 <p className="mt-3 rounded-md border bg-emerald-50 p-3 text-sm text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400">
-                    Already marked paid. Records below are for reference only — re-recording will
-                    update the payment metadata.
+                    Already marked paid; recording again only updates the payment details.
                 </p>
             ) : null}
 

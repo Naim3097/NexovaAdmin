@@ -1,0 +1,16 @@
+{
+  "id": "3ab26429-7218-40ca-be57-7319ec9919e8",
+  "at": "2026-11-03T02:26:05.187Z",
+  "entity": "contract",
+  "entityId": "b0952a86-3962-4bda-97a2-31edaa0ad3e0",
+  "kind": "status",
+  "summary": "Status: draft → active",
+  "actor": "dev@nexova.local",
+  "changes": [
+    {
+      "field": "status",
+      "before": "draft",
+      "after": "active"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "id": "e43a1a6f-8461-4bee-8e3e-18c2dc79b4d2",
+  "contractId": "361d9eb1-fc59-469e-83cd-cb215a4b207c",
+  "clientName": "Lean.x Sdn Bhd",
+  "accountManager": "Aina",
+  "plannerLineId": "req:post:2026-10:0:8",
+  "addendumVersion": 0,
+  "type": "post",
+  "title": "Carousel: Month-end recap",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-28",
+  "defaultDueDate": "2026-10-28",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "pending_approval",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Syafiq",
+      "pct": 50,
+      "hours": 1.5
+    },
+    {
+      "seat": "creative",
+      "member": "Mei Ling",
+      "pct": 50,
+      "hours": 2.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "86469cf8-0bdc-46c3-9f59-fa4dbcef2198"
+  },
+  "requestedAt": "2026-10-02T04:34:02.666Z",
+  "startedAt": "2026-10-31T04:34:02.666Z",
+  "submittedAt": "2026-11-04T04:34:02.666Z",
+  "submission": {
+    "url": "https://drive.example.com/work/e43a1a6f",
+    "note": "Ready for review."
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "createdAt": "2026-10-01T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.987Z"
+}

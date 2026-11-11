@@ -13,16 +13,12 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { createServiceAction } from "@/lib/services/actions";
+import { fmtMyr } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
 export default async function SettingsServicesPage() {
     const services = await listServices();
-    const fmt = (n: number) =>
-        n.toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-        });
     return (
         <div className="space-y-6">
             <div>
@@ -37,8 +33,7 @@ export default async function SettingsServicesPage() {
                 </h1>
                 <p className="text-sm text-muted-foreground">
                     {services.filter((s) => s.active).length} active ·{" "}
-                    {services.length} total. Used as suggestions on invoice
-                    line items.
+                    {services.length} total · suggested on invoice and quote lines.
                 </p>
             </div>
 
@@ -110,7 +105,7 @@ export default async function SettingsServicesPage() {
             </form>
 
             <div className="rounded-lg border bg-card">
-                <div className="border-b p-4 text-sm font-medium">Catalog</div>
+                <div className="border-b p-4 text-sm font-medium">All services</div>
                 {services.length === 0 ? (
                     <p className="p-6 text-sm text-muted-foreground">
                         No services yet.
@@ -130,8 +125,7 @@ export default async function SettingsServicesPage() {
                                         {s.name}
                                     </Link>
                                     <p className="truncate text-xs text-muted-foreground">
-                                        {s.category} · per {s.unit} · MYR{" "}
-                                        {fmt(s.defaultPrice)}
+                                        {s.category} · per {s.unit} · {fmtMyr(s.defaultPrice)}
                                     </p>
                                 </div>
                                 <Badge variant={s.active ? "default" : "outline"}>

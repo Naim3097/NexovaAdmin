@@ -1,0 +1,56 @@
+{
+  "id": "1378ebdf-bcb3-417a-afd7-5b5a8b1c0896",
+  "contractId": "361d9eb1-fc59-469e-83cd-cb215a4b207c",
+  "clientName": "Lean.x Sdn Bhd",
+  "accountManager": "Aina",
+  "plannerLineId": "req:post:2027-03:0:5",
+  "addendumVersion": 0,
+  "type": "post",
+  "title": "Reel: Product update",
+  "channel": "Instagram",
+  "month": "2027-03",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2027-03-17",
+  "defaultDueDate": "2027-03-17",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Syafiq",
+      "pct": 50,
+      "hours": 1.5
+    },
+    {
+      "seat": "creative",
+      "member": "Mei Ling",
+      "pct": 50,
+      "hours": 2.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "a9168922-14de-4a1d-87e7-911c6bfb8a34"
+  },
+  "requestedAt": null,
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "createdAt": "2026-10-01T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.694Z"
+}

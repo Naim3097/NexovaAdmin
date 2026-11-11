@@ -7,6 +7,8 @@ import {
     type SeoStage,
 } from "@/lib/data/seo-articles";
 import { listTeamMembers } from "@/lib/data/team";
+import { listWorks } from "@/lib/data/works";
+import { TASK_STATUS_LABEL } from "@/lib/works/helpers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -47,7 +49,9 @@ export default async function SeoArticleDetailPage({
     const { id } = await params;
     const article = await getSeoArticleById(id);
     if (!article) notFound();
-    const team = await listTeamMembers();
+    const [team, works] = await Promise.all([listTeamMembers(), listWorks()]);
+    // The contract task this article is the work for, if it came from a planner line.
+    const task = works.find((w) => w.linked?.kind === "seo" && w.linked.id === article.id);
     const wc = wordCount(article.body);
     const wcPct = article.targetWordCount
         ? Math.min(100, Math.round((wc / article.targetWordCount) * 100))
@@ -92,6 +96,16 @@ export default async function SeoArticleDetailPage({
                         ? ` · published ${new Date(article.publishedAt).toLocaleDateString()}`
                         : ""}
                 </p>
+                {task ? (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                        Contract task:{" "}
+                        <Link href={`/works/${task.id}`} className="underline">
+                            {task.title}
+                        </Link>
+                        {" · "}
+                        {TASK_STATUS_LABEL[task.status]} · due {task.dueDate || "TBC"}
+                    </p>
+                ) : null}
             </div>
 
             {/* Stage controls */}
@@ -134,7 +148,7 @@ export default async function SeoArticleDetailPage({
                         <Input name="clientName" defaultValue={article.clientName} />
                     </div>
                     <div className="space-y-1.5">
-                        <Label className="text-sm">Assignee</Label>
+                        <Label className="text-sm">Owner</Label>
                         <Select
                             name="assignee"
                             defaultValue={article.assignee || "none"}
@@ -143,7 +157,7 @@ export default async function SeoArticleDetailPage({
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="none">Unassigned</SelectItem>
+                                <SelectItem value="none">No owner</SelectItem>
                                 {team
                                     .filter((m) => m.active)
                                     .map((m) => (

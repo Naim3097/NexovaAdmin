@@ -4,9 +4,10 @@
  */
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { devDataRoot } from "@/lib/dev-store/root";
 import { randomUUID } from "node:crypto";
 
-const ROOT = path.join(process.cwd(), ".dev-data");
+const ROOT = devDataRoot();
 const LEADS_DIR = path.join(ROOT, "leads");
 
 export const LEAD_STATUSES = [

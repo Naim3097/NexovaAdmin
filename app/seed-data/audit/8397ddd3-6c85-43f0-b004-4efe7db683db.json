@@ -1,0 +1,16 @@
+{
+  "id": "8397ddd3-6c85-43f0-b004-4efe7db683db",
+  "at": "2026-10-29T03:13:34.751Z",
+  "entity": "work",
+  "entityId": "0051c953-37c0-41cf-a6e2-da1b83a51553",
+  "kind": "status",
+  "summary": "Client review & approval: pending approval → completed",
+  "actor": "Aina",
+  "changes": [
+    {
+      "field": "status",
+      "before": "pending_approval",
+      "after": "completed"
+    }
+  ]
+}

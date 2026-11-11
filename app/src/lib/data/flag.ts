@@ -13,6 +13,8 @@
  * the full env Zod parser at import time.
  */
 
+import { isMockup } from "@/lib/dev-store/root";
+
 export const ENTITY_NAMES = [
     "agency",
     "services",
@@ -20,8 +22,6 @@ export const ENTITY_NAMES = [
     "team",
     "leads",
     "onboarding",
-    "projects",
-    "workflows",
     "invoices",
     "quotations",
     "campaigns",
@@ -31,11 +31,17 @@ export const ENTITY_NAMES = [
     "audit",
     "reportInsights",
     "tasks",
+    "contracts",
+    "works",
+    "planners",
+    "phaseTemplates",
 ] as const;
 
 export type EntityName = (typeof ENTITY_NAMES)[number];
 
 export function isSupabaseEnabled(entity: EntityName): boolean {
+    // The shared mock-up always runs on the bundled demo data.
+    if (isMockup()) return false;
     const raw = (process.env.USE_SUPABASE ?? "0").trim().toLowerCase();
     if (raw === "" || raw === "0" || raw === "false" || raw === "off") return false;
     if (raw === "1" || raw === "true" || raw === "on" || raw === "all") return true;

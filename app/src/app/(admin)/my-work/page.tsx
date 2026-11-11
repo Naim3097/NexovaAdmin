@@ -1,317 +1,258 @@
+/**
+ * My tasks — the Tasks page scoped to one person: every task I hold a share
+ * of or must sign off, in the same layout (filter row, List / Board, Month /
+ * Phase grouping) minus the Owner filter, plus an "Urgency" grouping (the
+ * buckets Home shows too) that is the default here, and Start / Submit /
+ * Approve / Changes on every row.
+ */
 import Link from "next/link";
-import { getCurrentTeamMember } from "@/lib/auth";
-import { listContentPosts } from "@/lib/data/content";
-import { listProjects } from "@/lib/data/projects";
+import { getActingMember, getCurrentTeamMember, requireTeamAccess } from "@/lib/auth";
+import { listWorks, type Work } from "@/lib/data/works";
+import { listContracts } from "@/lib/data/contracts";
+import { listInvoices } from "@/lib/data/invoices";
 import { listTeamMembers } from "@/lib/data/team";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { fmtHours, loadFor, shareHours } from "@/lib/capacity/helpers";
+import { buildOverviewSnapshot } from "@/lib/management/overview";
+import { canSee, isManager } from "@/lib/roles";
+import { isAccountManagerOf, pendingTransfersFor } from "@/lib/scope";
+import { cn } from "@/lib/utils";
+import { awaitsApprovalFrom, monthLabel, monthsOf, nextMonth, todayKey } from "@/lib/works/helpers";
+import { applyFilter, filterQuery, isFiltered, parseFilter } from "@/lib/works/filter";
+import { TaskBoard } from "@/app/(admin)/works/task-board";
+import { TaskEmpty, TaskList, TaskSummary, byDue, countLabel, phaseOrderOf, phaseSections, type TaskSection } from "@/app/(admin)/works/task-list";
+import { TaskHeader, TaskToolbar, parseView, type GroupOption } from "@/app/(admin)/works/toolbar";
+import { ActingAs } from "@/app/(admin)/works/ui";
+import { BUCKETS, BUCKET_LABEL, bucketAll, holdsShare, type Bucket } from "./buckets";
+import { RowActions } from "./task-rows";
 
 export const dynamic = "force-dynamic";
 
-export default async function MyWorkPage({
-    searchParams,
-}: {
-    searchParams: Promise<{ member?: string }>;
-}) {
-    const sp = await searchParams;
-    const selected = (sp.member ?? "").trim();
+type SearchParams = Record<string, string | string[] | undefined>;
 
-    const [team, projects, content, currentMember] = await Promise.all([
+function one(sp: SearchParams, key: string): string {
+    const v = sp[key];
+    return ((Array.isArray(v) ? v[0] : v) ?? "").trim();
+}
+
+/** Urgency first: the default here, so it travels without a `group` param. */
+const GROUPS: GroupOption[] = [
+    { value: "urgency", label: "Urgency" },
+    { value: "month", label: "Month" },
+    { value: "phase", label: "Phase" },
+];
+
+const BUCKET_TONE: Partial<Record<Bucket, string>> = {
+    overdue: "text-red-600 dark:text-red-400",
+    today: "text-amber-700 dark:text-amber-400",
+    approval: "text-amber-700 dark:text-amber-400",
+};
+
+/**
+ * The list split into the urgency buckets (overdue, today, next 7 days, my
+ * sign-off …), each headed by its count and my hours. Tasks the buckets leave
+ * out — done in an earlier month — close the list so nothing the summary
+ * counts goes missing.
+ */
+function urgencySections(list: Work[], me: string, today: string): TaskSection[] {
+    const buckets = bucketAll(list, me, today);
+    const placed = new Set(BUCKETS.flatMap((b) => buckets[b]).map((w) => w.id));
+    const earlier = byDue(list.filter((w) => !placed.has(w.id)));
+    const section = (key: string, title: string, works: Work[], tone?: string, suffix = ""): TaskSection => {
+        const h = works.reduce((sum, w) => sum + shareHours(w, me), 0);
+        return { key, title, works, titleClassName: tone, meta: `${countLabel(works.length, "task")}${h > 0 ? ` · ${fmtHours(h)}` : ""}${suffix}` };
+    };
+    const thisMonth = today.slice(0, 7);
+    return [
+        ...BUCKETS.filter((b) => buckets[b].length > 0).map((b) =>
+            section(b, BUCKET_LABEL[b], buckets[b], BUCKET_TONE[b], b === "next" ? ` · ${monthLabel(nextMonth(thisMonth))}` : ""),
+        ),
+        ...(earlier.length > 0 ? [section("earlier", "Done earlier", earlier, "text-muted-foreground")] : []),
+    ];
+}
+
+type Nudge = { key: string; label: string; href: string; tone?: "amber" };
+
+/**
+ * The thin row under the header: what waits on me beyond my own tasks — a
+ * colleague's account-manager transfer to answer, approvals on the contracts
+ * I run, and for managers the Dashboard's Attention list. Only chips with a
+ * count render; the row disappears when there are none.
+ */
+function Nudges({ items }: { items: Nudge[] }) {
+    if (items.length === 0) return null;
+    return (
+        <div className="flex flex-wrap items-center gap-1.5 text-xs">
+            {items.map((n) => (
+                <Link
+                    key={n.key}
+                    href={n.href}
+                    className={cn(
+                        "rounded-full border px-2.5 py-0.5 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        n.tone === "amber"
+                            ? "border-amber-500/40 bg-amber-500/10 text-amber-700 hover:bg-amber-500/15 dark:text-amber-400"
+                            : "border-border/60 text-muted-foreground hover:bg-accent hover:text-foreground",
+                    )}
+                >
+                    {n.label}
+                </Link>
+            ))}
+        </div>
+    );
+}
+
+export default async function MyWorkPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+    await requireTeamAccess();
+    const sp = await searchParams;
+    const [allWorks, allContracts, team, linked, me] = await Promise.all([
+        listWorks(),
+        listContracts(),
         listTeamMembers(),
-        listProjects(),
-        listContentPosts(),
         getCurrentTeamMember(),
+        getActingMember(one(sp, "as")),
     ]);
     const activeTeam = team.filter((m) => m.active);
+    const today = todayKey();
+    const thisMonth = today.slice(0, 7);
+    const view = parseView(one(sp, "view"));
+    const groupParam = one(sp, "group");
+    const group = groupParam === "month" || groupParam === "phase" ? groupParam : "urgency";
+    // Scoping to me is built in: no Owner dropdown, no Me toggle, and a stray `?member=` is ignored.
+    const filter = { ...parseFilter(sp), member: "" };
 
-    const today = new Date().toISOString().slice(0, 10);
-    // eslint-disable-next-line react-hooks/purity -- server component, runs per request
-    const inSevenDays = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .slice(0, 10);
-
-    // Build per-member workload
-    const tasksByAssignee = new Map<
-        string,
-        Array<{
-            projectId: string;
-            projectName: string;
-            clientName: string;
-            taskId: string;
-            title: string;
-        }>
-    >();
-    for (const p of projects) {
-        for (const t of p.tasks) {
-            if (t.done) continue;
-            if (!t.assignee) continue;
-            const arr = tasksByAssignee.get(t.assignee) ?? [];
-            arr.push({
-                projectId: p.id,
-                projectName: p.name,
-                clientName: p.clientName,
-                taskId: t.id,
-                title: t.title,
-            });
-            tasksByAssignee.set(t.assignee, arr);
-        }
-    }
-
-    // Active delivery-pipeline stages assigned (PIC) to each member. Stages are
-    // the primary unit of delivery work now (they replaced AI tasks).
-    const stagesByAssignee = new Map<
-        string,
-        Array<{
-            projectId: string;
-            projectName: string;
-            clientName: string;
-            label: string;
-            ownerRole: string;
-        }>
-    >();
-    for (const p of projects) {
-        for (const s of p.stages) {
-            if (s.state !== "active") continue;
-            if (!s.assignee) continue;
-            const arr = stagesByAssignee.get(s.assignee) ?? [];
-            arr.push({
-                projectId: p.id,
-                projectName: p.name,
-                clientName: p.clientName,
-                label: s.label,
-                ownerRole: s.ownerRole,
-            });
-            stagesByAssignee.set(s.assignee, arr);
-        }
-    }
-
-    const contentByAssignee = new Map<string, typeof content>();
-    for (const c of content) {
-        if (!c.assignee) continue;
-        if (c.status === "posted" || c.status === "archived") continue;
-        const arr = contentByAssignee.get(c.assignee) ?? [];
-        arr.push(c);
-        contentByAssignee.set(c.assignee, arr);
-    }
-
-    if (!selected) {
-        // Workload summary across team
-        const rows = activeTeam.map((m) => {
-            const tasks = tasksByAssignee.get(m.name) ?? [];
-            const posts = contentByAssignee.get(m.name) ?? [];
-            const stages = stagesByAssignee.get(m.name) ?? [];
-            const dueSoon = posts.filter(
-                (p) => p.scheduledFor >= today && p.scheduledFor <= inSevenDays,
-            ).length;
-            return {
-                ...m,
-                activeStages: stages.length,
-                openTasks: tasks.length,
-                openPosts: posts.length,
-                dueSoon,
-            };
-        });
-
+    if (!me) {
         return (
             <div className="space-y-6">
-                <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-                    <div>
-                        <h1 className="text-2xl font-semibold md:text-3xl">My work</h1>
-                        <p className="text-sm text-muted-foreground">
-                            Pick a team member to see open tasks and content.
-                        </p>
-                    </div>
-                    {currentMember ? (
-                        <Link
-                            href={`/my-work?member=${encodeURIComponent(currentMember.name)}`}
-                        >
-                            <Button size="sm">View my work</Button>
-                        </Link>
-                    ) : null}
-                </div>
-
-                <div className="rounded-lg border bg-card">
-                    <div className="border-b p-4 text-sm font-medium">
-                        Team workload
-                    </div>
-                    {rows.length === 0 ? (
-                        <p className="p-6 text-sm text-muted-foreground">
-                            No active members yet.{" "}
-                            <Link href="/team" className="underline">
-                                Add some
-                            </Link>
-                            .
-                        </p>
-                    ) : (
-                        <ul className="divide-y">
-                            {rows.map((r) => (
-                                <li
-                                    key={r.id}
-                                    className="flex flex-col gap-2 p-4 md:flex-row md:items-center md:justify-between"
-                                >
-                                    <div className="min-w-0 flex-1">
-                                        <p className="font-medium">
-                                            {r.name}{" "}
-                                            <span className="text-xs text-muted-foreground">
-                                                ({r.role})
-                                            </span>
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {r.activeStages} active stage
-                                            {r.activeStages === 1 ? "" : "s"} ·{" "}
-                                            {r.openTasks} open task
-                                            {r.openTasks === 1 ? "" : "s"} ·{" "}
-                                            {r.openPosts} open post
-                                            {r.openPosts === 1 ? "" : "s"} ·{" "}
-                                            {r.dueSoon} due in 7d
-                                        </p>
-                                    </div>
-                                    <Link
-                                        href={`/my-work?member=${encodeURIComponent(r.name)}`}
-                                    >
-                                        <Button variant="outline" size="sm">
-                                            View work
-                                        </Button>
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
+                <TaskHeader title="My tasks" subtitle="What is on your plate: your tasks and the sign-offs you owe." asQ="" calendarHref="/calendar" />
+                <ActingAs members={activeTeam} current="" linkedMember={null} makeHref={(n) => `/my-work?as=${encodeURIComponent(n)}`} />
+                <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
+                    Pick who you are above to see your tasks. With a real login this page knows you already.
                 </div>
             </div>
         );
     }
 
-    // Selected member view
-    const memberTasks = tasksByAssignee.get(selected) ?? [];
-    const memberStages = stagesByAssignee.get(selected) ?? [];
-    const memberPosts = (contentByAssignee.get(selected) ?? []).slice().sort(
-        (a, b) => a.scheduledFor.localeCompare(b.scheduledFor),
-    );
+    const name = me.name;
+    // Links keep the acting member when there is no real login behind this page.
+    const as = linked ? "" : name;
+    const asQ = as ? `?as=${encodeURIComponent(as)}` : "";
+
+    // My plate: every task I hold a share of or must sign off — the same stake test the urgency buckets use.
+    const works = allWorks.filter((w) => holdsShare(w, name) || awaitsApprovalFrom(w, name));
+    const contractIds = new Set(works.map((w) => w.contractId));
+    const contracts = allContracts.filter((c) => contractIds.has(c.id));
+    const filtered = applyFilter(works, filter, today);
+    const keep: Record<string, string | undefined> = {
+        view: view === "board" ? "board" : undefined,
+        group: group === "urgency" ? undefined : group,
+        as: as || undefined,
+    };
+    const href = (extra: Record<string, string | undefined> = {}) => `/my-work${filterQuery(filter, { ...keep, ...extra })}`;
+
+    const phases = [...new Set([...phaseOrderOf(works, contracts), ...works.map((w) => w.phaseName)])].filter(Boolean);
+    const clients = [...new Set(works.map((w) => w.clientName).filter(Boolean))].sort();
+    const ams = [...new Set(contracts.map((c) => c.accountManager).filter(Boolean))].sort();
+
+    const load = loadFor(me, works, thisMonth);
+    const actions = (w: Work) => <RowActions w={w} me={name} />;
+    const sections = group === "urgency" ? urgencySections(filtered, name, today) : group === "phase" ? phaseSections(filtered, contracts) : undefined;
+
+    // ---- What waits on me beyond my own tasks (the chips under the header).
+    // Transfers come from every contract: the colleague asked to take one over need not hold a task on it yet.
+    const transfers = pendingTransfersFor(me, allContracts);
+    // Approvals on the contracts I run — the same set My accounts queues (live contracts, any approver).
+    const runIds = new Set(allContracts.filter((c) => isAccountManagerOf(me, c) && (c.status === "active" || c.status === "draft")).map((c) => c.id));
+    const approvals = canSee(me, "/my-clients") ? allWorks.filter((w) => w.status === "pending_approval" && runIds.has(w.contractId)).length : 0;
+    // Managers: the Dashboard's Attention list. Invoices are its one input this page does not load; leads only feed the pipeline tile.
+    let attention = 0;
+    if (isManager(me)) {
+        const invoices = await listInvoices().catch(() => []);
+        const snap = buildOverviewSnapshot({ team, contracts: allContracts, works: allWorks, invoices, leads: [] }, today);
+        attention = snap.decisions.length + snap.moreDecisions;
+    }
+    const asAnd = as ? `&as=${encodeURIComponent(as)}` : "";
+    const nudges: Nudge[] = [
+        ...(transfers.length > 0
+            ? [{
+                key: "transfers",
+                tone: "amber" as const,
+                label: `${countLabel(transfers.length, "transfer")} to answer`,
+                href: transfers.length === 1 ? `/contracts/${transfers[0].id}?tab=setup${asAnd}#account-manager` : `/my-clients${asQ}`,
+            }]
+            : []),
+        ...(approvals > 0 ? [{ key: "approvals", label: `${countLabel(approvals, "approval")} in My accounts`, href: `/my-clients${asQ}#approvals` }] : []),
+        ...(attention > 0 ? [{ key: "attention", label: `${attention} need${attention === 1 ? "s" : ""} attention`, href: `/dashboard${asQ}` }] : []),
+    ];
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-                <div>
-                    <Link
-                        href="/my-work"
-                        className="text-xs text-muted-foreground hover:underline"
-                    >
-                        All members
-                    </Link>
-                    <h1 className="mt-1 text-2xl font-semibold md:text-3xl">
-                        {selected}&apos;s work
-                    </h1>
-                    <p className="text-sm text-muted-foreground">
-                        {memberStages.length} active stage
-                        {memberStages.length === 1 ? "" : "s"} ·{" "}
-                        {memberTasks.length} open task
-                        {memberTasks.length === 1 ? "" : "s"} ·{" "}
-                        {memberPosts.length} open content post
-                        {memberPosts.length === 1 ? "" : "s"}
-                    </p>
-                </div>
+            <div className="space-y-2">
+                <TaskHeader
+                    title={`My tasks · ${name}`}
+                    subtitle={
+                        <>
+                            <span className="font-medium text-foreground tabular-nums">{fmtHours(load.planned)}</span>
+                            {load.available > 0 ? <> planned of {fmtHours(load.available)}</> : " planned · no hours set on your profile"} · {monthLabel(thisMonth)}
+                            {load.overloaded ? (
+                                <span className="font-medium text-red-600 dark:text-red-400"> · over by {fmtHours(load.planned - load.available)}</span>
+                            ) : null}
+                            {load.offDay > 0 ? (
+                                <span className="text-amber-700 dark:text-amber-400" title="Hours on tasks due on a Friday, Saturday or Sunday — counted in planned, outside the Mon–Thu working week">
+                                    {" "}· {fmtHours(load.offDay)} on off days
+                                </span>
+                            ) : null}
+                        </>
+                    }
+                    asQ={asQ}
+                    calendarHref={`/calendar${filterQuery({ ...filter, member: name }, { as: as || undefined })}`}
+                />
+                <Nudges items={nudges} />
             </div>
 
-            <section className="rounded-lg border bg-card">
-                <div className="border-b p-4 text-sm font-medium">
-                    Active delivery stages
-                </div>
-                {memberStages.length === 0 ? (
-                    <p className="p-6 text-sm text-muted-foreground">
-                        No active stages assigned.
-                    </p>
-                ) : (
-                    <ul className="divide-y">
-                        {memberStages.map((s, i) => (
-                            <li
-                                key={`${s.projectId}-${i}`}
-                                className="flex flex-col gap-1 p-4 md:flex-row md:items-center md:justify-between"
-                            >
-                                <div className="min-w-0 flex-1">
-                                    <p className="font-medium">{s.label}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {s.clientName} ·{" "}
-                                        <Link
-                                            href={`/projects/${s.projectId}`}
-                                            className="underline"
-                                        >
-                                            {s.projectName}
-                                        </Link>
-                                    </p>
-                                </div>
-                                <Badge variant="outline">{s.ownerRole}</Badge>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </section>
+            <ActingAs members={activeTeam} current={name} linkedMember={linked?.name ?? null} makeHref={(n) => href({ as: n })} />
 
-            <section className="rounded-lg border bg-card">
-                <div className="border-b p-4 text-sm font-medium">Open tasks</div>
-                {memberTasks.length === 0 ? (
-                    <p className="p-6 text-sm text-muted-foreground">
-                        No open tasks assigned.
-                    </p>
-                ) : (
-                    <ul className="divide-y">
-                        {memberTasks.map((t) => (
-                            <li
-                                key={t.taskId}
-                                className="flex flex-col gap-1 p-4 md:flex-row md:items-center md:justify-between"
-                            >
-                                <div className="min-w-0 flex-1">
-                                    <p className="font-medium">{t.title}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {t.clientName} ·{" "}
-                                        <Link
-                                            href={`/projects/${t.projectId}`}
-                                            className="underline"
-                                        >
-                                            {t.projectName}
-                                        </Link>
-                                    </p>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </section>
+            <TaskToolbar
+                basePath="/my-work"
+                filter={filter}
+                me=""
+                members={[]}
+                months={monthsOf(works)}
+                phases={phases}
+                clients={clients}
+                ams={ams}
+                keep={keep}
+                view={view}
+                group={group}
+                groups={GROUPS}
+                href={href}
+            />
 
-            <section className="rounded-lg border bg-card">
-                <div className="border-b p-4 text-sm font-medium">
-                    Open content
-                </div>
-                {memberPosts.length === 0 ? (
-                    <p className="p-6 text-sm text-muted-foreground">
-                        No open content posts assigned.
-                    </p>
-                ) : (
-                    <ul className="divide-y">
-                        {memberPosts.map((p) => (
-                            <li
-                                key={p.id}
-                                className="flex flex-col gap-1 p-4 md:flex-row md:items-center md:justify-between"
-                            >
-                                <div className="min-w-0 flex-1">
-                                    <Link
-                                        href={`/content/${p.id}`}
-                                        className="font-medium hover:underline"
-                                    >
-                                        {p.title}
-                                    </Link>
-                                    <p className="text-xs text-muted-foreground">
-                                        {p.clientName} · {p.platform} · {p.type} ·{" "}
-                                        {p.scheduledFor}
-                                        {p.scheduledTime ? ` ${p.scheduledTime}` : ""}
-                                    </p>
-                                </div>
-                                <Badge variant="secondary">{p.status}</Badge>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </section>
+            {filtered.length === 0 ? (
+                <TaskEmpty filtered={isFiltered(filter)} clearHref={`/my-work${filterQuery({}, keep)}`}>
+                    Nothing on your plate yet. Tasks appear here when you are an owner on them or when one waits for your sign-off —{" "}
+                    <Link href={`/works${asQ}`} className="underline">
+                        see every task
+                    </Link>
+                    .
+                </TaskEmpty>
+            ) : (
+                <>
+                    <TaskSummary works={filtered} today={today} />
+                    {view === "board" ? (
+                        <TaskBoard works={filtered} today={today} asQ={asQ} />
+                    ) : (
+                        <TaskList
+                            works={filtered}
+                            contracts={contracts}
+                            today={today}
+                            asQ={asQ}
+                            sections={sections}
+                            flat={group === "urgency"}
+                            showPhase={group !== "phase"}
+                            actions={actions}
+                        />
+                    )}
+                </>
+            )}
         </div>
     );
 }

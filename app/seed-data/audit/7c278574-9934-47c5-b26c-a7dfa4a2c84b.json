@@ -1,0 +1,16 @@
+{
+  "id": "7c278574-9934-47c5-b26c-a7dfa4a2c84b",
+  "at": "2026-10-28T04:07:04.367Z",
+  "entity": "commission",
+  "entityId": "c4e4c9a4-e216-4d23-ad9f-f6133fca28b6",
+  "kind": "status",
+  "summary": "Website v2 — backend integration: approved — Staging checked on 3 devices, forms and CMS wired correctly.",
+  "actor": "Farid",
+  "changes": [
+    {
+      "field": "status",
+      "before": "submitted",
+      "after": "approved"
+    }
+  ]
+}

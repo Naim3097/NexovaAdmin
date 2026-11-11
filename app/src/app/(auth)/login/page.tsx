@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentClient, getCurrentUser } from "@/lib/auth";
+import { getActingMember, getCurrentClient, getCurrentUser } from "@/lib/auth";
+import { homeFor } from "@/lib/roles";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { LoginForm } from "./login-form";
@@ -12,7 +13,9 @@ export default async function LoginPage({
     searchParams: Promise<{ next?: string; error?: string }>;
 }) {
     const sp = await searchParams;
-    const next = sp.next ?? "/dashboard";
+    // Empty = "wherever this person's role lands"; the action resolves it
+    // after sign-in, when the member is known.
+    const next = sp.next ?? "";
 
     // Already signed in? Only bounce STAFF through — a client session on the
     // team door gets an explicit switch screen instead of silently landing in
@@ -20,7 +23,10 @@ export default async function LoginPage({
     const user = await getCurrentUser();
     if (user) {
         const client = await getCurrentClient();
-        if (!client) redirect(next);
+        if (!client) {
+            const member = await getActingMember();
+            redirect(next || (member ? homeFor(member) : "/dashboard"));
+        }
         return (
             <main className="flex min-h-dvh items-center justify-center bg-muted/40 p-4">
                 <div className="w-full max-w-sm">
@@ -42,7 +48,7 @@ export default async function LoginPage({
                             <input
                                 type="hidden"
                                 name="to"
-                                value={`/login?next=${encodeURIComponent(next)}`}
+                                value={next ? `/login?next=${encodeURIComponent(next)}` : "/login"}
                             />
                             <Button type="submit" className="w-full">
                                 Sign out &amp; continue to team sign in

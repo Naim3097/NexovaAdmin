@@ -7,7 +7,6 @@ import {
     type QuotationStatus,
 } from "@/lib/data/quotations";
 import { getInvoiceById } from "@/lib/data/invoices";
-import { listProjects } from "@/lib/data/projects";
 import { listServices } from "@/lib/data/services";
 import {
     formatAddress,
@@ -23,13 +22,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import {
     addQuotationItemAction,
     convertQuotationToInvoiceAction,
     deleteQuotationAction,
@@ -40,6 +32,7 @@ import {
 } from "@/lib/quotations/actions";
 import { SaveButton } from "@/components/save-button";
 import { EditableItemRow } from "@/components/editable-item-row";
+import { fmtMyr } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -53,13 +46,6 @@ const MANUAL_STATUSES: QuotationStatus[] = [
     "expired",
 ];
 
-function fmtMyr(n: number) {
-    return `MYR ${n.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    })}`;
-}
-
 export default async function QuotationDetailPage({
     params,
 }: {
@@ -69,8 +55,7 @@ export default async function QuotationDetailPage({
     const { id } = await params;
     const quote = await getQuotationById(id);
     if (!quote) notFound();
-    const [projects, services, agency] = await Promise.all([
-        listProjects(),
+    const [services, agency] = await Promise.all([
         listServices(),
         getAgencyProfile(),
     ]);
@@ -98,7 +83,7 @@ export default async function QuotationDetailPage({
                     href="/quotes"
                     className="text-sm text-muted-foreground hover:underline"
                 >
-                    Back to quotations
+                    Back to quotes
                 </Link>
                 <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                     <h1 className="text-2xl font-semibold md:text-3xl">
@@ -120,17 +105,6 @@ export default async function QuotationDetailPage({
                 </div>
                 <p className="text-sm text-muted-foreground">
                     {quote.clientName}
-                    {quote.projectId ? (
-                        <>
-                            {" · "}
-                            <Link
-                                href={`/projects/${quote.projectId}`}
-                                className="underline"
-                            >
-                                project
-                            </Link>
-                        </>
-                    ) : null}
                 </p>
                 {quote.subject ? (
                     <p className="mt-1 text-sm font-medium">{quote.subject}</p>
@@ -144,7 +118,7 @@ export default async function QuotationDetailPage({
                         <h2 className="text-sm font-medium">Convert to invoice</h2>
                         <p className="mt-1 text-xs text-muted-foreground">
                             {isConverted
-                                ? "This quotation has been converted."
+                                ? "This quote has been converted."
                                 : "Copies the client, tax rate, and all line items into a new draft invoice."}
                         </p>
                     </div>
@@ -179,7 +153,7 @@ export default async function QuotationDetailPage({
             {/* Status pills */}
             {!isConverted ? (
                 <section className="rounded-lg border bg-card p-4 md:p-6">
-                    <h2 className="text-sm font-medium">Move to status</h2>
+                    <h2 className="text-sm font-medium">Move to</h2>
                     <div className="mt-3 flex flex-wrap gap-2">
                         {MANUAL_STATUSES.map((s) => (
                             <form key={s} action={setQuotationStatusAction}>
@@ -211,10 +185,7 @@ export default async function QuotationDetailPage({
             <section className="rounded-lg border bg-card p-4 md:p-6">
                 <h2 className="text-sm font-medium">Line items</h2>
                 <p className="mt-1 text-xs text-muted-foreground">
-                    Edit any item&apos;s description, qty or price right in the
-                    table, then hit Update on that row. Add/Remove/Update save
-                    instantly — the Save changes button below is only for the
-                    document details.
+                    Edit a row and hit Update; rows save instantly, while Save changes below is only for the details.
                 </p>
 
                 <LineItemForm
@@ -302,25 +273,6 @@ export default async function QuotationDetailPage({
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <Label className="text-sm">Project</Label>
-                        <Select
-                            name="projectId"
-                            defaultValue={quote.projectId ?? "none"}
-                        >
-                            <SelectTrigger className="h-10">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="none">— None —</SelectItem>
-                                {projects.map((p) => (
-                                    <SelectItem key={p.id} value={p.id}>
-                                        {p.name} ({p.clientName})
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-1.5">
                         <Label className="text-sm">Issue date</Label>
                         <Input
                             name="issueDate"
@@ -349,7 +301,7 @@ export default async function QuotationDetailPage({
                     </div>
                 </div>
                 <div className="space-y-1.5">
-                    <Label className="text-sm">Notes (visible on quotation)</Label>
+                    <Label className="text-sm">Notes (visible on quote)</Label>
                     <Textarea name="notes" defaultValue={quote.notes} rows={3} />
                 </div>
 
@@ -369,9 +321,9 @@ export default async function QuotationDetailPage({
                 </div>
 
                 <div className="space-y-4 border-t pt-4">
-                    <h3 className="text-sm font-medium">Document sections</h3>
+                    <h3 className="text-sm font-medium">Quote sections</h3>
                     <div className="space-y-1.5">
-                        <Label className="text-sm">Subject / project title</Label>
+                        <Label className="text-sm">Subject / contract title</Label>
                         <Input
                             name="subject"
                             defaultValue={quote.subject}
@@ -407,7 +359,7 @@ export default async function QuotationDetailPage({
                             name="terms"
                             rows={4}
                             defaultValue={quote.terms}
-                            placeholder={"This quotation is valid for 30 days from the date of issue.\nAny work outside the stated scope may incur additional charges.\nAll pricing is in Malaysian Ringgit (MYR)."}
+                            placeholder={"This quote is valid for 30 days from the date of issue.\nAny work outside the stated scope may incur additional charges.\nAll pricing is in Malaysian Ringgit (MYR)."}
                         />
                     </div>
                     <label className="flex items-center gap-2 text-sm">
@@ -430,7 +382,7 @@ export default async function QuotationDetailPage({
                 <form action={deleteQuotationAction}>
                     <input type="hidden" name="id" value={quote.id} />
                     <Button type="submit" variant="destructive">
-                        Delete quotation
+                        Delete quote
                     </Button>
                 </form>
             </section>

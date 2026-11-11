@@ -1,0 +1,53 @@
+{
+  "id": "028a624f-4cb7-49eb-a526-22e8064618ea",
+  "contractId": "037ed49f-c145-4c4f-8015-48d83157409d",
+  "clientName": "Zenith Properties",
+  "accountManager": "Naim",
+  "plannerLineId": "req:website:2026-09:0:1",
+  "addendumVersion": 0,
+  "type": "website",
+  "title": "Discovery & wireframes",
+  "channel": "App",
+  "month": "2026-09",
+  "phaseKey": "discovery",
+  "phaseName": "Discovery",
+  "dueDate": "2026-09-24",
+  "defaultDueDate": "2026-09-24",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "dev",
+      "member": "Farid",
+      "pct": 50,
+      "hours": 10
+    },
+    {
+      "seat": "creative",
+      "member": "Mei Ling",
+      "pct": 50,
+      "hours": 6
+    }
+  ],
+  "approver": "client",
+  "milestone": true,
+  "linked": null,
+  "requestedAt": "2026-09-02T04:34:02.666Z",
+  "startedAt": "2026-09-18T04:34:02.666Z",
+  "submittedAt": "2026-09-22T04:34:02.666Z",
+  "submission": {
+    "url": "https://drive.example.com/work/028a624f",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Naim)",
+    "at": "2026-09-23T04:34:02.666Z"
+  },
+  "completedAt": "2026-09-23T04:34:02.666Z",
+  "notes": "",
+  "createdAt": "2026-09-26T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.894Z"
+}

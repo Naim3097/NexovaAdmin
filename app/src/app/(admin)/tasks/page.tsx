@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { listSprintTasks, type SprintTask } from "@/lib/data/sprint-tasks";
 import { listTeamMembers } from "@/lib/data/team";
+import { NewButton, NewSection, newFormHref } from "@/components/new-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,7 +22,7 @@ import { AiDump } from "./ai-dump";
 
 export const dynamic = "force-dynamic";
 
-const UNASSIGNED = "— Unassigned —";
+const UNASSIGNED = "— No owner —";
 
 function deadlineMeta(deadline: string, today: string, done: boolean) {
     if (done) return { label: deadline, cls: "text-muted-foreground" };
@@ -32,12 +34,14 @@ function deadlineMeta(deadline: string, today: string, done: boolean) {
     return { label: `Due ${deadline}`, cls: "text-muted-foreground" };
 }
 
-export default async function TasksPage() {
+export default async function TasksPage({ searchParams }: { searchParams: Promise<{ as?: string; new?: string }> }) {
+    const sp = await searchParams;
     const [tasks, team] = await Promise.all([
         listSprintTasks(),
         listTeamMembers(),
     ]);
     const today = new Date().toISOString().slice(0, 10);
+    const newHref = newFormHref("/tasks", { as: sp.as });
     const activeTeam = team.filter((m) => m.active);
 
     // Group by PIC (open tasks drive the bars; done shown muted within group).
@@ -59,47 +63,55 @@ export default async function TasksPage() {
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-2xl font-semibold md:text-3xl">Tasks</h1>
-                <p className="text-sm text-muted-foreground">
-                    Quick single-layer work, grouped by PIC. {openCount} open. No
-                    deadline = 3 days; the bot pings the PIC 1 day before.
-                </p>
+            <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                <div>
+                    <h1 className="text-2xl font-semibold md:text-3xl">To-dos</h1>
+                    <p className="text-sm text-muted-foreground">
+                        Quick one-off jobs grouped by owner · {openCount} open · no deadline means 3 days, and the bot pings the owner a day before.
+                    </p>
+                </div>
+                <NewButton href={newHref}>+ New to-do</NewButton>
             </div>
 
-            {/* Dump zone: AI parse + manual quick-add */}
-            <div className="grid gap-4 rounded-lg border bg-card p-4 md:grid-cols-2 md:p-6">
-                <AiDump />
+            {/* Dump zone (AI parse + manual quick-add), folded until the button above opens it */}
+            <NewSection open={sp.new === "1"} title="New to-do">
+                <div className="grid gap-4 md:grid-cols-2">
+                    <AiDump />
 
-                <form action={createSprintTaskAction} className="space-y-2">
-                    <Label className="text-sm">Add one task</Label>
-                    <Input name="title" required placeholder="What needs doing?" />
-                    <div className="grid grid-cols-2 gap-2">
-                        <Select name="pic" defaultValue="none">
-                            <SelectTrigger className="h-10">
-                                <SelectValue placeholder="PIC" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="none">PIC — unassigned</SelectItem>
-                                {activeTeam.map((m) => (
-                                    <SelectItem key={m.id} value={m.name}>
-                                        {m.name} ({m.role})
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <Input name="deadline" type="date" />
-                    </div>
-                    <div className="flex justify-end">
-                        <Button type="submit">Add task</Button>
-                    </div>
-                </form>
-            </div>
+                    <form action={createSprintTaskAction} className="space-y-2">
+                        <Label className="text-sm">Add one to-do</Label>
+                        <Input name="title" required placeholder="What needs doing?" />
+                        <div className="grid grid-cols-2 gap-2">
+                            <Select name="pic" defaultValue="none">
+                                <SelectTrigger className="h-10">
+                                    <SelectValue placeholder="Owner" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">No owner</SelectItem>
+                                    {activeTeam.map((m) => (
+                                        <SelectItem key={m.id} value={m.name}>
+                                            {m.name} ({m.role})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Input name="deadline" type="date" />
+                        </div>
+                        <div className="flex justify-end">
+                            <Button type="submit">Add to-do</Button>
+                        </div>
+                    </form>
+                </div>
+            </NewSection>
 
-            {/* Per-PIC task bars */}
+            {/* Per-owner to-do bars */}
             {tasks.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                    No tasks yet — dump some above.
+                    No to-dos yet —{" "}
+                    <Link href={newHref} className="underline">
+                        add the first one
+                    </Link>
+                    .
                 </p>
             ) : (
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -169,7 +181,7 @@ export default async function TasksPage() {
                                                                             <SelectValue />
                                                                         </SelectTrigger>
                                                                         <SelectContent>
-                                                                            <SelectItem value="none">Unassigned</SelectItem>
+                                                                            <SelectItem value="none">No owner</SelectItem>
                                                                             {activeTeam.map((m) => (
                                                                                 <SelectItem key={m.id} value={m.name}>
                                                                                     {m.name}
@@ -198,7 +210,7 @@ export default async function TasksPage() {
                                                                     variant="ghost"
                                                                     className="h-7 px-2 text-xs text-muted-foreground"
                                                                 >
-                                                                    Delete task
+                                                                    Delete to-do
                                                                 </Button>
                                                             </form>
                                                         </details>

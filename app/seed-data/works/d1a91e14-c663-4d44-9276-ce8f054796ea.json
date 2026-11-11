@@ -1,0 +1,56 @@
+{
+  "id": "d1a91e14-c663-4d44-9276-ce8f054796ea",
+  "contractId": "0841f3f1-b247-49e1-ba4a-91646eaf92da",
+  "clientName": "Harmoni Dental Clinic",
+  "accountManager": "Yusuf",
+  "plannerLineId": "req:post:2026-11:0:1",
+  "addendumVersion": 0,
+  "type": "post",
+  "title": "Reel: Clinic tour",
+  "channel": "Instagram",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-04",
+  "defaultDueDate": "2026-11-04",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Syafiq",
+      "pct": 50,
+      "hours": 1.5
+    },
+    {
+      "seat": "creative",
+      "member": "Mei Ling",
+      "pct": 50,
+      "hours": 2.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "5339a9ee-4cf2-4a9b-a7d2-5192cbdde758"
+  },
+  "requestedAt": null,
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "createdAt": "2026-11-06T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.847Z"
+}

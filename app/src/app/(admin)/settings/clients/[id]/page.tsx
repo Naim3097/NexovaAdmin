@@ -1,12 +1,20 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { getActingMember } from "@/lib/auth";
+import { canOpenClient } from "@/lib/scope";
 import { CLIENT_STATUSES, getClientById } from "@/lib/data/clients";
 import { listLeads } from "@/lib/data/leads";
-import { listProjects } from "@/lib/data/projects";
+import { listWorks } from "@/lib/data/works";
 import { listContentPosts } from "@/lib/data/content";
 import { computeTotals, listInvoices } from "@/lib/data/invoices";
 import { listSubmissions } from "@/lib/data/onboarding";
 import { listTeamMembers } from "@/lib/data/team";
+import { listContracts } from "@/lib/data/contracts";
+import { listCampaigns } from "@/lib/data/campaigns";
+import { clientJobStatus, endsInDays, hasEnded, summarizeWorks, todayKey, worksFor } from "@/lib/contracts/helpers";
+import { isOpen } from "@/lib/works/helpers";
+import { ContractStatusBadge, JobBadge, cadenceLabel, fmtMyr } from "@/app/(admin)/contracts/ui";
+import { fmtMyrShort } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,25 +49,35 @@ function eq(a: string | undefined | null, b: string) {
 
 export default async function ClientDetailPage({
     params,
+    searchParams,
 }: {
     params: Promise<{ id: string }>;
+    searchParams: Promise<{ as?: string }>;
 }) {
-    const { id } = await params;
+    const [{ id }, sp] = await Promise.all([params, searchParams]);
     const client = await getClientById(id);
     if (!client) notFound();
 
-    const [leads, projects, content, invoices, submissions, team] =
+    const [leads, works, content, invoices, submissions, team, contracts, campaigns, member] =
         await Promise.all([
             listLeads(),
-            listProjects(),
+            listWorks(),
             listContentPosts(),
             listInvoices(),
             listSubmissions(),
             listTeamMembers(),
+            listContracts(),
+            listCampaigns(),
+            getActingMember(sp.as),
         ]);
+    // A user opens only the clients of the contracts they are on.
+    if (!canOpenClient(member, client, contracts, works)) redirect("/settings/clients");
+    const today = todayKey();
+    const job = clientJobStatus(client.name, contracts, today);
+    const myContracts = contracts.filter((c) => eq(c.clientName, client.name));
 
     const myLeads = leads.filter((l) => eq(l.company, client.name));
-    const myProjects = projects.filter((p) => eq(p.clientName, client.name));
+    const openTasks = works.filter((w) => eq(w.clientName, client.name) && isOpen(w)).length;
     const myContent = content.filter((c) => eq(c.clientName, client.name));
     const myInvoices = invoices.filter((i) => eq(i.clientName, client.name));
     const mySubmissions = submissions.filter((s) =>
@@ -79,12 +97,6 @@ export default async function ClientDetailPage({
         (c) => c.origin === "plan" && c.planMonth === thisMonth,
     );
 
-    const fmt = (n: number) =>
-        n.toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-        });
-
     return (
         <div className="space-y-6">
             <div>
@@ -98,6 +110,10 @@ export default async function ClientDetailPage({
                     <h1 className="text-2xl font-semibold md:text-3xl">
                         {client.name}
                     </h1>
+                    <div className="flex flex-wrap items-center gap-2">
+                    <Link href={`/contracts?client=${encodeURIComponent(client.name)}`}>
+                        <JobBadge job={job} />
+                    </Link>
                     <Badge
                         variant={
                             client.status === "active"
@@ -106,14 +122,16 @@ export default async function ClientDetailPage({
                                     ? "destructive"
                                     : "outline"
                         }
+                        className={client.status === "onboarding" ? "border-amber-500/40 bg-amber-500/15 text-amber-700 dark:text-amber-400" : undefined}
                     >
                         {client.status}
                     </Badge>
+                    </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                    AM:{" "}
+                    Account manager:{" "}
                     <span className={client.accountManager ? "font-medium text-foreground" : ""}>
-                        {client.accountManager || "unassigned"}
+                        {client.accountManager || "no owner"}
                     </span>
                     {client.website ? (
                         <>
@@ -132,17 +150,22 @@ export default async function ClientDetailPage({
             </div>
 
             {/* Aggregate KPIs */}
-            <div className="grid gap-3 md:grid-cols-4">
+            <div className="grid gap-3 md:grid-cols-5">
                 {[
+                    {
+                        label: "Contract",
+                        value: job.label,
+                        href: `/contracts?client=${encodeURIComponent(client.name)}`,
+                    },
                     {
                         label: "Leads",
                         value: String(myLeads.length),
                         href: "/leads",
                     },
                     {
-                        label: "Projects",
-                        value: String(myProjects.length),
-                        href: "/projects",
+                        label: "Open tasks",
+                        value: String(openTasks),
+                        href: `/works?client=${encodeURIComponent(client.name)}`,
                     },
                     {
                         label: "Open content",
@@ -151,7 +174,7 @@ export default async function ClientDetailPage({
                     },
                     {
                         label: "Paid / Billed",
-                        value: `MYR ${fmt(paid)} / ${fmt(billed)}`,
+                        value: `${fmtMyrShort(paid)} / ${fmtMyrShort(billed)}`,
                         href: "/invoices",
                     },
                 ].map((k) => (
@@ -203,7 +226,7 @@ export default async function ClientDetailPage({
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="none">— Unassigned —</SelectItem>
+                                <SelectItem value="none">— No owner —</SelectItem>
                                 {team
                                     .filter((m) => m.active)
                                     .map((m) => (
@@ -214,8 +237,7 @@ export default async function ClientDetailPage({
                             </SelectContent>
                         </Select>
                         <p className="text-xs text-muted-foreground">
-                            Single point of contact — owns updates, approvals,
-                            renewals.
+                            Single point of contact who owns updates, sign-offs and renewals.
                         </p>
                     </div>
                     <div className="space-y-1.5">
@@ -266,7 +288,7 @@ export default async function ClientDetailPage({
                         />
                         <p className="text-xs text-muted-foreground">
                             Auto-fills &quot;Bill to&quot; on every new invoice
-                            and quotation for this client.
+                            and quote for this client.
                         </p>
                     </div>
                     <div className="md:col-span-2">
@@ -292,8 +314,7 @@ export default async function ClientDetailPage({
                             defaultValue={client.packageRenewsOn}
                         />
                         <p className="text-xs text-muted-foreground">
-                            Telegram heads-up at 30 days, 7 days, and day-of —
-                            feeds the renewal/upsell conversation.
+                            Telegram heads-up at 30 days, 7 days and on the day.
                         </p>
                     </div>
                     <div className="space-y-1.5">
@@ -313,7 +334,7 @@ export default async function ClientDetailPage({
                     </div>
                     <div className="space-y-1.5">
                         <Label className="text-sm">
-                            Included contents / month
+                            Included content / month
                         </Label>
                         <Input
                             name="monthlyContentQuota"
@@ -429,7 +450,7 @@ export default async function ClientDetailPage({
 
             {/* Aggregated lists */}
             {mySubmissions.length > 0 ? (
-                <Section title={`Onboarding (${mySubmissions.length})`}>
+                <Section title={`Onboarding forms (${mySubmissions.length})`}>
                     {mySubmissions.map((s) => (
                         <li
                             key={s.id}
@@ -447,26 +468,58 @@ export default async function ClientDetailPage({
                 </Section>
             ) : null}
 
-            {myProjects.length > 0 ? (
-                <Section title={`Projects (${myProjects.length})`}>
-                    {myProjects.map((p) => (
-                        <li
-                            key={p.id}
-                            className="flex items-center justify-between p-3"
-                        >
-                            <Link
-                                href={`/projects/${p.id}`}
-                                className="hover:underline"
-                            >
-                                {p.name}
-                            </Link>
-                            <Badge variant="secondary">
-                                {p.status.replace(/_/g, " ")}
-                            </Badge>
+            <Section title={`Contracts (${myContracts.length})`}>
+                {myContracts.map((c) => {
+                    const w = summarizeWorks(worksFor(c, { works, content, campaigns }), today);
+                    const days = endsInDays(c, today);
+                    return (
+                        <li key={c.id} className="flex flex-col gap-1 p-3 md:flex-row md:items-center md:justify-between">
+                            <div className="min-w-0">
+                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                    <Link href={`/contracts/${c.id}`} className="hover:underline">
+                                        {c.name}
+                                    </Link>
+                                    <span className="text-xs text-muted-foreground">{c.code}</span>
+                                    <ContractStatusBadge status={c.status} />
+                                    {c.status === "active" && !c.signedAt ? <Badge variant="destructive">unsigned</Badge> : null}
+                                    {hasEnded(c, today) ? <Badge variant="destructive">ended {c.endDate}</Badge> : null}
+                                    {days !== null && days <= 30 ? (
+                                        <Badge variant="outline" className="text-amber-700 dark:text-amber-400">
+                                            ends in {days}d
+                                        </Badge>
+                                    ) : null}
+                                </div>
+                                <p className="text-xs text-muted-foreground tabular-nums">
+                                    {c.startDate}
+                                    {c.endDate ? ` → ${c.endDate}` : " → rolling"} · {cadenceLabel(c.billing.cadence)}
+                                    {c.billing.amountMyr ? ` ${fmtMyr(c.billing.amountMyr)}` : ""}
+                                    {c.valueMyr ? ` · value ${fmtMyr(c.valueMyr)}` : ""} ·{" "}
+                                    <Link href={`/contracts/${c.id}#works`} className="hover:underline">
+                                        {w.tasks} task{w.tasks === 1 ? "" : "s"}
+                                    </Link>{" "}
+                                    · {w.tasksDone} done
+                                    {w.overdueTasks ? (
+                                        <span className="font-medium text-red-600 dark:text-red-400"> · {w.overdueTasks} overdue</span>
+                                    ) : null}{" "}
+                                    · {w.content} content · {w.campaigns} campaign
+                                    {w.campaigns === 1 ? "" : "s"}
+                                </p>
+                            </div>
                         </li>
-                    ))}
-                </Section>
-            ) : null}
+                    );
+                })}
+                <li className="p-3">
+                    <Link
+                        href={`/contracts/new?client=${encodeURIComponent(client.name)}`}
+                        className="text-xs font-medium underline"
+                    >
+                        + New contract
+                    </Link>
+                    {myContracts.length === 0 ? (
+                        <span className="ml-2 text-xs text-muted-foreground">No contract yet — nothing is promised to this client.</span>
+                    ) : null}
+                </li>
+            </Section>
 
             {myInvoices.length > 0 ? (
                 <Section title={`Invoices (${myInvoices.length})`}>
@@ -487,7 +540,7 @@ export default async function ClientDetailPage({
                                     </span>
                                 </Link>
                                 <div className="flex items-center gap-3">
-                                    <span>MYR {fmt(t.total)}</span>
+                                    <span>{fmtMyr(t.total)}</span>
                                     <Badge variant="secondary">{i.status}</Badge>
                                 </div>
                             </li>
@@ -539,8 +592,7 @@ export default async function ClientDetailPage({
                             Delete client profile
                         </p>
                         <p className="text-xs text-muted-foreground">
-                            Removes this directory entry only. Leads / projects /
-                            invoices keep the name string.
+                            Removes this record only; leads, contracts, tasks and invoices keep the name.
                         </p>
                     </div>
                     <Button type="submit" variant="destructive">

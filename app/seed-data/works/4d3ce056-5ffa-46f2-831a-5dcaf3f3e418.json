@@ -1,0 +1,47 @@
+{
+  "id": "4d3ce056-5ffa-46f2-831a-5dcaf3f3e418",
+  "contractId": "037ed49f-c145-4c4f-8015-48d83157409d",
+  "clientName": "Zenith Properties",
+  "accountManager": "Naim",
+  "plannerLineId": "req:website:2026-09:0:4",
+  "addendumVersion": 0,
+  "type": "website",
+  "title": "Push notifications API",
+  "channel": "App",
+  "month": "2026-12",
+  "phaseKey": "build",
+  "phaseName": "Build",
+  "dueDate": "2026-12-10",
+  "defaultDueDate": "2026-12-10",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dev",
+      "member": "Hafiz",
+      "pct": 100,
+      "hours": 12
+    }
+  ],
+  "approver": "am",
+  "milestone": true,
+  "linked": null,
+  "requestedAt": null,
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "createdAt": "2026-09-26T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.899Z"
+}

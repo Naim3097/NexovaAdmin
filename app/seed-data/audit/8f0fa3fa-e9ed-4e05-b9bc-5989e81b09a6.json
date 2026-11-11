@@ -1,0 +1,16 @@
+{
+  "id": "8f0fa3fa-e9ed-4e05-b9bc-5989e81b09a6",
+  "at": "2026-10-29T03:13:11.148Z",
+  "entity": "work",
+  "entityId": "0051c953-37c0-41cf-a6e2-da1b83a51553",
+  "kind": "update",
+  "summary": "Timeline adjusted: Client review & approval 2026-10-14 → 2026-10-30 · 2 later tasks moved with it",
+  "actor": "Aina",
+  "changes": [
+    {
+      "field": "dueDate",
+      "before": "2026-10-14",
+      "after": "2026-10-30"
+    }
+  ]
+}

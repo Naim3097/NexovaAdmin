@@ -9,9 +9,10 @@
  */
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { devDataRoot } from "@/lib/dev-store/root";
 import { randomUUID } from "node:crypto";
 
-const ROOT = path.join(process.cwd(), ".dev-data");
+const ROOT = devDataRoot();
 const QUOTATIONS_DIR = path.join(ROOT, "quotations");
 
 export const QUOTATION_STATUSES = [
@@ -38,7 +39,6 @@ export type Quotation = {
     /** Human-readable, e.g. "QUO-2026-0001". Generated at creation. */
     number: string;
     clientName: string;
-    projectId: string | null;
     status: QuotationStatus;
     issueDate: string; // YYYY-MM-DD
     validUntil: string; // YYYY-MM-DD
@@ -103,7 +103,6 @@ async function nextQuotationNumber(): Promise<string> {
 
 export async function createQuotation(input: {
     clientName: string;
-    projectId?: string | null;
     issueDate?: string;
     validUntil?: string;
     taxRatePct?: number;
@@ -123,7 +122,6 @@ export async function createQuotation(input: {
         id: randomUUID(),
         number: await nextQuotationNumber(),
         clientName: input.clientName,
-        projectId: input.projectId ?? null,
         status: "draft",
         issueDate: issue,
         validUntil: valid,
@@ -166,13 +164,6 @@ export async function getQuotationById(id: string): Promise<Quotation | null> {
     } catch {
         return null;
     }
-}
-
-export async function listQuotationsForProject(
-    projectId: string,
-): Promise<Quotation[]> {
-    const all = await listQuotations();
-    return all.filter((q) => q.projectId === projectId);
 }
 
 export async function updateQuotation(

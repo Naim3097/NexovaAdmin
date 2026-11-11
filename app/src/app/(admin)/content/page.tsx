@@ -6,7 +6,6 @@ import {
     listContentPosts,
     type ContentStatus,
 } from "@/lib/data/content";
-import { listProjects } from "@/lib/data/projects";
 import { listTeamMembers } from "@/lib/data/team";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,8 +19,15 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { createContentPostAction } from "@/lib/content/actions";
+import { listContracts } from "@/lib/data/contracts";
+import { listWorks } from "@/lib/data/works";
+import { getActingMember } from "@/lib/auth";
+import { assignedContractIds, seesEverything, visibleContracts } from "@/lib/scope";
+import { NewButton, NewSection, newFormHref } from "@/components/new-button";
 
 export const dynamic = "force-dynamic";
+
+const norm = (s: string) => s.trim().toLowerCase();
 
 const STATUS_VARIANT: Record<
     ContentStatus,
@@ -38,14 +44,24 @@ const STATUS_VARIANT: Record<
 export default async function ContentPage({
     searchParams,
 }: {
-    searchParams: Promise<{ status?: string; client?: string }>;
+    searchParams: Promise<{ status?: string; client?: string; as?: string; new?: string }>;
 }) {
     const sp = await searchParams;
-    const [posts, projects, team] = await Promise.all([
+    const [allPosts, team, allContracts, works, member] = await Promise.all([
         listContentPosts(),
-        listProjects(),
         listTeamMembers(),
+        listContracts(),
+        listWorks(),
+        getActingMember(sp.as),
     ]);
+    // A user sees the posts of the contracts they are on: linked by contract, else by the contract's client name.
+    const contracts = visibleContracts(member, allContracts, works);
+    const myContractIds = assignedContractIds(member, allContracts, works);
+    const myClientNames = new Set(contracts.map((c) => norm(c.clientName)));
+    const posts = seesEverything(member)
+        ? allPosts
+        : allPosts.filter((p) => (p.contractId && myContractIds.has(p.contractId)) || myClientNames.has(norm(p.clientName)));
+    const openContracts = contracts.filter((c) => c.status === "active" || c.status === "draft");
     const activeTeam = team.filter((m) => m.active);
 
     const filtered = posts.filter((p) => {
@@ -60,6 +76,7 @@ export default async function ContentPage({
     });
 
     const today = new Date().toISOString().slice(0, 10);
+    const newHref = newFormHref("/content", { status: sp.status, client: sp.client, as: sp.as });
 
     return (
         <div className="space-y-6">
@@ -67,10 +84,10 @@ export default async function ContentPage({
                 <div>
                     <h1 className="text-2xl font-semibold md:text-3xl">Content</h1>
                     <p className="text-sm text-muted-foreground">
-                        Plan, draft, schedule. Publishing integrations are on hold.
+                        Plan, draft and schedule; publishing integrations are on hold.
                     </p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-3">
                     <Link
                         href="/content/board"
                         className="text-sm font-medium underline"
@@ -83,108 +100,107 @@ export default async function ContentPage({
                     >
                         Open calendar
                     </Link>
+                    <NewButton href={newHref}>+ New post</NewButton>
                 </div>
             </div>
 
-            {/* Add form */}
-            <form
-                action={createContentPostAction}
-                className="space-y-4 rounded-lg border bg-card p-4 md:p-6"
-            >
-                <h2 className="text-sm font-medium">New post</h2>
-                <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Title</Label>
-                        <Input
-                            name="title"
-                            required
-                            placeholder="e.g. Launch teaser carousel"
-                        />
+            {/* Add form, folded until the button above opens it */}
+            <NewSection open={sp.new === "1"} title="New post">
+                <form action={createContentPostAction} className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Title</Label>
+                            <Input
+                                name="title"
+                                required
+                                placeholder="e.g. Launch teaser carousel"
+                            />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Client</Label>
+                            <Input name="clientName" list="clients-datalist" required placeholder="Lean.x" />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Contract (optional)</Label>
+                            <Select name="contractId" defaultValue={"none"}>
+                                <SelectTrigger className="h-10">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">— none —</SelectItem>
+                                    {openContracts.map((c) => (
+                                        <SelectItem key={c.id} value={c.id}>
+                                            {c.clientName} · {c.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Platform</Label>
+                            <Select name="platform" defaultValue="instagram">
+                                <SelectTrigger className="h-10">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {CONTENT_PLATFORMS.map((p) => (
+                                        <SelectItem key={p} value={p}>
+                                            {p}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Type</Label>
+                            <Select name="type" defaultValue="post">
+                                <SelectTrigger className="h-10">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {CONTENT_TYPES.map((t) => (
+                                        <SelectItem key={t} value={t}>
+                                            {t}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Scheduled for</Label>
+                            <Input
+                                name="scheduledFor"
+                                type="date"
+                                required
+                                defaultValue={today}
+                            />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Time (optional)</Label>
+                            <Input name="scheduledTime" type="time" />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Owner</Label>
+                            <Select name="assignee" defaultValue="none">
+                                <SelectTrigger className="h-10">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">— No owner —</SelectItem>
+                                    {activeTeam.map((m) => (
+                                        <SelectItem key={m.id} value={m.name}>
+                                            {m.name} ({m.role})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Client</Label>
-                        <Input name="clientName" list="clients-datalist" required placeholder="Lean.x" />
+                    <div className="flex justify-end">
+                        <Button type="submit">Add post</Button>
                     </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Project (optional)</Label>
-                        <Select name="projectId" defaultValue="none">
-                            <SelectTrigger className="h-10">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="none">— None —</SelectItem>
-                                {projects.map((p) => (
-                                    <SelectItem key={p.id} value={p.id}>
-                                        {p.name} ({p.clientName})
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Platform</Label>
-                        <Select name="platform" defaultValue="instagram">
-                            <SelectTrigger className="h-10">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {CONTENT_PLATFORMS.map((p) => (
-                                    <SelectItem key={p} value={p}>
-                                        {p}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Type</Label>
-                        <Select name="type" defaultValue="post">
-                            <SelectTrigger className="h-10">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {CONTENT_TYPES.map((t) => (
-                                    <SelectItem key={t} value={t}>
-                                        {t}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Scheduled for</Label>
-                        <Input
-                            name="scheduledFor"
-                            type="date"
-                            required
-                            defaultValue={today}
-                        />
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Time (optional)</Label>
-                        <Input name="scheduledTime" type="time" />
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Assignee</Label>
-                        <Select name="assignee" defaultValue="none">
-                            <SelectTrigger className="h-10">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="none">— Unassigned —</SelectItem>
-                                {activeTeam.map((m) => (
-                                    <SelectItem key={m.id} value={m.name}>
-                                        {m.name} ({m.role})
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-                <div className="flex justify-end">
-                    <Button type="submit">Add post</Button>
-                </div>
-            </form>
+                </form>
+            </NewSection>
 
             {/* Filters */}
             <form

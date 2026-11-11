@@ -1,0 +1,10 @@
+{
+  "id": "d0677271-8a07-4b07-a1f9-75e6a6e450b0",
+  "at": "2026-10-26T08:14:19.742Z",
+  "entity": "lead",
+  "entityId": "9818e8c3-89f0-4cdf-b8e9-41c6eb3ec20f",
+  "kind": "create",
+  "summary": "Lead created: Local Test Lead (Test Company Sdn Bhd)",
+  "actor": "dev@nexova.local",
+  "changes": []
+}

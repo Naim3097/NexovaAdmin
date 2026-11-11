@@ -38,8 +38,7 @@ export default async function AgencyProfilePage() {
                     Agency profile
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                    Used on invoice headers, exported reports, and outbound
-                    emails. Last saved: {lastSaved}.
+                    Used on invoices, reports and emails · last saved {lastSaved}.
                 </p>
             </div>
 
@@ -221,12 +220,12 @@ export default async function AgencyProfilePage() {
                         placeholder="Thank you for your business. Payment due within 14 days of issue."
                     />
                     <p className="text-xs text-muted-foreground">
-                        Shown at the bottom of every invoice detail view.
+                        Shown at the bottom of every invoice.
                     </p>
                 </section>
 
                 <section className="space-y-4">
-                    <h2 className="text-sm font-medium">Quotation defaults</h2>
+                    <h2 className="text-sm font-medium">Quote defaults</h2>
                     <div className="space-y-1.5">
                         <Label htmlFor="defaultQuoteTerms">
                             Default Terms &amp; Conditions (one per line)
@@ -236,10 +235,10 @@ export default async function AgencyProfilePage() {
                             name="defaultQuoteTerms"
                             rows={4}
                             defaultValue={p.defaultQuoteTerms}
-                            placeholder={"This quotation is valid for 30 days from the date of issue.\nAny additional work outside the stated scope may be subject to additional charges.\nDelays in approval, content submission, or feedback may affect project timelines.\nAll pricing stated is in Malaysian Ringgit (MYR)."}
+                            placeholder={"This quote is valid for 30 days from the date of issue.\nAny additional work outside the stated scope may be subject to additional charges.\nDelays in approval, content submission, or feedback may affect project timelines.\nAll pricing stated is in Malaysian Ringgit (MYR)."}
                         />
                         <p className="text-xs text-muted-foreground">
-                            Copied onto each new quotation (still editable per quote).
+                            Copied onto each new quote (still editable per quote).
                         </p>
                     </div>
                     <label className="flex items-center gap-2 text-sm">
@@ -249,7 +248,7 @@ export default async function AgencyProfilePage() {
                             defaultChecked={p.defaultQuoteAcceptance}
                             className="size-4 rounded border-input"
                         />
-                        New quotations show the acceptance / signature block by default
+                        New quotes show the acceptance / signature block by default
                     </label>
                 </section>
 
@@ -263,8 +262,8 @@ export default async function AgencyProfilePage() {
                 <div>
                     <h2 className="text-sm font-medium">Logo</h2>
                     <p className="text-xs text-muted-foreground">
-                        Upload one or more logos, then select which appears on
-                        your quotations and invoices (and their PDFs).
+                        Upload one or more logos, then pick which appears on
+                        your quotes and invoices (and their PDFs).
                     </p>
                 </div>
 
@@ -338,7 +337,7 @@ export default async function AgencyProfilePage() {
                 {p.logoUrl ? (
                     <form action={clearAgencyLogoAction}>
                         <Button type="submit" size="sm" variant="outline">
-                            Show no logo on documents
+                            Show no logo on quotes and invoices
                         </Button>
                     </form>
                 ) : null}

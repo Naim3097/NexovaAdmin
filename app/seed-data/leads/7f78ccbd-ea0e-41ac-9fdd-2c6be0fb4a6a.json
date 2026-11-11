@@ -1,0 +1,20 @@
+{
+  "id": "7f78ccbd-ea0e-41ac-9fdd-2c6be0fb4a6a",
+  "name": "Grace Tan",
+  "company": "Tan & Co Legal",
+  "email": "grace@example.com",
+  "phone": "",
+  "source": "linkedin",
+  "sourceCampaignId": null,
+  "interestedIn": "Website, SEO retainer",
+  "estValueMyr": 25000,
+  "status": "proposal",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Naim",
+  "score": 70,
+  "autoIntake": false,
+  "createdAt": "2026-10-17T04:34:02.666Z",
+  "updatedAt": "2026-10-31T04:34:02.666Z"
+}

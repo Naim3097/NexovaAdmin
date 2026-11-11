@@ -1,0 +1,16 @@
+{
+  "id": "d8d4c9f4-ec79-4340-a270-97227807a665",
+  "at": "2026-10-29T03:14:07.167Z",
+  "entity": "contract",
+  "entityId": "0c5e69eb-6927-4dcb-8c7a-b8e41f86c26a",
+  "kind": "status",
+  "summary": "Stage: created → signed · signed 2026-10-29",
+  "actor": "dev@nexova.local",
+  "changes": [
+    {
+      "field": "stage",
+      "before": "created",
+      "after": "signed"
+    }
+  ]
+}

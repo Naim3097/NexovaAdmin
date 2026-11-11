@@ -10,6 +10,7 @@ import {
     type PortalCreateState,
 } from "@/lib/portal/actions";
 import { ReferenceUploader } from "@/components/reference-uploader";
+import { fmtMyr } from "@/lib/format";
 
 const initial: PortalCreateState = { ok: false };
 
@@ -103,7 +104,7 @@ export function RequestContentForm({
                             {requested === 1 ? "" : "s"} — {remaining} left in
                             your plan, so <strong>{chargeable}</strong> will be
                             chargeable at{" "}
-                            <strong>MYR {extraPrice.toFixed(2)}</strong> each.
+                            <strong>{fmtMyr(extraPrice)}</strong> each.
                             Submitting means you agree to the charge.
                         </p>
                     ) : (

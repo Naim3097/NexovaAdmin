@@ -1,0 +1,56 @@
+{
+  "id": "54497fa5-5d2c-4077-b80c-aee72f5f688c",
+  "contractId": "361d9eb1-fc59-469e-83cd-cb215a4b207c",
+  "clientName": "Lean.x Sdn Bhd",
+  "accountManager": "Aina",
+  "plannerLineId": "req:seo:2027-01:2:1",
+  "addendumVersion": 0,
+  "type": "seo",
+  "title": "QR payments vs cards: a merchant's guide",
+  "channel": "Blog",
+  "month": "2027-01",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2027-01-07",
+  "defaultDueDate": "2027-01-07",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "seo",
+      "member": "Daniel",
+      "pct": 50,
+      "hours": 5
+    },
+    {
+      "seat": "dm",
+      "member": "Syafiq",
+      "pct": 50,
+      "hours": 3
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "seo",
+    "id": "0e867aa8-7da4-42a2-b7d4-1e961cd7ba02"
+  },
+  "requestedAt": null,
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "createdAt": "2026-10-01T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.667Z"
+}

@@ -1,18 +1,16 @@
 import Link from "next/link";
-import { requireAdminAccess } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { getActingMember, requireTeamAccess } from "@/lib/auth";
+import { hasFunction } from "@/lib/roles";
+import { seesFinance } from "@/lib/scope";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { buildMonthlySummary } from "@/lib/reports";
 import { getAgencyProfile } from "@/lib/data/agency";
+import { fmtMyrWhole as fmtMyr } from "@/lib/format";
+import { SelectNav } from "@/components/select-nav";
 
 export const dynamic = "force-dynamic";
-
-const fmtMyr = (n: number) =>
-    `MYR ${n.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    })}`;
 
 const MONTH_LABELS = [
     "Jan",
@@ -34,7 +32,10 @@ export default async function ReportsPage({
 }: {
     searchParams: Promise<{ year?: string }>;
 }) {
-    await requireAdminAccess();
+    await requireTeamAccess();
+    // Reports: managers, finance and account managers.
+    const member = await getActingMember();
+    if (!seesFinance(member) && !hasFunction(member, "account_manager")) redirect("/home");
     const sp = await searchParams;
     const currentYear = new Date().getFullYear();
     const requested = sp.year ? Number.parseInt(sp.year, 10) : currentYear;
@@ -48,8 +49,8 @@ export default async function ReportsPage({
         (acc, r) => ({
             leadsCreated: acc.leadsCreated + r.leadsCreated,
             leadsWon: acc.leadsWon + r.leadsWon,
-            projectsCreated: acc.projectsCreated + r.projectsCreated,
-            projectsDelivered: acc.projectsDelivered + r.projectsDelivered,
+            contractsStarted: acc.contractsStarted + r.contractsStarted,
+            tasksCompleted: acc.tasksCompleted + r.tasksCompleted,
             quotesSent: acc.quotesSent + r.quotesSent,
             quotesAccepted: acc.quotesAccepted + r.quotesAccepted,
             invoicesIssued: acc.invoicesIssued + r.invoicesIssued,
@@ -61,8 +62,8 @@ export default async function ReportsPage({
         {
             leadsCreated: 0,
             leadsWon: 0,
-            projectsCreated: 0,
-            projectsDelivered: 0,
+            contractsStarted: 0,
+            tasksCompleted: 0,
             quotesSent: 0,
             quotesAccepted: 0,
             invoicesIssued: 0,
@@ -79,7 +80,7 @@ export default async function ReportsPage({
             | "quotations"
             | "invoices"
             | "leads"
-            | "projects"
+            | "tasks"
             | "campaigns";
         label: string;
         hint: string;
@@ -93,27 +94,27 @@ export default async function ReportsPage({
             },
             {
                 kind: "quotations",
-                label: "Quotations",
-                hint: "All quotations with computed subtotal/tax/total",
+                label: "Quotes",
+                hint: "All quotes with subtotal, tax and total",
                 href: "/reports/export?kind=quotations",
             },
             {
                 kind: "invoices",
                 label: "Invoices",
-                hint: "All invoices with computed subtotal/tax/total",
+                hint: "All invoices with subtotal, tax and total",
                 href: "/reports/export?kind=invoices",
             },
             {
                 kind: "leads",
                 label: "Leads",
-                hint: "All leads with source, status, est value",
+                hint: "All leads with source, stage and estimated value",
                 href: "/reports/export?kind=leads",
             },
             {
-                kind: "projects",
-                label: "Projects",
-                hint: "Phase, deliverables, signoff status",
-                href: "/reports/export?kind=projects",
+                kind: "tasks",
+                label: "Contract tasks",
+                hint: "Every task with contract code, month, phase, due date, status and owners",
+                href: "/reports/export?kind=tasks",
             },
             {
                 kind: "campaigns",
@@ -129,8 +130,7 @@ export default async function ReportsPage({
                 <h1 className="text-2xl font-bold">Reports</h1>
                 <p className="text-sm text-muted-foreground">
                     {agency.displayName || agency.legalName || "Agency"} ·
-                    one-click CSV exports. Open in Excel, Google Sheets, or
-                    Numbers.
+                    one-click CSV exports for Excel, Google Sheets or Numbers.
                 </p>
                 <div className="mt-3">
                     <Link
@@ -155,23 +155,15 @@ export default async function ReportsPage({
                 <CardHeader>
                     <CardTitle className="flex items-center gap-3">
                         <span>Monthly summary</span>
-                        <div className="flex gap-1">
-                            {yearOptions.map((y) => (
-                                <Link
-                                    key={y}
-                                    href={`/reports?year=${y}`}
-                                    aria-current={y === year ? "page" : undefined}
-                                >
-                                    <Badge
-                                        variant={
-                                            y === year ? "default" : "outline"
-                                        }
-                                    >
-                                        {y}
-                                    </Badge>
-                                </Link>
-                            ))}
-                        </div>
+                        <SelectNav
+                            label="Year"
+                            value={String(year)}
+                            options={yearOptions.map((y) => ({
+                                value: String(y),
+                                label: String(y),
+                                href: `/reports?year=${y}`,
+                            }))}
+                        />
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -186,7 +178,7 @@ export default async function ReportsPage({
                                         Leads (new / won)
                                     </th>
                                     <th className="py-2 pr-4 font-medium">
-                                        Projects (new / delivered)
+                                        Contracts started / tasks done
                                     </th>
                                     <th className="py-2 pr-4 font-medium">
                                         Quotes (sent / accepted)
@@ -209,7 +201,8 @@ export default async function ReportsPage({
                                 {monthly.map((r, i) => {
                                     const empty =
                                         r.leadsCreated === 0 &&
-                                        r.projectsCreated === 0 &&
+                                        r.contractsStarted === 0 &&
+                                        r.tasksCompleted === 0 &&
                                         r.invoicesIssued === 0 &&
                                         r.invoicesPaid === 0 &&
                                         r.adSpendMyr === 0;
@@ -229,8 +222,8 @@ export default async function ReportsPage({
                                                 {r.leadsWon}
                                             </td>
                                             <td className="py-2 pr-4">
-                                                {r.projectsCreated} /{" "}
-                                                {r.projectsDelivered}
+                                                {r.contractsStarted} /{" "}
+                                                {r.tasksCompleted}
                                             </td>
                                             <td className="py-2 pr-4">
                                                 {r.quotesSent} /{" "}
@@ -261,8 +254,8 @@ export default async function ReportsPage({
                                         {totals.leadsWon}
                                     </td>
                                     <td className="py-2 pr-4">
-                                        {totals.projectsCreated} /{" "}
-                                        {totals.projectsDelivered}
+                                        {totals.contractsStarted} /{" "}
+                                        {totals.tasksCompleted}
                                     </td>
                                     <td className="py-2 pr-4">
                                         {totals.quotesSent} /{" "}
@@ -321,8 +314,7 @@ export default async function ReportsPage({
             </Card>
 
             <p className="text-xs text-muted-foreground">
-                Note: Drafts and voided invoices are excluded from billed
-                totals. Paid totals are bucketed by paid date, not issue date.
+                Drafts and voided invoices are left out of billed totals; paid totals go by paid date, not issue date.
             </p>
         </div>
     );

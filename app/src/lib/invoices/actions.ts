@@ -35,15 +35,9 @@ function asStatus(v: FormDataEntryValue | null): InvoiceStatus {
         : "draft";
 }
 
-function nullableId(v: FormDataEntryValue | null): string | null {
-    const s = String(v ?? "").trim();
-    return s.length > 0 && s !== "none" ? s : null;
-}
-
 export async function createInvoiceAction(formData: FormData) {
     const clientName = String(formData.get("clientName") ?? "").trim();
     if (!clientName) return;
-    const projectId = nullableId(formData.get("projectId"));
     const issueDate = String(formData.get("issueDate") ?? "").trim() || undefined;
     const dueDate = String(formData.get("dueDate") ?? "").trim() || undefined;
     const taxRatePctRaw = formData.get("taxRatePct");
@@ -53,7 +47,6 @@ export async function createInvoiceAction(formData: FormData) {
             : Number(taxRatePctRaw);
     const inv = await createInvoice({
         clientName,
-        projectId,
         issueDate,
         dueDate,
         taxRatePct: Number.isFinite(taxRatePct) ? taxRatePct : 6,
@@ -63,7 +56,6 @@ export async function createInvoiceAction(formData: FormData) {
     if (billTo) await updateInvoice(inv.id, { billToAddress: billTo });
     revalidatePath("/invoices");
     revalidatePath("/dashboard");
-    if (projectId) revalidatePath(`/projects/${projectId}`);
     redirect(`/invoices/${inv.id}`);
 }
 
@@ -74,7 +66,6 @@ export async function updateInvoiceAction(formData: FormData) {
     const before = await getInvoiceById(id);
     await updateInvoice(id, {
         clientName: String(formData.get("clientName") ?? "").trim(),
-        projectId: nullableId(formData.get("projectId")),
         issueDate: String(formData.get("issueDate") ?? "").trim(),
         dueDate: String(formData.get("dueDate") ?? "").trim(),
         taxRatePct: Number.isFinite(taxRatePct) ? taxRatePct : 0,
@@ -90,7 +81,6 @@ export async function updateInvoiceAction(formData: FormData) {
             after as unknown as Record<string, unknown>,
             [
                 "clientName",
-                "projectId",
                 "issueDate",
                 "dueDate",
                 "taxRatePct",

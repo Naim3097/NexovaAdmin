@@ -16,6 +16,13 @@ import {
     requestChanges,
     visualsUsed,
 } from "@/lib/data/content";
+import { getContractById } from "@/lib/data/contracts";
+import { getWorkById, updateWork } from "@/lib/data/works";
+import { recordAudit } from "@/lib/data/audit";
+import { notify } from "@/lib/data/notifications";
+import { members } from "@/lib/works/helpers";
+import { clientActorName, resolveActingClient } from "@/lib/portal/resolve-client";
+import { syncLinkedContent, syncTaskForPost } from "@/lib/works/sync";
 
 /**
  * Turn uploaded reference paths (from the form's hidden input) into public
@@ -68,10 +75,12 @@ export async function portalApproveAction(formData: FormData) {
     if (!id) return;
     const owned = await ownContent(id);
     if (!owned) return;
-    await approveContent({
-        id,
-        by: owned.client.contactName || owned.client.name,
-    });
+    const by = owned.client.contactName || owned.client.name;
+    await approveContent({ id, by });
+    await syncTaskForPost(id, "approved", `${by} (client, portal)`, "");
+    revalidatePath("/portal");
+    revalidatePath("/portal/approvals");
+    revalidatePath("/works");
     revalidatePath("/portal/content");
     revalidatePath("/content");
     revalidatePath("/dashboard");
@@ -86,6 +95,10 @@ export async function portalRequestChangesAction(formData: FormData) {
     if (!owned) return;
     const [fileUrl] = referenceUrls(formData.get("refPaths"), owned.client.id);
     await requestChanges({ id, body, fileUrl });
+    await syncTaskForPost(id, "changes", `${owned.client.contactName || owned.client.name} (client, portal)`, body);
+    revalidatePath("/portal");
+    revalidatePath("/portal/approvals");
+    revalidatePath("/works");
     revalidatePath("/portal/content");
     revalidatePath("/content");
     revalidatePath("/dashboard");
@@ -153,4 +166,107 @@ export async function portalCreateContentAction(
             ? `Request submitted. ${chargeableVisuals} visual${chargeableVisuals === 1 ? " is" : "s are"} beyond your plan — chargeable at MYR ${client.extraContentPrice.toFixed(2)} each.`
             : "Request submitted — we'll get on it.",
     };
+}
+
+// ---------------------------------------------------------------------------
+// Task approvals (the client's own path; the account manager can always
+// approve on their behalf from /works/[id])
+// ---------------------------------------------------------------------------
+
+/**
+ * Confirm the acting client owns this task (through its contract) and that it
+ * is actually waiting on them. Anything else is silently ignored — the portal
+ * never reveals whether a task id exists. The hidden `client` field is only
+ * read under the dev bypass (see resolveActingClient).
+ */
+async function ownPendingTask(formData: FormData) {
+    const id = String(formData.get("id") ?? "").trim();
+    if (!id) return null;
+    const acting = await resolveActingClient(String(formData.get("client") ?? ""));
+    if (!acting) return null;
+    const w = await getWorkById(id);
+    if (!w || w.status !== "pending_approval" || w.approver !== "client") return null;
+    const contract = w.contractId ? await getContractById(w.contractId) : null;
+    if (
+        !contract ||
+        contract.clientName.trim().toLowerCase() !==
+            acting.client.name.trim().toLowerCase()
+    ) {
+        return null;
+    }
+    return { by: clientActorName(acting.client), w };
+}
+
+function revalidateTask(id: string, contractId: string) {
+    // The layout carries the Approvals badge, so refresh the whole portal tree.
+    revalidatePath("/portal", "layout");
+    revalidatePath("/portal");
+    revalidatePath("/portal/approvals");
+    revalidatePath(`/works/${id}`);
+    revalidatePath("/works");
+    if (contractId) revalidatePath(`/contracts/${contractId}`);
+    revalidatePath("/contracts");
+    revalidatePath("/dashboard");
+    revalidatePath("/notifications");
+}
+
+/** Client approves a task that waits on them: it completes. `comment` is optional. */
+export async function approveTaskAsClientAction(formData: FormData) {
+    const owned = await ownPendingTask(formData);
+    if (!owned) return;
+    const { by, w } = owned;
+    const note = String(formData.get("comment") ?? "").trim();
+    const now = new Date().toISOString();
+    await updateWork(w.id, {
+        status: "completed",
+        completedAt: now,
+        review: { decision: "approved", note, by, at: now },
+    });
+    await syncLinkedContent(w, "approved", by, note);
+    await recordAudit({
+        entity: "work",
+        entityId: w.id,
+        kind: "update",
+        summary: `${w.title}: approved by client via portal${note ? ` — ${note}` : ""}`,
+        actor: by,
+        changes: [{ field: "status", before: w.status, after: "completed" }],
+    });
+    await notify({
+        kind: "work_approved",
+        title: `Approved by client: ${w.title}`,
+        body: `${w.clientName} · ${w.month} · by ${by}${note ? ` — ${note}` : ""}`,
+        link: `/works/${w.id}`,
+    });
+    revalidateTask(w.id, w.contractId);
+}
+
+/** Client sends a task back with a required comment: it returns to in progress. */
+export async function requestTaskChangesAsClientAction(formData: FormData) {
+    const comment = String(formData.get("comment") ?? "").trim();
+    if (!comment) return;
+    const owned = await ownPendingTask(formData);
+    if (!owned) return;
+    const { by, w } = owned;
+    const now = new Date().toISOString();
+    await updateWork(w.id, {
+        status: "in_progress",
+        review: { decision: "changes", note: comment, by, at: now },
+    });
+    await syncLinkedContent(w, "changes", by, comment);
+    await recordAudit({
+        entity: "work",
+        entityId: w.id,
+        kind: "update",
+        summary: `${w.title}: changes requested by client via portal — ${comment}`,
+        actor: by,
+        changes: [{ field: "status", before: w.status, after: "in_progress" }],
+    });
+    // Same kind the internal review uses when a task goes back to the team.
+    await notify({
+        kind: "work_requested",
+        title: `Changes requested by client: ${w.title}`,
+        body: `${w.clientName} · ${w.month} · back to ${members(w).join(", ") || "the team"} — ${comment}`,
+        link: `/works/${w.id}`,
+    });
+    revalidateTask(w.id, w.contractId);
 }

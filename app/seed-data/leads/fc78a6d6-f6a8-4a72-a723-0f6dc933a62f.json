@@ -1,0 +1,20 @@
+{
+  "id": "fc78a6d6-f6a8-4a72-a723-0f6dc933a62f",
+  "name": "Nurul Huda",
+  "company": "Huda Bakery",
+  "email": "nurul@example.com",
+  "phone": "",
+  "source": "website",
+  "sourceCampaignId": null,
+  "interestedIn": "Website",
+  "estValueMyr": 3000,
+  "status": "new",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "",
+  "score": 35,
+  "autoIntake": false,
+  "createdAt": "2026-10-27T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:02.666Z"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "833c4b5d-327c-4774-b01c-63a02c42c7c7",
+  "name": "Aiman Rashid",
+  "company": "Selangor Tutors",
+  "email": "aiman@example.com",
+  "phone": "",
+  "source": "referral",
+  "sourceCampaignId": null,
+  "interestedIn": "Website, Google Ads",
+  "estValueMyr": 12000,
+  "status": "proposal",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Aina",
+  "score": 78,
+  "autoIntake": false,
+  "createdAt": "2026-10-25T04:34:02.666Z",
+  "updatedAt": "2026-11-08T04:34:02.666Z"
+}

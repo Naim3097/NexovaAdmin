@@ -1,0 +1,20 @@
+{
+  "id": "6e46b8b7-9e96-402a-b451-249b4e0244e4",
+  "name": "Farah Aziz",
+  "company": "Bloom Florist",
+  "email": "farah@example.com",
+  "phone": "",
+  "source": "instagram",
+  "sourceCampaignId": null,
+  "interestedIn": "Social media management",
+  "estValueMyr": 6000,
+  "status": "qualified",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Aina",
+  "score": 62,
+  "autoIntake": false,
+  "createdAt": "2026-10-24T04:34:02.666Z",
+  "updatedAt": "2026-11-07T04:34:02.666Z"
+}

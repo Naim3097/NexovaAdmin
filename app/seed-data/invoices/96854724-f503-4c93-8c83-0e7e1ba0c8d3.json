@@ -1,0 +1,31 @@
+{
+  "id": "96854724-f503-4c93-8c83-0e7e1ba0c8d3",
+  "number": "INV-2026-0013",
+  "clientName": "Harmoni Dental Clinic",
+  "contractId": "0841f3f1-b247-49e1-ba4a-91646eaf92da",
+  "status": "draft",
+  "issueDate": "2026-11-03",
+  "dueDate": "2026-11-17",
+  "items": [
+    {
+      "id": "7956d2ac-610a-4033-b2ec-276a645467dc",
+      "description": "Harmoni — local growth plan — 2026-11",
+      "details": "CON-2026-0003",
+      "quantity": 1,
+      "unitPriceMyr": 3600
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "createdAt": "2026-11-03T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:04.115Z",
+  "paidAt": null,
+  "paymentProvider": null,
+  "paymentLink": null,
+  "paymentExternalId": null,
+  "paymentMeta": {},
+  "paymentLinkCreatedAt": null
+}

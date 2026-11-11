@@ -1,0 +1,47 @@
+{
+  "id": "ad14edd2-7c4e-44f6-8447-5590fb54394d",
+  "contractId": "361d9eb1-fc59-469e-83cd-cb215a4b207c",
+  "clientName": "Lean.x Sdn Bhd",
+  "accountManager": "Aina",
+  "plannerLineId": "req:custom:2026-12:3:1",
+  "addendumVersion": 0,
+  "type": "custom",
+  "title": "Monthly strategy call",
+  "channel": "Call",
+  "month": "2026-12",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-12-03",
+  "defaultDueDate": "2026-12-03",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "am",
+      "member": "Aina",
+      "pct": 100,
+      "hours": 1
+    }
+  ],
+  "approver": "none",
+  "milestone": false,
+  "linked": null,
+  "requestedAt": null,
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "createdAt": "2026-10-01T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.706Z"
+}

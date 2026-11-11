@@ -4,12 +4,12 @@ import { createClient } from "@/lib/supabase/server";
 /**
  * OAuth/Magic-link callback handler.
  * Exchanges the auth code in the URL for a session cookie, then
- * redirects to `next` (or "/dashboard" by default).
+ * redirects to `next` (or "/" by default, which resolves the role's home).
  */
 export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     const code = url.searchParams.get("code");
-    const next = url.searchParams.get("next") ?? "/dashboard";
+    const next = url.searchParams.get("next") ?? "/";
 
     if (code) {
         const supabase = await createClient();

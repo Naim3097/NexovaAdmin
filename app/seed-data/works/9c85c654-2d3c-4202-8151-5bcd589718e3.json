@@ -1,0 +1,56 @@
+{
+  "id": "9c85c654-2d3c-4202-8151-5bcd589718e3",
+  "contractId": "361d9eb1-fc59-469e-83cd-cb215a4b207c",
+  "clientName": "Lean.x Sdn Bhd",
+  "accountManager": "Aina",
+  "plannerLineId": "req:seo:2026-11:2:2",
+  "addendumVersion": 0,
+  "type": "seo",
+  "title": "E-invoicing: what merchants must know",
+  "channel": "Blog",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-19",
+  "defaultDueDate": "2026-11-19",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "pending_approval",
+  "split": [
+    {
+      "seat": "seo",
+      "member": "Daniel",
+      "pct": 50,
+      "hours": 5
+    },
+    {
+      "seat": "dm",
+      "member": "Syafiq",
+      "pct": 50,
+      "hours": 3
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "seo",
+    "id": "659379d5-5ce9-494e-b43c-5a5fbee02677"
+  },
+  "requestedAt": "2026-11-02T04:34:02.666Z",
+  "startedAt": "2026-11-04T04:34:02.666Z",
+  "submittedAt": "2026-11-08T04:34:02.666Z",
+  "submission": {
+    "url": "https://drive.example.com/work/9c85c654",
+    "note": "Ready for review."
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "createdAt": "2026-10-01T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:04.005Z"
+}

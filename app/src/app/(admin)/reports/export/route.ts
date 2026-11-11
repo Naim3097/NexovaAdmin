@@ -1,4 +1,6 @@
-import { getAccessLevel, getCurrentUser } from "@/lib/auth";
+import { getActingMember, getCurrentUser } from "@/lib/auth";
+import { hasFunction } from "@/lib/roles";
+import { seesFinance } from "@/lib/scope";
 import {
     REPORT_KINDS,
     buildReportCsv,
@@ -17,8 +19,9 @@ export async function GET(req: Request) {
     if (!user) {
         return new Response("Unauthorized", { status: 401 });
     }
-    // Financial exports are admin-only (audit rec #12).
-    if ((await getAccessLevel()) !== "admin") {
+    // Financial exports: managers, finance and account managers.
+    const member = await getActingMember();
+    if (!seesFinance(member) && !hasFunction(member, "account_manager")) {
         return new Response("Forbidden", { status: 403 });
     }
 

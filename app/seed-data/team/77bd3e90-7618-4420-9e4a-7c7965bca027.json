@@ -1,0 +1,31 @@
+{
+  "id": "77bd3e90-7618-4420-9e4a-7c7965bca027",
+  "name": "Yusuf",
+  "role": "PM",
+  "email": "yusuf@nexova.local",
+  "phone": "",
+  "skills": "delivery, scrum, QA",
+  "active": true,
+  "userId": null,
+  "accessLevel": "admin",
+  "systemRoles": [
+    "admin",
+    "management"
+  ],
+  "functions": [
+    "finance",
+    "account_manager"
+  ],
+  "weeklyHours": 32,
+  "reservedHours": {
+    "management": 6,
+    "finance": 6
+  },
+  "hoursByType": {
+    "custom": 1.5,
+    "website": 3
+  },
+  "costRateMyr": 0,
+  "createdAt": "2026-11-10T04:34:03.238Z",
+  "updatedAt": "2026-11-10T04:34:03.238Z"
+}

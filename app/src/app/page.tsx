@@ -1,8 +1,24 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
+import { getActingMember, getCurrentClient, getCurrentUser } from "@/lib/auth";
+import { homeFor } from "@/lib/roles";
 
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  // Signed in already? Straight to where this person works. Clients go to
+  // their portal; staff to the home of their most specific role; a login
+  // with no member row yet (or the dev bypass with nobody picked) to the
+  // all-access dashboard.
+  const user = await getCurrentUser();
+  if (user) {
+    if (await getCurrentClient()) redirect("/portal");
+    const member = await getActingMember();
+    redirect(member ? homeFor(member) : "/dashboard");
+  }
+
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-6 p-6 text-center">
       <div className="space-y-4">

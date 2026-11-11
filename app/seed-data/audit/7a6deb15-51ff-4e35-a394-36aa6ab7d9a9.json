@@ -1,0 +1,16 @@
+{
+  "id": "7a6deb15-51ff-4e35-a394-36aa6ab7d9a9",
+  "at": "2026-11-03T08:23:05.276Z",
+  "entity": "work",
+  "entityId": "3d4845ae-8b00-49a8-9f1e-b6cb0df62d3c",
+  "kind": "update",
+  "summary": "Carousel: Case study — café chain: approved by client via portal",
+  "actor": "Demo contact (client, portal)",
+  "changes": [
+    {
+      "field": "status",
+      "before": "pending_approval",
+      "after": "completed"
+    }
+  ]
+}

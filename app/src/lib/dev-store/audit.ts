@@ -11,19 +11,22 @@
  */
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { devDataRoot } from "@/lib/dev-store/root";
 import { randomUUID } from "node:crypto";
 
-const ROOT = path.join(process.cwd(), ".dev-data");
+const ROOT = devDataRoot();
 const AUDIT_DIR = path.join(ROOT, "audit");
 
 export const AUDIT_ENTITIES = [
     "lead",
-    "project",
     "invoice",
     "quotation",
     "campaign",
     "content",
     "client",
+    "contract",
+    "work",
+    "planner",
 ] as const;
 export type AuditEntity = (typeof AUDIT_ENTITIES)[number];
 

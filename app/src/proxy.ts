@@ -44,10 +44,14 @@ export async function proxy(request: NextRequest) {
     let response = NextResponse.next({ request });
 
     // DEV-ONLY: skip auth entirely so the UI is browseable without Supabase.
-    // Set DEV_AUTH_BYPASS=1 in .env.local. Force-disabled in production.
+    // Set DEV_AUTH_BYPASS=1 in .env.local. Off in production, except for the
+    // shared mock-up deployment, which opts in with NEXOPS_MOCKUP=1.
+    const mockup =
+        process.env.NEXOPS_MOCKUP === "1" ||
+        (process.env.VERCEL_GIT_COMMIT_REF ?? "").startsWith("mockup/");
     if (
-        process.env.NODE_ENV !== "production" &&
-        process.env.DEV_AUTH_BYPASS === "1"
+        mockup ||
+        (process.env.DEV_AUTH_BYPASS === "1" && process.env.NODE_ENV !== "production")
     ) {
         return response;
     }

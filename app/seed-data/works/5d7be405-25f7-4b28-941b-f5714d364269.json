@@ -1,0 +1,56 @@
+{
+  "id": "5d7be405-25f7-4b28-941b-f5714d364269",
+  "contractId": "0841f3f1-b247-49e1-ba4a-91646eaf92da",
+  "clientName": "Harmoni Dental Clinic",
+  "accountManager": "Yusuf",
+  "plannerLineId": "req:post:2026-11:0:5",
+  "addendumVersion": 0,
+  "type": "post",
+  "title": "Reel: Meet the dentist",
+  "channel": "Instagram",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-19",
+  "defaultDueDate": "2026-11-19",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Syafiq",
+      "pct": 50,
+      "hours": 1.5
+    },
+    {
+      "seat": "creative",
+      "member": "Mei Ling",
+      "pct": 50,
+      "hours": 2.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "c3feee39-24d1-4b09-8ada-00573f744bef"
+  },
+  "requestedAt": null,
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "createdAt": "2026-11-06T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.853Z"
+}

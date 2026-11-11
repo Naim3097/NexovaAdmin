@@ -1,25 +1,27 @@
-import { getCurrentClient } from "@/lib/auth";
+import { resolveActingClient } from "@/lib/portal/resolve-client";
 import { buildClientMonthlyReport } from "@/lib/reports";
 import { computeTotals, listInvoices } from "@/lib/data/invoices";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PrintButton } from "@/components/print-button";
+import { fmtMyr } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
 function currentMonth() {
     return new Date().toISOString().slice(0, 7);
 }
-function fmtMyr(n: number) {
-    return `MYR ${n.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    })}`;
-}
 
-export default async function PortalBillingPage() {
-    const client = await getCurrentClient();
-    if (!client) {
+export default async function PortalBillingPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ client?: string }>;
+}) {
+    const sp = await searchParams;
+    const acting = await resolveActingClient(
+        typeof sp.client === "string" ? sp.client : undefined,
+    );
+    if (!acting) {
         return (
             <div className="space-y-2">
                 <h1 className="text-2xl font-semibold">Billing</h1>
@@ -30,6 +32,7 @@ export default async function PortalBillingPage() {
         );
     }
 
+    const { client } = acting;
     const month = currentMonth();
     const [report, allInvoices] = await Promise.all([
         buildClientMonthlyReport(client.name, month),
@@ -83,7 +86,7 @@ export default async function PortalBillingPage() {
                 </CardHeader>
                 <CardContent className="space-y-1 text-sm">
                     <Row
-                        label={`Monthly retainer (${billing.deliveredContents}/${billing.includedContents} contents delivered)`}
+                        label={`Monthly retainer (${billing.deliveredContents}/${billing.includedContents} content delivered)`}
                         value={fmtMyr(billing.retainer)}
                     />
                     {extras.contentCount > 0 ? (

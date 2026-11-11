@@ -1,0 +1,30 @@
+{
+  "id": "8caeaca1-8ae2-465d-9eef-4a24f67d8c8e",
+  "name": "Naim",
+  "role": "CEO",
+  "email": "naim@nexova.local",
+  "phone": "",
+  "skills": "strategy, client relations",
+  "active": true,
+  "userId": null,
+  "accessLevel": "admin",
+  "systemRoles": [
+    "admin",
+    "management"
+  ],
+  "functions": [
+    "account_manager"
+  ],
+  "weeklyHours": 24,
+  "reservedHours": {
+    "management": 12,
+    "account_manager": 4
+  },
+  "hoursByType": {
+    "custom": 1.5,
+    "campaign": 2
+  },
+  "costRateMyr": 0,
+  "createdAt": "2026-11-10T04:34:03.237Z",
+  "updatedAt": "2026-11-10T04:34:03.237Z"
+}

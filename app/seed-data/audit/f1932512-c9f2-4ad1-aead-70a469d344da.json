@@ -1,0 +1,16 @@
+{
+  "id": "f1932512-c9f2-4ad1-aead-70a469d344da",
+  "at": "2026-11-02T05:34:01.601Z",
+  "entity": "work",
+  "entityId": "1d57c9b1-e84c-4b38-82b4-a1c7bcef59f4",
+  "kind": "status",
+  "summary": "Carousel: Month-end recap: pending approval → completed",
+  "actor": "Aina",
+  "changes": [
+    {
+      "field": "status",
+      "before": "pending_approval",
+      "after": "completed"
+    }
+  ]
+}

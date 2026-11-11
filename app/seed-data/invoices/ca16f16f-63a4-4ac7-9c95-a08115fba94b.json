@@ -1,0 +1,31 @@
+{
+  "id": "ca16f16f-63a4-4ac7-9c95-a08115fba94b",
+  "number": "INV-2026-0021",
+  "clientName": "Zenith Properties",
+  "contractId": "037ed49f-c145-4c4f-8015-48d83157409d",
+  "status": "paid",
+  "issueDate": "2026-09-29",
+  "dueDate": "2026-10-13",
+  "items": [
+    {
+      "id": "135b4ab0-6df2-4422-8555-6098d5c4edfc",
+      "description": "Mobile app — deposit (30%)",
+      "details": "",
+      "quantity": 1,
+      "unitPriceMyr": 13500
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "createdAt": "2026-09-29T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:04.179Z",
+  "paidAt": "2026-10-07T04:34:02.666Z",
+  "paymentProvider": null,
+  "paymentLink": null,
+  "paymentExternalId": null,
+  "paymentMeta": {},
+  "paymentLinkCreatedAt": null
+}

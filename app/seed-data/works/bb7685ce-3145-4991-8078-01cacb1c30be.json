@@ -1,0 +1,50 @@
+{
+  "id": "bb7685ce-3145-4991-8078-01cacb1c30be",
+  "contractId": "361d9eb1-fc59-469e-83cd-cb215a4b207c",
+  "clientName": "Lean.x Sdn Bhd",
+  "accountManager": "Aina",
+  "plannerLineId": "req:campaign:2026-11:1:1",
+  "addendumVersion": 0,
+  "type": "campaign",
+  "title": "Lead-gen campaign · 2026-11",
+  "channel": "Meta",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-12",
+  "defaultDueDate": "2026-11-12",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "in_progress",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Priya",
+      "pct": 100,
+      "hours": 8
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "campaign",
+    "id": "a3bd8576-e7dd-4464-a0b3-c4d1bc4bb5fb"
+  },
+  "requestedAt": "2026-11-02T04:34:02.666Z",
+  "startedAt": "2026-11-06T04:34:02.666Z",
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "createdAt": "2026-10-01T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.998Z"
+}

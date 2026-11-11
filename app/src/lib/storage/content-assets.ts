@@ -9,11 +9,12 @@
  */
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { devDataRoot } from "@/lib/dev-store/root";
 import { createServiceClient } from "@/lib/supabase/server";
 import { isSupabaseEnabled } from "@/lib/data/flag";
 
 const BUCKET = "content-assets" as const;
-const UPLOADS_DIR = path.join(process.cwd(), ".dev-data", "uploads");
+const UPLOADS_DIR = path.join(devDataRoot(), "uploads");
 
 export type StoredAsset = {
     name: string;

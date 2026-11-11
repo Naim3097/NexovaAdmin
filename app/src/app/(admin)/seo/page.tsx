@@ -5,7 +5,11 @@ import {
     type SeoStage,
 } from "@/lib/data/seo-articles";
 import { listClients } from "@/lib/data/clients";
+import { listContracts } from "@/lib/data/contracts";
 import { listTeamMembers } from "@/lib/data/team";
+import { listWorks } from "@/lib/data/works";
+import { getActingMember } from "@/lib/auth";
+import { seesEverything, visibleClients, visibleContracts } from "@/lib/scope";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +23,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { createSeoArticleAction } from "@/lib/seo-articles/actions";
+import { NewButton, NewSection, newFormHref } from "@/components/new-button";
 
 export const dynamic = "force-dynamic";
 
@@ -43,126 +48,137 @@ const STAGE_TONE: Record<
     archived: "outline",
 };
 
-export default async function SeoPage() {
-    const [articles, clients, team] = await Promise.all([
+const norm = (s: string) => s.trim().toLowerCase();
+
+export default async function SeoPage({ searchParams }: { searchParams: Promise<{ as?: string; new?: string }> }) {
+    const sp = await searchParams;
+    const [allArticles, allClients, team, contracts, works, member] = await Promise.all([
         listSeoArticles(),
         listClients(),
         listTeamMembers(),
+        listContracts(),
+        listWorks(),
+        getActingMember(sp.as),
     ]);
+    // Articles carry only a client name: a user sees those of the clients whose contracts they are on.
+    const myClientNames = new Set(visibleContracts(member, contracts, works).map((c) => norm(c.clientName)));
+    const articles = seesEverything(member) ? allArticles : allArticles.filter((a) => myClientNames.has(norm(a.clientName)));
+    const clients = visibleClients(member, allClients, contracts, works);
     const grouped = new Map<SeoStage, typeof articles>();
     for (const s of SEO_STAGES) grouped.set(s, []);
     for (const a of articles) grouped.get(a.stage)?.push(a);
+    const newHref = newFormHref("/seo", { as: sp.as });
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-2xl font-semibold md:text-3xl">
-                    SEO articles
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                    Brief → outline → draft → review → published. Tracks the
-                    long-form content pipeline separately from the social
-                    calendar.
-                </p>
+            <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                <div>
+                    <h1 className="text-2xl font-semibold md:text-3xl">
+                        SEO articles
+                    </h1>
+                    <p className="text-sm text-muted-foreground">
+                        Brief → outline → draft → review → published, kept apart from the social calendar.
+                    </p>
+                </div>
+                <NewButton href={newHref}>+ New article</NewButton>
             </div>
 
-            <form
-                action={createSeoArticleAction}
-                className="space-y-4 rounded-lg border bg-card p-4 md:p-6"
-            >
-                <h2 className="text-sm font-medium">New article brief</h2>
-                <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-1.5 md:col-span-2">
-                        <Label className="text-sm">Working title</Label>
-                        <Input
-                            name="title"
-                            required
-                            placeholder='e.g. "Best web design agency in Kuala Lumpur"'
-                        />
+            {/* Add form, folded until the button above opens it */}
+            <NewSection open={sp.new === "1"} title="New article brief">
+                <form action={createSeoArticleAction} className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-1.5 md:col-span-2">
+                            <Label className="text-sm">Working title</Label>
+                            <Input
+                                name="title"
+                                required
+                                placeholder='e.g. "Best web design agency in Kuala Lumpur"'
+                            />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Client</Label>
+                            <Input
+                                name="clientName"
+                                list="clients-datalist"
+                                defaultValue="Nexov"
+                                placeholder="Nexov"
+                            />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Owner</Label>
+                            <Select name="assignee" defaultValue="none">
+                                <SelectTrigger className="h-10">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">No owner</SelectItem>
+                                    {team
+                                        .filter((m) => m.active)
+                                        .map((m) => (
+                                            <SelectItem key={m.id} value={m.name}>
+                                                {m.name} ({m.role})
+                                            </SelectItem>
+                                        ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Target keyword</Label>
+                            <Input
+                                name="targetKeyword"
+                                placeholder="e.g. seo agency malaysia"
+                            />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">
+                                Secondary keywords (comma-separated)
+                            </Label>
+                            <Input
+                                name="secondaryKeywords"
+                                placeholder="local seo, search engine optimization"
+                            />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Search intent</Label>
+                            <Input
+                                name="searchIntent"
+                                placeholder="informational | commercial | transactional"
+                            />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Target word count</Label>
+                            <Input
+                                name="targetWordCount"
+                                type="number"
+                                min={0}
+                                step={100}
+                                placeholder="1500"
+                            />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Target publish date</Label>
+                            <Input name="targetDate" type="date" />
+                        </div>
+                        <div className="space-y-1.5 md:col-span-2">
+                            <Label className="text-sm">Brief / angle</Label>
+                            <Textarea
+                                name="brief"
+                                rows={3}
+                                placeholder="What angle, why now, internal links to include, anything important about tone or format."
+                            />
+                        </div>
                     </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Client</Label>
-                        <Input
-                            name="clientName"
-                            list="clients-datalist"
-                            defaultValue="Nexov"
-                            placeholder="Nexov"
-                        />
+                    <div className="flex justify-end">
+                        <Button type="submit">Create brief</Button>
                     </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Assignee</Label>
-                        <Select name="assignee" defaultValue="none">
-                            <SelectTrigger className="h-10">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="none">Unassigned</SelectItem>
-                                {team
-                                    .filter((m) => m.active)
-                                    .map((m) => (
-                                        <SelectItem key={m.id} value={m.name}>
-                                            {m.name} ({m.role})
-                                        </SelectItem>
-                                    ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Target keyword</Label>
-                        <Input
-                            name="targetKeyword"
-                            placeholder="e.g. seo agency malaysia"
-                        />
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">
-                            Secondary keywords (comma-separated)
-                        </Label>
-                        <Input
-                            name="secondaryKeywords"
-                            placeholder="local seo, search engine optimization"
-                        />
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Search intent</Label>
-                        <Input
-                            name="searchIntent"
-                            placeholder="informational | commercial | transactional"
-                        />
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Target word count</Label>
-                        <Input
-                            name="targetWordCount"
-                            type="number"
-                            min={0}
-                            step={100}
-                            placeholder="1500"
-                        />
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Target publish date</Label>
-                        <Input name="targetDate" type="date" />
-                    </div>
-                    <div className="space-y-1.5 md:col-span-2">
-                        <Label className="text-sm">Brief / angle</Label>
-                        <Textarea
-                            name="brief"
-                            rows={3}
-                            placeholder="What angle, why now, internal links to include, anything important about tone or format."
-                        />
-                    </div>
-                </div>
-                <div className="flex justify-end">
-                    <Button type="submit">Create brief</Button>
-                </div>
-                {/* Datalist used by clientName autocomplete */}
-                <datalist id="clients-datalist">
-                    {clients.map((c) => (
-                        <option key={c.id} value={c.name} />
-                    ))}
-                </datalist>
-            </form>
+                    {/* Datalist used by clientName autocomplete */}
+                    <datalist id="clients-datalist">
+                        {clients.map((c) => (
+                            <option key={c.id} value={c.name} />
+                        ))}
+                    </datalist>
+                </form>
+            </NewSection>
 
             {/* Pipeline */}
             <div className="grid gap-4 lg:grid-cols-3">

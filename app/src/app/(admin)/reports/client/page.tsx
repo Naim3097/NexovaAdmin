@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { requireTeamAccess } from "@/lib/auth";
+import { getActingMember, requireTeamAccess } from "@/lib/auth";
+import { hasFunction } from "@/lib/roles";
+import { seesFinance } from "@/lib/scope";
 import { listAllClientNames } from "@/lib/reports";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -39,6 +41,9 @@ async function openClientReportAction(formData: FormData) {
 
 export default async function ClientReportPickerPage() {
     await requireTeamAccess();
+    // Reports: managers, finance and account managers.
+    const member = await getActingMember();
+    if (!seesFinance(member) && !hasFunction(member, "account_manager")) redirect("/home");
     const clients = (await listAllClientNames()).filter(
         (c) => c !== "Nexov",
     );
@@ -65,16 +70,13 @@ export default async function ClientReportPickerPage() {
                     Client monthly report
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                    Generate a printable monthly summary for a client.
-                    Pulls campaigns, content, SEO, projects, and invoicing
-                    activity for the chosen month.
+                    A printable monthly summary for a client: contracts, tasks, campaigns, content, SEO and invoices for the month.
                 </p>
             </div>
 
             {clients.length === 0 ? (
                 <p className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
-                    No client activity yet. Add a campaign / project / invoice
-                    against a client (other than &quot;Nexov&quot;) first.
+                    No client activity yet — add a contract, campaign or invoice for a client first.
                 </p>
             ) : (
                 <form

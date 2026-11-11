@@ -1,14 +1,30 @@
 /**
  * Team members data adapter (single-table cutover).
  */
-import { randomUUID } from "node:crypto";
 import { createServiceClient } from "@/lib/supabase/server";
 import type { Database, TeamMemberRow } from "@/lib/supabase/types";
 import { isSupabaseEnabled } from "@/lib/data/flag";
 import * as devTeam from "@/lib/dev-store/team";
 
-export { TEAM_ROLES } from "@/lib/dev-store/team";
-export type { TeamMember, TeamRole } from "@/lib/dev-store/team";
+export {
+    TEAM_ROLES,
+    SYSTEM_ROLES,
+    SYSTEM_ROLE_LABEL,
+    FUNCTIONS,
+    FUNCTION_LABEL,
+    RESERVED_KEYS,
+    RESERVED_LABEL,
+    DEFAULT_HOURS_BY_TYPE,
+    DEFAULT_WEEKLY_HOURS,
+    isSystemRole,
+    isFunction,
+    isReservedKey,
+    roundHours,
+    deliveryWeeklyHours,
+    normalizeTeamMember,
+    buildTeamMember,
+} from "@/lib/dev-store/team";
+export type { TeamMember, TeamRole, SystemRole, TeamFunction, ReservedKey, CreateTeamMemberInput } from "@/lib/dev-store/team";
 
 type TeamMember = devTeam.TeamMember;
 type TeamRole = devTeam.TeamRole;
@@ -20,7 +36,7 @@ type TeamUpdate = Database["public"]["Tables"]["team_members"]["Update"];
 const TABLE = "team_members" as const;
 
 function rowToMember(row: TeamMemberRow): TeamMember {
-    return {
+    return devTeam.normalizeTeamMember({
         id: row.id,
         name: row.name,
         role: row.role as TeamRole,
@@ -30,9 +46,15 @@ function rowToMember(row: TeamMemberRow): TeamMember {
         active: row.active,
         userId: row.user_id,
         accessLevel: (row.access_level === "admin" ? "admin" : "standard") as "admin" | "standard",
+        systemRoles: (row.system_roles ?? []) as TeamMember["systemRoles"],
+        functions: (row.functions ?? []).filter(devTeam.isFunction),
+        weeklyHours: Number(row.weekly_hours),
+        reservedHours: (row.reserved_hours ?? {}) as TeamMember["reservedHours"],
+        hoursByType: (row.hours_by_type ?? {}) as TeamMember["hoursByType"],
+        costRateMyr: Number(row.cost_rate_myr),
         createdAt: row.created_at,
         updatedAt: row.updated_at,
-    };
+    });
 }
 
 function memberToInsert(m: TeamMember): TeamInsert {
@@ -40,6 +62,12 @@ function memberToInsert(m: TeamMember): TeamInsert {
         id: m.id,
         name: m.name,
         role: m.role,
+        system_roles: m.systemRoles,
+        functions: m.functions,
+        weekly_hours: m.weeklyHours,
+        reserved_hours: m.reservedHours,
+        hours_by_type: m.hoursByType,
+        cost_rate_myr: m.costRateMyr,
         email: m.email,
         phone: m.phone,
         skills: m.skills,
@@ -61,34 +89,19 @@ function patchToUpdate(patch: UpdatePatch): TeamUpdate {
     if (patch.active !== undefined) out.active = patch.active;
     if (patch.userId !== undefined) out.user_id = patch.userId;
     if (patch.accessLevel !== undefined) out.access_level = patch.accessLevel;
+    if (patch.systemRoles !== undefined) out.system_roles = patch.systemRoles;
+    if (patch.functions !== undefined) out.functions = patch.functions;
+    if (patch.weeklyHours !== undefined) out.weekly_hours = patch.weeklyHours;
+    if (patch.reservedHours !== undefined) out.reserved_hours = patch.reservedHours;
+    if (patch.hoursByType !== undefined) out.hours_by_type = patch.hoursByType;
+    if (patch.costRateMyr !== undefined) out.cost_rate_myr = patch.costRateMyr;
     if (patch.updatedAt !== undefined) out.updated_at = patch.updatedAt;
     return out;
 }
 
-export async function createTeamMember(input: {
-    name: string;
-    role?: TeamRole;
-    email?: string;
-    phone?: string;
-    skills?: string;
-    userId?: string | null;
-    accessLevel?: "admin" | "standard";
-}): Promise<TeamMember> {
+export async function createTeamMember(input: devTeam.CreateTeamMemberInput): Promise<TeamMember> {
     if (!isSupabaseEnabled("team")) return devTeam.createTeamMember(input);
-    const now = new Date().toISOString();
-    const m: TeamMember = {
-        id: randomUUID(),
-        name: input.name,
-        role: input.role ?? "Other",
-        email: input.email ?? "",
-        phone: input.phone ?? "",
-        skills: input.skills ?? "",
-        active: true,
-        userId: input.userId ?? null,
-        accessLevel: input.accessLevel ?? "standard",
-        createdAt: now,
-        updatedAt: now,
-    };
+    const m = devTeam.buildTeamMember(input);
     const sb = createServiceClient();
     const { data, error } = await sb
         .from(TABLE)

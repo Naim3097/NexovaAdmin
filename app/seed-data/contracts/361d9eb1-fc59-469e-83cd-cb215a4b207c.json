@@ -1,0 +1,108 @@
+{
+  "id": "361d9eb1-fc59-469e-83cd-cb215a4b207c",
+  "code": "CON-2026-0001",
+  "name": "Lean.x — brand growth engagement",
+  "clientName": "Lean.x Sdn Bhd",
+  "accountManager": "Aina",
+  "status": "active",
+  "phases": [
+    {
+      "key": "kickoff",
+      "name": "Kickoff",
+      "summary": "Onboarding, brand audit, access, strategy sign-off.",
+      "startMonth": "2026-10",
+      "endMonth": "2026-10"
+    },
+    {
+      "key": "foundation",
+      "name": "Foundation",
+      "summary": "Branding, website and account setup.",
+      "startMonth": "2026-10",
+      "endMonth": "2026-11"
+    },
+    {
+      "key": "production",
+      "name": "Production",
+      "summary": "Monthly posts, campaigns and articles.",
+      "startMonth": "2026-10",
+      "endMonth": "2027-03"
+    },
+    {
+      "key": "review",
+      "name": "Review",
+      "summary": "Performance review, renewal proposal, next plan.",
+      "startMonth": "2027-03",
+      "endMonth": "2027-03"
+    }
+  ],
+  "requirements": [
+    {
+      "type": "post",
+      "count": 8,
+      "cadence": "monthly",
+      "channel": "Instagram"
+    },
+    {
+      "type": "campaign",
+      "count": 1,
+      "cadence": "monthly",
+      "channel": "Meta"
+    },
+    {
+      "type": "seo",
+      "count": 2,
+      "cadence": "monthly",
+      "channel": "Blog"
+    },
+    {
+      "type": "custom",
+      "count": 1,
+      "cadence": "monthly",
+      "channel": "Call"
+    },
+    {
+      "type": "branding",
+      "count": 2,
+      "cadence": "once",
+      "channel": "Brand"
+    },
+    {
+      "type": "website",
+      "count": 2,
+      "cadence": "once",
+      "channel": "Website"
+    },
+    {
+      "type": "custom",
+      "count": 1,
+      "cadence": "once",
+      "channel": "Workshop"
+    }
+  ],
+  "crew": {
+    "dm": "Syafiq",
+    "creative": "Mei Ling",
+    "dev": "Farid",
+    "seo": "Daniel",
+    "am": "Aina"
+  },
+  "handover": null,
+  "stage": "delivering",
+  "startDate": "2026-10-01",
+  "endDate": "2027-03-31",
+  "reference": "QUO-2026-0001",
+  "quotationId": "171bff38-4654-4aec-8d24-905ed8973186",
+  "valueMyr": 54000,
+  "signedAt": "2026-10-01",
+  "signedBy": "Client director",
+  "fileUrl": "https://drive.example.com/contracts/signed.pdf",
+  "terms": "Six months: brand audit and guideline refresh, a landing page, 8 posts, one Meta lead-gen campaign and two SEO articles a month, a monthly strategy call. Ad spend billed at cost.",
+  "billing": {
+    "cadence": "monthly",
+    "amountMyr": 9000,
+    "invoiceDay": 2
+  },
+  "notes": "",
+  "createdAt": "2026-10-01T04:34:02.666Z",
+  "updatedAt": "2026-10-01T04:34:02.666Z"
+}

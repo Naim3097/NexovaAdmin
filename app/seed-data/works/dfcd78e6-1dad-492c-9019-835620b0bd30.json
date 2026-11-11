@@ -1,0 +1,56 @@
+{
+  "id": "dfcd78e6-1dad-492c-9019-835620b0bd30",
+  "contractId": "361d9eb1-fc59-469e-83cd-cb215a4b207c",
+  "clientName": "Lean.x Sdn Bhd",
+  "accountManager": "Aina",
+  "plannerLineId": "req:post:2027-02:0:3",
+  "addendumVersion": 0,
+  "type": "post",
+  "title": "Reel: FPX explainer",
+  "channel": "Instagram",
+  "month": "2027-02",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2027-02-09",
+  "defaultDueDate": "2027-02-09",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Syafiq",
+      "pct": 50,
+      "hours": 1.5
+    },
+    {
+      "seat": "creative",
+      "member": "Mei Ling",
+      "pct": 50,
+      "hours": 2.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "fc5313be-5c53-4015-97be-1fb9d0c1dd7c"
+  },
+  "requestedAt": null,
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "createdAt": "2026-10-01T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.674Z"
+}

@@ -1,0 +1,16 @@
+{
+  "id": "81245cee-fe85-44d3-8209-f27d2a4c0489",
+  "at": "2026-11-03T02:48:39.227Z",
+  "entity": "contract",
+  "entityId": "31d355c0-ae88-4160-8f3d-9093c268e608",
+  "kind": "update",
+  "summary": "Phase \"Build\" renamed to \"Development\" · 5 tasks updated",
+  "actor": "dev@nexova.local",
+  "changes": [
+    {
+      "field": "phase.build.name",
+      "before": "Build",
+      "after": "Development"
+    }
+  ]
+}

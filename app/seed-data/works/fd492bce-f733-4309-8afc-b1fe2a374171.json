@@ -1,0 +1,56 @@
+{
+  "id": "fd492bce-f733-4309-8afc-b1fe2a374171",
+  "contractId": "361d9eb1-fc59-469e-83cd-cb215a4b207c",
+  "clientName": "Lean.x Sdn Bhd",
+  "accountManager": "Aina",
+  "plannerLineId": "req:post:2026-11:0:1",
+  "addendumVersion": 0,
+  "type": "post",
+  "title": "Reel: Behind the scenes",
+  "channel": "Instagram",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-03",
+  "defaultDueDate": "2026-11-03",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Syafiq",
+      "pct": 50,
+      "hours": 1.5
+    },
+    {
+      "seat": "creative",
+      "member": "Mei Ling",
+      "pct": 50,
+      "hours": 2.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "c7ad94fa-05f1-4669-82a8-193f17e0a76c"
+  },
+  "requestedAt": "2026-11-02T04:34:02.666Z",
+  "startedAt": "2026-11-04T04:34:02.666Z",
+  "submittedAt": "2026-11-08T04:34:02.666Z",
+  "submission": {
+    "url": "https://drive.example.com/work/fd492bce",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Aina)",
+    "at": "2026-11-09T04:34:02.666Z"
+  },
+  "completedAt": "2026-11-09T04:34:02.666Z",
+  "notes": "",
+  "createdAt": "2026-10-01T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.989Z"
+}

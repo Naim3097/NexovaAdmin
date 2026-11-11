@@ -9,9 +9,10 @@
  */
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { devDataRoot } from "@/lib/dev-store/root";
 import { randomUUID } from "node:crypto";
 
-const ROOT = path.join(process.cwd(), ".dev-data");
+const ROOT = devDataRoot();
 const NOTIF_DIR = path.join(ROOT, "notifications");
 
 export const NOTIFICATION_KINDS = [
@@ -19,7 +20,9 @@ export const NOTIFICATION_KINDS = [
     "lead_won",
     "lead_lost",
     "deliverable_approved",
-    "project_signoff",
+    "work_requested",
+    "approval_requested",
+    "work_approved",
     "invoice_issued",
     "invoice_paid",
     "invoice_overdue",
@@ -32,6 +35,9 @@ export const NOTIFICATION_KINDS = [
     "quote_accepted",
     "task_due_soon",
     "renewal_due",
+    "handover_requested",
+    "handover_accepted",
+    "handover_declined",
     "system",
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];

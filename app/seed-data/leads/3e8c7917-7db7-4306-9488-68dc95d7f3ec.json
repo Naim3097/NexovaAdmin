@@ -1,0 +1,20 @@
+{
+  "id": "3e8c7917-7db7-4306-9488-68dc95d7f3ec",
+  "name": "Amira Hassan",
+  "company": "Lean.x Sdn Bhd",
+  "email": "amira@example.com",
+  "phone": "",
+  "source": "referral",
+  "sourceCampaignId": null,
+  "interestedIn": "Social media, Meta ads, SEO",
+  "estValueMyr": 54000,
+  "status": "won",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Aina",
+  "score": 92,
+  "autoIntake": false,
+  "createdAt": "2026-09-17T04:34:02.666Z",
+  "updatedAt": "2026-10-01T04:34:02.666Z"
+}

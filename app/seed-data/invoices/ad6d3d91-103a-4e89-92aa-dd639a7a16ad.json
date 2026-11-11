@@ -1,0 +1,31 @@
+{
+  "id": "ad6d3d91-103a-4e89-92aa-dd639a7a16ad",
+  "number": "INV-2026-0022",
+  "clientName": "Zenith Properties",
+  "contractId": "037ed49f-c145-4c4f-8015-48d83157409d",
+  "status": "sent",
+  "issueDate": "2026-11-05",
+  "dueDate": "2026-11-19",
+  "items": [
+    {
+      "id": "b1dfd8b8-2d99-40b8-99e8-4348ec9ab5cd",
+      "description": "Mobile app — milestone 1 (discovery + design)",
+      "details": "",
+      "quantity": 1,
+      "unitPriceMyr": 15000
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "createdAt": "2026-11-05T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:04.187Z",
+  "paidAt": null,
+  "paymentProvider": null,
+  "paymentLink": null,
+  "paymentExternalId": null,
+  "paymentMeta": {},
+  "paymentLinkCreatedAt": null
+}

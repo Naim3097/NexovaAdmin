@@ -1,0 +1,24 @@
+{
+  "id": "f78a2703-bd5f-4267-90ba-e078189104dd",
+  "name": "Daniel",
+  "role": "SEO",
+  "email": "daniel@nexova.local",
+  "phone": "",
+  "skills": "technical SEO, GMB, content strategy",
+  "active": true,
+  "userId": null,
+  "accessLevel": "standard",
+  "systemRoles": [
+    "user"
+  ],
+  "functions": [],
+  "weeklyHours": 32,
+  "reservedHours": {},
+  "hoursByType": {
+    "seo": 5,
+    "post": 1
+  },
+  "costRateMyr": 0,
+  "createdAt": "2026-11-10T04:34:03.244Z",
+  "updatedAt": "2026-11-10T04:34:03.244Z"
+}

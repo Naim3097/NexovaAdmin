@@ -122,7 +122,7 @@ export default async function ServiceDetailPage({
                             Delete service
                         </p>
                         <p className="text-xs text-muted-foreground">
-                            Removes the catalog entry only.
+                            Removes this service only.
                         </p>
                     </div>
                     <Button type="submit" variant="destructive">

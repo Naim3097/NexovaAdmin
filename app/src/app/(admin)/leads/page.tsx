@@ -19,7 +19,9 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { createLeadAction } from "@/lib/leads/actions";
+import { fmtMyrWhole } from "@/lib/format";
 import { WhatsAppButton } from "@/components/whatsapp-button";
+import { NewButton, NewSection, newFormHref } from "@/components/new-button";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +34,18 @@ const STATUS_VARIANT: Record<LeadStatus, "default" | "secondary" | "destructive"
     lost: "destructive",
 };
 
-export default async function LeadsPage() {
+/** What each stage is called on screen; the stored value stays as is. */
+const STATUS_LABEL: Record<LeadStatus, string> = {
+    new: "New",
+    contacted: "Contacted",
+    qualified: "Qualified",
+    proposal: "Quoted",
+    won: "Won",
+    lost: "Lost",
+};
+
+export default async function LeadsPage({ searchParams }: { searchParams: Promise<{ as?: string; new?: string }> }) {
+    const sp = await searchParams;
     const [leads, campaigns] = await Promise.all([
         listLeads(),
         listCampaigns(),
@@ -40,86 +53,88 @@ export default async function LeadsPage() {
     const attributable = campaigns.filter(
         (c) => c.status === "live" || c.status === "paused",
     );
+    const newHref = newFormHref("/leads", { as: sp.as });
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-2xl font-semibold md:text-3xl">Leads</h1>
-                <p className="text-sm text-muted-foreground">
-                    Track inbound interest and qualify into projects.
-                </p>
+            <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                <div>
+                    <h1 className="text-2xl font-semibold md:text-3xl">Leads</h1>
+                    <p className="text-sm text-muted-foreground">
+                        Track new interest and turn it into contracts.
+                    </p>
+                </div>
+                <NewButton href={newHref}>+ New lead</NewButton>
             </div>
 
-            {/* Add form */}
-            <form
-                action={createLeadAction}
-                className="space-y-4 rounded-lg border bg-card p-4 md:p-6"
-            >
-                <h2 className="text-sm font-medium">Add a lead</h2>
-                <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Name</Label>
-                        <Input name="name" required placeholder="Contact name" />
+            {/* Add form, folded until the button above opens it */}
+            <NewSection open={sp.new === "1"} title="New lead">
+                <form action={createLeadAction} className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Name</Label>
+                            <Input name="name" required placeholder="Contact name" />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Company</Label>
+                            <Input name="company" list="clients-datalist" placeholder="e.g. Lean.x Sdn Bhd" />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Email</Label>
+                            <Input name="email" type="email" inputMode="email" />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Phone</Label>
+                            <Input name="phone" type="tel" inputMode="tel" placeholder="+60..." />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Source</Label>
+                            <Select name="source" defaultValue="other">
+                                <SelectTrigger className="h-10">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {LEAD_SOURCES.map((s) => (
+                                        <SelectItem key={s} value={s}>
+                                            {s.replace(/_/g, " ")}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="text-sm">Estimated value (MYR)</Label>
+                            <Input name="estValueMyr" type="number" min={0} step={100} defaultValue={0} />
+                        </div>
+                        <div className="space-y-1.5 md:col-span-2">
+                            <Label className="text-sm">Source campaign (optional)</Label>
+                            <Select name="sourceCampaignId" defaultValue="none">
+                                <SelectTrigger className="h-10">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">— none —</SelectItem>
+                                    {attributable.map((c) => (
+                                        <SelectItem key={c.id} value={c.id}>
+                                            {c.name} ({c.platform})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                     <div className="space-y-1.5">
-                        <Label className="text-sm">Company</Label>
-                        <Input name="company" list="clients-datalist" placeholder="e.g. Lean.x Sdn Bhd" />
+                        <Label className="text-sm">Interested in</Label>
+                        <Input name="interestedIn" placeholder="Website, META Ads, …" />
                     </div>
                     <div className="space-y-1.5">
-                        <Label className="text-sm">Email</Label>
-                        <Input name="email" type="email" inputMode="email" />
+                        <Label className="text-sm">Notes</Label>
+                        <Textarea name="notes" rows={2} placeholder="Anything useful for the closer." />
                     </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Phone</Label>
-                        <Input name="phone" type="tel" inputMode="tel" placeholder="+60..." />
+                    <div className="flex justify-end">
+                        <Button type="submit">Add lead</Button>
                     </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Source</Label>
-                        <Select name="source" defaultValue="other">
-                            <SelectTrigger className="h-10">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {LEAD_SOURCES.map((s) => (
-                                    <SelectItem key={s} value={s}>
-                                        {s.replace(/_/g, " ")}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Estimated value (MYR)</Label>
-                        <Input name="estValueMyr" type="number" min={0} step={100} defaultValue={0} />
-                    </div>
-                    <div className="space-y-1.5 md:col-span-2">
-                        <Label className="text-sm">Source campaign (optional)</Label>
-                        <Select name="sourceCampaignId" defaultValue="none">
-                            <SelectTrigger className="h-10">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="none">— none —</SelectItem>
-                                {attributable.map((c) => (
-                                    <SelectItem key={c.id} value={c.id}>
-                                        {c.name} ({c.platform})
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-                <div className="space-y-1.5">
-                    <Label className="text-sm">Interested in</Label>
-                    <Input name="interestedIn" placeholder="Website, META Ads, …" />
-                </div>
-                <div className="space-y-1.5">
-                    <Label className="text-sm">Notes</Label>
-                    <Textarea name="notes" rows={2} placeholder="Anything useful for the closer." />
-                </div>
-                <div className="flex justify-end">
-                    <Button type="submit">Add lead</Button>
-                </div>
-            </form>
+                </form>
+            </NewSection>
 
             {/* List */}
             <div className="rounded-lg border bg-card">
@@ -128,7 +143,11 @@ export default async function LeadsPage() {
                 </div>
                 {leads.length === 0 ? (
                     <p className="p-6 text-sm text-muted-foreground">
-                        No leads yet. Add one above.
+                        No leads yet.{" "}
+                        <Link href={newHref} className="underline">
+                            Add the first one
+                        </Link>
+                        .
                     </p>
                 ) : (
                     <ul className="divide-y">
@@ -166,11 +185,11 @@ export default async function LeadsPage() {
                                         <p className="truncate text-xs text-muted-foreground">
                                             {l.interestedIn || "—"} · {l.source.replace(/_/g, " ")}
                                             {l.estValueMyr > 0
-                                                ? ` · MYR ${l.estValueMyr.toLocaleString()}`
+                                                ? ` · ${fmtMyrWhole(l.estValueMyr)}`
                                                 : ""}
                                             {l.assignedTo
                                                 ? ` · @${l.assignedTo}`
-                                                : " · unassigned"}
+                                                : " · no owner"}
                                         </p>
                                     </div>
                                     {/* Fixed 3-column meta grid so every row lines
@@ -196,7 +215,7 @@ export default async function LeadsPage() {
                                                 variant={STATUS_VARIANT[l.status]}
                                                 className="w-[84px] justify-center"
                                             >
-                                                {l.status}
+                                                {STATUS_LABEL[l.status]}
                                             </Badge>
                                         )}
                                     </div>
@@ -206,7 +225,7 @@ export default async function LeadsPage() {
                     </ul>
                 )}
                 <div className="border-t p-3 text-xs text-muted-foreground">
-                    Statuses: {LEAD_STATUSES.join(" → ")}
+                    Stages: {LEAD_STATUSES.map((s) => STATUS_LABEL[s]).join(" → ")}
                 </div>
             </div>
         </div>

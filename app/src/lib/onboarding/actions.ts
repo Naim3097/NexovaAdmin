@@ -13,22 +13,10 @@ import {
     updateSubmission,
     type UploadedFile,
 } from "@/lib/data/onboarding";
-import { createProject, instantiateProjectStages } from "@/lib/data/projects";
 import { onboardingFormSchema } from "@/lib/onboarding/schema";
 import { notify } from "@/lib/data/notifications";
 import { aiSummariseSubmission, emailSendOnboardingLink } from "@/lib/agent/tools";
 import { headers } from "next/headers";
-import {
-    SERVICE_CATEGORIES,
-    type ServiceCategory,
-} from "@/lib/dev-store/services";
-
-function asServiceCategory(v: FormDataEntryValue | null): ServiceCategory {
-    const s = String(v ?? "").trim();
-    return (SERVICE_CATEGORIES as readonly string[]).includes(s)
-        ? (s as ServiceCategory)
-        : "website";
-}
 
 /**
  * Run the AI summariser against a submission and persist the result under
@@ -325,35 +313,6 @@ export async function saveNotesAction(formData: FormData) {
     revalidatePath(`/onboarding/${id}`);
 }
 
-export async function convertToProjectAction(formData: FormData) {
-    const id = String(formData.get("id") ?? "");
-    if (!id) return;
-    const sub = await getSubmissionById(id);
-    if (!sub) return;
-    const projectName =
-        (typeof sub.data.business_name === "string" && sub.data.business_name) ||
-        sub.clientName ||
-        "Untitled project";
-    const category = asServiceCategory(formData.get("serviceCategory"));
-    const proj = await createProject({
-        name: projectName,
-        clientName: sub.clientName,
-        onboardingSubmissionId: sub.id,
-    });
-
-    // Generate the delivery pipeline from the service's workflow template
-    // (replaces AI task seeding). The AI brief stays on the submission.
-    try {
-        await instantiateProjectStages(proj.id, category);
-    } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error("Instantiating project stages failed", proj.id, e);
-    }
-
-    revalidatePath("/projects");
-    revalidatePath(`/onboarding/${id}`);
-    redirect(`/projects/${proj.id}`);
-}
 
 // ---------- helpers ----------
 

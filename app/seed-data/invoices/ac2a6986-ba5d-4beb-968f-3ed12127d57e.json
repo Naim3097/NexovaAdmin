@@ -1,0 +1,31 @@
+{
+  "id": "ac2a6986-ba5d-4beb-968f-3ed12127d57e",
+  "number": "INV-2026-0018",
+  "clientName": "Nusa Fitness Studio",
+  "contractId": "34acfe70-b3a6-493c-bf02-c0f709b91153",
+  "status": "paid",
+  "issueDate": "2026-10-02",
+  "dueDate": "2026-10-16",
+  "items": [
+    {
+      "id": "4790c07d-5c92-4cab-91fc-53f498307e8d",
+      "description": "Nusa Fitness — social starter — 2026-10",
+      "details": "CON-2026-0002",
+      "quantity": 1,
+      "unitPriceMyr": 2500
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "createdAt": "2026-10-02T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:04.149Z",
+  "paidAt": "2026-10-09T04:34:02.666Z",
+  "paymentProvider": null,
+  "paymentLink": null,
+  "paymentExternalId": null,
+  "paymentMeta": {},
+  "paymentLinkCreatedAt": null
+}

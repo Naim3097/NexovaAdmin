@@ -210,9 +210,9 @@ export function MerchantSubmissionView({
                         <Item label="Person in charge" value="Owner (same person)" />
                     ) : (
                         <>
-                            <Item label="PIC" value={str(d, "pic_name")} />
-                            <Item label="PIC phone" value={str(d, "pic_phone")} />
-                            <Item label="PIC email" value={str(d, "pic_email")} />
+                            <Item label="Person in charge" value={str(d, "pic_name")} />
+                            <Item label="Their phone" value={str(d, "pic_phone")} />
+                            <Item label="Their email" value={str(d, "pic_email")} />
                         </>
                     )}
                 </dl>
@@ -242,7 +242,7 @@ export function MerchantSubmissionView({
                                             {dir.name}
                                             {dir.is_pic ? (
                                                 <span className="ml-2 text-xs text-muted-foreground">
-                                                    PIC
+                                                    in charge
                                                 </span>
                                             ) : null}
                                             <span className="block text-xs font-normal text-muted-foreground">

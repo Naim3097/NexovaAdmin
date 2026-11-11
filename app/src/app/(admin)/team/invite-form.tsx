@@ -16,7 +16,20 @@ import { inviteTeamMemberAction, type InviteState } from "@/lib/team/actions";
 
 const initial: InviteState = { ok: false };
 
-export function InviteForm({ roles }: { roles: readonly string[] }) {
+type Option = { value: string; label: string; hint?: string };
+
+export function InviteForm({
+    roles,
+    systemRoles,
+    functions,
+}: {
+    /** Company roles (the job they do). */
+    roles: readonly string[];
+    /** Permission sets (one per login), value + label, passed in because the role table is server-only. */
+    systemRoles: ReadonlyArray<Option>;
+    /** Duties (several allowed). */
+    functions: ReadonlyArray<Option>;
+}) {
     const [state, formAction, pending] = useActionState(
         inviteTeamMemberAction,
         initial,
@@ -38,7 +51,7 @@ export function InviteForm({ roles }: { roles: readonly string[] }) {
                         <Input name="name" required placeholder="e.g. Danis" />
                     </div>
                     <div className="space-y-1.5">
-                        <Label className="text-sm">Role</Label>
+                        <Label className="text-sm">Job</Label>
                         <Select name="role" defaultValue="Other">
                             <SelectTrigger className="h-10">
                                 <SelectValue />
@@ -64,6 +77,47 @@ export function InviteForm({ roles }: { roles: readonly string[] }) {
                 <div className="space-y-1.5">
                     <Label className="text-sm">Skills (comma-separated)</Label>
                     <Input name="skills" placeholder="React, Figma, Copywriting" />
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                    <fieldset className="space-y-1.5">
+                        <legend className="text-sm font-medium">Access</legend>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+                            {systemRoles.map((r) => (
+                                <label key={r.value} className="flex items-center gap-2 text-sm">
+                                    <input
+                                        type="radio"
+                                        name="systemRole"
+                                        value={r.value}
+                                        defaultChecked={r.value === "user"}
+                                        className="size-4 border-input"
+                                    />
+                                    {r.label}
+                                </label>
+                            ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Admin and management see everything; a user sees only what is assigned to them.
+                        </p>
+                    </fieldset>
+                    <fieldset className="space-y-1.5">
+                        <legend className="text-sm font-medium">Duties</legend>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+                            {functions.map((f) => (
+                                <label key={f.value} className="flex items-center gap-2 text-sm">
+                                    <input
+                                        type="checkbox"
+                                        name="functions"
+                                        value={f.value}
+                                        className="size-4 rounded border-input"
+                                    />
+                                    {f.label}
+                                </label>
+                            ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Each adds pages and work (pipeline, approvals, finance).
+                        </p>
+                    </fieldset>
                 </div>
                 <div className="flex justify-end">
                     <Button type="submit" disabled={pending}>

@@ -1,0 +1,31 @@
+{
+  "id": "0045fb49-3b72-4787-b2cf-06e90ed28e53",
+  "number": "INV-2026-0004",
+  "clientName": "Lean.x Sdn Bhd",
+  "contractId": null,
+  "status": "paid",
+  "issueDate": "2026-09-02",
+  "dueDate": "2026-09-16",
+  "items": [
+    {
+      "id": "12d1cf68-1cea-4ea0-b013-2a274a885c30",
+      "description": "Previous retainer — 2026-09",
+      "details": "",
+      "quantity": 1,
+      "unitPriceMyr": 4500
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "createdAt": "2026-09-02T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:04.064Z",
+  "paidAt": "2026-09-16T04:34:02.666Z",
+  "paymentProvider": null,
+  "paymentLink": null,
+  "paymentExternalId": null,
+  "paymentMeta": {},
+  "paymentLinkCreatedAt": null
+}

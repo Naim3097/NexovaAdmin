@@ -6,7 +6,6 @@ import {
     computeTotals,
     getInvoiceById,
 } from "@/lib/data/invoices";
-import { listProjects } from "@/lib/data/projects";
 import { listServices } from "@/lib/data/services";
 import {
     formatAddress,
@@ -21,13 +20,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import {
     addInvoiceItemAction,
     deleteInvoiceAction,
     deleteInvoiceItemAction,
@@ -40,15 +32,9 @@ import { LineItemForm } from "@/components/line-item-form";
 import { DocumentOverrideFields } from "@/components/document-override-fields";
 import { PaymentSection } from "./payment-section";
 import { ManualPaymentForm } from "./manual-payment-form";
+import { fmtMyr } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
-
-function fmtMyr(n: number) {
-    return `MYR ${n.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    })}`;
-}
 
 export default async function InvoiceDetailPage({
     params,
@@ -59,8 +45,7 @@ export default async function InvoiceDetailPage({
     const { id } = await params;
     const inv = await getInvoiceById(id);
     if (!inv) notFound();
-    const [projects, services, agency] = await Promise.all([
-        listProjects(),
+    const [services, agency] = await Promise.all([
         listServices(),
         getAgencyProfile(),
     ]);
@@ -108,23 +93,12 @@ export default async function InvoiceDetailPage({
                 </div>
                 <p className="text-sm text-muted-foreground">
                     {inv.clientName}
-                    {inv.projectId ? (
-                        <>
-                            {" · "}
-                            <Link
-                                href={`/projects/${inv.projectId}`}
-                                className="underline"
-                            >
-                                project
-                            </Link>
-                        </>
-                    ) : null}
                 </p>
             </div>
 
             {/* Status pills */}
             <section className="rounded-lg border bg-card p-4 md:p-6">
-                <h2 className="text-sm font-medium">Move to status</h2>
+                <h2 className="text-sm font-medium">Move to</h2>
                 <div className="mt-3 flex flex-wrap gap-2">
                     {INVOICE_STATUSES.map((s) => (
                         <form key={s} action={setInvoiceStatusAction}>
@@ -252,25 +226,6 @@ export default async function InvoiceDetailPage({
                             defaultValue={inv.clientName}
                             required
                         />
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Project</Label>
-                        <Select
-                            name="projectId"
-                            defaultValue={inv.projectId ?? "none"}
-                        >
-                            <SelectTrigger className="h-10">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="none">— None —</SelectItem>
-                                {projects.map((p) => (
-                                    <SelectItem key={p.id} value={p.id}>
-                                        {p.name} ({p.clientName})
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
                     </div>
                     <div className="space-y-1.5">
                         <Label className="text-sm">Issue date</Label>

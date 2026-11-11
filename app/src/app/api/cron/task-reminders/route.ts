@@ -1,10 +1,12 @@
 /**
- * Daily cron — ping the PIC 1 day before a sprint task's deadline.
+ * Daily cron — ping the PIC 1 day before a sprint task's deadline, and the
+ * people on a contract task the day before it is due, on the day, and the
+ * first day it is overdue.
  *
- * Vercel Cron calls this once a day (see app/vercel.json). It finds open tasks
- * whose deadline is TOMORROW and that haven't been reminded for that date yet,
- * posts a Telegram alert (via notify → team chat, tagging the PIC by name), and
- * stamps `remindedFor` so re-runs that day don't double-ping.
+ * Vercel Cron calls this once a day (see app/vercel.json). It finds open sprint
+ * tasks whose deadline is TOMORROW and that haven't been reminded for that date
+ * yet, posts a Telegram alert (via notify → team chat, tagging the PIC by name),
+ * and stamps `remindedFor` so re-runs that day don't double-ping.
  *
  * Auth: when CRON_SECRET is set, the caller must send
  *   Authorization: Bearer <CRON_SECRET>
@@ -13,7 +15,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/lib/env";
 import { listTasksDueOn, updateSprintTask } from "@/lib/data/sprint-tasks";
-import { listProjects } from "@/lib/data/projects";
+import { listWorks } from "@/lib/data/works";
+import { isOpen } from "@/lib/works/helpers";
 import { listClients } from "@/lib/data/clients";
 import {
     computeTotals,
@@ -41,6 +44,7 @@ async function run(req: NextRequest) {
         new Date(Date.now() + offset * DAY).toISOString().slice(0, 10);
     const today = day(0);
     const tomorrow = day(1);
+    const yesterday = day(-1);
 
     let pinged = 0;
 
@@ -57,23 +61,32 @@ async function run(req: NextRequest) {
         pinged++;
     }
 
-    // 2) Project stages with a PIC deadline. Single-day conditions (== tomorrow,
-    //    == today) so the daily cron naturally fires each once — no dedup state.
-    const projects = await listProjects();
-    for (const pr of projects) {
-        for (const s of pr.stages) {
-            if (s.state === "done" || !s.dueDate) continue;
-            if (s.dueDate === tomorrow || s.dueDate === today) {
-                const when = s.dueDate === today ? "today" : "tomorrow";
-                await notify({
-                    kind: "task_due_soon",
-                    title: `Stage due ${when}: ${s.label} — ${pr.name}`,
-                    body: `PIC: ${s.assignee || "unassigned"} · ${pr.clientName}`,
-                    link: `/projects/${pr.id}`,
-                });
-                pinged++;
-            }
-        }
+    // 2) Contract tasks. Single-day conditions (== tomorrow, == today, and
+    //    == yesterday for the first overdue day) so the daily cron naturally
+    //    fires each once — no dedup state on the task.
+    const works = await listWorks();
+    for (const w of works) {
+        if (!isOpen(w) || !w.dueDate) continue;
+        const when =
+            w.dueDate === tomorrow
+                ? "due tomorrow"
+                : w.dueDate === today
+                  ? "due today"
+                  : w.dueDate === yesterday
+                    ? "overdue"
+                    : null;
+        if (!when) continue;
+        const people = w.split
+            .map((s) => s.member)
+            .filter(Boolean)
+            .join(", ");
+        await notify({
+            kind: "task_due_soon",
+            title: `${w.title} ${when} · ${w.clientName}`,
+            body: `${w.phaseName ? `${w.phaseName} · ` : ""}due ${w.dueDate} · ${people || "unassigned"}${w.accountManager ? ` · AM: ${w.accountManager}` : ""}`,
+            link: `/works/${w.id}`,
+        });
+        pinged++;
     }
 
     // 3) Client package renewals — heads-up at 30 days, 7 days, and on the day.

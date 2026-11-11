@@ -1,0 +1,25 @@
+{
+  "id": "cb235626-7ba2-4b27-8d0d-a0d075d52561",
+  "name": "Mei Ling",
+  "role": "UI/UX",
+  "email": "mei.ling@nexova.local",
+  "phone": "",
+  "skills": "Figma, branding, motion",
+  "active": true,
+  "userId": null,
+  "accessLevel": "standard",
+  "systemRoles": [
+    "user"
+  ],
+  "functions": [],
+  "weeklyHours": 32,
+  "reservedHours": {},
+  "hoursByType": {
+    "post": 2.5,
+    "branding": 8,
+    "website": 6
+  },
+  "costRateMyr": 0,
+  "createdAt": "2026-11-10T04:34:03.241Z",
+  "updatedAt": "2026-11-10T04:34:03.241Z"
+}

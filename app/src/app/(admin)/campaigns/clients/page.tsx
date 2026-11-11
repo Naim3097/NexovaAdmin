@@ -6,15 +6,9 @@ import {
     type Campaign,
 } from "@/lib/data/campaigns";
 import { listLeads } from "@/lib/data/leads";
+import { fmtMyr, fmtMyrShort } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
-
-function fmtMyr(n: number) {
-    return `MYR ${n.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    })}`;
-}
 
 type ClientRollup = {
     clientName: string;
@@ -85,17 +79,16 @@ export default async function CampaignsByClientPage() {
                     Campaigns by client
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                    Lifetime rollup. Useful for monthly client reviews and
-                    invoicing the management fee.
+                    Lifetime totals per client, handy for monthly reviews and billing the management fee.
                 </p>
             </div>
 
             <div className="grid gap-3 md:grid-cols-3">
-                <Kpi label="Total ad spend" value={fmtMyr(grandSpend)} />
-                <Kpi label="Total mgmt fee" value={fmtMyr(grandFee)} />
+                <Kpi label="Total ad spend" value={fmtMyrShort(grandSpend)} />
+                <Kpi label="Total management fee" value={fmtMyrShort(grandFee)} />
                 <Kpi
                     label="Won revenue (CRM)"
-                    value={fmtMyr(grandWon)}
+                    value={fmtMyrShort(grandWon)}
                 />
             </div>
 
@@ -116,7 +109,7 @@ export default async function CampaignsByClientPage() {
                                     <th className="px-4 py-2 text-right">Active</th>
                                     <th className="px-4 py-2 text-right">Spend</th>
                                     <th className="px-4 py-2 text-right">
-                                        Mgmt fee
+                                        Fee
                                     </th>
                                     <th className="px-4 py-2 text-right">
                                         CRM leads

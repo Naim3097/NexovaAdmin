@@ -1,0 +1,56 @@
+{
+  "id": "63720b3c-928f-4c22-96d1-56c3ed89491b",
+  "contractId": "34acfe70-b3a6-493c-bf02-c0f709b91153",
+  "clientName": "Nusa Fitness Studio",
+  "accountManager": "Aina",
+  "plannerLineId": "req:post:2026-12:0:2",
+  "addendumVersion": 0,
+  "type": "post",
+  "title": "Carousel: Beginner's guide to HIIT",
+  "channel": "Instagram",
+  "month": "2026-12",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-12-10",
+  "defaultDueDate": "2026-12-10",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Syafiq",
+      "pct": 50,
+      "hours": 1.5
+    },
+    {
+      "seat": "creative",
+      "member": "Mei Ling",
+      "pct": 50,
+      "hours": 2.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "ea88925c-9183-4f9b-85c7-3accc013c39e"
+  },
+  "requestedAt": null,
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "createdAt": "2026-10-01T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.764Z"
+}

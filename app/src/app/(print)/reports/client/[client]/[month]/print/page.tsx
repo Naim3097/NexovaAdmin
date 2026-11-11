@@ -149,10 +149,10 @@ export default async function ClientReportPrintPage({
             label: "SEO articles",
             value: String(report.seoArticlesPublished.length),
         });
-    if (report.projects.length > 0)
+    if (report.contracts.length > 0)
         kpis.push({
-            label: "Active projects",
-            value: String(report.projects.length),
+            label: "Active contracts",
+            value: String(report.contracts.length),
         });
 
     const hasAnything =
@@ -463,34 +463,41 @@ export default async function ClientReportPrintPage({
                     </section>
                 ) : null}
 
-                {/* ─── Projects ─── */}
-                {report.projects.length > 0 ? (
+                {/* ─── Contracts ─── */}
+                {report.contracts.length > 0 ? (
                     <section className="mt-10">
-                        <SectionTitle no={nextNo()}>Projects</SectionTitle>
+                        <SectionTitle no={nextNo()}>Contracts</SectionTitle>
                         <ul className="mt-4 space-y-3">
-                            {report.projects.map((r) => (
+                            {report.contracts.map((r) => (
                                 <li
-                                    key={r.project.id}
+                                    key={r.contract.id}
                                     className="avoid-break flex items-baseline justify-between gap-4 border-b border-neutral-100 pb-3"
                                 >
                                     <div>
                                         <p className="text-sm font-medium">
-                                            {r.project.name}
+                                            {r.name}
                                         </p>
                                         <p className="mt-0.5 text-xs text-neutral-500">
-                                            {r.project.phase.replace(/_/g, " ")}
-                                            {r.deliverablesApprovedInMonth > 0
-                                                ? ` · ${r.deliverablesApprovedInMonth} deliverable${r.deliverablesApprovedInMonth === 1 ? "" : "s"} approved this month`
+                                            {r.stageLabel}
+                                            {r.progress.total > 0
+                                                ? ` · ${r.progress.done}/${r.progress.total} tasks done`
+                                                : ""}
+                                            {r.completedInMonth > 0
+                                                ? ` · ${r.completedInMonth} completed this month`
+                                                : ""}
+                                            {r.currentPhase
+                                                ? ` · now: ${r.currentPhase}`
                                                 : ""}
                                         </p>
                                     </div>
                                     <span className="shrink-0 text-xs text-neutral-600">
-                                        {r.signedOffInMonth
-                                            ? "Signed off"
-                                            : r.project.status.replace(
-                                                  /_/g,
-                                                  " ",
-                                              )}
+                                        {r.nextDue
+                                            ? `Next: ${r.nextDue.title} · ${fmtDate(r.nextDue.dueDate)}`
+                                            : r.progress.total > 0 &&
+                                                r.progress.done ===
+                                                    r.progress.total
+                                              ? "All tasks completed"
+                                              : ""}
                                     </span>
                                 </li>
                             ))}

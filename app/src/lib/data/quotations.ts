@@ -74,7 +74,6 @@ function rowToQuotation(row: QuotationRow, items: QuotationItemRow[]): Quotation
         id: row.id,
         number: row.number,
         clientName: row.client_name,
-        projectId: row.project_id,
         status: row.status as QuotationStatus,
         issueDate: row.issue_date,
         validUntil: row.valid_until,
@@ -104,7 +103,6 @@ function quotationToInsert(q: Quotation): QuotationInsert {
         id: q.id,
         number: q.number,
         client_name: q.clientName,
-        project_id: q.projectId,
         status: q.status,
         issue_date: q.issueDate,
         valid_until: q.validUntil,
@@ -128,7 +126,6 @@ function quotationToInsert(q: Quotation): QuotationInsert {
 function patchToUpdate(patch: UpdatePatch): QuotationUpdate {
     const out: QuotationUpdate = {};
     if (patch.clientName !== undefined) out.client_name = patch.clientName;
-    if (patch.projectId !== undefined) out.project_id = patch.projectId;
     if (patch.status !== undefined) out.status = patch.status;
     if (patch.issueDate !== undefined) out.issue_date = patch.issueDate;
     if (patch.validUntil !== undefined) out.valid_until = patch.validUntil;
@@ -172,7 +169,6 @@ async function nextQuotationNumber(): Promise<string> {
 
 export async function createQuotation(input: {
     clientName: string;
-    projectId?: string | null;
     issueDate?: string;
     validUntil?: string;
     taxRatePct?: number;
@@ -194,7 +190,6 @@ export async function createQuotation(input: {
         id: randomUUID(),
         number: await nextQuotationNumber(),
         clientName: input.clientName,
-        projectId: input.projectId ?? null,
         status: "draft",
         issueDate: issue,
         validUntil: valid,
@@ -263,16 +258,6 @@ export async function getQuotationById(id: string): Promise<Quotation | null> {
         .eq("quotation_id", id);
     if (itemsErr) throw new Error(`getQuotationById(items): ${itemsErr.message}`);
     return rowToQuotation(row as QuotationRow, (items ?? []) as QuotationItemRow[]);
-}
-
-export async function listQuotationsForProject(
-    projectId: string,
-): Promise<Quotation[]> {
-    if (!isSupabaseEnabled("quotations")) {
-        return devQuotations.listQuotationsForProject(projectId);
-    }
-    const all = await listQuotations();
-    return all.filter((q) => q.projectId === projectId);
 }
 
 export async function updateQuotation(

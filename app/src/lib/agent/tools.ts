@@ -41,20 +41,34 @@ import {
 } from "@/lib/data/content";
 import { listClients, createClient } from "@/lib/data/clients";
 import {
-    listProjects,
-    getProjectById,
-    createProject,
-    instantiateProjectStages,
-    addProjectTask,
-    toggleProjectTask,
-    setProjectTaskAssignee,
-    setProjectPhase,
-    advanceProjectStage,
-    setProjectStageAssignee,
-    deleteProject,
-    deleteProjectTask,
-} from "@/lib/data/projects";
-import { SERVICE_CATEGORIES } from "@/lib/dev-store/services";
+    listContracts,
+    getContractById,
+    CONTRACT_STAGE_LABEL,
+    CONTRACT_STATUSES,
+    type Contract,
+} from "@/lib/data/contracts";
+import {
+    listWorks,
+    getWorkById,
+    updateWork,
+    TASK_STATUSES,
+    type TaskStatus,
+    type Work,
+    type WorkPatch,
+    type WorkShare,
+} from "@/lib/data/works";
+import { LINE_TYPE_LABEL, SEATS } from "@/lib/data/planners";
+import {
+    awaitsApprovalFrom,
+    involves,
+    isOpen,
+    isOverdue,
+    members,
+    nextDue,
+    pendingFrom,
+    progress,
+    splitTotal,
+} from "@/lib/works/helpers";
 import {
     listInvoices,
     createInvoice,
@@ -62,6 +76,8 @@ import {
     computeTotals,
 } from "@/lib/data/invoices";
 import { listTeamMembers, createTeamMember, TEAM_ROLES } from "@/lib/data/team";
+import { withHours } from "@/lib/capacity/helpers";
+import { syncTaskForPost } from "@/lib/works/sync";
 import {
     createQuotation,
     updateQuotation,
@@ -393,6 +409,7 @@ export const contentRequestChanges: AgentTool<
             fileUrl: input.fileUrl,
         });
         if (r.error) return { ok: false, error: r.error };
+        await syncTaskForPost(input.contentId, "changes", "client (via agent)", input.body);
         return {
             ok: true,
             reviewStatus: r.post?.reviewStatus,
@@ -425,6 +442,7 @@ export const contentApprove: AgentTool<
             id: input.contentId,
             by: input.by,
         });
+        await syncTaskForPost(p.id, "approved", input.by ?? "client (via agent)", "");
         return {
             id: p.id,
             reviewStatus: p.reviewStatus,
@@ -466,8 +484,10 @@ export const contentCreateRequest: AgentTool<
 // ---------------------------------------------------------------------------
 // Scrum-master READ tools (standup, overdue tracking, board summary)
 //
-// There is no standalone "tasks" table: delivery work lives as embedded
-// `tasks[]` / `stages[]` on each project, and `content_posts` carry their own
+// Delivery work is Client → Contract → Works (tasks). Each work sits under one
+// contract in one month and one contract phase, carries a due date, a status
+// (not_started → in_progress → pending_approval → completed) and a %
+// responsibility split across team members. `content_posts` carry their own
 // `scheduledFor` due date + review state. These read tools flatten those into
 // the shape a scrum master needs. All are pure reads — safe to call freely.
 // ---------------------------------------------------------------------------
@@ -475,6 +495,137 @@ export const contentCreateRequest: AgentTool<
 /** Today as YYYY-MM-DD (UTC). Used for overdue comparisons. */
 function todayISO(): string {
     return new Date().toISOString().slice(0, 10);
+}
+
+/**
+ * Resolve a person's name as the agent typed it to the exact team-member name
+ * stored on works (split members and the account manager are exact strings).
+ * Falls back to the trimmed input when nobody matches, so the filter still
+ * applies (and simply matches nothing).
+ */
+async function canonicalMemberName(name: string): Promise<string> {
+    const key = name.trim().toLowerCase();
+    const team = await listTeamMembers();
+    return team.find((m) => m.name.trim().toLowerCase() === key)?.name ?? name.trim();
+}
+
+/** Works grouped by contract id (one listWorks() call feeds every contract). */
+function groupByContract(works: Work[]): Map<string, Work[]> {
+    const out = new Map<string, Work[]>();
+    for (const w of works) {
+        const list = out.get(w.contractId);
+        if (list) list.push(w);
+        else out.set(w.contractId, [w]);
+    }
+    return out;
+}
+
+// ---- shared shapes --------------------------------------------------------
+
+const workShare = z.object({
+    /** dm (digital marketer), creative, dev, seo, am (account manager). */
+    seat: z.enum(SEATS),
+    /** Team member name holding the seat ("" = nobody yet). */
+    member: z.string(),
+    pct: z.number(),
+});
+
+const contractSummary = z.object({
+    id: z.string(),
+    code: z.string(),
+    name: z.string(),
+    clientName: z.string(),
+    accountManager: z.string(),
+    status: z.string(),
+    stage: z.string(),
+    stageLabel: z.string(),
+    /** What the contract needs, as the account manager entered it: "8 content posts / month · 1 campaign / month · 2 branding items once". "" = none recorded. Tasks are generated from these. */
+    requirements: z.string(),
+    /** Default person per seat (dm / creative / dev / seo / am) that generated tasks are assigned from. Seats nobody holds are absent. */
+    crew: z.record(z.string(), z.string()),
+    tasksDone: z.number(),
+    tasksTotal: z.number(),
+    overdueTasks: z.number(),
+    nextDueDate: z.string().nullable(),
+    nextDueTitle: z.string().nullable(),
+});
+
+/** "8 content posts / month · 1 campaign / month · 2 branding items once". */
+function requirementsLabel(c: Pick<Contract, "requirements">): string {
+    return c.requirements
+        .map((r) => {
+            const label = LINE_TYPE_LABEL[r.type];
+            const noun = r.count === 1 ? label : `${label}s`;
+            return `${r.count} ${noun.toLowerCase()}${r.cadence === "monthly" ? " / month" : " once"}${r.channel ? ` (${r.channel})` : ""}`;
+        })
+        .join(" · ");
+}
+
+function toContractSummary(
+    c: Contract,
+    works: Work[],
+    today: string,
+): z.infer<typeof contractSummary> {
+    const p = progress(works);
+    const next = nextDue(works);
+    const crew: Record<string, string> = {};
+    for (const seat of SEATS) {
+        const who = c.crew[seat];
+        if (who) crew[seat] = who;
+    }
+    return {
+        id: c.id,
+        code: c.code,
+        name: c.name,
+        clientName: c.clientName,
+        accountManager: c.accountManager,
+        status: c.status,
+        stage: c.stage,
+        stageLabel: CONTRACT_STAGE_LABEL[c.stage],
+        requirements: requirementsLabel(c),
+        crew,
+        tasksDone: p.done,
+        tasksTotal: p.total,
+        overdueTasks: works.filter((w) => isOverdue(w, today)).length,
+        nextDueDate: next?.dueDate ?? null,
+        nextDueTitle: next?.title ?? null,
+    };
+}
+
+const taskDetail = z.object({
+    id: z.string(),
+    title: z.string(),
+    type: z.string(),
+    channel: z.string(),
+    month: z.string(),
+    phaseName: z.string(),
+    dueDate: z.string(),
+    status: z.string(),
+    /** Everyone holding a share (deduplicated). */
+    members: z.array(z.string()),
+    split: z.array(workShare),
+    /** none | am | client — who signs the task off. */
+    approver: z.string(),
+    milestone: z.boolean(),
+    overdue: z.boolean(),
+});
+
+function toTaskDetail(w: Work, today: string): z.infer<typeof taskDetail> {
+    return {
+        id: w.id,
+        title: w.title,
+        type: w.type,
+        channel: w.channel,
+        month: w.month,
+        phaseName: w.phaseName,
+        dueDate: w.dueDate,
+        status: w.status,
+        members: members(w),
+        split: w.split.map((s) => ({ seat: s.seat, member: s.member, pct: s.pct })),
+        approver: w.approver,
+        milestone: w.milestone,
+        overdue: isOverdue(w, today),
+    };
 }
 
 // ---- team.list ------------------------------------------------------------
@@ -487,8 +638,12 @@ const teamMemberSummary = z.object({
     name: z.string(),
     role: z.string(),
     active: z.boolean(),
+    /** Open (not completed) contract tasks this person holds a share of or must approve. */
     openTasks: z.number(),
-    activeStages: z.number(),
+    /** Of those, how many are past their due date. */
+    overdueTasks: z.number(),
+    /** Tasks waiting on this person's approval (as account manager). */
+    awaitingApproval: z.number(),
 });
 const teamListResult = z.object({
     members: z.array(teamMemberSummary),
@@ -500,166 +655,142 @@ export const teamList: AgentTool<
 > = {
     name: "team.list",
     description:
-        "List team members with their current workload (count of open project tasks + active workflow stages assigned to them). Use to see who owns what before assigning or chasing work. activeOnly defaults true.",
+        "List team members with their current workload: open contract tasks they hold a share of (or must approve), how many of those are overdue, and how many await their approval. Use to see who owns what before reassigning or chasing work. activeOnly defaults true.",
     inputSchema: teamListInput,
     outputSchema: teamListResult,
     invoke: async (input) => {
-        const [members, projects] = await Promise.all([
-            listTeamMembers(),
-            listProjects(),
-        ]);
-        const norm = (s: string) => s.trim().toLowerCase();
-        const members2 = (input.activeOnly ? members.filter((m) => m.active) : members).map(
-            (m) => {
-                const key = norm(m.name);
-                let openTasks = 0;
-                let activeStages = 0;
-                for (const p of projects) {
-                    for (const t of p.tasks) {
-                        if (!t.done && norm(t.assignee) === key) openTasks++;
-                    }
-                    for (const s of p.stages) {
-                        if (s.state === "active" && norm(s.assignee) === key) activeStages++;
-                    }
-                }
-                return {
-                    id: m.id,
-                    name: m.name,
-                    role: m.role,
-                    active: m.active,
-                    openTasks,
-                    activeStages,
-                };
-            },
-        );
-        return { members: members2 };
+        const today = todayISO();
+        const [team, works] = await Promise.all([listTeamMembers(), listWorks()]);
+        const open = works.filter(isOpen);
+        const rows = (input.activeOnly ? team.filter((m) => m.active) : team).map((m) => {
+            // involves("") matches everything — a nameless member owns nothing.
+            const mine = m.name ? open.filter((w) => involves(w, m.name)) : [];
+            return {
+                id: m.id,
+                name: m.name,
+                role: m.role,
+                active: m.active,
+                openTasks: mine.length,
+                overdueTasks: mine.filter((w) => isOverdue(w, today)).length,
+                awaitingApproval: mine.filter((w) => awaitsApprovalFrom(w, m.name)).length,
+            };
+        });
+        return { members: rows };
     },
 };
 
-// ---- projects.list --------------------------------------------------------
+// ---- contracts.list -------------------------------------------------------
 
-const projectsListInput = z.object({
-    status: z
-        .enum(["kickoff", "in_progress", "review", "delivered", "on_hold"])
-        .optional(),
+const contractsListInput = z.object({
+    status: z.enum(CONTRACT_STATUSES).optional(),
     clientName: z.string().optional(),
+    /** Team member name: only contracts with an open task that person holds a share of (or must approve). */
     assignee: z.string().optional(),
 });
-const projectSummary = z.object({
-    id: z.string(),
-    name: z.string(),
-    clientName: z.string(),
-    status: z.string(),
-    phase: z.string(),
-    activeStage: z.string().nullable(),
-    openTaskCount: z.number(),
-});
-const projectsListResult = z.object({
-    projects: z.array(projectSummary),
+const contractsListResult = z.object({
+    contracts: z.array(contractSummary),
 });
 
-export const projectsListTool: AgentTool<
-    z.infer<typeof projectsListInput>,
-    z.infer<typeof projectsListResult>
+export const contractsList: AgentTool<
+    z.infer<typeof contractsListInput>,
+    z.infer<typeof contractsListResult>
 > = {
-    name: "projects.list",
+    name: "contracts.list",
     description:
-        "List delivery projects with status, phase, the current active workflow stage, and open-task count. Optional filters: status, clientName, assignee (only projects with an open task OR active stage owned by that person).",
-    inputSchema: projectsListInput,
-    outputSchema: projectsListResult,
+        "List contracts (the signed job with a client — every task lives under one) with lifecycle stage, status, the requirements its tasks are generated from, its crew, tasks done/total, overdue count and the next due task. Optional filters: status (draft/active/completed/cancelled), clientName, assignee (only contracts with an open task that person holds a share of or must approve).",
+    inputSchema: contractsListInput,
+    outputSchema: contractsListResult,
     invoke: async (input) => {
         const norm = (s: string) => s.trim().toLowerCase();
-        let projects = await listProjects();
-        if (input.status) projects = projects.filter((p) => p.status === input.status);
-        if (input.clientName)
-            projects = projects.filter((p) => norm(p.clientName) === norm(input.clientName!));
+        const today = todayISO();
+        const [contracts, works] = await Promise.all([listContracts(), listWorks()]);
+        const byContract = groupByContract(works);
+        let list = contracts;
+        if (input.status) list = list.filter((c) => c.status === input.status);
+        if (input.clientName) {
+            const client = norm(input.clientName);
+            list = list.filter((c) => norm(c.clientName) === client);
+        }
         if (input.assignee) {
-            const a = norm(input.assignee);
-            projects = projects.filter(
-                (p) =>
-                    p.tasks.some((t) => !t.done && norm(t.assignee) === a) ||
-                    p.stages.some((s) => s.state === "active" && norm(s.assignee) === a),
+            const who = await canonicalMemberName(input.assignee);
+            list = list.filter((c) =>
+                (byContract.get(c.id) ?? []).some((w) => isOpen(w) && involves(w, who)),
             );
         }
         return {
-            projects: projects.map((p) => ({
-                id: p.id,
-                name: p.name,
-                clientName: p.clientName,
-                status: p.status,
-                phase: p.phase,
-                activeStage: p.stages.find((s) => s.state === "active")?.label ?? null,
-                openTaskCount: p.tasks.filter((t) => !t.done).length,
-            })),
+            contracts: list.map((c) =>
+                toContractSummary(c, byContract.get(c.id) ?? [], today),
+            ),
         };
     },
 };
 
-// ---- standup.tasks --------------------------------------------------------
+// ---- tasks.list -----------------------------------------------------------
 
-const standupInput = z.object({
+const tasksListInput = z.object({
+    /** Team member name: tasks they hold a share of, or must approve. */
     assignee: z.string().optional(),
+    clientName: z.string().optional(),
+    /** Defaults to every open task (not completed). Pass a status to see just that column (including completed). */
+    status: z.enum(TASK_STATUSES).optional(),
 });
-const standupItem = z.object({
-    projectId: z.string(),
-    projectName: z.string(),
+const taskListItem = taskDetail.extend({
+    contractId: z.string(),
+    contractCode: z.string(),
+    contractName: z.string(),
     clientName: z.string(),
-    kind: z.enum(["task", "stage"]),
-    /** The task id (kind=task) or stage id (kind=stage) — pass to tasks.toggle / projects.assignStage. */
-    itemId: z.string(),
-    title: z.string(),
-    assignee: z.string(),
-    phase: z.string(),
+    accountManager: z.string(),
+    /** True while the task sits with its approver (account manager, or the client via them). */
+    awaitingApproval: z.boolean(),
+    /** Who the task is waiting on right now ("" when nobody). */
+    waitingOn: z.string(),
 });
-const standupResult = z.object({
-    items: z.array(standupItem),
+const tasksListResult = z.object({
+    asOf: z.string(),
+    tasks: z.array(taskListItem),
 });
 
-export const standupTasks: AgentTool<
-    z.infer<typeof standupInput>,
-    z.infer<typeof standupResult>
+export const tasksList: AgentTool<
+    z.infer<typeof tasksListInput>,
+    z.infer<typeof tasksListResult>
 > = {
-    name: "standup.tasks",
+    name: "tasks.list",
     description:
-        "Flatten all in-flight work into a single list for a daily standup: every incomplete project task and every active workflow stage, each tagged with its project, client, and assignee. Optional assignee filter. (Project tasks have no due date in this system — use overdue.list for date-based overdue tracking.)",
-    inputSchema: standupInput,
-    outputSchema: standupResult,
+        "Flatten in-flight work into a single list for a daily standup: every open contract task (not completed) with its contract code, client, phase, due date, status, the people holding a share, whether it awaits approval and whether it is overdue (ordered by due date, overdue first). Optional filters: assignee, clientName, status (pass 'completed' to see finished work). The `id` is the workId for tasks.setStatus / tasks.setSplit.",
+    inputSchema: tasksListInput,
+    outputSchema: tasksListResult,
     invoke: async (input) => {
         const norm = (s: string) => s.trim().toLowerCase();
-        const projects = await listProjects();
-        const items: z.infer<typeof standupItem>[] = [];
-        for (const p of projects) {
-            for (const t of p.tasks) {
-                if (t.done) continue;
-                items.push({
-                    projectId: p.id,
-                    projectName: p.name,
-                    clientName: p.clientName,
-                    kind: "task",
-                    itemId: t.id,
-                    title: t.title,
-                    assignee: t.assignee,
-                    phase: t.phase || p.phase,
-                });
-            }
-            for (const s of p.stages) {
-                if (s.state !== "active") continue;
-                items.push({
-                    projectId: p.id,
-                    projectName: p.name,
-                    clientName: p.clientName,
-                    kind: "stage",
-                    itemId: s.id,
-                    title: s.label,
-                    assignee: s.assignee,
-                    phase: p.phase,
-                });
-            }
+        const today = todayISO();
+        const [contracts, works] = await Promise.all([listContracts(), listWorks()]);
+        const contractById = new Map(contracts.map((c) => [c.id, c] as const));
+        let list = input.status
+            ? works.filter((w) => w.status === input.status)
+            : works.filter(isOpen);
+        if (input.clientName) {
+            const client = norm(input.clientName);
+            list = list.filter((w) => norm(w.clientName) === client);
         }
-        const filtered = input.assignee
-            ? items.filter((i) => norm(i.assignee) === norm(input.assignee!))
-            : items;
-        return { items: filtered };
+        if (input.assignee) {
+            const who = await canonicalMemberName(input.assignee);
+            list = list.filter((w) => involves(w, who));
+        }
+        return {
+            asOf: today,
+            tasks: list.map((w) => {
+                const c = contractById.get(w.contractId);
+                return {
+                    ...toTaskDetail(w, today),
+                    contractId: w.contractId,
+                    contractCode: c?.code ?? "",
+                    contractName: c?.name ?? "",
+                    clientName: w.clientName,
+                    accountManager: w.accountManager,
+                    awaitingApproval: w.status === "pending_approval",
+                    waitingOn: pendingFrom(w),
+                };
+            }),
+        };
     },
 };
 
@@ -743,10 +874,13 @@ export const overdueList: AgentTool<
 
 const boardSummaryInput = z.object({});
 const boardSummaryResult = z.object({
-    projectsByStatus: z.record(z.string(), z.number()),
-    projectsByPhase: z.record(z.string(), z.number()),
+    contractsByStatus: z.record(z.string(), z.number()),
+    contractsByStage: z.record(z.string(), z.number()),
+    tasksByStatus: z.record(z.string(), z.number()),
     contentByReviewStatus: z.record(z.string(), z.number()),
     openTaskTotal: z.number(),
+    overdueTaskCount: z.number(),
+    awaitingApprovalCount: z.number(),
     overdueContentCount: z.number(),
     overdueInvoiceCount: z.number(),
 });
@@ -757,24 +891,28 @@ export const boardSummary: AgentTool<
 > = {
     name: "board.summary",
     description:
-        "Sprint/board summary in one call: project counts by status and by phase, content counts by review status, total open tasks, and overdue counts. Use for the daily standup header and the weekly sprint summary.",
+        "Sprint/board summary in one call: contract counts by status and by lifecycle stage, task counts by status, content counts by review status, total open tasks, tasks awaiting approval, and overdue counts (tasks, content, invoices). Use for the daily standup header and the weekly sprint summary.",
     inputSchema: boardSummaryInput,
     outputSchema: boardSummaryResult,
     invoke: async () => {
         const today = todayISO();
-        const [projects, posts, invoices] = await Promise.all([
-            listProjects(),
+        const [contracts, works, posts, invoices] = await Promise.all([
+            listContracts(),
+            listWorks(),
             listContentPosts(),
             listInvoices(),
         ]);
         const byStatus: Record<string, number> = {};
-        const byPhase: Record<string, number> = {};
-        let openTaskTotal = 0;
-        for (const p of projects) {
-            byStatus[p.status] = (byStatus[p.status] ?? 0) + 1;
-            byPhase[p.phase] = (byPhase[p.phase] ?? 0) + 1;
-            openTaskTotal += p.tasks.filter((t) => !t.done).length;
+        const byStage: Record<string, number> = {};
+        for (const c of contracts) {
+            byStatus[c.status] = (byStatus[c.status] ?? 0) + 1;
+            byStage[c.stage] = (byStage[c.stage] ?? 0) + 1;
         }
+        const prog = progress(works);
+        const tasksByStatus: Record<string, number> = {};
+        for (const s of TASK_STATUSES) tasksByStatus[s] = prog[s];
+        const openTaskTotal = prog.total - prog.completed;
+        const overdueTaskCount = works.filter((w) => isOverdue(w, today)).length;
         const byReview: Record<string, number> = {};
         let overdueContentCount = 0;
         for (const p of posts) {
@@ -792,77 +930,56 @@ export const boardSummary: AgentTool<
             (i) => i.dueDate < today && i.status !== "paid" && i.status !== "void",
         ).length;
         return {
-            projectsByStatus: byStatus,
-            projectsByPhase: byPhase,
+            contractsByStatus: byStatus,
+            contractsByStage: byStage,
+            tasksByStatus,
             contentByReviewStatus: byReview,
             openTaskTotal,
+            overdueTaskCount,
+            awaitingApprovalCount: prog.pending_approval,
             overdueContentCount,
             overdueInvoiceCount,
         };
     },
 };
 
-// ---- project.get ----------------------------------------------------------
+// ---- contract.get ---------------------------------------------------------
 
-const projectGetInput = z.object({
-    projectId: z.string().min(1),
+const contractGetInput = z.object({
+    contractId: z.string().min(1),
 });
-const projectDetailTask = z.object({
-    id: z.string(),
-    title: z.string(),
-    done: z.boolean(),
-    assignee: z.string(),
-    phase: z.string(),
-});
-const projectDetailStage = z.object({
-    id: z.string(),
-    label: z.string(),
-    ownerRole: z.string(),
-    assignee: z.string(),
-    state: z.string(),
-});
-const projectGetResult = z.object({
-    id: z.string(),
-    name: z.string(),
-    clientName: z.string(),
-    status: z.string(),
-    phase: z.string(),
-    tasks: z.array(projectDetailTask),
-    stages: z.array(projectDetailStage),
+const contractGetResult = contractSummary.extend({
+    startDate: z.string(),
+    /** "" = open-ended (rolling retainer). */
+    endDate: z.string(),
+    valueMyr: z.number(),
+    /** YYYY-MM-DD the client signed; null = not signed yet. */
+    signedAt: z.string().nullable(),
+    /** Every task under the contract, by month and phase. */
+    tasks: z.array(taskDetail),
 });
 
-export const projectGet: AgentTool<
-    z.infer<typeof projectGetInput>,
-    z.infer<typeof projectGetResult>
+export const contractGet: AgentTool<
+    z.infer<typeof contractGetInput>,
+    z.infer<typeof contractGetResult>
 > = {
-    name: "project.get",
+    name: "contract.get",
     description:
-        "Full detail for one project including every task id and stage id (which the write tools need). Use this to find the taskId / stageId before calling tasks.toggle or projects.assignStage.",
-    inputSchema: projectGetInput,
-    outputSchema: projectGetResult,
+        "Full detail for one contract: its terms (dates, value, signed date, lifecycle stage), the requirements and crew its tasks are generated from, plus every task under it — month, phase, due date, status, who holds which share, who approves. Use this to find the workId before calling tasks.setStatus / tasks.setSplit. Get contractId from contracts.list.",
+    inputSchema: contractGetInput,
+    outputSchema: contractGetResult,
     invoke: async (input) => {
-        const p = await getProjectById(input.projectId);
-        if (!p) throw new Error(`Project ${input.projectId} not found`);
+        const c = await getContractById(input.contractId);
+        if (!c) throw new Error(`Contract ${input.contractId} not found`);
+        const today = todayISO();
+        const works = (await listWorks()).filter((w) => w.contractId === c.id);
         return {
-            id: p.id,
-            name: p.name,
-            clientName: p.clientName,
-            status: p.status,
-            phase: p.phase,
-            tasks: p.tasks.map((t) => ({
-                id: t.id,
-                title: t.title,
-                done: t.done,
-                assignee: t.assignee,
-                phase: t.phase || "",
-            })),
-            stages: p.stages.map((s) => ({
-                id: s.id,
-                label: s.label,
-                ownerRole: s.ownerRole,
-                assignee: s.assignee,
-                state: s.state,
-            })),
+            ...toContractSummary(c, works, today),
+            startDate: c.startDate,
+            endDate: c.endDate,
+            valueMyr: c.valueMyr,
+            signedAt: c.signedAt,
+            tasks: works.map((w) => toTaskDetail(w, today)),
         };
     },
 };
@@ -870,209 +987,204 @@ export const projectGet: AgentTool<
 // ---------------------------------------------------------------------------
 // Scrum-master WRITE tools (move work along the board)
 //
-// All thin wrappers over the existing project data helpers. Each throws if the
-// project/task/stage id is unknown — the dispatcher surfaces that as a 500 with
-// the message, so the agent learns the id was wrong. The full project is
-// returned so the agent can confirm the new state in one round-trip.
+// Thin wrappers over the works data layer. The status moves mirror the app's
+// own actions (src/lib/works/actions.ts — start, submit, approve, send back,
+// complete, reopen) including the timestamps each one stamps; that file is a
+// "use server" module, so the transitions are replicated here rather than
+// imported. Each tool throws if the work id is unknown or the move is not
+// allowed — the dispatcher surfaces that as a 500 with the message, so the
+// agent learns what went wrong. The task's new state is returned so the agent
+// can confirm it in one round-trip. There is deliberately no create or delete
+// here: tasks are generated from the contract's requirements (or added by hand
+// in the app) and are never removed through the agent API.
 // ---------------------------------------------------------------------------
 
-const PROJECT_PHASE_VALUES = [
-    "discovery",
-    "design",
-    "build",
-    "qa",
-    "client_review",
-    "launch",
-    "closed",
-] as const;
-
-/** Compact view of a project returned after a mutation. */
-const projectStateResult = z.object({
+/** Compact view of a task returned after a mutation. */
+const taskStateResult = z.object({
     id: z.string(),
-    name: z.string(),
-    status: z.string(),
-    phase: z.string(),
-    activeStage: z.string().nullable(),
-    openTaskCount: z.number(),
+    contractId: z.string(),
+    title: z.string(),
+    status: z.enum(TASK_STATUSES),
+    previousStatus: z.enum(TASK_STATUSES),
+    members: z.array(z.string()),
+    split: z.array(workShare),
+    approver: z.string(),
+    startedAt: z.string().nullable(),
+    submittedAt: z.string().nullable(),
+    completedAt: z.string().nullable(),
 });
-type ProjectStateResult = z.infer<typeof projectStateResult>;
+type TaskStateResult = z.infer<typeof taskStateResult>;
 
-function toProjectState(p: {
-    id: string;
-    name: string;
-    status: string;
-    phase: string;
-    stages: { label: string; state: string }[];
-    tasks: { done: boolean }[];
-}): ProjectStateResult {
+function toTaskState(w: Work, previousStatus: TaskStatus = w.status): TaskStateResult {
     return {
-        id: p.id,
-        name: p.name,
-        status: p.status,
-        phase: p.phase,
-        activeStage: p.stages.find((s) => s.state === "active")?.label ?? null,
-        openTaskCount: p.tasks.filter((t) => !t.done).length,
+        id: w.id,
+        contractId: w.contractId,
+        title: w.title,
+        status: w.status,
+        previousStatus,
+        members: members(w),
+        split: w.split.map((s) => ({ seat: s.seat, member: s.member, pct: s.pct })),
+        approver: w.approver,
+        startedAt: w.startedAt,
+        submittedAt: w.submittedAt,
+        completedAt: w.completedAt,
     };
 }
 
-// ---- projects.create ------------------------------------------------------
+/**
+ * The patch that moves `w` to `next`, mirroring src/lib/works/actions.ts.
+ * Returns null when the move is not allowed from the current status.
+ */
+function statusPatch(
+    w: Work,
+    next: TaskStatus,
+    actor: string,
+    note: string,
+    now: string,
+): WorkPatch | null {
+    const from = w.status;
+    switch (next) {
+        case "in_progress":
+            // Start.
+            if (from === "not_started") return { status: next, startedAt: now };
+            // Send back for changes — a "changes" review never moves forward.
+            if (from === "pending_approval") {
+                return {
+                    status: next,
+                    review: { decision: "changes", note, by: actor, at: now },
+                };
+            }
+            return null;
+        case "pending_approval":
+            if (from !== "not_started" && from !== "in_progress") return null;
+            // Submit. With nobody to approve, submitting completes it outright.
+            if (w.approver === "none") {
+                return { status: "completed", submittedAt: now, completedAt: now };
+            }
+            return {
+                status: next,
+                submittedAt: now,
+                review: { decision: null, note: "", by: "", at: null },
+            };
+        case "completed":
+            // Approve (on the account manager's / client's behalf).
+            if (from === "pending_approval") {
+                return {
+                    status: next,
+                    completedAt: now,
+                    review: { decision: "approved", note, by: actor, at: now },
+                };
+            }
+            // Mark it done regardless of where it is (the AM's "complete").
+            if (from === "not_started" || from === "in_progress") {
+                return { status: next, completedAt: now };
+            }
+            return null;
+        case "not_started":
+            // Reopen: clear every timestamp, the submission and the review.
+            if (from === "not_started") return null;
+            return {
+                status: next,
+                startedAt: null,
+                submittedAt: null,
+                completedAt: null,
+                submission: { url: "", note: "" },
+                review: { decision: null, note: "", by: "", at: null },
+            };
+    }
+}
 
-const projectsCreateInput = z.object({
-    name: z.string().min(1),
-    clientName: z.string().min(1),
-    /**
-     * Optional service category. If given, the project's delivery stage
-     * pipeline is instantiated from that category's workflow template (stages
-     * auto-assigned to the first active member of each owner role). Omit to
-     * create a bare project (no stages) and add tasks/stages manually.
-     */
-    serviceCategory: z.enum(SERVICE_CATEGORIES).optional(),
+// ---- tasks.setStatus ------------------------------------------------------
+
+const tasksSetStatusInput = z.object({
+    workId: z.string().min(1),
+    status: z.enum(TASK_STATUSES),
+    /** Reviewer note, recorded when approving (→ completed) or sending back (pending_approval → in_progress). */
+    note: z.string().optional(),
+    /** Who is acting (team member name); recorded as the reviewer on approvals / change requests. Defaults to "Agent". */
+    by: z.string().optional(),
 });
 
-export const projectsCreate: AgentTool<
-    z.infer<typeof projectsCreateInput>,
-    ProjectStateResult
+export const tasksSetStatus: AgentTool<
+    z.infer<typeof tasksSetStatusInput>,
+    TaskStateResult
 > = {
-    name: "projects.create",
+    name: "tasks.setStatus",
     description:
-        "Create a new delivery project for a client (starts at status 'kickoff', phase 'discovery'). Optionally pass serviceCategory (website|ads|seo|content|app|branding|retainer|other) to auto-build its stage pipeline from that template. After creating, use tasks.add / projects.assignStage to assign work to individuals.",
-    inputSchema: projectsCreateInput,
-    outputSchema: projectStateResult,
+        "Move a contract task along its lifecycle. not_started → in_progress starts it (stamps startedAt); → pending_approval submits it (stamps submittedAt; completes outright when its approver is 'none'); pending_approval → completed approves it on the approver's behalf (stamps completedAt + review); pending_approval → in_progress sends it back for changes (pass note); not_started/in_progress → completed marks it done directly; anything → not_started reopens it and clears its timestamps. Get workId from tasks.list / contract.get. Throws if the move is not allowed; same status is a no-op.",
+    inputSchema: tasksSetStatusInput,
+    outputSchema: taskStateResult,
     invoke: async (input) => {
-        let p = await createProject({
-            name: input.name,
-            clientName: input.clientName,
-        });
-        if (input.serviceCategory) {
-            p = await instantiateProjectStages(p.id, input.serviceCategory);
+        const w = await getWorkById(input.workId);
+        if (!w) throw new Error(`Work ${input.workId} not found`);
+        if (w.status === input.status) return toTaskState(w);
+        const patch = statusPatch(
+            w,
+            input.status,
+            input.by?.trim() || "Agent",
+            input.note?.trim() ?? "",
+            new Date().toISOString(),
+        );
+        if (!patch) {
+            throw new Error(
+                `Cannot move "${w.title}" from ${w.status} to ${input.status}`,
+            );
         }
-        return toProjectState(p);
+        const updated = await updateWork(w.id, patch);
+        return toTaskState(updated, w.status);
     },
 };
 
-// ---- tasks.add ------------------------------------------------------------
+// ---- tasks.setSplit -------------------------------------------------------
 
-const tasksAddInput = z.object({
-    projectId: z.string().min(1),
-    title: z.string().min(1),
-    assignee: z.string().optional(),
-    phase: z.enum(PROJECT_PHASE_VALUES).optional(),
+const splitShareInput = z.object({
+    /** Seat the share belongs to: dm (digital marketer), creative, dev, seo, am (account manager). */
+    seat: z.enum(SEATS),
+    /** Team member name holding the seat ("" = leave the seat unassigned). */
+    member: z.string(),
+    /** Whole-number percentage of the task. All shares must total 100. */
+    pct: z.number().int().min(1).max(100),
+});
+const tasksSetSplitInput = z.object({
+    workId: z.string().min(1),
+    split: z.array(splitShareInput).min(1),
 });
 
-export const tasksAdd: AgentTool<
-    z.infer<typeof tasksAddInput>,
-    ProjectStateResult
+export const tasksSetSplit: AgentTool<
+    z.infer<typeof tasksSetSplitInput>,
+    TaskStateResult
 > = {
-    name: "tasks.add",
+    name: "tasks.setSplit",
     description:
-        "Add a checklist task to a project (starts incomplete). assignee is a team member name; phase tags the task to a delivery phase. Use when a standup surfaces work that isn't tracked yet.",
-    inputSchema: tasksAddInput,
-    outputSchema: projectStateResult,
+        "Set who is responsible for a contract task and by how much: the full responsibility split as [{seat, member, pct}] (seats: dm/creative/dev/seo/am; member is a team member name or '' for an unfilled seat; pct values must total 100). Replaces the existing split — use this to assign or reassign work. Get the current split from contract.get / tasks.list.",
+    inputSchema: tasksSetSplitInput,
+    outputSchema: taskStateResult,
     invoke: async (input) => {
-        const p = await addProjectTask(
-            input.projectId,
-            input.title,
-            input.assignee ?? "",
-            input.phase ?? "",
+        const w = await getWorkById(input.workId);
+        if (!w) throw new Error(`Work ${input.workId} not found`);
+        const total = splitTotal(input.split);
+        if (total !== 100) throw new Error(`Split must total 100% (got ${total}%)`);
+        const team = await listTeamMembers();
+        const prevHours = new Map(w.split.map((s) => [s.member.trim().toLowerCase(), s.hours]));
+        const split: WorkShare[] = withHours(
+            input.split.map((s) => {
+                const member = s.member.trim();
+                if (!member) return { seat: s.seat, member: "", pct: s.pct };
+                const key = member.toLowerCase();
+                const hit = team.find((m) => m.name.trim().toLowerCase() === key);
+                if (!hit) throw new Error(`Unknown team member: ${member}`);
+                return { seat: s.seat, member: hit.name, pct: s.pct, hours: prevHours.get(key) };
+            }),
+            team,
+            w.type,
         );
-        return toProjectState(p);
-    },
-};
-
-// ---- tasks.toggle ---------------------------------------------------------
-
-const tasksToggleInput = z.object({
-    projectId: z.string().min(1),
-    taskId: z.string().min(1),
-});
-
-export const tasksToggle: AgentTool<
-    z.infer<typeof tasksToggleInput>,
-    ProjectStateResult
-> = {
-    name: "tasks.toggle",
-    description:
-        "Flip a project task's done state (incomplete ↔ done). Use to tick off work someone reports finished, or to reopen it. Get task ids from standup.tasks / projects.list.",
-    inputSchema: tasksToggleInput,
-    outputSchema: projectStateResult,
-    invoke: async (input) => {
-        const p = await toggleProjectTask(input.projectId, input.taskId);
-        return toProjectState(p);
-    },
-};
-
-// ---- projects.setPhase ----------------------------------------------------
-
-const setPhaseInput = z.object({
-    projectId: z.string().min(1),
-    phase: z.enum(PROJECT_PHASE_VALUES),
-});
-
-export const projectsSetPhase: AgentTool<
-    z.infer<typeof setPhaseInput>,
-    ProjectStateResult
-> = {
-    name: "projects.setPhase",
-    description:
-        "Set a project's delivery phase (discovery → design → build → qa → client_review → launch → closed). This is the high-level phase, separate from the stage pipeline; use projects.advanceStage to move the stage flow.",
-    inputSchema: setPhaseInput,
-    outputSchema: projectStateResult,
-    invoke: async (input) => {
-        const p = await setProjectPhase(input.projectId, input.phase);
-        return toProjectState(p);
-    },
-};
-
-// ---- projects.advanceStage ------------------------------------------------
-
-const advanceStageInput = z.object({
-    projectId: z.string().min(1),
-});
-
-export const projectsAdvanceStage: AgentTool<
-    z.infer<typeof advanceStageInput>,
-    ProjectStateResult
-> = {
-    name: "projects.advanceStage",
-    description:
-        "Mark the project's current active workflow stage done and activate the next pending one. Use when a stage owner reports their stage complete. No-op-safe if nothing is active (activates the first pending stage instead).",
-    inputSchema: advanceStageInput,
-    outputSchema: projectStateResult,
-    invoke: async (input) => {
-        const p = await advanceProjectStage(input.projectId);
-        return toProjectState(p);
-    },
-};
-
-// ---- projects.assignStage -------------------------------------------------
-
-const assignStageInput = z.object({
-    projectId: z.string().min(1),
-    stageId: z.string().min(1),
-    assignee: z.string().min(1),
-});
-
-export const projectsAssignStage: AgentTool<
-    z.infer<typeof assignStageInput>,
-    ProjectStateResult
-> = {
-    name: "projects.assignStage",
-    description:
-        "Reassign a workflow stage to a different team member (the stage's PIC). assignee is a team member name. Get stageId from projects.list / the project detail.",
-    inputSchema: assignStageInput,
-    outputSchema: projectStateResult,
-    invoke: async (input) => {
-        const p = await setProjectStageAssignee(
-            input.projectId,
-            input.stageId,
-            input.assignee,
-        );
-        return toProjectState(p);
+        const updated = await updateWork(w.id, { split });
+        return toTaskState(updated);
     },
 };
 
 // ---------------------------------------------------------------------------
-// Clients, content list, invoices list, task reassignment
+// Clients, content list, invoices list
 // ---------------------------------------------------------------------------
 
 // ---- clients.list ---------------------------------------------------------
@@ -1097,7 +1209,7 @@ export const clientsList: AgentTool<
 > = {
     name: "clients.list",
     description:
-        "List the agency's clients (optionally filter by status: prospect/active/paused/churned). Use to see who exists before creating a project, or to answer 'who are our clients'.",
+        "List the agency's clients (optionally filter by status: prospect/active/paused/churned). Use to see who exists (every contract belongs to a client), or to answer 'who are our clients'.",
     inputSchema: clientsListInput,
     outputSchema: clientsListResult,
     invoke: async (input) => {
@@ -1140,7 +1252,7 @@ export const clientsCreate: AgentTool<
 > = {
     name: "clients.create",
     description:
-        "Create a new client record (defaults to status 'prospect'). Use before/while creating a project so the project can attach to a real client. Name must be unique.",
+        "Create a new client record (defaults to status 'prospect'). Use before a contract is drawn up so it can attach to a real client (contracts themselves are created in the app, not by the agent). Name must be unique.",
     inputSchema: clientsCreateInput,
     outputSchema: clientCreateResult,
     invoke: async (input) => {
@@ -1273,7 +1385,8 @@ const invoiceLineItemInput = z.object({
 
 const invoicesCreateInput = z.object({
     clientName: z.string().min(1),
-    projectId: z.string().optional(),
+    /** Contract this invoice bills against (from contracts.list). */
+    contractId: z.string().optional(),
     /** Line items (description + qty + unit price in MYR). At least one. */
     items: z.array(invoiceLineItemInput).min(1),
     /** YYYY-MM-DD. Defaults to today. */
@@ -1302,13 +1415,13 @@ export const invoicesCreate: AgentTool<
 > = {
     name: "invoices.create",
     description:
-        "Create a new invoice (and its quotation line items) for a client. Starts at status 'draft' with an auto-assigned number (INV-YYYY-NNNN). Pass items[] with description/quantity/unitPriceMyr; totals are computed (taxRatePct defaults to 6% SST). Optionally link a projectId and set issueDate/dueDate (default: today / +14 days). After creating, use payments.createInvoiceLink to generate a payment link.",
+        "Create a new invoice (and its quotation line items) for a client. Starts at status 'draft' with an auto-assigned number (INV-YYYY-NNNN). Pass items[] with description/quantity/unitPriceMyr; totals are computed (taxRatePct defaults to 6% SST). Optionally link a contractId and set issueDate/dueDate (default: today / +14 days). After creating, use payments.createInvoiceLink to generate a payment link.",
     inputSchema: invoicesCreateInput,
     outputSchema: invoicesCreateResult,
     invoke: async (input) => {
         const created = await createInvoice({
             clientName: input.clientName,
-            projectId: input.projectId ?? null,
+            contractId: input.contractId ?? null,
             issueDate: input.issueDate,
             dueDate: input.dueDate,
             taxRatePct: input.taxRatePct,
@@ -1351,7 +1464,6 @@ const quotationLineItemInput = z.object({
 
 const quotationsCreateInput = z.object({
     clientName: z.string().min(1),
-    projectId: z.string().optional(),
     /** Line items (description + qty + unit price in MYR). At least one. */
     items: z.array(quotationLineItemInput).min(1),
     /** Document title, e.g. "Website Enhancement & Backend Optimization". */
@@ -1396,7 +1508,6 @@ export const quotationsCreate: AgentTool<
     invoke: async (input) => {
         const created = await createQuotation({
             clientName: input.clientName,
-            projectId: input.projectId ?? null,
             issueDate: input.issueDate,
             validUntil: input.validUntil,
             taxRatePct: input.taxRatePct,
@@ -1459,7 +1570,7 @@ export const teamCreate: AgentTool<
 > = {
     name: "team.create",
     description:
-        "Add a new team member (starts active). role is one of CEO/Closer/Frontend/Backend/UI/UX/Content/Ads/SEO/PM/Other (defaults to Other). Use to onboard staff so work can be assigned to them via tasks.add / projects.assignStage. This only creates the member record; it does not create a login account.",
+        "Add a new team member (starts active). role is one of CEO/Closer/Frontend/Backend/UI/UX/Content/Ads/SEO/PM/Other (defaults to Other). Use to onboard staff so contract tasks can be assigned to them via tasks.setSplit. This only creates the member record; it does not create a login account.",
     inputSchema: teamCreateInput,
     outputSchema: teamCreateResult,
     invoke: async (input) => {
@@ -1474,33 +1585,6 @@ export const teamCreate: AgentTool<
     },
 };
 
-// ---- tasks.reassign -------------------------------------------------------
-
-const tasksReassignInput = z.object({
-    projectId: z.string().min(1),
-    taskId: z.string().min(1),
-    assignee: z.string().min(1),
-});
-
-export const tasksReassign: AgentTool<
-    z.infer<typeof tasksReassignInput>,
-    ProjectStateResult
-> = {
-    name: "tasks.reassign",
-    description:
-        "Change the assignee (PIC) of an existing project task. assignee is a team member name. Get the taskId from standup.tasks (itemId) or project.get. Use to move a task to a different person without recreating it.",
-    inputSchema: tasksReassignInput,
-    outputSchema: projectStateResult,
-    invoke: async (input) => {
-        const p = await setProjectTaskAssignee(
-            input.projectId,
-            input.taskId,
-            input.assignee,
-        );
-        return toProjectState(p);
-    },
-};
-
 // ---------------------------------------------------------------------------
 // DESTRUCTIVE tools (deletions — HUMAN APPROVAL REQUIRED)
 //
@@ -1508,50 +1592,14 @@ export const tasksReassign: AgentTool<
 // scrum-master key ([read, write, outbound]) does NOT carry that scope, so the
 // API refuses these calls with "requires human approval". They exist so a
 // human-operated admin key (or a future approval flow) can perform deletions
-// through the same audited path — never silently from the agent.
+// through the same audited path — never silently from the agent. Contracts
+// and their tasks are never deleted through the agent API at all.
 // ---------------------------------------------------------------------------
 
 const deletedResult = z.object({
     id: z.string(),
     deleted: z.literal(true),
 });
-
-const projectsDeleteInput = z.object({ projectId: z.string().min(1) });
-
-export const projectsDelete: AgentTool<
-    z.infer<typeof projectsDeleteInput>,
-    z.infer<typeof deletedResult>
-> = {
-    name: "projects.delete",
-    description:
-        "Permanently delete a project and its embedded tasks/stages. Irreversible — requires human approval (destructive scope); the scrum-master agent cannot call this.",
-    inputSchema: projectsDeleteInput,
-    outputSchema: deletedResult,
-    invoke: async (input) => {
-        await deleteProject(input.projectId);
-        return { id: input.projectId, deleted: true };
-    },
-};
-
-const tasksDeleteInput = z.object({
-    projectId: z.string().min(1),
-    taskId: z.string().min(1),
-});
-
-export const tasksDelete: AgentTool<
-    z.infer<typeof tasksDeleteInput>,
-    ProjectStateResult
-> = {
-    name: "tasks.delete",
-    description:
-        "Permanently remove a task from a project. Irreversible — requires human approval (destructive scope). Prefer tasks.toggle to mark work done; use delete only to remove a mistaken task.",
-    inputSchema: tasksDeleteInput,
-    outputSchema: projectStateResult,
-    invoke: async (input) => {
-        const p = await deleteProjectTask(input.projectId, input.taskId);
-        return toProjectState(p);
-    },
-};
 
 const contentDeleteInput = z.object({ contentId: z.string().min(1) });
 
@@ -1587,19 +1635,14 @@ export const AGENT_TOOLS: AgentTool[] = [
     contentCreateRequest as unknown as AgentTool,
     // Scrum-master reads
     teamList as unknown as AgentTool,
-    projectsListTool as unknown as AgentTool,
-    projectGet as unknown as AgentTool,
-    standupTasks as unknown as AgentTool,
+    contractsList as unknown as AgentTool,
+    contractGet as unknown as AgentTool,
+    tasksList as unknown as AgentTool,
     overdueList as unknown as AgentTool,
     boardSummary as unknown as AgentTool,
     // Scrum-master writes
-    projectsCreate as unknown as AgentTool,
-    tasksAdd as unknown as AgentTool,
-    tasksToggle as unknown as AgentTool,
-    tasksReassign as unknown as AgentTool,
-    projectsSetPhase as unknown as AgentTool,
-    projectsAdvanceStage as unknown as AgentTool,
-    projectsAssignStage as unknown as AgentTool,
+    tasksSetStatus as unknown as AgentTool,
+    tasksSetSplit as unknown as AgentTool,
     // Clients + listing reads
     clientsList as unknown as AgentTool,
     clientsCreate as unknown as AgentTool,
@@ -1610,8 +1653,6 @@ export const AGENT_TOOLS: AgentTool[] = [
     quotationsCreate as unknown as AgentTool,
     teamCreate as unknown as AgentTool,
     // Destructive (human approval required — not in the agent key's scopes)
-    projectsDelete as unknown as AgentTool,
-    tasksDelete as unknown as AgentTool,
     contentDelete as unknown as AgentTool,
 ];
 

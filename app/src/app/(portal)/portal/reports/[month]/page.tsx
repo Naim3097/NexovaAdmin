@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCurrentClient } from "@/lib/auth";
+import { portalHref, resolveActingClient } from "@/lib/portal/resolve-client";
 import { buildClientMonthlyReport } from "@/lib/reports";
 import { getReportInsights } from "@/lib/data/report-insights";
 import { type ContentPost } from "@/lib/data/content";
 import { AssetPreview } from "@/components/asset-preview";
 import { buttonVariants } from "@/components/ui/button";
+import { fmtMyr } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -16,25 +17,25 @@ function fmtMonth(m: string) {
         year: "numeric",
     });
 }
-function fmtMyr(n: number) {
-    return `MYR ${n.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    })}`;
-}
 function latestMedia(p: ContentPost) {
     return p.drafts[p.drafts.length - 1]?.media ?? [];
 }
 
 export default async function PortalReportMonthPage({
     params,
+    searchParams,
 }: {
     params: Promise<{ month: string }>;
+    searchParams: Promise<{ client?: string }>;
 }) {
     const { month } = await params;
     if (!/^\d{4}-\d{2}$/.test(month)) notFound();
-    const client = await getCurrentClient();
-    if (!client) notFound();
+    const sp = await searchParams;
+    const acting = await resolveActingClient(
+        typeof sp.client === "string" ? sp.client : undefined,
+    );
+    if (!acting) notFound();
+    const { client } = acting;
 
     const insights = await getReportInsights(client.name, month);
     // Only show reports the agency has published.
@@ -57,7 +58,7 @@ export default async function PortalReportMonthPage({
 
             <div className="no-print flex items-center justify-between gap-3">
                 <Link
-                    href="/portal/reports"
+                    href={portalHref("/portal/reports", acting)}
                     className="text-sm text-muted-foreground hover:underline"
                 >
                     ← All reports

@@ -1,0 +1,50 @@
+{
+  "id": "8b3667ad-e115-43d5-91a4-5ac097626e3c",
+  "contractId": "0841f3f1-b247-49e1-ba4a-91646eaf92da",
+  "clientName": "Harmoni Dental Clinic",
+  "accountManager": "Yusuf",
+  "plannerLineId": "req:campaign:2026-11:1:1",
+  "addendumVersion": 0,
+  "type": "campaign",
+  "title": "Lead-gen campaign · 2026-11",
+  "channel": "Meta",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-12",
+  "defaultDueDate": "2026-11-12",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Priya",
+      "pct": 100,
+      "hours": 8
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "campaign",
+    "id": "10a24710-c3df-4f52-b7bc-978ea867b3b2"
+  },
+  "requestedAt": null,
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "createdAt": "2026-11-06T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.856Z"
+}

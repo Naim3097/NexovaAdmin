@@ -1,0 +1,16 @@
+{
+  "id": "6a3e3f4a-5564-4ddd-9489-5eb1a3dc256c",
+  "at": "2026-10-29T03:42:19.993Z",
+  "entity": "contract",
+  "entityId": "50137058-d34f-4bb0-92e5-318a25f1c9c0",
+  "kind": "status",
+  "summary": "Status: active → completed",
+  "actor": "dev@nexova.local",
+  "changes": [
+    {
+      "field": "status",
+      "before": "active",
+      "after": "completed"
+    }
+  ]
+}

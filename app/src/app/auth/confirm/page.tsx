@@ -25,7 +25,7 @@ export default async function ConfirmPage({
     const sp = await searchParams;
     const tokenHash = sp.token_hash ?? "";
     const type = sp.type ?? "";
-    const next = sp.next ?? "/dashboard";
+    const next = sp.next ?? "/";
 
     if (!tokenHash || !type) redirect("/login?error=link");
 

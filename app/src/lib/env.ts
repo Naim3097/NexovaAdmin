@@ -112,7 +112,22 @@ const ServerEnvSchema = z.object({
 export type ServerEnv = z.infer<typeof ServerEnvSchema>;
 
 function loadServerEnv(): ServerEnv {
-    const parsed = ServerEnvSchema.safeParse(process.env);
+    // The shared mock-up (a `mockup/…` branch on Vercel, or NEXOPS_MOCKUP=1)
+    // runs on bundled demo data and needs no Supabase project: give the
+    // required keys placeholder values so the schema passes. Real values,
+    // when present, still win.
+    const mockup =
+        process.env.NEXOPS_MOCKUP === "1" ||
+        (process.env.VERCEL_GIT_COMMIT_REF ?? "").startsWith("mockup/");
+    const source = mockup
+        ? {
+              NEXT_PUBLIC_SITE_URL: "https://nexops-mockup.vercel.app",
+              NEXT_PUBLIC_SUPABASE_URL: "https://mockup.supabase.co",
+              NEXT_PUBLIC_SUPABASE_ANON_KEY: "mockup",
+              ...Object.fromEntries(Object.entries(process.env).filter(([, v]) => v !== undefined && v !== "")),
+          }
+        : process.env;
+    const parsed = ServerEnvSchema.safeParse(source);
     if (!parsed.success) {
         // eslint-disable-next-line no-console
         console.error(

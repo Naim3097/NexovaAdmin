@@ -1,0 +1,24 @@
+{
+  "id": "603df576-889b-452b-be98-193350bb48d0",
+  "name": "Farid",
+  "role": "Frontend",
+  "email": "farid@nexova.local",
+  "phone": "",
+  "skills": "Next.js, React, Tailwind",
+  "active": true,
+  "userId": null,
+  "accessLevel": "standard",
+  "systemRoles": [
+    "user"
+  ],
+  "functions": [],
+  "weeklyHours": 32,
+  "reservedHours": {},
+  "hoursByType": {
+    "website": 10,
+    "branding": 4
+  },
+  "costRateMyr": 0,
+  "createdAt": "2026-11-10T04:34:03.240Z",
+  "updatedAt": "2026-11-10T04:34:03.240Z"
+}

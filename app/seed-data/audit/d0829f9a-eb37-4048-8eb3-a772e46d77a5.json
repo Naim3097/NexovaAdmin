@@ -1,0 +1,16 @@
+{
+  "id": "d0829f9a-eb37-4048-8eb3-a772e46d77a5",
+  "at": "2026-10-28T05:55:58.670Z",
+  "entity": "project",
+  "entityId": "5c87f7fd-a9bf-4d31-a64a-f9ec0d092438",
+  "kind": "update",
+  "summary": "Project updated (1 field)",
+  "actor": "dev@nexova.local",
+  "changes": [
+    {
+      "field": "contractId",
+      "before": "",
+      "after": "e2e5511d-4ca0-427e-991a-df2daa428205"
+    }
+  ]
+}

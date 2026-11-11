@@ -3,15 +3,19 @@
  * live data so the AM edits two lines instead of writing from scratch.
  *
  * Bucket mapping (all derived, nothing stored):
- *   Completed this week — approvals + posts in the last 7 days
- *   In progress         — items being revised after feedback + active project stages
- *   Waiting for client  — drafts awaiting review (with age) + sent/overdue invoices
+ *   Completed this week — approvals + posts in the last 7 days, plus contract
+ *                         tasks completed in the last 7 days
+ *   In progress         — items being revised after feedback + contract tasks
+ *                         in progress
+ *   Waiting for client  — drafts awaiting review (with age), contract tasks
+ *                         awaiting the client's approval, sent/overdue invoices
  *   Next week           — items scheduled in the next 7 days
  *   Issues / risks      — quota overage (billable visuals), overdue invoices,
  *                         reviews stuck > 3 days
  */
 import type { ContentPost } from "@/lib/dev-store/content";
-import type { Project } from "@/lib/dev-store/projects";
+import type { Contract } from "@/lib/data/contracts";
+import type { Work } from "@/lib/data/works";
 import type { Invoice } from "@/lib/dev-store/invoices";
 import type { Client } from "@/lib/dev-store/clients";
 import { computeTotals } from "@/lib/dev-store/invoices";
@@ -44,7 +48,8 @@ function daysAgo(iso: string, now: number) {
 export function buildWeeklyUpdate(input: {
     client: Client;
     posts: ContentPost[];
-    projects: Project[];
+    works: Work[];
+    contracts: Contract[];
     invoices: Invoice[];
     now?: number;
 }): WeeklyUpdate {
@@ -56,10 +61,26 @@ export function buildWeeklyUpdate(input: {
     const month = today.slice(0, 7);
 
     const mine = input.posts.filter((p) => eq(p.clientName, client.name));
-    const myProjects = input.projects.filter((p) => eq(p.clientName, client.name));
+    const myContracts = input.contracts.filter((c) => eq(c.clientName, client.name));
+    const contractIds = new Set(myContracts.map((c) => c.id));
+    // Tasks linked to a content post are already covered by the post's own
+    // review line above, so only standalone tasks are listed here.
+    const myWorks = input.works.filter(
+        (w) =>
+            (contractIds.has(w.contractId) || eq(w.clientName, client.name)) &&
+            w.linked?.kind !== "content",
+    );
     const myInvoices = input.invoices.filter((i) => eq(i.clientName, client.name));
 
-    // Completed this week — approvals and posts inside the window.
+    // A task line reads "<title> (<contract>)" only when the client has more
+    // than one contract — otherwise the contract name is just noise.
+    const contractName = new Map(myContracts.map((c) => [c.id, c.name]));
+    const taskLabel = (w: Work) =>
+        myContracts.length > 1 && contractName.get(w.contractId)
+            ? `${w.title} (${contractName.get(w.contractId)})`
+            : w.title;
+
+    // Completed this week — approvals, posts and contract tasks inside the window.
     const completed: string[] = [];
     for (const p of mine) {
         if (p.approvedAt && Date.parse(p.approvedAt) >= weekAgo) {
@@ -68,8 +89,13 @@ export function buildWeeklyUpdate(input: {
             completed.push(`${p.title} — posted ${fmtDay(p.postedAt)}`);
         }
     }
+    for (const w of myWorks) {
+        if (w.status === "completed" && w.completedAt && Date.parse(w.completedAt) >= weekAgo) {
+            completed.push(`${taskLabel(w)} — completed ${fmtDay(w.completedAt)}`);
+        }
+    }
 
-    // In progress — revising after feedback, plus each project's active stage.
+    // In progress — revising after feedback, plus every contract task in progress.
     const inProgress: string[] = [];
     for (const p of mine) {
         if (p.reviewStatus === "changes_requested") {
@@ -78,16 +104,16 @@ export function buildWeeklyUpdate(input: {
             );
         }
     }
-    for (const pr of myProjects) {
-        const active = pr.stages.find((s) => s.state === "active");
-        if (active) {
+    for (const w of myWorks) {
+        if (w.status === "in_progress") {
             inProgress.push(
-                `${pr.name} — ${active.label}${active.assignee ? ` (${active.assignee})` : ""}${active.dueDate ? `, due ${fmtDay(active.dueDate)}` : ""}`,
+                `${taskLabel(w)} — ${w.phaseName || "in progress"}${w.dueDate ? `, due ${fmtDay(w.dueDate)}` : ""}`,
             );
         }
     }
 
-    // Waiting for the client — reviews in their court + unpaid invoices.
+    // Waiting for the client — reviews in their court, tasks awaiting their
+    // approval, and unpaid invoices.
     const waitingFor: string[] = [];
     for (const p of mine) {
         if (p.reviewStatus === "awaiting_client") {
@@ -95,6 +121,14 @@ export function buildWeeklyUpdate(input: {
             const age = lastDraft ? daysAgo(lastDraft.submittedAt, now) : 0;
             waitingFor.push(
                 `${p.title} — your review (${p.draftNumber || "draft"} sent ${age === 0 ? "today" : `${age}d ago`})`,
+            );
+        }
+    }
+    for (const w of myWorks) {
+        if (w.status === "pending_approval" && w.approver === "client") {
+            const age = w.submittedAt ? daysAgo(w.submittedAt, now) : 0;
+            waitingFor.push(
+                `${taskLabel(w)} — awaiting your approval (sent ${age === 0 ? "today" : `${age}d ago`})`,
             );
         }
     }

@@ -10,6 +10,10 @@ import {
     totalsFor,
 } from "@/lib/data/campaigns";
 import { listLeads } from "@/lib/data/leads";
+import { listContracts } from "@/lib/data/contracts";
+import { listWorks } from "@/lib/data/works";
+import { TASK_STATUS_LABEL } from "@/lib/works/helpers";
+import { fmtMyr, fmtMyrShort } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { SaveButton } from "@/components/save-button";
 import { Input } from "@/components/ui/input";
@@ -33,12 +37,6 @@ import {
 
 export const dynamic = "force-dynamic";
 
-function fmtMyr(n: number) {
-    return `MYR ${n.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    })}`;
-}
 function safeDiv(a: number, b: number) {
     return b > 0 ? a / b : 0;
 }
@@ -49,8 +47,13 @@ export default async function CampaignDetailPage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    const campaign = await getCampaignById(id);
+    const [campaign, contracts, works] = await Promise.all([getCampaignById(id), listContracts(), listWorks()]);
     if (!campaign) notFound();
+    // The contract task this campaign is the work for, if it came from a planner line.
+    const task = works.find((w) => w.linked?.kind === "campaign" && w.linked.id === campaign.id);
+    const contractOptions = contracts.filter(
+        (c) => c.id === campaign.contractId || (c.clientName === campaign.clientName && (c.status === "active" || c.status === "draft")),
+    );
 
     const leads = await listLeads();
     const linkedLeads = leads.filter((l) => l.sourceCampaignId === id);
@@ -85,11 +88,21 @@ export default async function CampaignDetailPage({
                     </h1>
                     <Badge>{campaign.status}</Badge>
                 </div>
+                {task ? (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                        Contract task:{" "}
+                        <Link href={`/works/${task.id}`} className="underline">
+                            {task.title}
+                        </Link>
+                        {" · "}
+                        {TASK_STATUS_LABEL[task.status]} · due {task.dueDate || "TBC"}
+                    </p>
+                ) : null}
             </div>
 
             {/* Status changer */}
             <section className="rounded-lg border bg-card p-4 md:p-6">
-                <h2 className="text-sm font-medium">Move to status</h2>
+                <h2 className="text-sm font-medium">Move to</h2>
                 <div className="mt-3 flex flex-wrap gap-2">
                     {CAMPAIGN_STATUSES.map((s) => (
                         <form key={s} action={setCampaignStatusAction}>
@@ -112,7 +125,7 @@ export default async function CampaignDetailPage({
             <section className="space-y-3 rounded-lg border bg-card p-4 md:p-6">
                 <h2 className="text-sm font-medium">Performance (lifetime)</h2>
                 <div className="grid gap-3 md:grid-cols-4">
-                    <Kpi label="Spend" value={fmtMyr(totals.spendMyr)} />
+                    <Kpi label="Spend" value={fmtMyrShort(totals.spendMyr)} />
                     <Kpi label="Impressions" value={totals.impressions.toLocaleString()} />
                     <Kpi label="Clicks" value={totals.clicks.toLocaleString()} />
                     <Kpi
@@ -171,10 +184,7 @@ export default async function CampaignDetailPage({
                             Client billing (lifetime)
                         </h2>
                         <p className="text-xs text-muted-foreground">
-                            Management fee charged to {campaign.clientName} on
-                            top of ad spend. Flat fee shown without proration
-                            (treated as 1 month) — for monthly invoices use
-                            the per-month breakdown.
+                            Management fee charged to {campaign.clientName} on top of ad spend; the flat fee counts as one month here.
                         </p>
                     </div>
                     <div className="grid gap-3 md:grid-cols-3">
@@ -183,7 +193,7 @@ export default async function CampaignDetailPage({
                             value={fmtMyr(totals.spendMyr)}
                         />
                         <Kpi
-                            label="Mgmt fee"
+                            label="Management fee"
                             value={fmtMyr(
                                 computeManagementFee(campaign, totals.spendMyr),
                             )}
@@ -229,6 +239,22 @@ export default async function CampaignDetailPage({
                             defaultValue={campaign.clientName}
                             required
                         />
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label className="text-sm">Contract (optional)</Label>
+                        <Select name="contractId" defaultValue={campaign.contractId ?? "none"}>
+                            <SelectTrigger className="h-10">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="none">— none —</SelectItem>
+                                {contractOptions.map((c) => (
+                                    <SelectItem key={c.id} value={c.id}>
+                                        {c.clientName} · {c.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div className="space-y-1.5">
                         <Label className="text-sm">Platform</Label>

@@ -68,7 +68,7 @@ function rowToInvoice(row: InvoiceRow, items: InvoiceItemRow[]): Invoice {
         id: row.id,
         number: row.number,
         clientName: row.client_name,
-        projectId: row.project_id,
+        contractId: row.contract_id ?? null,
         status: row.status as InvoiceStatus,
         issueDate: row.issue_date,
         dueDate: row.due_date,
@@ -97,7 +97,7 @@ function invoiceToInsert(inv: Invoice): InvoiceInsert {
         id: inv.id,
         number: inv.number,
         client_name: inv.clientName,
-        project_id: inv.projectId,
+        contract_id: inv.contractId ?? null,
         status: inv.status,
         issue_date: inv.issueDate,
         due_date: inv.dueDate,
@@ -120,7 +120,7 @@ function invoiceToInsert(inv: Invoice): InvoiceInsert {
 function patchToUpdate(patch: UpdatePatch): InvoiceUpdate {
     const out: InvoiceUpdate = {};
     if (patch.clientName !== undefined) out.client_name = patch.clientName;
-    if (patch.projectId !== undefined) out.project_id = patch.projectId;
+    if (patch.contractId !== undefined) out.contract_id = patch.contractId;
     if (patch.status !== undefined) out.status = patch.status;
     if (patch.issueDate !== undefined) out.issue_date = patch.issueDate;
     if (patch.dueDate !== undefined) out.due_date = patch.dueDate;
@@ -164,7 +164,7 @@ async function nextInvoiceNumber(): Promise<string> {
 
 export async function createInvoice(input: {
     clientName: string;
-    projectId?: string | null;
+    contractId?: string | null;
     issueDate?: string;
     dueDate?: string;
     taxRatePct?: number;
@@ -182,7 +182,7 @@ export async function createInvoice(input: {
         id: randomUUID(),
         number: await nextInvoiceNumber(),
         clientName: input.clientName,
-        projectId: input.projectId ?? null,
+        contractId: input.contractId ?? null,
         status: "draft",
         issueDate: issue,
         dueDate: due,
@@ -248,16 +248,6 @@ export async function getInvoiceById(id: string): Promise<Invoice | null> {
         .eq("invoice_id", id);
     if (itemsErr) throw new Error(`getInvoiceById(items): ${itemsErr.message}`);
     return rowToInvoice(row as InvoiceRow, (items ?? []) as InvoiceItemRow[]);
-}
-
-export async function listInvoicesForProject(
-    projectId: string,
-): Promise<Invoice[]> {
-    if (!isSupabaseEnabled("invoices")) {
-        return devInvoices.listInvoicesForProject(projectId);
-    }
-    const all = await listInvoices();
-    return all.filter((i) => i.projectId === projectId);
 }
 
 export async function updateInvoice(

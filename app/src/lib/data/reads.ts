@@ -12,17 +12,19 @@
  */
 import { cache } from "react";
 import { listLeads as _listLeads } from "@/lib/data/leads";
-import { listProjects as _listProjects } from "@/lib/data/projects";
 import { listInvoices as _listInvoices } from "@/lib/data/invoices";
 import { listQuotations as _listQuotations } from "@/lib/data/quotations";
 import { listContentPosts as _listContentPosts } from "@/lib/data/content";
 import { listCampaigns as _listCampaigns } from "@/lib/data/campaigns";
 import { listSubmissions as _listSubmissions } from "@/lib/data/onboarding";
+import { listContracts as _listContracts } from "@/lib/data/contracts";
+import { listWorks as _listWorks } from "@/lib/data/works";
 
 export const listLeads = cache(_listLeads);
-export const listProjects = cache(_listProjects);
 export const listInvoices = cache(_listInvoices);
 export const listQuotations = cache(_listQuotations);
 export const listContentPosts = cache(_listContentPosts);
 export const listCampaigns = cache(_listCampaigns);
 export const listSubmissions = cache(_listSubmissions);
+export const listContracts = cache(_listContracts);
+export const listWorks = cache(_listWorks);

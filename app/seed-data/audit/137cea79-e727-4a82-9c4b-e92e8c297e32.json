@@ -1,0 +1,16 @@
+{
+  "id": "137cea79-e727-4a82-9c4b-e92e8c297e32",
+  "at": "2026-11-02T05:35:11.348Z",
+  "entity": "contract",
+  "entityId": "6889b09e-a082-4097-ab99-1961f9643374",
+  "kind": "status",
+  "summary": "Stage: onboarding → official",
+  "actor": "dev@nexova.local",
+  "changes": [
+    {
+      "field": "stage",
+      "before": "onboarding",
+      "after": "official"
+    }
+  ]
+}

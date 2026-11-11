@@ -1,0 +1,47 @@
+{
+  "id": "ad5c704a-6cb8-4f64-8f54-74a40ee8221a",
+  "contractId": "037ed49f-c145-4c4f-8015-48d83157409d",
+  "clientName": "Zenith Properties",
+  "accountManager": "Naim",
+  "plannerLineId": "req:website:2026-09:0:3",
+  "addendumVersion": 0,
+  "type": "website",
+  "title": "Listings screen + map integration",
+  "channel": "App",
+  "month": "2026-11",
+  "phaseKey": "build",
+  "phaseName": "Build",
+  "dueDate": "2026-11-20",
+  "defaultDueDate": "2026-11-20",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "in_progress",
+  "split": [
+    {
+      "seat": "dev",
+      "member": "Farid",
+      "pct": 100,
+      "hours": 10
+    }
+  ],
+  "approver": "am",
+  "milestone": true,
+  "linked": null,
+  "requestedAt": "2026-11-02T04:34:02.666Z",
+  "startedAt": "2026-11-05T04:34:02.666Z",
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "createdAt": "2026-09-26T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.898Z"
+}

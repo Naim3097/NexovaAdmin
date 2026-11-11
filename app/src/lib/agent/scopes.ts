@@ -9,7 +9,7 @@
  *
  * Scopes (no implication between them — a key lists every scope it needs):
  *   - "read"        pure internal reads, no external calls, no mutations.
- *   - "write"       mutates internal Nexova state (projects, tasks, content).
+ *   - "write"       mutates internal Nexova state (contract tasks, content, billing).
  *   - "outbound"    contacts external parties / real-world effects: payment
  *                   links, AI/LLM calls, payment provider reads, team Telegram
  *                   blasts, client-facing content review.
@@ -45,23 +45,18 @@ const MIN_KEY_LENGTH = 24;
 export const TOOL_SCOPES: Record<string, Scope> = {
     // --- reads -------------------------------------------------------------
     "board.summary": "read",
-    "standup.tasks": "read",
+    "tasks.list": "read",
     "overdue.list": "read",
-    "projects.list": "read",
-    "project.get": "read",
+    "contracts.list": "read",
+    "contract.get": "read",
     "team.list": "read",
     "clients.list": "read",
     "content.list": "read",
     "invoices.list": "read",
     // --- internal writes ---------------------------------------------------
-    "projects.create": "write",
     "clients.create": "write",
-    "tasks.add": "write",
-    "tasks.toggle": "write",
-    "tasks.reassign": "write",
-    "projects.setPhase": "write",
-    "projects.advanceStage": "write",
-    "projects.assignStage": "write",
+    "tasks.setStatus": "write",
+    "tasks.setSplit": "write",
     "content.generatePlan": "write",
     "content.createRequest": "write",
     "invoices.create": "write",
@@ -78,8 +73,7 @@ export const TOOL_SCOPES: Record<string, Scope> = {
     // --- client email (separate scope; not granted to the agent) -----------
     "email.sendOnboardingLink": "email",
     // --- destructive / irreversible (HUMAN APPROVAL REQUIRED) --------------
-    "projects.delete": "destructive",
-    "tasks.delete": "destructive",
+    // (Contracts and their tasks have no delete tool at all.)
     "content.delete": "destructive",
 };
 
@@ -136,7 +130,7 @@ function keyId(secret: string): string {
 
 /**
  * Warn (don't fail) if a deny pattern matches no registered tool — catches
- * typos that would silently fail open, e.g. `project.*` vs `projects.*`
+ * typos that would silently fail open, e.g. `contract.*` vs `contracts.*`
  * (Finding NEW-2).
  */
 function validateDeny(label: string, deny: string[] | undefined): void {

@@ -2,6 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getTeamMemberByUserId } from "@/lib/data/team";
+import { homeFor } from "@/lib/roles";
 import { z } from "zod";
 
 const CredentialsSchema = z.object({
@@ -14,6 +16,17 @@ export type LoginState = {
     message?: string;
 };
 
+/**
+ * Where a freshly signed-in staff login lands: the page they were sent away
+ * from (same-origin only), else the home of their most specific role. A login
+ * with no member row yet goes to the dashboard.
+ */
+async function landingFor(userId: string, next: string): Promise<string> {
+    if (next.startsWith("/") && !next.startsWith("//")) return next;
+    const member = await getTeamMemberByUserId(userId).catch(() => null);
+    return member ? homeFor(member) : "/dashboard";
+}
+
 export async function signIn(
     _prev: LoginState | undefined,
     formData: FormData,
@@ -25,10 +38,10 @@ export async function signIn(
     if (!parsed.success) {
         return { ok: false, message: parsed.error.issues[0]?.message ?? "Invalid input." };
     }
-    const next = String(formData.get("next") ?? "/dashboard");
+    const next = String(formData.get("next") ?? "").trim();
 
     const supabase = await createClient();
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
         email: parsed.data.email,
         password: parsed.data.password,
     });
@@ -36,7 +49,7 @@ export async function signIn(
     if (error) {
         return { ok: false, message: error.message };
     }
-    redirect(next);
+    redirect(await landingFor(data.user.id, next));
 }
 
 /**
@@ -82,5 +95,5 @@ export async function signUp(
             message: "Account created. Check your email to confirm, then sign in.",
         };
     }
-    redirect("/dashboard");
+    redirect(data.user ? await landingFor(data.user.id, "") : "/dashboard");
 }

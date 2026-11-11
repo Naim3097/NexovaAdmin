@@ -14,7 +14,6 @@ const FIELD_LABEL: Record<string, string> = {
     status: "Status",
     phase: "Phase",
     clientName: "Client",
-    projectId: "Project",
     issueDate: "Issue date",
     dueDate: "Due date",
     taxRatePct: "Tax rate %",

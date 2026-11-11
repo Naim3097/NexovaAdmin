@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCurrentClient } from "@/lib/auth";
+import { portalHref, resolveActingClient } from "@/lib/portal/resolve-client";
 import { listPublishedReports } from "@/lib/data/report-insights";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -13,9 +13,16 @@ function fmtMonth(m: string) {
     });
 }
 
-export default async function PortalReportsPage() {
-    const client = await getCurrentClient();
-    if (!client) {
+export default async function PortalReportsPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ client?: string }>;
+}) {
+    const sp = await searchParams;
+    const acting = await resolveActingClient(
+        typeof sp.client === "string" ? sp.client : undefined,
+    );
+    if (!acting) {
         return (
             <div className="space-y-2">
                 <h1 className="text-2xl font-semibold">Reports</h1>
@@ -26,6 +33,7 @@ export default async function PortalReportsPage() {
         );
     }
 
+    const { client } = acting;
     const reports = await listPublishedReports(client.name);
 
     return (
@@ -44,7 +52,10 @@ export default async function PortalReportsPage() {
             ) : (
                 <div className="space-y-3">
                     {reports.map((r) => (
-                        <Link key={r.id} href={`/portal/reports/${r.month}`}>
+                        <Link
+                            key={r.id}
+                            href={portalHref(`/portal/reports/${r.month}`, acting)}
+                        >
                             <Card className="transition hover:border-primary/50">
                                 <CardContent className="flex items-center justify-between py-4">
                                     <span className="font-medium">

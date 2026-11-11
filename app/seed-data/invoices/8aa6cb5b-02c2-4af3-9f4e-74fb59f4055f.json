@@ -1,0 +1,31 @@
+{
+  "id": "8aa6cb5b-02c2-4af3-9f4e-74fb59f4055f",
+  "number": "INV-2026-0014",
+  "clientName": "Nusa Fitness Studio",
+  "contractId": null,
+  "status": "paid",
+  "issueDate": "2026-06-05",
+  "dueDate": "2026-06-19",
+  "items": [
+    {
+      "id": "87d769fb-e444-4b03-b820-4de1eb74a503",
+      "description": "Previous retainer — 2026-06",
+      "details": "",
+      "quantity": 1,
+      "unitPriceMyr": 1800
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "createdAt": "2026-06-05T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:04.120Z",
+  "paidAt": "2026-06-17T04:34:02.666Z",
+  "paymentProvider": null,
+  "paymentLink": null,
+  "paymentExternalId": null,
+  "paymentMeta": {},
+  "paymentLinkCreatedAt": null
+}

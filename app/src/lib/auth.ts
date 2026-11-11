@@ -5,6 +5,7 @@
  * Permission keys follow `entity.action` (e.g. `leads.view`, `deals.edit`)
  * with `*` wildcards (e.g. `leads.*` or top-level `*`).
  */
+import { bypassEnabled } from "@/lib/dev-store/root";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 
@@ -15,10 +16,7 @@ import { createClient } from "@/lib/supabase/server";
  * Force-disabled in production builds.
  */
 function devBypassUser() {
-    if (
-        process.env.NODE_ENV !== "production" &&
-        process.env.DEV_AUTH_BYPASS === "1"
-    ) {
+    if (bypassEnabled()) {
         return {
             id: "00000000-0000-0000-0000-000000000000",
             email: "dev@nexova.local",
@@ -68,6 +66,29 @@ export const getCurrentTeamMember = cache(async () => {
     // Imported lazily to avoid pulling the data layer into every auth import.
     const { getTeamMemberByUserId } = await import("@/lib/data/team");
     return getTeamMemberByUserId(user.id).catch(() => null);
+});
+
+/** Cookie that remembers who the dev-bypass session is acting as (name of a team member). */
+export const ACTING_AS_COOKIE = "nexops_as";
+
+/**
+ * The team member this request acts as. With a real login that is the linked
+ * member. Under DEV_AUTH_BYPASS there is no login, so pages pass the `?as=`
+ * name they received, falling back to the acting-as cookie set from the
+ * sidebar picker. Null when nothing resolves (bypass with no pick).
+ */
+export const getActingMember = cache(async (preferredName?: string) => {
+    const real = await getCurrentTeamMember();
+    if (real) return real;
+    if (!devBypassUser()) return null;
+    const { listTeamMembers } = await import("@/lib/data/team");
+    const team = await listTeamMembers().catch(() => []);
+    const want = (preferredName ?? "").trim().toLowerCase();
+    if (want) return team.find((m) => m.name.trim().toLowerCase() === want) ?? null;
+    const { cookies } = await import("next/headers");
+    const fromCookie = (await cookies()).get(ACTING_AS_COOKIE)?.value?.trim().toLowerCase() ?? "";
+    if (!fromCookie) return null;
+    return team.find((m) => m.name.trim().toLowerCase() === fromCookie) ?? null;
 });
 
 /**

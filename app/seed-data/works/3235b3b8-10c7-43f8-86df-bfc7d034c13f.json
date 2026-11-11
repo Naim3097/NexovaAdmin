@@ -1,0 +1,56 @@
+{
+  "id": "3235b3b8-10c7-43f8-86df-bfc7d034c13f",
+  "contractId": "361d9eb1-fc59-469e-83cd-cb215a4b207c",
+  "clientName": "Lean.x Sdn Bhd",
+  "accountManager": "Aina",
+  "plannerLineId": "req:post:2027-03:0:6",
+  "addendumVersion": 0,
+  "type": "post",
+  "title": "Carousel: Cashflow tips for SMEs",
+  "channel": "Instagram",
+  "month": "2027-03",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2027-03-18",
+  "defaultDueDate": "2027-03-18",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Syafiq",
+      "pct": 50,
+      "hours": 1.5
+    },
+    {
+      "seat": "creative",
+      "member": "Mei Ling",
+      "pct": 50,
+      "hours": 2.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "7b540859-5477-4755-9696-66e857cf7d23"
+  },
+  "requestedAt": null,
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "createdAt": "2026-10-01T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.695Z"
+}

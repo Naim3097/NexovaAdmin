@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCurrentClient } from "@/lib/auth";
+import { resolveActingClient } from "@/lib/portal/resolve-client";
 import { listSubmissions } from "@/lib/data/onboarding";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,9 +7,16 @@ import { buttonVariants } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
-export default async function PortalOnboardingPage() {
-    const client = await getCurrentClient();
-    if (!client) {
+export default async function PortalOnboardingPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ client?: string }>;
+}) {
+    const sp = await searchParams;
+    const acting = await resolveActingClient(
+        typeof sp.client === "string" ? sp.client : undefined,
+    );
+    if (!acting) {
         return (
             <div className="space-y-2">
                 <h1 className="text-2xl font-semibold">Forms</h1>
@@ -20,6 +27,7 @@ export default async function PortalOnboardingPage() {
         );
     }
 
+    const { client } = acting;
     const name = client.name.trim().toLowerCase();
     const mine = (await listSubmissions())
         .filter((s) => s.clientName.trim().toLowerCase() === name)

@@ -33,7 +33,7 @@ export function ClientInviteForm({
                 <p className="text-sm font-medium">Portal login</p>
                 <p className="text-xs text-muted-foreground">
                     {linked
-                        ? "This client has a portal login. Re-invite to send a fresh set-password link."
+                        ? "This client has a portal login; re-invite to send a fresh set-password link."
                         : "Invite the client to their portal — creates a login and a one-time set-password link."}
                 </p>
             </div>
@@ -118,8 +118,7 @@ export function ClientInviteForm({
                         Copy link
                     </Button>
                     <p className="text-[11px] text-muted-foreground">
-                        Send to the client. Signs them in once to choose a
-                        password, then lands them in their portal. Single use.
+                        Send to the client; it signs them in once to choose a password (single use).
                     </p>
                 </div>
             ) : null}

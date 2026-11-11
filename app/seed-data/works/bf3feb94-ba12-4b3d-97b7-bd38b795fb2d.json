@@ -1,0 +1,56 @@
+{
+  "id": "bf3feb94-ba12-4b3d-97b7-bd38b795fb2d",
+  "contractId": "0841f3f1-b247-49e1-ba4a-91646eaf92da",
+  "clientName": "Harmoni Dental Clinic",
+  "accountManager": "Yusuf",
+  "plannerLineId": "req:post:2026-12:0:5",
+  "addendumVersion": 0,
+  "type": "post",
+  "title": "Reel: Patient testimonial",
+  "channel": "Instagram",
+  "month": "2026-12",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-12-22",
+  "defaultDueDate": "2026-12-22",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Syafiq",
+      "pct": 50,
+      "hours": 1.5
+    },
+    {
+      "seat": "creative",
+      "member": "Mei Ling",
+      "pct": 50,
+      "hours": 2.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "4d920144-af61-45d1-b9cb-59f02bec1eeb"
+  },
+  "requestedAt": null,
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "createdAt": "2026-11-06T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.864Z"
+}

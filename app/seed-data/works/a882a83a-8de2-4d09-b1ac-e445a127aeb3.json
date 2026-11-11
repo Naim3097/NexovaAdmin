@@ -1,0 +1,53 @@
+{
+  "id": "a882a83a-8de2-4d09-b1ac-e445a127aeb3",
+  "contractId": "361d9eb1-fc59-469e-83cd-cb215a4b207c",
+  "clientName": "Lean.x Sdn Bhd",
+  "accountManager": "Aina",
+  "plannerLineId": "req:branding:2026-10:4:1",
+  "addendumVersion": 0,
+  "type": "branding",
+  "title": "Kickoff: brand audit & strategy sign-off",
+  "channel": "Workshop",
+  "month": "2026-10",
+  "phaseKey": "kickoff",
+  "phaseName": "Kickoff",
+  "dueDate": "2026-10-05",
+  "defaultDueDate": "2026-10-05",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Syafiq",
+      "pct": 50,
+      "hours": 6
+    },
+    {
+      "seat": "creative",
+      "member": "Mei Ling",
+      "pct": 50,
+      "hours": 8
+    }
+  ],
+  "approver": "client",
+  "milestone": true,
+  "linked": null,
+  "requestedAt": "2026-09-28T04:34:02.666Z",
+  "startedAt": "2026-09-29T04:34:02.666Z",
+  "submittedAt": "2026-10-03T04:34:02.666Z",
+  "submission": {
+    "url": "https://drive.example.com/work/a882a83a",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Aina)",
+    "at": "2026-10-04T04:34:02.666Z"
+  },
+  "completedAt": "2026-10-04T04:34:02.666Z",
+  "notes": "",
+  "createdAt": "2026-10-01T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.971Z"
+}

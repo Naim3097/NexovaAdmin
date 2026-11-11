@@ -17,32 +17,6 @@
 // JSONB sub-shapes (mirror dev-store types so adapters can pass straight through)
 // -----------------------------------------------------------------------------
 
-export type ProjectTaskRow = {
-    id: string;
-    title: string;
-    done: boolean;
-    assignee: string;
-    phase: string;
-    createdAt: string;
-};
-
-export type ProjectDeliverableRow = {
-    id: string;
-    title: string;
-    url: string;
-    notes: string;
-    phase: string;
-    approvedAt: string | null;
-    approvedBy: string;
-    createdAt: string;
-};
-
-export type ProjectSignoffRow = {
-    signedAt: string | null;
-    signedBy: string;
-    notes: string;
-};
-
 export type OnboardingFileRow = {
     name: string;
     size: number;
@@ -143,6 +117,16 @@ export type TeamMemberRow = {
     name: string;
     role: string;
     access_level: string;
+    /** text[] — SystemRole[] (see lib/dev-store/team.ts). */
+    system_roles: string[];
+    /** text[] — TeamFunction[]. */
+    functions: string[];
+    weekly_hours: number;
+    /** JSONB — Partial<Record<ReservedKey, number>>. */
+    reserved_hours: Record<string, unknown>;
+    /** JSONB — Partial<Record<LineType, number>>. */
+    hours_by_type: Record<string, unknown>;
+    cost_rate_myr: number;
     email: string;
     phone: string;
     skills: string;
@@ -189,54 +173,12 @@ export type OnboardingSubmissionRow = {
     submitted_at: string | null;
 };
 
-export type ProjectStageRow = {
-    id: string;
-    label: string;
-    ownerRole: string;
-    assignee: string;
-    state: "pending" | "active" | "done";
-    dueDate: string;
-    startedAt: string | null;
-    doneAt: string | null;
-};
-
-export type ProjectRow = {
-    id: string;
-    name: string;
-    client_name: string;
-    status: string;
-    phase: string;
-    service_category: string;
-    onboarding_submission_id: string | null;
-    notes: string;
-    tasks: ProjectTaskRow[];
-    deliverables: ProjectDeliverableRow[];
-    stages: ProjectStageRow[];
-    signoff: ProjectSignoffRow;
-    portal_token: string;
-    created_at: string;
-    updated_at: string;
-};
-
-export type WorkflowStageDefRow = {
-    key: string;
-    label: string;
-    ownerRole: string;
-    description: string;
-};
-
-export type WorkflowTemplateRow = {
-    service_category: string;
-    name: string;
-    stages: WorkflowStageDefRow[];
-    updated_at: string;
-};
-
 export type InvoiceRow = {
     id: string;
     number: string;
     client_name: string;
-    project_id: string | null;
+    // Contract link (added by migration 0027)
+    contract_id: string | null;
     status: string;
     issue_date: string;
     due_date: string;
@@ -270,7 +212,6 @@ export type QuotationRow = {
     id: string;
     number: string;
     client_name: string;
-    project_id: string | null;
     status: string;
     issue_date: string;
     valid_until: string;
@@ -304,6 +245,7 @@ export type CampaignRow = {
     id: string;
     name: string;
     client_name: string;
+    contract_id: string | null;
     platform: string;
     objective: string;
     status: string;
@@ -365,7 +307,7 @@ export type ContentPostRow = {
     id: string;
     title: string;
     client_name: string;
-    project_id: string | null;
+    contract_id: string | null;
     platform: string;
     type: string;
     status: string;
@@ -463,6 +405,118 @@ export type ReportInsightsRow = {
     generated_at: string;
 };
 
+export type PhaseTemplateRow = {
+    id: string;
+    name: string;
+    description: string;
+    /** JSONB — PlannerPhase[] (see lib/dev-store/planners.ts). */
+    phases: unknown[];
+    is_default: boolean;
+    created_at: string;
+    updated_at: string;
+};
+
+export type ContractRow = {
+    id: string;
+    code: string;
+    name: string;
+    client_name: string;
+    account_manager: string;
+    status: string;
+    /** JSONB — ContractPhase[] (see lib/dev-store/contracts.ts). */
+    phases: unknown[];
+    /** JSONB — Requirement[] (what the AM said the contract needs: 3 posts a month …). */
+    requirements: unknown[];
+    /** JSONB — crew: default person per seat. */
+    crew: Record<string, unknown>;
+    /** JSONB — pending account-manager handover {to, by, at, note}, null when none. */
+    handover: Record<string, unknown> | null;
+    stage: string;
+    start_date: string | null;
+    end_date: string | null;
+    reference: string;
+    quotation_id: string | null;
+    value_myr: number;
+    signed_at: string | null;
+    signed_by: string;
+    file_url: string;
+    terms: string;
+    /** JSONB — see lib/dev-store/contracts.ts (ContractBilling). */
+    billing: Record<string, unknown>;
+    notes: string;
+    created_at: string;
+    updated_at: string;
+};
+
+export type WorkRow = {
+    id: string;
+    contract_id: string;
+    client_name: string;
+    account_manager: string;
+    planner_line_id: string | null;
+    addendum_version: number;
+    type: string;
+    title: string;
+    channel: string;
+    month: string;
+    phase_key: string;
+    phase_name: string;
+    due_date: string | null;
+    default_due_date: string | null;
+    adjusted_by: string;
+    adjusted_at: string | null;
+    status: string;
+    /** JSONB — see lib/dev-store/works.ts (WorkShare[]). */
+    split: unknown[];
+    approver: string;
+    milestone: boolean;
+    /** JSONB — see lib/dev-store/works.ts (LinkedItem | null). */
+    linked: Record<string, unknown> | null;
+    requested_at: string | null;
+    started_at: string | null;
+    submitted_at: string | null;
+    submission: Record<string, unknown>;
+    review: Record<string, unknown>;
+    completed_at: string | null;
+    notes: string;
+    created_at: string;
+    updated_at: string;
+};
+
+export type PlannerRow = {
+    id: string;
+    lead_id: string | null;
+    client_name: string;
+    prepared_by: string;
+    title: string;
+    version: number;
+    status: string;
+    understanding: string;
+    /** JSONB — see lib/dev-store/planners.ts. */
+    objectives: unknown[];
+    pillars: string;
+    channels: string;
+    phases: unknown[];
+    lines: unknown[];
+    quotation_id: string | null;
+    payment: Record<string, unknown>;
+    third_party_costs: string;
+    assumptions: string;
+    client_responsibilities: string;
+    exclusions: string;
+    terms: string;
+    review_days: number;
+    change_rounds: number;
+    valid_until: string | null;
+    presented_at: string | null;
+    accepted_at: string | null;
+    accepted_by: string;
+    contract_id: string | null;
+    addenda: unknown[];
+    created_at: string;
+    updated_at: string;
+};
+
 // -----------------------------------------------------------------------------
 // Database type expected by supabase-js
 // -----------------------------------------------------------------------------
@@ -476,10 +530,9 @@ export type Database = {
             team_members: Tbl<TeamMemberRow>;
             leads: Tbl<LeadRow>;
             onboarding_submissions: Tbl<OnboardingSubmissionRow>;
-            projects: Tbl<ProjectRow>;
-            workflow_templates: Tbl<WorkflowTemplateRow>;
             invoices: Tbl<InvoiceRow>;
             invoice_items: Tbl<InvoiceItemRow>;
+            phase_templates: Tbl<PhaseTemplateRow>;
             quotations: Tbl<QuotationRow>;
             quotation_items: Tbl<QuotationItemRow>;
             campaigns: Tbl<CampaignRow>;
@@ -490,6 +543,9 @@ export type Database = {
             audit_events: Tbl<AuditEventRow>;
             sprint_tasks: Tbl<SprintTaskRow>;
             report_insights: Tbl<ReportInsightsRow>;
+            contracts: Tbl<ContractRow>;
+            works: Tbl<WorkRow>;
+            planners: Tbl<PlannerRow>;
         };
         Views: Record<string, never>;
         // Permissive Functions map: the new schema declares no RPCs yet, but

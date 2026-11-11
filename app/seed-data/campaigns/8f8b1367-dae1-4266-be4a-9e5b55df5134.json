@@ -1,0 +1,21 @@
+{
+  "id": "8f8b1367-dae1-4266-be4a-9e5b55df5134",
+  "name": "Lead-gen campaign · 2026-12",
+  "clientName": "Lean.x Sdn Bhd",
+  "contractId": "361d9eb1-fc59-469e-83cd-cb215a4b207c",
+  "platform": "meta",
+  "objective": "leads",
+  "status": "planning",
+  "startDate": "2026-12-16",
+  "endDate": "",
+  "monthlyBudgetMyr": 0,
+  "feeModel": "none",
+  "flatFeeMyr": 0,
+  "percentFee": 0,
+  "externalId": "",
+  "landingUrl": "",
+  "notes": "",
+  "metrics": [],
+  "createdAt": "2026-11-10T04:34:03.397Z",
+  "updatedAt": "2026-11-10T04:34:03.637Z"
+}

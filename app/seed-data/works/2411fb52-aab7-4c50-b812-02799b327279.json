@@ -1,0 +1,47 @@
+{
+  "id": "2411fb52-aab7-4c50-b812-02799b327279",
+  "contractId": "361d9eb1-fc59-469e-83cd-cb215a4b207c",
+  "clientName": "Lean.x Sdn Bhd",
+  "accountManager": "Aina",
+  "plannerLineId": "req:website:2026-10:5:1",
+  "addendumVersion": 0,
+  "type": "website",
+  "title": "Landing page build",
+  "channel": "Website",
+  "month": "2026-11",
+  "phaseKey": "foundation",
+  "phaseName": "Foundation",
+  "dueDate": "2026-11-18",
+  "defaultDueDate": "2026-11-18",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "in_progress",
+  "split": [
+    {
+      "seat": "dev",
+      "member": "Farid",
+      "pct": 100,
+      "hours": 10
+    }
+  ],
+  "approver": "client",
+  "milestone": true,
+  "linked": null,
+  "requestedAt": "2026-10-30T04:34:02.666Z",
+  "startedAt": "2026-10-31T04:34:02.666Z",
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "createdAt": "2026-10-01T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:04.001Z"
+}

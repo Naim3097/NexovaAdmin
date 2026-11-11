@@ -1,12 +1,16 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { getActingMember } from "@/lib/auth";
 import {
     LEAD_SOURCES,
     LEAD_STATUSES,
     getLeadById,
+    type LeadStatus,
 } from "@/lib/data/leads";
 import { listCampaigns } from "@/lib/data/campaigns";
+import { listContracts } from "@/lib/data/contracts";
 import { listTeamMembers } from "@/lib/data/team";
+import { seesPipeline } from "@/lib/scope";
 import { scoreLead } from "@/lib/leads/scoring";
 import { Button } from "@/components/ui/button";
 import { SaveButton } from "@/components/save-button";
@@ -36,18 +40,48 @@ import {
 
 export const dynamic = "force-dynamic";
 
+type SearchParams = Record<string, string | string[] | undefined>;
+
+function one(sp: SearchParams, key: string): string {
+    const v = sp[key];
+    return ((Array.isArray(v) ? v[0] : v) ?? "").trim();
+}
+
+const norm = (s: string) => s.trim().toLowerCase();
+
+/** What each stage is called on screen; the stored value stays as is. */
+const STATUS_LABEL: Record<LeadStatus, string> = {
+    new: "New",
+    contacted: "Contacted",
+    qualified: "Qualified",
+    proposal: "Quoted",
+    won: "Won",
+    lost: "Lost",
+};
+
 export default async function LeadDetailPage({
     params,
+    searchParams,
 }: {
     params: Promise<{ id: string }>;
+    searchParams: Promise<SearchParams>;
 }) {
-    const { id } = await params;
+    const [{ id }, sp] = await Promise.all([params, searchParams]);
+    const me = await getActingMember(one(sp, "as"));
+    if (!seesPipeline(me)) redirect("/home");
     const lead = await getLeadById(id);
     if (!lead) notFound();
-    const [campaigns, team] = await Promise.all([
+    const [campaigns, team, contracts] = await Promise.all([
         listCampaigns(),
         listTeamMembers(),
+        listContracts(),
     ]);
+    // The client this deal becomes (its company, or the contact's name) and
+    // the contract already recorded under it, if any — newest first.
+    const clientName = lead.company || lead.name;
+    const contract = contracts
+        .filter((c) => c.status !== "cancelled" && norm(c.clientName) === norm(clientName))
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0] ?? null;
     const sourceCampaign = lead.sourceCampaignId
         ? campaigns.find((c) => c.id === lead.sourceCampaignId) ?? null
         : null;
@@ -81,13 +115,13 @@ export default async function LeadDetailPage({
                         <Badge variant={bandTone}>
                             {breakdown.band} · {breakdown.score}
                         </Badge>
-                        <Badge variant="outline">{lead.status}</Badge>
+                        <Badge variant="outline">{STATUS_LABEL[lead.status]}</Badge>
                         {lead.assignedTo ? (
                             <Badge variant="secondary">
                                 @{lead.assignedTo}
                             </Badge>
                         ) : (
-                            <Badge variant="destructive">unassigned</Badge>
+                            <Badge variant="destructive">No owner</Badge>
                         )}
                     </div>
                 </div>
@@ -102,8 +136,7 @@ export default async function LeadDetailPage({
                                 Score breakdown
                             </h2>
                             <p className="text-xs text-muted-foreground">
-                                Heuristics on source / value / contact /
-                                intent. Re-runs on edit.
+                                Scored from source, value, contact and interest; re-runs on edit.
                             </p>
                         </div>
                         <form action={rescoreLeadAction}>
@@ -132,8 +165,7 @@ export default async function LeadDetailPage({
                         </div>
                         {breakdown.factors.length === 0 ? (
                             <p className="mt-2 text-sm text-muted-foreground">
-                                No scoring signals yet. Add value / contact /
-                                interest details.
+                                Nothing to score yet — add value, contact or interest details.
                             </p>
                         ) : (
                             <ul className="mt-3 space-y-1 text-sm">
@@ -160,10 +192,9 @@ export default async function LeadDetailPage({
                     className="rounded-lg border bg-card p-4 md:p-6"
                 >
                     <input type="hidden" name="id" value={lead.id} />
-                    <h2 className="text-sm font-medium">Assigned to</h2>
+                    <h2 className="text-sm font-medium">Owner</h2>
                     <p className="text-xs text-muted-foreground">
-                        Closer-role members preferred; auto-assigned on
-                        creation by load. Override here.
+                        Picked by load when the lead is created; change it here.
                     </p>
                     <div className="mt-4 flex items-end gap-2">
                         <div className="flex-1 space-y-1.5">
@@ -177,7 +208,7 @@ export default async function LeadDetailPage({
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="none">
-                                        Unassigned
+                                        No owner
                                     </SelectItem>
                                     {team
                                         .filter((m) => m.active)
@@ -199,7 +230,7 @@ export default async function LeadDetailPage({
 
             {/* Status changer */}
             <section className="rounded-lg border bg-card p-4 md:p-6">
-                <h2 className="text-sm font-medium">Move to status</h2>
+                <h2 className="text-sm font-medium">Move to</h2>
                 <div className="mt-3 flex flex-wrap gap-2">
                     {LEAD_STATUSES.map((s) => (
                         <form key={s} action={setLeadStatusAction}>
@@ -211,7 +242,7 @@ export default async function LeadDetailPage({
                                 variant={lead.status === s ? "default" : "outline"}
                                 disabled={lead.status === s}
                             >
-                                {s}
+                                {STATUS_LABEL[s]}
                             </Button>
                         </form>
                     ))}
@@ -328,8 +359,7 @@ export default async function LeadDetailPage({
                 <div className="border-b p-4 md:px-6">
                     <h2 className="text-sm font-medium">Close the deal</h2>
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                        Three steps, in order. No work starts before the money
-                        lands.
+                        Three steps in order; no work starts before the money lands.
                     </p>
                 </div>
 
@@ -341,8 +371,7 @@ export default async function LeadDetailPage({
                             Get paid first
                         </p>
                         <p className="mt-0.5 text-xs text-muted-foreground">
-                            One-off work takes a 50% deposit. Retainers take
-                            the full first payment.
+                            One-off work takes a 50% deposit; retainers take the full first payment.
                         </p>
                     </div>
                     <form
@@ -402,6 +431,42 @@ export default async function LeadDetailPage({
                     </form>
                 </div>
 
+                {/* 2b · Sign the contract */}
+                <div className="flex flex-col gap-3 border-b p-4 md:flex-row md:items-center md:justify-between md:px-6">
+                    <div className="max-w-sm">
+                        <p className="text-sm font-medium">
+                            <span className="mr-2 font-mono text-xs text-primary">2b</span>
+                            Create the contract
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                            {contract
+                                ? `${contract.code} · ${contract.name}${contract.signedAt ? "" : " · not yet signed"}`
+                                : "The account manager sets up the contract under the client; its tasks come from there."}
+                        </p>
+                    </div>
+                    {contract ? (
+                        <Button
+                            variant="outline"
+                            nativeButton={false}
+                            render={<Link href={`/contracts/${contract.id}`} />}
+                        >
+                            Open contract
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="outline"
+                            nativeButton={false}
+                            render={
+                                <Link
+                                    href={`/contracts/new?client=${encodeURIComponent(clientName)}`}
+                                />
+                            }
+                        >
+                            Create contract
+                        </Button>
+                    )}
+                </div>
+
                 {/* 3 · Start onboarding */}
                 <div className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between md:px-6">
                     <div className="max-w-sm">
@@ -430,7 +495,7 @@ export default async function LeadDetailPage({
                         <form action={convertLeadToOnboardingAction}>
                             <input type="hidden" name="id" value={lead.id} />
                             <Button type="submit" variant="outline">
-                                Convert to onboarding
+                                Create form
                             </Button>
                         </form>
                     )}

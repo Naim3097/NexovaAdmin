@@ -10,9 +10,10 @@
  */
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { devDataRoot } from "@/lib/dev-store/root";
 import { randomUUID } from "node:crypto";
 
-const ROOT = path.join(process.cwd(), ".dev-data");
+const ROOT = devDataRoot();
 const CAMPAIGNS_DIR = path.join(ROOT, "campaigns");
 
 export const CAMPAIGN_PLATFORMS = [
@@ -84,6 +85,8 @@ export type Campaign = {
     id: string;
     name: string;
     clientName: string; // "Nexov" for in-house campaigns
+    /** Contract this campaign is run under (null = none / in-house). */
+    contractId: string | null;
     platform: CampaignPlatform;
     objective: CampaignObjective;
     status: CampaignStatus;
@@ -114,6 +117,7 @@ function fileFor(id: string) {
 
 function backfill(c: Campaign): Campaign {
     if (!Array.isArray(c.metrics)) c.metrics = [];
+    if (c.contractId === undefined) c.contractId = null;
     if (typeof c.feeModel !== "string") {
         c.feeModel = c.clientName === "Nexov" ? "none" : "none";
     }
@@ -125,6 +129,7 @@ function backfill(c: Campaign): Campaign {
 export async function createCampaign(input: {
     name: string;
     clientName: string;
+    contractId?: string | null;
     platform?: CampaignPlatform;
     objective?: CampaignObjective;
     startDate?: string;
@@ -143,6 +148,7 @@ export async function createCampaign(input: {
         id: randomUUID(),
         name: input.name,
         clientName: input.clientName,
+        contractId: input.contractId ?? null,
         platform: input.platform ?? "meta",
         objective: input.objective ?? "leads",
         status: "planning",

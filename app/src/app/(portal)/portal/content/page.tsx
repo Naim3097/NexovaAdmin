@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCurrentClient } from "@/lib/auth";
+import { portalHref, resolveActingClient } from "@/lib/portal/resolve-client";
 import { listContentPosts, visualsUsed } from "@/lib/data/content";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ContentCard } from "@/components/content-card";
@@ -42,10 +42,13 @@ function reviewOrder(s: string) {
 export default async function PortalContentPage({
     searchParams,
 }: {
-    searchParams: Promise<{ month?: string }>;
+    searchParams: Promise<{ month?: string; client?: string }>;
 }) {
-    const client = await getCurrentClient();
-    if (!client) {
+    const sp = await searchParams;
+    const acting = await resolveActingClient(
+        typeof sp.client === "string" ? sp.client : undefined,
+    );
+    if (!acting) {
         return (
             <div className="space-y-2">
                 <h1 className="text-2xl font-semibold">Content</h1>
@@ -56,7 +59,8 @@ export default async function PortalContentPage({
         );
     }
 
-    const { month: monthParam } = await searchParams;
+    const { client } = acting;
+    const monthParam = sp.month;
     const mine = (await listContentPosts()).filter(
         (p) =>
             p.clientName.trim().toLowerCase() ===
@@ -155,7 +159,7 @@ export default async function PortalContentPage({
                 {months.map((m) => (
                     <Link
                         key={m}
-                        href={`/portal/content?month=${m}`}
+                        href={portalHref(`/portal/content?month=${m}`, acting)}
                         className={pill(m === selectedMonth)}
                     >
                         {fmtMonth(m)}

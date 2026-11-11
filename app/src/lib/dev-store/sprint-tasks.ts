@@ -7,9 +7,10 @@
  */
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { devDataRoot } from "@/lib/dev-store/root";
 import { randomUUID } from "node:crypto";
 
-const ROOT = path.join(process.cwd(), ".dev-data");
+const ROOT = devDataRoot();
 const TASKS_DIR = path.join(ROOT, "sprint-tasks");
 
 export const SPRINT_TASK_STATUSES = ["open", "done"] as const;

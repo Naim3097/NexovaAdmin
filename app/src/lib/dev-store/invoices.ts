@@ -8,9 +8,10 @@
  */
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { devDataRoot } from "@/lib/dev-store/root";
 import { randomUUID } from "node:crypto";
 
-const ROOT = path.join(process.cwd(), ".dev-data");
+const ROOT = devDataRoot();
 const INVOICES_DIR = path.join(ROOT, "invoices");
 
 export const INVOICE_STATUSES = [
@@ -36,7 +37,8 @@ export type Invoice = {
     /** Human-readable, e.g. "INV-2026-0001". Generated at creation. */
     number: string;
     clientName: string;
-    projectId: string | null;
+    /** Contract this invoice bills (monthly retainer / milestone). null = standalone. */
+    contractId: string | null;
     status: InvoiceStatus;
     issueDate: string; // YYYY-MM-DD
     dueDate: string; // YYYY-MM-DD
@@ -97,7 +99,7 @@ async function nextInvoiceNumber(): Promise<string> {
 
 export async function createInvoice(input: {
     clientName: string;
-    projectId?: string | null;
+    contractId?: string | null;
     issueDate?: string;
     dueDate?: string;
     taxRatePct?: number;
@@ -114,7 +116,7 @@ export async function createInvoice(input: {
         id: randomUUID(),
         number: await nextInvoiceNumber(),
         clientName: input.clientName,
-        projectId: input.projectId ?? null,
+        contractId: input.contractId ?? null,
         status: "draft",
         issueDate: issue,
         dueDate: due,
@@ -156,13 +158,6 @@ export async function getInvoiceById(id: string): Promise<Invoice | null> {
     } catch {
         return null;
     }
-}
-
-export async function listInvoicesForProject(
-    projectId: string,
-): Promise<Invoice[]> {
-    const all = await listInvoices();
-    return all.filter((i) => i.projectId === projectId);
 }
 
 export async function updateInvoice(

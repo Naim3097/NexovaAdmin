@@ -1,423 +1,186 @@
+/**
+ * Dashboard — the one landing page for managers and anyone with a duty.
+ * Numbers only: every tile is one big number, a short hint, a colour and a
+ * link to the page that fixes it. The tabs are the filter; no tab means
+ * everything that is red or amber across the tabs the member may see.
+ *
+ * Who "I" am: the linked login, else the `?as=` pick (DEV_AUTH_BYPASS), else
+ * the acting-as cookie the sidebar picker set; nobody picked = manager view.
+ * Non-managers see their own slice: an account manager the tasks, contracts
+ * and clients they are on; sales the pipeline; finance all the money.
+ */
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { buttonVariants } from "@/components/ui/button";
-import { getAccessLevel } from "@/lib/auth";
-import { computeTotals } from "@/lib/data/invoices";
-import { computeTotals as quoteTotals } from "@/lib/data/quotations";
-import { totalsFor } from "@/lib/data/campaigns";
-import {
-    listLeads,
-    listSubmissions,
-    listProjects,
-    listInvoices,
-    listQuotations,
-    listContentPosts,
-    listCampaigns,
-} from "@/lib/data/reads";
+import { redirect } from "next/navigation";
+import { getActingMember, getCurrentTeamMember, requireTeamAccess } from "@/lib/auth";
 import { listActivityFiltered } from "@/lib/activity";
 import { listClients } from "@/lib/data/clients";
+import { listContentPosts, listContracts, listInvoices, listLeads, listQuotations, listSubmissions, listWorks } from "@/lib/data/reads";
+import { listSprintTasks } from "@/lib/data/sprint-tasks";
+import { listTeamMembers } from "@/lib/data/team";
+import { buildFinanceSnapshot, type FinanceSnapshot } from "@/lib/management/finance";
+import { buildManagementSnapshot, resolveMonth, todayYmd, type ManagementSnapshot } from "@/lib/management/metrics";
+import { buildOverviewSnapshot, type OverviewSnapshot } from "@/lib/management/overview";
+import { DASHBOARD_TABS, DASHBOARD_TAB_LABEL, canSee, dashboardTabsFor, homeFor, type DashboardTab } from "@/lib/roles";
+import { seesEverything, visibleClients, visibleContracts, worksOnMyContracts } from "@/lib/scope";
+import { cn } from "@/lib/utils";
+import { HEALTH_DOT, MonthSelect, Section, StatTile } from "@/app/(admin)/management/ui";
+import { ActivityFeed, FEED_LIMIT, parseActivityParams } from "./activity-feed";
+import { AttentionList } from "./attention";
+import { dashboardHref, type DashboardQuery } from "./href";
+import { MoneyDetail } from "./money-detail";
+import { DashboardTabs } from "./tabs";
+import { TeamDetail } from "./team-detail";
+import { attentionTiles, clientTiles, deliveryTiles, moneyTiles, salesTiles, teamTiles, type Tile, type TileTab } from "./tiles";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage() {
-    const [leads, submissions, projects, invoices, quotes, content, campaigns, recentActivity, clients, access] =
-        await Promise.all([
-            listLeads(),
-            listSubmissions(),
-            listProjects(),
-            listInvoices(),
-            listQuotations(),
-            listContentPosts(),
-            listCampaigns(),
-            listActivityFiltered({ limit: 8 }),
-            listClients(),
-            getAccessLevel(),
-        ]);
-    const isAdmin = access === "admin";
+type SearchParams = Record<string, string | string[] | undefined>;
 
-    // eslint-disable-next-line react-hooks/purity -- server component, runs per request
-    const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    const leadsThisWeek = leads.filter(
-        (l) => Date.parse(l.createdAt) >= oneWeekAgo,
-    ).length;
-    const wonLeads = leads.filter((l) => l.status === "won").length;
-    const openPipelineValue = leads
-        .filter((l) => l.status !== "lost" && l.status !== "won")
-        .reduce((sum, l) => sum + (l.estValueMyr || 0), 0);
-    const activeProjects = projects.filter(
-        (p) => p.status !== "delivered" && p.status !== "on_hold",
-    ).length;
-    const draftOnboardings = submissions.filter((s) => s.status === "draft").length;
+function one(sp: SearchParams, key: string): string {
+    const v = sp[key];
+    return ((Array.isArray(v) ? v[0] : v) ?? "").trim();
+}
 
-    const today = new Date().toISOString().slice(0, 10);
-    const monthPrefix = today.slice(0, 7);
-    const arOpen = invoices
-        .filter((i) => i.status === "sent" || i.status === "overdue")
-        .reduce((sum, i) => sum + computeTotals(i).total, 0);
-    const paidMtd = invoices
-        .filter((i) => i.status === "paid" && (i.paidAt ?? "").startsWith(monthPrefix))
-        .reduce((sum, i) => sum + computeTotals(i).total, 0);
-    const overdueCount = invoices.filter(
-        (i) => i.status === "sent" && i.dueDate < today,
-    ).length;
+function isTab(s: string): s is DashboardTab {
+    return (DASHBOARD_TABS as readonly string[]).includes(s);
+}
 
-    // Package renewals inside 30 days (active clients with a date set).
-    // eslint-disable-next-line react-hooks/purity -- server component, runs per request
-    const in30 = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .slice(0, 10);
-    const renewalsSoon = clients.filter(
-        (c) =>
-            c.status === 'active' &&
-            c.packageRenewsOn &&
-            c.packageRenewsOn >= today &&
-            c.packageRenewsOn <= in30,
-    ).length;
+const norm = (s: string) => s.trim().toLowerCase();
 
-    // Quotes awaiting a decision (sent, not past validity).
-    const quotesOutstanding = quotes
-        .filter((q) => q.status === "sent" && q.validUntil >= today)
-        .reduce((sum, q) => sum + quoteTotals(q).total, 0);
+/** Columns for a row of tiles: five or six fit side by side; seven wrap to four. */
+const GRID: Record<number, string> = {
+    5: "xl:grid-cols-5",
+    6: "xl:grid-cols-6",
+};
 
-    // A/R aging — bucket every open invoice by how far past its due date it is.
-    const MS_DAY = 24 * 60 * 60 * 1000;
-    const todayMs = Date.parse(today);
-    const aging = { current: 0, d1to30: 0, d31to60: 0, d60plus: 0 };
-    for (const i of invoices) {
-        if (i.status !== "sent" && i.status !== "overdue") continue;
-        const total = computeTotals(i).total;
-        const daysPastDue = Math.floor((todayMs - Date.parse(i.dueDate)) / MS_DAY);
-        if (daysPastDue <= 0) aging.current += total;
-        else if (daysPastDue <= 30) aging.d1to30 += total;
-        else if (daysPastDue <= 60) aging.d31to60 += total;
-        else aging.d60plus += total;
-    }
-
-    // eslint-disable-next-line react-hooks/purity -- server component, runs per request
-    const inSevenDays = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .slice(0, 10);
-    const contentDueSoon = content.filter(
-        (c) =>
-            (c.status === "draft" ||
-                c.status === "review" ||
-                c.status === "scheduled") &&
-            c.scheduledFor >= today &&
-            c.scheduledFor <= inSevenDays,
-    ).length;
-
-    // Campaign / ad spend (manual entries)
-    const monthStart = `${monthPrefix}-01`;
-    const adSpendMtd = campaigns.reduce(
-        (sum, c) => sum + totalsFor(c.metrics, monthStart, today).spendMyr,
-        0,
+function TileGrid({ tiles }: { tiles: Tile[] }) {
+    return (
+        <div className={cn("grid grid-cols-2 gap-3 md:grid-cols-3", GRID[tiles.length] ?? "xl:grid-cols-4")}>
+            {tiles.map((t) => (
+                <StatTile key={t.key} label={t.label} value={t.value} hint={t.hint} health={t.health} href={t.href} quiet={t.health === "green" && t.count === 0} />
+            ))}
+        </div>
     );
-    const activeCampaigns = campaigns.filter((c) => c.status === "live").length;
-    const wonRevenueFromCampaigns = leads
-        .filter(
-            (l) =>
-                l.status === "won" &&
-                l.sourceCampaignId &&
-                (l.updatedAt ?? "").startsWith(monthPrefix),
-        )
-        .reduce((sum, l) => sum + (l.estValueMyr || 0), 0);
-    const roasMtd = adSpendMtd > 0 ? wonRevenueFromCampaigns / adSpendMtd : 0;
+}
 
-    const fmtMyr = (n: number) =>
-        n.toLocaleString(undefined, {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
-        });
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+    await requireTeamAccess();
+    const sp = await searchParams;
+    const as = one(sp, "as");
+    const [member, linked] = await Promise.all([getActingMember(as || undefined), getCurrentTeamMember()]);
+    // No duty, no numbers: plain users land on their tasks.
+    if (member && !canSee(member, "/dashboard")) redirect(homeFor(member));
 
-    const kpis: Array<{ label: string; value: string; href: string }> = [
-        { label: "Leads this week", value: String(leadsThisWeek), href: "/leads" },
-        { label: "Won leads", value: String(wonLeads), href: "/pipeline" },
-        {
-            label: "Open pipeline (MYR)",
-            value: fmtMyr(openPipelineValue),
-            href: "/pipeline",
-        },
-        {
-            label: "Active projects",
-            value: String(activeProjects),
-            href: "/projects",
-        },
-        {
-            label: "Onboardings open",
-            value: String(draftOnboardings),
-            href: "/onboarding",
-        },
-        {
-            label: "Renewals ≤ 30d",
-            value: String(renewalsSoon),
-            href: "/settings/clients",
-        },
-        {
-            label: "Quotes out (MYR)",
-            value: fmtMyr(quotesOutstanding),
-            href: "/quotes",
-        },
-        {
-            label: "AR open (MYR)",
-            value: fmtMyr(arOpen),
-            href: "/invoices",
-        },
-        {
-            label: "Paid MTD (MYR)",
-            value: fmtMyr(paidMtd),
-            href: "/invoices",
-        },
-        {
-            label: "Overdue invoices",
-            value: String(overdueCount),
-            href: "/invoices",
-        },
-        {
-            label: "Content due 7d",
-            value: String(contentDueSoon),
-            href: "/content/calendar",
-        },
-        {
-            label: "Active campaigns",
-            value: String(activeCampaigns),
-            href: "/campaigns",
-        },
-        {
-            label: "Ad spend MTD (MYR)",
-            value: fmtMyr(adSpendMtd),
-            href: "/campaigns",
-        },
-        {
-            label: "ROAS MTD",
-            value: adSpendMtd > 0 ? `${roasMtd.toFixed(2)}x` : "—",
-            href: "/campaigns",
-        },
-    ];
+    const tabs = dashboardTabsFor(member);
+    const wanted = one(sp, "tab");
+    const tab: DashboardTab = isTab(wanted) && tabs.includes(wanted) ? wanted : "all";
+    const today = todayYmd();
+    const current = today.slice(0, 7);
+    const month = resolveMonth(sp.month, today);
+    // `?as=` rides along on links only under the dev bypass, when it came from the URL.
+    const asParam = as && !linked ? as : "";
+    const href = (q: DashboardQuery) => dashboardHref({ ...q, as: asParam }, current);
+    const manager = seesEverything(member);
+    const has = (t: DashboardTab) => tabs.includes(t);
+
+    const activity = parseActivityParams(one(sp, "entity"), one(sp, "range"));
+    const [team, clients, contracts, works, invoices, leads, quotes, content, submissions, sprintTasks, events] = await Promise.all([
+        listTeamMembers(),
+        listClients(),
+        listContracts(),
+        listWorks(),
+        listInvoices(),
+        listLeads(),
+        listQuotations(),
+        listContentPosts(),
+        listSubmissions(),
+        has("team") ? listSprintTasks() : Promise.resolve([]),
+        tab === "activity" ? listActivityFiltered({ entity: activity.entity, sinceDays: activity.range.days || undefined, limit: FEED_LIMIT }) : Promise.resolve([]),
+    ]);
+
+    // ---- Scope: what this member may count
+    const myWorks = manager ? works : worksOnMyContracts(member, contracts, works);
+    const myContracts = visibleContracts(member, contracts, works);
+    const myClients = visibleClients(member, clients, contracts, works);
+    const myContractIds = new Set(myContracts.map((c) => c.id));
+    const myClientNames = new Set([...myClients.map((c) => norm(c.name)), ...myContracts.map((c) => norm(c.clientName))]);
+    const myContent = manager ? content : content.filter((c) => (c.contractId && myContractIds.has(c.contractId)) || myClientNames.has(norm(c.clientName)));
+    const mySubmissions = manager ? submissions : submissions.filter((s) => myClientNames.has(norm(s.clientName)));
+
+    // ---- Numbers per tab
+    const byTab: Partial<Record<TileTab, Tile[]>> = {};
+    let fin: FinanceSnapshot | undefined;
+    let overview: OverviewSnapshot | undefined;
+    let mgmt: ManagementSnapshot | undefined;
+    if (has("delivery")) byTab.delivery = deliveryTiles({ works: myWorks, contracts: myContracts, content: myContent, month, today, manager });
+    if (has("sales")) byTab.sales = salesTiles({ leads, quotes, contracts, today });
+    if (has("money")) {
+        fin = buildFinanceSnapshot({ invoices, contracts }, today);
+        byTab.money = moneyTiles({ fin, invoices, today });
+    }
+    if (has("team")) {
+        overview = buildOverviewSnapshot({ team, contracts, works, invoices, leads, month }, today);
+        mgmt = buildManagementSnapshot({ team, clients, contracts, works, sprintTasks, content, invoices, month }, today);
+        byTab.team = teamTiles({ overview, mgmt, team, today });
+    }
+    if (has("clients")) byTab.clients = clientTiles({ clients: myClients, contracts: myContracts, allContracts: contracts, works: myWorks, submissions: mySubmissions, today });
+
+    const live = tab === "all" ? attentionTiles(byTab, tabs) : [];
+    // Hours are planned per month; the Month dropdown shows where a month changes the numbers.
+    const showMonth = tab === "team" || (tab === "all" && live.some((g) => g.tab === "team"));
+    const tabHref = (t: DashboardTab) => href({ tab: t, month: t === "team" || t === "all" ? month : undefined });
+    const monthHref = (m: string) => href({ tab, month: m });
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-2xl font-semibold sm:text-3xl">Dashboard</h1>
-                <p className="text-sm text-muted-foreground">
-                    Live overview of leads, deals, projects, and revenue.
-                </p>
+            <div className="flex flex-wrap items-end justify-between gap-2">
+                <div>
+                    <h1 className="text-2xl font-semibold sm:text-3xl">Dashboard</h1>
+                    <p className="text-sm text-muted-foreground">{member && !manager ? `${member.name} · your numbers. Click one to fix it.` : "Numbers only. Click one to fix it."}</p>
+                </div>
+                <p className="text-xs text-muted-foreground">As of {today}</p>
             </div>
 
-            {/* Quick actions — the common "I want to make a thing" starts,
-                so nobody hunts the sidebar for them. Role-aware. */}
-            <div className="flex flex-wrap gap-2">
-                {[
-                    { href: "/leads", label: "+ Lead" },
-                    ...(isAdmin
-                        ? [
-                              { href: "/quotes", label: "+ Quotation" },
-                              { href: "/invoices", label: "+ Invoice" },
-                          ]
-                        : []),
-                    { href: "/tasks", label: "+ Task" },
-                    { href: "/content", label: "Content board" },
-                    { href: "/reports/weekly", label: "Weekly update" },
-                    ...(isAdmin
-                        ? [{ href: "/settings/clients", label: "Clients" }]
-                        : []),
-                ].map((a, i) => (
-                    <Link
-                        key={a.href + a.label}
-                        href={a.href}
-                        className={buttonVariants({
-                            variant: i === 0 ? "default" : "outline",
-                            size: "sm",
-                        })}
-                    >
-                        {a.label}
-                    </Link>
-                ))}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+                <DashboardTabs tabs={tabs} active={tab} hrefFor={tabHref} />
+                {showMonth ? <MonthSelect selected={month} today={today} hrefFor={monthHref} /> : null}
             </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-                {kpis.map((k) => (
-                    <Link key={k.label} href={k.href} className="block">
-                        <Card className="h-full transition-all hover:shadow-md hover:ring-primary/20">
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-xs font-medium text-muted-foreground">
-                                    {k.label}
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-semibold tabular-nums tracking-tight">
-                                    {k.value}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </Link>
-                ))}
-            </div>
-
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>Accounts receivable aging</CardTitle>
-                    <Link
-                        href="/invoices"
-                        className="text-xs text-muted-foreground hover:underline"
-                    >
-                        View invoices
-                    </Link>
-                </CardHeader>
-                <CardContent>
-                    {arOpen === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                            No open receivables — everything billed is paid. 🎉
+            {tab === "all" ? (
+                <>
+                    {live.length === 0 ? (
+                        <p className="flex items-center gap-2 rounded-lg border bg-card px-4 py-3 text-sm">
+                            <span aria-hidden="true" className={cn("inline-block size-2.5 rounded-full", HEALTH_DOT.green)} />
+                            <span className="font-medium text-emerald-700 dark:text-emerald-400">All clear</span>
+                            <span className="text-muted-foreground">— nothing overdue, over or waiting.</span>
                         </p>
                     ) : (
-                        <div className="space-y-4">
-                            {/* Distribution bar — grey ramp, darker = older debt. */}
-                            <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-muted">
-                                {[
-                                    { value: aging.current, cls: "bg-chart-4" },
-                                    { value: aging.d1to30, cls: "bg-chart-3" },
-                                    { value: aging.d31to60, cls: "bg-chart-2" },
-                                    { value: aging.d60plus, cls: "bg-chart-1" },
-                                ]
-                                    .filter((s) => s.value > 0)
-                                    .map((s, i) => (
-                                        <div
-                                            key={i}
-                                            className={s.cls}
-                                            style={{
-                                                width: `${(s.value / arOpen) * 100}%`,
-                                            }}
-                                        />
-                                    ))}
-                            </div>
-                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                                {[
-                                    { label: "Current", value: aging.current, dot: "bg-chart-4", tone: "" },
-                                    { label: "1–30 days", value: aging.d1to30, dot: "bg-chart-3", tone: "" },
-                                    {
-                                        label: "31–60 days",
-                                        value: aging.d31to60,
-                                        dot: "bg-chart-2",
-                                        tone: "text-amber-600",
-                                    },
-                                    {
-                                        label: "60+ days",
-                                        value: aging.d60plus,
-                                        dot: "bg-chart-1",
-                                        tone: "text-destructive",
-                                    },
-                                ].map((b) => (
-                                    <div
-                                        key={b.label}
-                                        className="rounded-lg border bg-card p-3"
-                                    >
-                                        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                            <span
-                                                aria-hidden="true"
-                                                className={`size-2 rounded-full ${b.dot}`}
-                                            />
-                                            {b.label}
-                                        </p>
-                                        <p
-                                            className={`mt-1 text-lg font-semibold tabular-nums ${b.tone}`}
-                                        >
-                                            {fmtMyr(b.value)}
-                                        </p>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>Recent activity</CardTitle>
-                    <Link
-                        href="/activity"
-                        className="text-xs text-muted-foreground hover:underline"
-                    >
-                        View all
-                    </Link>
-                </CardHeader>
-                <CardContent>
-                    {recentActivity.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                            Nothing has happened yet.
-                        </p>
-                    ) : (
-                        <ul className="divide-y">
-                            {recentActivity.map((e) => (
-                                <li
-                                    key={e.id}
-                                    className="flex items-baseline justify-between gap-4 py-2.5"
-                                >
-                                    <div className="min-w-0 flex-1">
-                                        <Link
-                                            href={e.href}
-                                            className="block truncate text-sm font-medium hover:text-primary"
-                                        >
-                                            {e.title}
-                                        </Link>
-                                        {e.detail ? (
-                                            <p className="truncate text-xs text-muted-foreground">
-                                                {e.detail}
-                                            </p>
-                                        ) : null}
-                                    </div>
-                                    <time className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                                        {new Date(e.at).toLocaleString(undefined, {
-                                            month: "short",
-                                            day: "numeric",
-                                            hour: "2-digit",
-                                            minute: "2-digit",
-                                        })}
-                                    </time>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>Recent leads</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {leads.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                            No leads yet —{" "}
-                            <Link href="/leads" className="underline">
-                                add one
-                            </Link>
-                            .
-                        </p>
-                    ) : (
-                        <ul className="divide-y text-sm">
-                            {leads.slice(0, 5).map((l) => (
-                                <li
-                                    key={l.id}
-                                    className="flex items-center justify-between py-2"
-                                >
-                                    <Link href={`/leads/${l.id}`} className="hover:underline">
-                                        {l.name}
-                                        {l.company ? (
-                                            <span className="text-muted-foreground">
-                                                {" "}
-                                                · {l.company}
-                                            </span>
-                                        ) : null}
+                        live.map((g) => (
+                            <section key={g.tab} className="space-y-2">
+                                <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                    <Link href={tabHref(g.tab)} className="hover:underline">
+                                        {DASHBOARD_TAB_LABEL[g.tab]}
                                     </Link>
-                                    <span className="text-xs text-muted-foreground">
-                                        {l.status}
-                                    </span>
-                                </li>
-                            ))}
-                        </ul>
+                                </h2>
+                                <TileGrid tiles={g.tiles} />
+                            </section>
+                        ))
                     )}
-                </CardContent>
-            </Card>
+                    {manager && overview ? (
+                        <Section id="attention" title="Attention" description="Ranked. Your call unless an owner is named.">
+                            <AttentionList items={overview.decisions} more={overview.moreDecisions} />
+                        </Section>
+                    ) : null}
+                </>
+            ) : tab === "activity" ? (
+                <ActivityFeed events={events} params={activity} today={today} hrefFor={(next) => href({ tab, entity: next.entity ?? activity.entity, range: next.range ?? activity.range.key })} />
+            ) : (
+                <>
+                    <TileGrid tiles={byTab[tab] ?? []} />
+                    {tab === "money" && fin ? <MoneyDetail fin={fin} /> : null}
+                    {tab === "team" && overview && mgmt ? <TeamDetail overview={overview} mgmt={mgmt} hrefForMonth={monthHref} /> : null}
+                </>
+            )}
         </div>
     );
 }

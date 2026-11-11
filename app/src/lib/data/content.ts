@@ -57,7 +57,7 @@ function rowToPost(row: ContentPostRow): ContentPost {
         id: row.id,
         title: row.title,
         clientName: row.client_name,
-        projectId: row.project_id,
+        contractId: row.contract_id ?? null,
         platform: row.platform as ContentPlatform,
         type: row.type as ContentType,
         status: row.status as ContentStatus,
@@ -96,7 +96,7 @@ function postToInsert(p: ContentPost): ContentInsert {
         id: p.id,
         title: p.title,
         client_name: p.clientName,
-        project_id: p.projectId,
+        contract_id: p.contractId,
         platform: p.platform,
         type: p.type,
         status: p.status,
@@ -134,7 +134,7 @@ function patchToUpdate(patch: UpdatePatch): ContentUpdate {
     const out: ContentUpdate = {};
     if (patch.title !== undefined) out.title = patch.title;
     if (patch.clientName !== undefined) out.client_name = patch.clientName;
-    if (patch.projectId !== undefined) out.project_id = patch.projectId;
+    if (patch.contractId !== undefined) out.contract_id = patch.contractId;
     if (patch.platform !== undefined) out.platform = patch.platform;
     if (patch.type !== undefined) out.type = patch.type;
     if (patch.status !== undefined) out.status = patch.status;
@@ -175,7 +175,7 @@ function patchToUpdate(patch: UpdatePatch): ContentUpdate {
 export async function createContentPost(input: {
     title: string;
     clientName: string;
-    projectId?: string | null;
+    contractId?: string | null;
     platform?: ContentPlatform;
     type?: ContentType;
     scheduledFor: string;
@@ -198,7 +198,7 @@ export async function createContentPost(input: {
         id: randomUUID(),
         title: input.title,
         clientName: input.clientName,
-        projectId: input.projectId ?? null,
+        contractId: input.contractId ?? null,
         platform: input.platform ?? "instagram",
         type: input.type ?? "post",
         status: "idea",

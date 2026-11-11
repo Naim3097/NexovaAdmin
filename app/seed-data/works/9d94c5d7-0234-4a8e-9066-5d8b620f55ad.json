@@ -1,0 +1,47 @@
+{
+  "id": "9d94c5d7-0234-4a8e-9066-5d8b620f55ad",
+  "contractId": "361d9eb1-fc59-469e-83cd-cb215a4b207c",
+  "clientName": "Lean.x Sdn Bhd",
+  "accountManager": "Aina",
+  "plannerLineId": "req:branding:2026-10:4:2",
+  "addendumVersion": 0,
+  "type": "branding",
+  "title": "Brand guideline refresh",
+  "channel": "Brand",
+  "month": "2026-10",
+  "phaseKey": "foundation",
+  "phaseName": "Foundation",
+  "dueDate": "2026-10-20",
+  "defaultDueDate": "2026-10-20",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Mei Ling",
+      "pct": 100,
+      "hours": 8
+    }
+  ],
+  "approver": "client",
+  "milestone": true,
+  "linked": null,
+  "requestedAt": "2026-10-02T04:34:02.666Z",
+  "startedAt": "2026-10-14T04:34:02.666Z",
+  "submittedAt": "2026-10-18T04:34:02.666Z",
+  "submission": {
+    "url": "https://drive.example.com/work/9d94c5d7",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Aina)",
+    "at": "2026-10-19T04:34:02.666Z"
+  },
+  "completedAt": "2026-10-19T04:34:02.666Z",
+  "notes": "",
+  "createdAt": "2026-10-01T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.981Z"
+}

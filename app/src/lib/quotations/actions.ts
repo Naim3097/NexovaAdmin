@@ -34,15 +34,9 @@ function asStatus(v: FormDataEntryValue | null): QuotationStatus {
         : "draft";
 }
 
-function nullableId(v: FormDataEntryValue | null): string | null {
-    const s = String(v ?? "").trim();
-    return s.length > 0 && s !== "none" ? s : null;
-}
-
 export async function createQuotationAction(formData: FormData) {
     const clientName = String(formData.get("clientName") ?? "").trim();
     if (!clientName) return;
-    const projectId = nullableId(formData.get("projectId"));
     const issueDate = String(formData.get("issueDate") ?? "").trim() || undefined;
     const validUntil =
         String(formData.get("validUntil") ?? "").trim() || undefined;
@@ -55,7 +49,6 @@ export async function createQuotationAction(formData: FormData) {
     const agency = await getAgencyProfile();
     const quote = await createQuotation({
         clientName,
-        projectId,
         issueDate,
         validUntil,
         taxRatePct: Number.isFinite(taxRatePct) ? taxRatePct : 6,
@@ -67,7 +60,6 @@ export async function createQuotationAction(formData: FormData) {
     if (billTo) await updateQuotation(quote.id, { billToAddress: billTo });
     revalidatePath("/quotes");
     revalidatePath("/dashboard");
-    if (projectId) revalidatePath(`/projects/${projectId}`);
     redirect(`/quotes/${quote.id}`);
 }
 
@@ -78,7 +70,6 @@ export async function updateQuotationAction(formData: FormData) {
     const before = await getQuotationById(id);
     await updateQuotation(id, {
         clientName: String(formData.get("clientName") ?? "").trim(),
-        projectId: nullableId(formData.get("projectId")),
         issueDate: String(formData.get("issueDate") ?? "").trim(),
         validUntil: String(formData.get("validUntil") ?? "").trim(),
         taxRatePct: Number.isFinite(taxRatePct) ? taxRatePct : 0,
@@ -97,7 +88,7 @@ export async function updateQuotationAction(formData: FormData) {
         const changes = diffFields(
             before as unknown as Record<string, unknown>,
             after as unknown as Record<string, unknown>,
-            ["clientName", "projectId", "issueDate", "validUntil", "taxRatePct", "notes"],
+            ["clientName", "issueDate", "validUntil", "taxRatePct", "notes"],
         );
         if (changes.length > 0) {
             await recordAudit({
@@ -204,7 +195,7 @@ export async function updateQuotationItemAction(formData: FormData) {
 
 /**
  * Convert a quotation into a draft invoice — the QuickBooks "Estimate → Invoice"
- * move. Copies client, project, tax rate, notes, and every line item into a new
+ * move. Copies client, tax rate, notes, and every line item into a new
  * invoice; marks the quote `converted` and links it via `convertedInvoiceId`
  * (one-way). Idempotent-ish: if the quote is already converted and the linked
  * invoice still exists, we just redirect to it rather than creating a duplicate.
@@ -223,7 +214,6 @@ export async function convertQuotationToInvoiceAction(formData: FormData) {
 
     const invoice = await createInvoice({
         clientName: quote.clientName,
-        projectId: quote.projectId,
         taxRatePct: quote.taxRatePct,
     });
 

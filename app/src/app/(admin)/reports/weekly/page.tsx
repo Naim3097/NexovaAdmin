@@ -1,9 +1,15 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getActingMember, requireTeamAccess } from "@/lib/auth";
+import { hasFunction } from "@/lib/roles";
+import { seesFinance } from "@/lib/scope";
 import { listClients } from "@/lib/data/clients";
 import { listContentPosts } from "@/lib/data/content";
-import { listProjects } from "@/lib/data/projects";
+import { listContracts } from "@/lib/data/contracts";
+import { listWorks } from "@/lib/data/works";
 import { listInvoices } from "@/lib/data/invoices";
 import { CopyButton } from "@/components/copy-button";
+import { SelectNav } from "@/components/select-nav";
 import {
     buildWeeklyUpdate,
     weeklyUpdateText,
@@ -46,11 +52,16 @@ export default async function WeeklyUpdatesPage({
 }: {
     searchParams: Promise<{ client?: string }>;
 }) {
+    await requireTeamAccess();
+    // Reports: managers, finance and account managers.
+    const member = await getActingMember();
+    if (!seesFinance(member) && !hasFunction(member, "account_manager")) redirect("/home");
     const { client: clientParam } = await searchParams;
-    const [clients, posts, projects, invoices] = await Promise.all([
+    const [clients, posts, works, contracts, invoices] = await Promise.all([
         listClients(),
         listContentPosts(),
-        listProjects(),
+        listWorks(),
+        listContracts(),
         listInvoices(),
     ]);
 
@@ -59,11 +70,14 @@ export default async function WeeklyUpdatesPage({
         (clientParam && active.find((c) => eq(c.name, clientParam))) ||
         active[0];
 
-    const pill = (on: boolean) =>
-        `rounded-full border px-3 py-1 text-xs ${on ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`;
-
     const update = selected
-        ? buildWeeklyUpdate({ client: selected, posts, projects, invoices })
+        ? buildWeeklyUpdate({
+              client: selected,
+              posts,
+              works,
+              contracts,
+              invoices,
+          })
         : null;
     const text = update ? weeklyUpdateText(update) : "";
 
@@ -92,19 +106,15 @@ export default async function WeeklyUpdatesPage({
                 </p>
             ) : (
                 <>
-                    <div className="flex flex-wrap gap-2">
-                        {active.map((c) => (
-                            <Link
-                                key={c.id}
-                                href={`/reports/weekly?client=${encodeURIComponent(c.name)}`}
-                                className={pill(
-                                    !!selected && eq(c.name, selected.name),
-                                )}
-                            >
-                                {c.name}
-                            </Link>
-                        ))}
-                    </div>
+                    <SelectNav
+                        label="Client"
+                        value={selected?.name ?? ""}
+                        options={active.map((c) => ({
+                            value: c.name,
+                            label: c.name,
+                            href: `/reports/weekly?client=${encodeURIComponent(c.name)}`,
+                        }))}
+                    />
 
                     {update ? (
                         <div className="max-w-2xl rounded-xl border bg-card">
@@ -114,15 +124,15 @@ export default async function WeeklyUpdatesPage({
                                         {update.clientName}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
-                                        {update.rangeLabel} · AM:{" "}
-                                        {update.accountManager || "unassigned"}
+                                        {update.rangeLabel} · Account manager:{" "}
+                                        {update.accountManager || "no owner"}
                                     </p>
                                 </div>
                                 <CopyButton text={text} label="Copy update" />
                             </div>
                             <div className="space-y-5 p-5">
                                 <Section
-                                    title="Completed this week"
+                                    title="Done this week"
                                     items={update.completed}
                                 />
                                 <Section

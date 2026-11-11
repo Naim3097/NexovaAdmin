@@ -1,0 +1,30 @@
+{
+  "id": "7310b348-98e5-4428-b310-9308e698d22b",
+  "name": "Aina",
+  "role": "Closer",
+  "email": "aina@nexova.local",
+  "phone": "",
+  "skills": "sales, onboarding",
+  "active": true,
+  "userId": null,
+  "accessLevel": "standard",
+  "systemRoles": [
+    "user"
+  ],
+  "functions": [
+    "sales",
+    "account_manager"
+  ],
+  "weeklyHours": 32,
+  "reservedHours": {
+    "sales": 15
+  },
+  "hoursByType": {
+    "custom": 1,
+    "post": 0.5,
+    "campaign": 1
+  },
+  "costRateMyr": 0,
+  "createdAt": "2026-11-10T04:34:03.239Z",
+  "updatedAt": "2026-11-10T04:34:03.239Z"
+}

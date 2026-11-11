@@ -176,11 +176,11 @@ export default async function QuotationPrintPage({
                     ) : null}
                 </div>
 
-                {/* Subject / project title */}
+                {/* Subject */}
                 {quote.subject ? (
                     <div className="mt-6">
                         <p className="text-xs uppercase tracking-wide text-neutral-500">
-                            Project
+                            Subject
                         </p>
                         <p className="mt-1 text-base font-semibold">
                             {quote.subject}

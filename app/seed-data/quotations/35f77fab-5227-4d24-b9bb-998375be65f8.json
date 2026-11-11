@@ -1,0 +1,31 @@
+{
+  "id": "35f77fab-5227-4d24-b9bb-998375be65f8",
+  "number": "QUO-2026-0003",
+  "clientName": "Harmoni Dental Clinic",
+  "status": "accepted",
+  "issueDate": "2026-10-31",
+  "validUntil": "2026-11-14",
+  "items": [
+    {
+      "id": "900f9259-6a6c-4078-932a-bdcf6f5b7fe5",
+      "description": "Local growth plan — 3 months",
+      "details": "",
+      "quantity": 1,
+      "unitPriceMyr": 10800
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "subject": "Local growth plan — 3 months",
+  "scopeIncludes": "",
+  "exclusions": "",
+  "terms": "",
+  "showAcceptance": true,
+  "convertedInvoiceId": null,
+  "createdAt": "2026-10-31T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.297Z",
+  "acceptedAt": "2026-11-06T04:34:02.666Z"
+}

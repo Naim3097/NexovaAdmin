@@ -1,0 +1,56 @@
+{
+  "id": "39a3a958-ac4d-464c-9cef-b5a4d6acc99f",
+  "contractId": "0841f3f1-b247-49e1-ba4a-91646eaf92da",
+  "clientName": "Harmoni Dental Clinic",
+  "accountManager": "Yusuf",
+  "plannerLineId": "req:post:2026-11:0:2",
+  "addendumVersion": 0,
+  "type": "post",
+  "title": "Carousel: Patient FAQ — braces",
+  "channel": "Instagram",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-09",
+  "defaultDueDate": "2026-11-09",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Syafiq",
+      "pct": 50,
+      "hours": 1.5
+    },
+    {
+      "seat": "creative",
+      "member": "Mei Ling",
+      "pct": 50,
+      "hours": 2.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "5b4b6a69-5f3c-4ac7-b831-e3cccb39a377"
+  },
+  "requestedAt": null,
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "createdAt": "2026-11-06T04:34:02.666Z",
+  "updatedAt": "2026-11-10T04:34:03.849Z"
+}

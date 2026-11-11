@@ -1,4 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getActingMember } from "@/lib/auth";
+import { hasFunction } from "@/lib/roles";
+import { seesFinance } from "@/lib/scope";
 import { listSubmissions } from "@/lib/data/onboarding";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +19,9 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function OnboardingListPage() {
+    // Managers, finance and account managers run onboarding.
+    const member = await getActingMember();
+    if (!seesFinance(member) && !hasFunction(member, "account_manager")) redirect("/home");
     const submissions = await listSubmissions();
 
     return (
@@ -59,10 +66,10 @@ export default async function OnboardingListPage() {
             </form>
 
             <div className="rounded-lg border bg-card">
-                <div className="border-b p-4 text-sm font-medium">Recent submissions</div>
+                <div className="border-b p-4 text-sm font-medium">Recent forms</div>
                 {submissions.length === 0 ? (
                     <p className="p-6 text-sm text-muted-foreground">
-                        No submissions yet. Create one above.
+                        No forms yet — create one above.
                     </p>
                 ) : (
                     <ul className="divide-y">

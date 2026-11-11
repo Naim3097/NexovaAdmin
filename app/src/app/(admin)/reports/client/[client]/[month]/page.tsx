@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { requireTeamAccess } from "@/lib/auth";
+import { notFound, redirect } from "next/navigation";
+import { getActingMember, requireTeamAccess } from "@/lib/auth";
+import { hasFunction } from "@/lib/roles";
+import { seesFinance } from "@/lib/scope";
 import { buildClientMonthlyReport } from "@/lib/reports";
 import { getAgencyProfile, formatAddress } from "@/lib/data/agency";
 import { type ContentPost } from "@/lib/data/content";
@@ -15,6 +17,7 @@ import {
     setReportPublishedAction,
 } from "@/lib/reports/actions";
 import { getReportInsights } from "@/lib/data/report-insights";
+import { fmtMyr } from "@/lib/format";
 import { GenerateInsightsButton } from "./generate-insights-button";
 
 export const dynamic = "force-dynamic";
@@ -38,13 +41,6 @@ const MONTH_LABELS = [
     "December",
 ];
 
-function fmtMyr(n: number) {
-    return `MYR ${n.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    })}`;
-}
-
 function fmtMonth(monthKey: string): string {
     const [y, m] = monthKey.split("-").map(Number);
     return `${MONTH_LABELS[m - 1]} ${y}`;
@@ -56,6 +52,9 @@ export default async function ClientMonthlyReportPage({
     params: Promise<{ client: string; month: string }>;
 }) {
     await requireTeamAccess();
+    // Reports: managers, finance and account managers.
+    const member = await getActingMember();
+    if (!seesFinance(member) && !hasFunction(member, "account_manager")) redirect("/home");
     const { client: clientRaw, month } = await params;
     if (!/^\d{4}-\d{2}$/.test(month)) notFound();
     const client = decodeURIComponent(clientRaw);
@@ -68,7 +67,7 @@ export default async function ClientMonthlyReportPage({
 
     const hasAnything =
         report.campaigns.length > 0 ||
-        report.projects.length > 0 ||
+        report.contracts.length > 0 ||
         report.contentPostsPublished.length > 0 ||
         report.contentDelivered.length > 0 ||
         report.billing.total > 0 ||
@@ -444,45 +443,72 @@ export default async function ClientMonthlyReportPage({
                     </section>
                 ) : null}
 
-                {/* Projects */}
-                {report.projects.length > 0 ? (
+                {/* Contracts */}
+                {report.contracts.length > 0 ? (
                     <section className="space-y-3">
-                        <h2 className="text-lg font-semibold">Projects</h2>
+                        <h2 className="text-lg font-semibold">Contracts</h2>
                         <ul className="divide-y rounded-lg border">
-                            {report.projects.map((r) => (
-                                <li key={r.project.id} className="p-4">
+                            {report.contracts.map((r) => (
+                                <li key={r.contract.id} className="p-4">
                                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                                         <p className="font-medium">
-                                            {r.project.name}
+                                            <Link
+                                                href={`/contracts/${r.contract.id}`}
+                                                className="hover:underline"
+                                            >
+                                                {r.name}
+                                            </Link>
+                                            <span className="ml-2 font-mono text-xs text-muted-foreground">
+                                                {r.code}
+                                            </span>
                                         </p>
-                                        <div className="flex gap-2">
+                                        <div className="flex flex-wrap gap-2">
                                             <Badge variant="outline">
-                                                {r.project.phase.replace(
-                                                    /_/g,
-                                                    " ",
-                                                )}
+                                                {r.stageLabel}
                                             </Badge>
-                                            <Badge variant="secondary">
-                                                {r.project.status.replace(
-                                                    /_/g,
-                                                    " ",
-                                                )}
-                                            </Badge>
-                                            {r.signedOffInMonth ? (
-                                                <Badge>signed off</Badge>
+                                            {r.overdueCount > 0 ? (
+                                                <Badge variant="destructive">
+                                                    {r.overdueCount} overdue
+                                                </Badge>
                                             ) : null}
                                         </div>
                                     </div>
-                                    {r.deliverablesApprovedInMonth > 0 ? (
+                                    <p className="mt-1 text-xs text-muted-foreground">
+                                        {r.startDate || "—"} →{" "}
+                                        {r.endDate || "open-ended"}
+                                        {r.valueMyr > 0
+                                            ? ` · ${fmtMyr(r.valueMyr)}`
+                                            : ""}
+                                    </p>
+                                    {r.progress.total > 0 ? (
+                                        <div className="mt-2 space-y-1">
+                                            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                                                <div
+                                                    className="h-full rounded-full bg-primary"
+                                                    style={{
+                                                        width: `${r.progress.pct}%`,
+                                                    }}
+                                                />
+                                            </div>
+                                            <p className="text-xs text-muted-foreground">
+                                                {r.progress.done}/
+                                                {r.progress.total} tasks done
+                                                {r.completedInMonth > 0
+                                                    ? ` · ${r.completedInMonth} completed this month`
+                                                    : ""}
+                                                {r.currentPhase
+                                                    ? ` · now: ${r.currentPhase}`
+                                                    : ""}
+                                                {r.nextDue
+                                                    ? ` · next due: ${r.nextDue.title} (${r.nextDue.dueDate})`
+                                                    : ""}
+                                            </p>
+                                        </div>
+                                    ) : (
                                         <p className="mt-1 text-xs text-muted-foreground">
-                                            {r.deliverablesApprovedInMonth}{" "}
-                                            deliverable
-                                            {r.deliverablesApprovedInMonth === 1
-                                                ? ""
-                                                : "s"}{" "}
-                                            approved this month
+                                            No tasks on this contract yet.
                                         </p>
-                                    ) : null}
+                                    )}
                                 </li>
                             ))}
                         </ul>
@@ -627,7 +653,7 @@ export default async function ClientMonthlyReportPage({
                                                         report.billing
                                                             .includedContents
                                                     }{" "}
-                                                    contents delivered
+                                                    content delivered
                                                 </span>
                                             </td>
                                             <td className="px-3 py-2 text-right">

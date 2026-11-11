@@ -47,6 +47,11 @@ function num(v: FormDataEntryValue | null): number {
     return Number.isFinite(n) ? n : 0;
 }
 
+function contractIdOf(v: FormDataEntryValue | null): string | null {
+    const s = String(v ?? "").trim();
+    return s && s !== "none" ? s : null;
+}
+
 export async function createCampaignAction(formData: FormData) {
     const name = String(formData.get("name") ?? "").trim();
     const clientName = String(formData.get("clientName") ?? "").trim();
@@ -54,6 +59,7 @@ export async function createCampaignAction(formData: FormData) {
     const c = await createCampaign({
         name,
         clientName,
+        contractId: contractIdOf(formData.get("contractId")),
         platform: asPlatform(formData.get("platform")),
         objective: asObjective(formData.get("objective")),
         startDate: String(formData.get("startDate") ?? "").trim(),
@@ -77,6 +83,7 @@ export async function updateCampaignAction(formData: FormData) {
     await updateCampaign(id, {
         name: String(formData.get("name") ?? "").trim(),
         clientName: String(formData.get("clientName") ?? "").trim(),
+        ...(formData.has("contractId") ? { contractId: contractIdOf(formData.get("contractId")) } : {}),
         platform: asPlatform(formData.get("platform")),
         objective: asObjective(formData.get("objective")),
         status: asStatus(formData.get("status")),

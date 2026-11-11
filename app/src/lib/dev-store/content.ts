@@ -4,9 +4,10 @@
  */
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { devDataRoot } from "@/lib/dev-store/root";
 import { randomUUID } from "node:crypto";
 
-const ROOT = path.join(process.cwd(), ".dev-data");
+const ROOT = devDataRoot();
 const CONTENT_DIR = path.join(ROOT, "content");
 
 export const CONTENT_STATUSES = [
@@ -104,7 +105,8 @@ export type ContentPost = {
     id: string;
     title: string;
     clientName: string;
-    projectId: string | null;
+    /** Contract this post is delivered under (null = none). */
+    contractId: string | null;
     platform: ContentPlatform;
     type: ContentType;
     status: ContentStatus;
@@ -163,6 +165,7 @@ function normalizeContentPost(p: ContentPost): ContentPost {
     return {
         ...p,
         planMonth: p.planMonth ?? "",
+        contractId: p.contractId ?? null,
         origin: p.origin ?? "plan",
         direction: p.direction ?? "",
         references: p.references ?? [],
@@ -194,7 +197,7 @@ function fileFor(id: string) {
 export async function createContentPost(input: {
     title: string;
     clientName: string;
-    projectId?: string | null;
+    contractId?: string | null;
     platform?: ContentPlatform;
     type?: ContentType;
     scheduledFor: string;
@@ -216,7 +219,7 @@ export async function createContentPost(input: {
         id: randomUUID(),
         title: input.title,
         clientName: input.clientName,
-        projectId: input.projectId ?? null,
+        contractId: input.contractId ?? null,
         platform: input.platform ?? "instagram",
         type: input.type ?? "post",
         status: "idea",

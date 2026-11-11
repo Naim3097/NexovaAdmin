@@ -10,6 +10,14 @@ import type { NextConfig } from "next";
  */
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // The shared mock-up runs on the JSON dev store: ship the `seed-data`
+  // snapshot with every route so it can be copied to /tmp on first use
+  // (see src/lib/dev-store/root.ts). Harmless when the folder is absent.
+  outputFileTracingIncludes: {
+    "/": ["./seed-data/**/*"],
+    "/*": ["./seed-data/**/*"],
+    "/**": ["./seed-data/**/*"],
+  },
   // typedRoutes: true,  // re-enable once nav arrays use typed Route helpers
   experimental: {
     serverActions: {

@@ -14,16 +14,18 @@
 import { computeTotals } from "@/lib/data/invoices";
 import {
     listLeads,
-    listProjects,
     listInvoices,
     listContentPosts,
     listCampaigns,
     listSubmissions,
 } from "@/lib/data/reads";
+import { listContracts, listWorks } from "@/lib/data/reads";
+import { primaryMember } from "@/lib/works/helpers";
 
 export const ACTIVITY_ENTITIES = [
     "lead",
-    "project",
+    "contract",
+    "task",
     "invoice",
     "content",
     "campaign",
@@ -34,13 +36,10 @@ export type ActivityEntity = (typeof ACTIVITY_ENTITIES)[number];
 export const ACTIVITY_KINDS = [
     "lead.created",
     "lead.status",
-    "project.created",
-    "project.status",
-    "project.phase",
-    "project.task",
-    "project.deliverable",
-    "project.deliverable_approved",
-    "project.signoff",
+    "contract.created",
+    "contract.signed",
+    "task.submitted",
+    "task.completed",
     "invoice.created",
     "invoice.sent",
     "invoice.paid",
@@ -73,10 +72,11 @@ function isMeaningfullyAfter(updatedAt: string, createdAt: string): boolean {
 }
 
 export async function listActivity(): Promise<ActivityEvent[]> {
-    const [leads, projects, invoices, content, campaigns, onboardings] =
+    const [leads, contracts, works, invoices, content, campaigns, onboardings] =
         await Promise.all([
             listLeads(),
-            listProjects(),
+            listContracts(),
+            listWorks(),
             listInvoices(),
             listContentPosts(),
             listCampaigns(),
@@ -151,110 +151,72 @@ export async function listActivity(): Promise<ActivityEvent[]> {
         }
     }
 
-    // Projects + tasks
-    for (const p of projects) {
+    // Contracts
+    for (const c of contracts) {
         out.push({
-            id: `project:${p.id}:created`,
-            at: p.createdAt,
-            entity: "project",
-            entityId: p.id,
-            kind: "project.created",
-            title: `Project created: ${p.name}`,
-            detail: p.clientName,
-            href: `/projects/${p.id}`,
-            amountMyr: 0,
-            actor: "",
+            id: `contract:${c.id}:created`,
+            at: c.createdAt,
+            entity: "contract",
+            entityId: c.id,
+            kind: "contract.created",
+            title: `Contract created: ${c.name}`,
+            detail: `${c.code} · ${c.clientName}${c.valueMyr > 0
+                    ? ` · MYR ${c.valueMyr.toLocaleString()}`
+                    : ""
+                }`,
+            href: `/contracts/${c.id}`,
+            amountMyr: c.valueMyr || 0,
+            actor: c.accountManager,
         });
-        if (
-            p.status !== "kickoff" &&
-            isMeaningfullyAfter(p.updatedAt, p.createdAt)
-        ) {
+        if (c.signedAt) {
             out.push({
-                id: `project:${p.id}:status:${p.status}`,
-                at: p.updatedAt,
-                entity: "project",
-                entityId: p.id,
-                kind: "project.status",
-                title: `Project → ${p.status}: ${p.name}`,
-                detail: p.clientName,
-                href: `/projects/${p.id}`,
-                amountMyr: 0,
-                actor: "",
+                id: `contract:${c.id}:signed`,
+                at: c.signedAt,
+                entity: "contract",
+                entityId: c.id,
+                kind: "contract.signed",
+                title: `Contract signed: ${c.name}`,
+                detail: `${c.code} · ${c.clientName}${c.signedBy ? ` · by ${c.signedBy}` : ""
+                    }`,
+                href: `/contracts/${c.id}`,
+                amountMyr: c.valueMyr || 0,
+                actor: c.signedBy,
             });
         }
-        for (const t of p.tasks) {
+    }
+
+    // Contract tasks — a submission is only an event while it still waits;
+    // once approved the completion supersedes it.
+    const contractName = new Map(contracts.map((c) => [c.id, c.name]));
+    for (const w of works) {
+        const where = contractName.get(w.contractId) ?? w.clientName;
+        if (w.status === "pending_approval" && w.submittedAt) {
             out.push({
-                id: `project:${p.id}:task:${t.id}`,
-                at: t.createdAt,
-                entity: "project",
-                entityId: p.id,
-                kind: "project.task",
-                title: `Task added on ${p.name}: ${t.title}`,
-                detail: t.assignee ? `Assignee: ${t.assignee}` : "",
-                href: `/projects/${p.id}`,
+                id: `task:${w.id}:submitted`,
+                at: w.submittedAt,
+                entity: "task",
+                entityId: w.id,
+                kind: "task.submitted",
+                title: `Task submitted for approval: ${w.title}`,
+                detail: `${where} · ${w.phaseName}${w.approver === "client" ? " · client approval" : ""
+                    }`,
+                href: `/works/${w.id}`,
                 amountMyr: 0,
-                actor: t.assignee ?? "",
+                actor: primaryMember(w),
             });
         }
-        for (const d of p.deliverables) {
+        if (w.status === "completed" && w.completedAt) {
             out.push({
-                id: `project:${p.id}:deliverable:${d.id}`,
-                at: d.createdAt,
-                entity: "project",
-                entityId: p.id,
-                kind: "project.deliverable",
-                title: `Deliverable added on ${p.name}: ${d.title}`,
-                detail: `Phase: ${d.phase.replace(/_/g, " ")}`,
-                href: `/projects/${p.id}`,
+                id: `task:${w.id}:completed`,
+                at: w.completedAt,
+                entity: "task",
+                entityId: w.id,
+                kind: "task.completed",
+                title: `Task completed: ${w.title}`,
+                detail: `${where} · ${w.phaseName}`,
+                href: `/works/${w.id}`,
                 amountMyr: 0,
-                actor: "",
-            });
-            if (d.approvedAt) {
-                out.push({
-                    id: `project:${p.id}:deliverable:${d.id}:approved`,
-                    at: d.approvedAt,
-                    entity: "project",
-                    entityId: p.id,
-                    kind: "project.deliverable_approved",
-                    title: `Approved on ${p.name}: ${d.title}`,
-                    detail: d.approvedBy
-                        ? `By ${d.approvedBy}`
-                        : "",
-                    href: `/projects/${p.id}`,
-                    amountMyr: 0,
-                    actor: d.approvedBy,
-                });
-            }
-        }
-        if (
-            p.phase !== "discovery" &&
-            isMeaningfullyAfter(p.updatedAt, p.createdAt)
-        ) {
-            out.push({
-                id: `project:${p.id}:phase:${p.phase}`,
-                at: p.updatedAt,
-                entity: "project",
-                entityId: p.id,
-                kind: "project.phase",
-                title: `${p.name} → phase ${p.phase.replace(/_/g, " ")}`,
-                detail: p.clientName,
-                href: `/projects/${p.id}`,
-                amountMyr: 0,
-                actor: "",
-            });
-        }
-        if (p.signoff.signedAt) {
-            out.push({
-                id: `project:${p.id}:signoff`,
-                at: p.signoff.signedAt,
-                entity: "project",
-                entityId: p.id,
-                kind: "project.signoff",
-                title: `Signoff: ${p.name}`,
-                detail: `By ${p.signoff.signedBy}`,
-                href: `/projects/${p.id}`,
-                amountMyr: 0,
-                actor: p.signoff.signedBy,
+                actor: primaryMember(w),
             });
         }
     }
