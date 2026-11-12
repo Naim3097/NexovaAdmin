@@ -49,20 +49,20 @@ export function ClientsView({ data }: { data: DashboardData }) {
                         : `Nobody bills monthly, so shares of ${fmtMyr(rel.concentration.totalMyr)} in active contracted value instead.`
                 }
             >
-                <BarList rows={shareRows(rel)} empty="No revenue on active projects yet." />
+                <BarList rows={shareRows(rel)} empty="No revenue on active accounts yet." />
             </Section>
 
             <Section
                 id="ending"
                 title={`Ending within ${ENDING_LIST_DAYS} days`}
-                description="Active projects with an end date in sight, by month. Set where the renewal stands on the client page; red means nobody has raised it."
+                description="Active accounts with an end date in sight, by month. Set where the renewal stands on the client page; red means nobody has raised it."
                 action={
                     <Link href="/projects" className="text-xs underline">
-                        All projects
+                        All accounts
                     </Link>
                 }
             >
-                {rel.ending.length === 0 ? <Empty>No project ends in the next {ENDING_LIST_DAYS} days.</Empty> : <EndingList months={rel.ending} />}
+                {rel.ending.length === 0 ? <Empty>No account ends in the next {ENDING_LIST_DAYS} days.</Empty> : <EndingList months={rel.ending} />}
             </Section>
 
             <Section
@@ -103,7 +103,7 @@ function HealthGrid({ cards }: { cards: ClientCard[] }) {
                     <p className={cn("mt-0.5 text-xs", c.status !== "paused" && c.health !== "green" ? HEALTH_TEXT[c.health] : "text-muted-foreground")}>{c.reason}</p>
                     <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
                         <Fact label="MRR" value={c.mrrMyr ? fmtMyr(c.mrrMyr) : "—"} />
-                        <Fact label="Projects" value={String(c.projects)} />
+                        <Fact label="Accounts" value={String(c.projects)} />
                         <Fact label="Account manager" value={c.accountManagers.join(", ") || "—"} />
                         <Fact label="Last check-in" value={c.lastCheckIn} />
                     </dl>
@@ -167,7 +167,7 @@ function ClientsTable({ rows }: { rows: ClientRow[] }) {
                     <TableHead>Client</TableHead>
                     <TableHead>Deal owner</TableHead>
                     <TableHead>Account manager</TableHead>
-                    <TableHead className="text-right">Projects</TableHead>
+                    <TableHead className="text-right">Accounts</TableHead>
                     <TableHead className="text-right">MRR</TableHead>
                     <TableHead className="text-right">Approvals</TableHead>
                     <TableHead className="text-right">Overdue inv.</TableHead>

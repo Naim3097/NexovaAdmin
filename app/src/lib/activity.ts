@@ -165,7 +165,7 @@ export async function listActivity(): Promise<ActivityEvent[]> {
             entity: "contract",
             entityId: c.id,
             kind: "contract.created",
-            title: `Project created: ${c.name}`,
+            title: `Account created: ${c.name}`,
             detail: `${c.code} · ${c.clientName}${c.valueMyr > 0
                     ? ` · MYR ${c.valueMyr.toLocaleString()}`
                     : ""

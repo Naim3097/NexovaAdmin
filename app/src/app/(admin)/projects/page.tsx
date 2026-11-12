@@ -59,12 +59,12 @@ export default async function ContractsPage({ searchParams }: { searchParams: Pr
         <div className="space-y-4">
             <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
                 <div>
-                    <h1 className="text-2xl font-semibold md:text-3xl">Projects</h1>
+                    <h1 className="text-2xl font-semibold md:text-3xl">Accounts</h1>
                     <p className="text-sm text-muted-foreground">Every job we do, for a client or for ourselves, with its tasks month by month.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                     <Button nativeButton={false} render={<Link href={newHref} />}>
-                        + New project
+                        + New account
                     </Button>
                 </div>
             </div>
@@ -105,7 +105,7 @@ export default async function ContractsPage({ searchParams }: { searchParams: Pr
             <div className="rounded-lg border bg-card">
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b p-3 text-sm">
                     <span className="font-medium">
-                        {list.length} project{list.length === 1 ? "" : "s"}
+                        {list.length} account{list.length === 1 ? "" : "s"}
                         {filtered ? <span className="font-normal text-muted-foreground"> of {contracts.length}</span> : null}
                     </span>
                     <span className="hidden text-xs text-muted-foreground md:inline">Name · client · stage · term · value · tasks · next due</span>
@@ -114,7 +114,7 @@ export default async function ContractsPage({ searchParams }: { searchParams: Pr
                     <p className="p-6 text-sm text-muted-foreground">
                         {contracts.length === 0 ? (
                             <>
-                                No projects yet.{" "}
+                                No accounts yet.{" "}
                                 <Link href={newHref} className="underline">
                                     Write the first one
                                 </Link>

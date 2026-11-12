@@ -284,7 +284,7 @@ export function buildClientsSnapshot(
             score -= Math.min(20, amber.length * 10);
             signals.push({ label: "Delivery to watch", tone: "warn", detail: amber.map((x) => `${x.name}: ${x.note}`).join(" · ") });
         } else if (active.length) {
-            signals.push({ label: "Delivery on track", tone: "good", detail: `${active.length} project${active.length === 1 ? "" : "s"} moving · ${openWorks.length} open task${openWorks.length === 1 ? "" : "s"}` });
+            signals.push({ label: "Delivery on track", tone: "good", detail: `${active.length} account${active.length === 1 ? "" : "s"} moving · ${openWorks.length} open task${openWorks.length === 1 ? "" : "s"}` });
         }
         if (awaitingUs > 0) {
             score -= 10;
@@ -330,12 +330,12 @@ export function buildClientsSnapshot(
             signals.push({
                 label: "No work in progress",
                 tone: "bad",
-                detail: active.length ? "Active project with no open tasks — plan the next month" : "Active account with nothing being delivered",
+                detail: active.length ? "Active account with no open tasks — plan the next month" : "Active account with nothing being delivered",
             });
         }
         if (renewsInDays !== null && renewsInDays <= 30) {
             signals.push({
-                label: renewsInDays < 0 ? "Project ended" : "Project ending",
+                label: renewsInDays < 0 ? "Account ended" : "Account ending",
                 tone: "warn",
                 detail: renewsInDays < 0 ? `${-renewsInDays}d past ${renewsOn} — renew or close it` : `ends in ${renewsInDays}d (${renewsOn}) — talk renewal`,
             });

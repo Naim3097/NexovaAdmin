@@ -245,9 +245,9 @@ export async function logCheckInAction(clientId: string, date: string, note: str
  */
 export async function setRenewalStatusAction(contractId: string, status: string): Promise<ActionResult> {
     const id = String(contractId ?? "").trim();
-    if (!id) return { ok: false, reason: "Missing project." };
+    if (!id) return { ok: false, reason: "Missing account." };
     const contract = await getContractById(id);
-    if (!contract) return { ok: false, reason: "Project not found." };
+    if (!contract) return { ok: false, reason: "Account not found." };
     const next = normalizeRenewalStatus(status);
     if (next === contract.renewalStatus) return { ok: true };
     await updateContract(id, { renewalStatus: next });

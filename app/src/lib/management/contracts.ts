@@ -180,7 +180,7 @@ export function buildContractsSnapshot(input: ContractsInput, today: string = to
                 note = `${overdueInvoices} invoice${overdueInvoices === 1 ? "" : "s"} overdue`;
             } else if (work.tasks + work.content + work.campaigns === 0) {
                 health = "amber";
-                note = "No tasks under this project yet";
+                note = "No tasks under this account yet";
             } else if (work.overdueTasks > 0) {
                 health = "amber";
                 note = `${work.overdueTasks} task${work.overdueTasks === 1 ? "" : "s"} overdue`;

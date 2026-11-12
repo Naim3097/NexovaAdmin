@@ -164,7 +164,7 @@ export default async function ContractDocumentPage({
             {/* Top bar */}
             <div className="no-print flex flex-wrap items-center justify-between gap-3">
                 <Link href={`/projects/${c.id}${asQ}`} className="text-sm text-muted-foreground hover:underline">
-                    Back to project
+                    Back to account
                 </Link>
                 <div className="flex flex-wrap items-center gap-3 text-sm">
                     {quotation ? (
@@ -230,7 +230,7 @@ export default async function ContractDocumentPage({
                     <div>
                         <h3 className="text-sm font-medium">Scope</h3>
                         {c.requirements.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">No scope recorded on the project yet.</p>
+                            <p className="text-sm text-muted-foreground">No scope recorded on the account yet.</p>
                         ) : (
                             <ul className="mt-1 list-disc space-y-1 pl-5 text-sm">
                                 {c.requirements.map((r, i) => (
@@ -441,7 +441,7 @@ export default async function ContractDocumentPage({
                             <p className="whitespace-pre-line text-sm">{c.terms}</p>
                         )
                     ) : (
-                        <p className="text-sm text-muted-foreground">No terms recorded. Add them on the Contract tab of the project page.</p>
+                        <p className="text-sm text-muted-foreground">No terms recorded. Add them on the Contract tab of the account page.</p>
                     )}
                     <p className="text-sm">Any change to the scope, timeline or fees is agreed in writing and recorded on the contract as a change.</p>
                 </Doc>

@@ -105,11 +105,11 @@ export default async function CustomTasksPage({ searchParams }: { searchParams: 
             <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
                 <div>
                     <h1 className="text-2xl font-semibold md:text-3xl">Other tasks</h1>
-                    <p className="text-sm text-muted-foreground">One-off work under a project: workshops, strategy calls, audits, sprints.</p>
+                    <p className="text-sm text-muted-foreground">One-off work under an account: workshops, strategy calls, audits, sprints.</p>
                     <p className="text-xs text-muted-foreground">
-                        New items start as a task on a{" "}
+                        New items start as a task on an{" "}
                         <Link href={`/projects${asQ}`} className="underline">
-                            project
+                            account
                         </Link>
                         .
                     </p>
@@ -159,9 +159,9 @@ export default async function CustomTasksPage({ searchParams }: { searchParams: 
                         </>
                     ) : (
                         <>
-                            No other tasks yet. New items start as a task on a{" "}
+                            No other tasks yet. New items start as a task on an{" "}
                             <Link href={`/projects${asQ}`} className="underline">
-                                project
+                                account
                             </Link>
                             .
                         </>
@@ -214,7 +214,7 @@ export default async function CustomTasksPage({ searchParams }: { searchParams: 
                                                 <thead>
                                                     <tr className="text-left text-xs text-muted-foreground">
                                                         <th className="py-1 pr-3 font-medium">Task</th>
-                                                        <th className="py-1 pr-3 font-medium">Client · project</th>
+                                                        <th className="py-1 pr-3 font-medium">Client · account</th>
                                                         <th className="py-1 pr-3 font-medium">{group === "phase" ? "Month" : "Phase"}</th>
                                                         <th className="py-1 pr-3 font-medium">Owners</th>
                                                         <th className="py-1 pr-3 font-medium">Due</th>
@@ -245,7 +245,7 @@ export default async function CustomTasksPage({ searchParams }: { searchParams: 
                                                                             {c.code} · {c.name}
                                                                         </Link>
                                                                     ) : (
-                                                                        <span className="text-muted-foreground">No project</span>
+                                                                        <span className="text-muted-foreground">No account</span>
                                                                     )}
                                                                 </td>
                                                                 <td className="whitespace-nowrap py-2 pr-3 text-xs text-muted-foreground">

@@ -424,7 +424,7 @@ export async function generateRetainerInvoicesAction(
         return {
             ok: false,
             message:
-                "No active client has an active project billed monthly — set the billing on their projects first.",
+                "No active client has an active account billed monthly — set the billing on their accounts first.",
         };
     }
     return {

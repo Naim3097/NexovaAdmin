@@ -251,7 +251,7 @@ export default async function ClientDetailPage({
                             </SelectContent>
                         </Select>
                         <p className="text-xs text-muted-foreground">
-                            Who closed the deal. Each project has its own account manager.
+                            Who closed the deal. Each account has its own account manager.
                         </p>
                     </div>
                     <div className="space-y-1.5">
@@ -314,7 +314,7 @@ export default async function ClientDetailPage({
                             defaultValue={client.contentRevisionLimit}
                         />
                         <p className="text-xs text-muted-foreground">
-                            Feedback rounds the client gets per content item; what they are owed lives on their projects.
+                            Feedback rounds the client gets per content item; what they are owed lives on their accounts.
                         </p>
                     </div>
                 </div>
@@ -324,7 +324,7 @@ export default async function ClientDetailPage({
                 </div>
                 {client.internal ? (
                     <p className="text-xs text-muted-foreground">
-                        Our own company: internal projects, no contract and no billing.
+                        Our own company: internal accounts, no contract and no billing.
                     </p>
                 ) : null}
                 <div className="flex justify-end">
@@ -368,7 +368,7 @@ export default async function ClientDetailPage({
                 </Section>
             ) : null}
 
-            <Section title={`Projects (${myContracts.length})`}>
+            <Section title={`Accounts (${myContracts.length})`}>
                 {myContracts.map((c) => {
                     const w = summarizeWorks(worksFor(c, { works, content, campaigns }), today);
                     const days = endsInDays(c, today);
@@ -415,10 +415,10 @@ export default async function ClientDetailPage({
                         href={`/projects/new?client=${encodeURIComponent(client.name)}`}
                         className="text-xs font-medium underline"
                     >
-                        + New project
+                        + New account
                     </Link>
                     {myContracts.length === 0 ? (
-                        <span className="ml-2 text-xs text-muted-foreground">No project yet — nothing is promised to this client.</span>
+                        <span className="ml-2 text-xs text-muted-foreground">No account yet — nothing is promised to this client.</span>
                     ) : null}
                 </li>
             </Section>
@@ -494,7 +494,7 @@ export default async function ClientDetailPage({
                             Delete client profile
                         </p>
                         <p className="text-xs text-muted-foreground">
-                            Removes this record only; leads, projects, tasks and invoices keep the name.
+                            Removes this record only; leads, accounts, tasks and invoices keep the name.
                         </p>
                     </div>
                     <Button type="submit" variant="destructive">

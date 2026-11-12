@@ -42,7 +42,7 @@ const NEW_CLIENT = "__new";
 const SEL = "h-10 w-full rounded-lg border border-input bg-transparent px-3 text-sm dark:bg-input/30";
 
 const ERRORS: Record<string, string> = {
-    name: "Give the project a name.",
+    name: "Give the account a name.",
     client: "Pick a client, or type the name of a new one.",
     requirements: "Set the scope: at least one deliverable with a count above zero.",
     dates: "The end date is before the start date.",
@@ -142,11 +142,11 @@ export default async function NewContractPage({ searchParams }: { searchParams: 
         <div className="space-y-4">
             <div>
                 <Link href={`/projects${asParam ? `?as=${encodeURIComponent(asParam)}` : ""}`} className="text-sm text-muted-foreground hover:underline">
-                    Back to projects
+                    Back to accounts
                 </Link>
-                <h1 className="mt-2 text-2xl font-semibold md:text-3xl">New project</h1>
+                <h1 className="mt-2 text-2xl font-semibold md:text-3xl">New account</h1>
                 <p className="text-sm text-muted-foreground">
-                    Set the client, the deliverables (what, how many, how often), the phases and the team. Once the project is signed, the
+                    Set the client, the deliverables (what, how many, how often), the phases and the team. Once the account is signed, the
                     tasks for every month of its term are added at once (three months ahead when open-ended).
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-3 text-xs">
@@ -172,7 +172,7 @@ export default async function NewContractPage({ searchParams }: { searchParams: 
 
             {error ? (
                 <p role="alert" className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                    {ERRORS[error] ?? "The project could not be created. Check the form and try again."}
+                    {ERRORS[error] ?? "The account could not be created. Check the form and try again."}
                 </p>
             ) : null}
 
@@ -184,7 +184,7 @@ export default async function NewContractPage({ searchParams }: { searchParams: 
                 <section className="grid gap-3 rounded-lg border bg-card p-4 md:grid-cols-4 md:p-6">
                     <h2 className="text-sm font-medium md:col-span-4">1 · Client and terms</h2>
                     <div className="space-y-1.5 md:col-span-2">
-                        <Label className="text-sm">Project name</Label>
+                        <Label className="text-sm">Account name</Label>
                         <Input name="name" required defaultValue={one("name")} placeholder="e.g. Lean.x — Growth retainer 2026" aria-invalid={error === "name" || undefined} />
                     </div>
                     <div className="space-y-1.5">
@@ -226,7 +226,7 @@ export default async function NewContractPage({ searchParams }: { searchParams: 
                     <div className="space-y-1.5">
                         <Label className="text-sm">Signed on (blank = not yet)</Label>
                         <Input name="signedAt" type="date" defaultValue={one("signedAt")} />
-                        <p className="text-[11px] text-muted-foreground">Tasks appear once the project is signed. Leave empty to create a draft.</p>
+                        <p className="text-[11px] text-muted-foreground">Tasks appear once the account is signed. Leave empty to create a draft.</p>
                     </div>
                     <div className="space-y-1.5">
                         <Label className="text-sm">Reference / contract no.</Label>
@@ -276,7 +276,7 @@ export default async function NewContractPage({ searchParams }: { searchParams: 
                 <section className="rounded-lg border bg-card p-4 md:p-6">
                     <h2 className="text-sm font-medium">3 · Phases</h2>
                     <p className="text-xs text-muted-foreground">
-                        The timeline the tasks fall into. Months are counted from the start date above (month 1 is the first month of the project); the
+                        The timeline the tasks fall into. Months are counted from the start date above (month 1 is the first month of the account); the
                         real months are set when it is created and can be changed from the Tasks tab (the pencil next to each phase).
                     </p>
                     <PhaseRows initial={initialPhases} termMonths={tpl?.months} className="mt-3" />
@@ -311,7 +311,7 @@ export default async function NewContractPage({ searchParams }: { searchParams: 
                     <Button variant="ghost" nativeButton={false} render={<Link href={`/projects${asParam ? `?as=${encodeURIComponent(asParam)}` : ""}`} />}>
                         Cancel
                     </Button>
-                    <PendingButton pendingLabel="Creating project…">Create project</PendingButton>
+                    <PendingButton pendingLabel="Creating account…">Create account</PendingButton>
                 </div>
             </form>
         </div>

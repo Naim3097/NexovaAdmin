@@ -80,7 +80,7 @@ function ClientGroups({ groups, today, asQ, showPhase = true }: { groups: Client
                                             <span className="text-xs text-muted-foreground">AM {cg.contract.accountManager || "—"}</span>
                                         </>
                                     ) : (
-                                        <span className="font-medium text-muted-foreground">No project</span>
+                                        <span className="font-medium text-muted-foreground">No account</span>
                                     )}
                                     <span className="text-xs text-muted-foreground">
                                         · {cg.works.length} task{cg.works.length === 1 ? "" : "s"}
@@ -195,11 +195,11 @@ export default async function WebsitePage({ searchParams }: { searchParams: Prom
             <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
                 <div>
                     <h1 className="text-2xl font-semibold md:text-3xl">Website</h1>
-                    <p className="text-sm text-muted-foreground">Pages, sections, integrations and launches, one task each under a project.</p>
+                    <p className="text-sm text-muted-foreground">Pages, sections, integrations and launches, one task each under an account.</p>
                     <p className="text-xs text-muted-foreground">
-                        New items start as a task on a{" "}
+                        New items start as a task on an{" "}
                         <Link href={`/projects${asQ}`} className="underline">
-                            project
+                            account
                         </Link>
                         .
                     </p>
@@ -246,9 +246,9 @@ export default async function WebsitePage({ searchParams }: { searchParams: Prom
                         </>
                     ) : (
                         <>
-                            No website tasks yet. New items start as a task on a{" "}
+                            No website tasks yet. New items start as a task on an{" "}
                             <Link href={`/projects${asQ}`} className="underline">
-                                project
+                                account
                             </Link>
                             .
                         </>

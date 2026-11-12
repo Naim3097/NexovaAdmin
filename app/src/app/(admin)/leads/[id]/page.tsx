@@ -470,12 +470,12 @@ export default async function LeadDetailPage({
                     <div className="max-w-sm">
                         <p className="text-sm font-medium">
                             <span className="mr-2 font-mono text-xs text-primary">2b</span>
-                            Create the project
+                            Create the account
                         </p>
                         <p className="mt-0.5 text-xs text-muted-foreground">
                             {contract
                                 ? `${contract.code} · ${contract.name}${contract.signedAt ? "" : " · not yet signed"}`
-                                : "The account manager sets up the project under the client; it stays a draft until the contract is signed, and its tasks come from there."}
+                                : "The account manager sets up the account under the client; it stays a draft until the contract is signed, and its tasks come from there."}
                         </p>
                     </div>
                     {contract ? (
@@ -484,7 +484,7 @@ export default async function LeadDetailPage({
                             nativeButton={false}
                             render={<Link href={`/projects/${contract.id}`} />}
                         >
-                            Open project
+                            Open account
                         </Button>
                     ) : (
                         <Button
@@ -496,7 +496,7 @@ export default async function LeadDetailPage({
                                 />
                             }
                         >
-                            Create project
+                            Create account
                         </Button>
                     )}
                 </div>

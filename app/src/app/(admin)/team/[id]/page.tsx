@@ -55,7 +55,7 @@ const ROLE_HINT: Record<SystemRole, string> = {
 
 /** One line per duty, so the manager knows what a tick adds. */
 const FUNCTION_HINT: Record<TeamFunction, string> = {
-    delivery: "Every work page: projects, tasks, content, campaigns, SEO, website, leads, pipeline, onboarding and reports.",
+    delivery: "Every work page: accounts, tasks, content, campaigns, SEO, website, leads, pipeline, onboarding and reports.",
     finance: "Finances: quotes, invoices and reports.",
 };
 
@@ -403,7 +403,7 @@ export default async function TeamMemberPage({
                         <div>
                             <h2 className="text-sm font-medium">Duties</h2>
                             <p className="text-xs text-muted-foreground">
-                                Each duty opens pages for {m.name}, never more access. Being an account manager follows from the projects they are set on.
+                                Each duty opens pages for {m.name}, never more access. Being an account manager follows from the accounts they are set on.
                             </p>
                         </div>
                         <ul className="grid gap-2 md:grid-cols-2">

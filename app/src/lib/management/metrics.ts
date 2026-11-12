@@ -919,7 +919,7 @@ export function buildManagementSnapshot(
         let note = "";
         if (status === "active" && !hasActiveWork) {
             health = "amber";
-            note = activeMine.length ? `Active project with no open tasks · ${activeMine[0].note}` : "Active account with no work in progress";
+            note = activeMine.length ? `Active account with no open tasks · ${activeMine[0].note}` : "Active account with no work in progress";
         } else if (!hasActiveWork && mine.length > 0) {
             health = worstHealth(mine.map((c) => c.health));
             note = mine[0].note;
@@ -1008,7 +1008,7 @@ export function buildManagementSnapshot(
                 severity: "amber",
                 kind: "contract_done",
                 title: `${c.name} · every task is done`,
-                detail: `${c.clientName} · ${CONTRACT_STAGE_LABEL[c.stage]} · plan the next month or complete the project`,
+                detail: `${c.clientName} · ${CONTRACT_STAGE_LABEL[c.stage]} · plan the next month or complete the account`,
                 href: c.href,
             });
         }
@@ -1097,8 +1097,8 @@ export function buildManagementSnapshot(
                 kind: "client_idle",
                 title: `${c.name} has no work in progress`,
                 detail: c.contracts.some((x) => x.isActive)
-                    ? "Active project with no open tasks · plan the next month"
-                    : "Active account with no project · set one up or confirm the next deliverable",
+                    ? "Active account with no open tasks · plan the next month"
+                    : "Active client with no account · set one up or confirm the next deliverable",
                 href: "/settings/clients",
             });
         }

@@ -88,7 +88,7 @@ export default async function MyClientsPage({ searchParams }: { searchParams: Pr
         .sort((a, b) => b.hours - a.hours || a.name.localeCompare(b.name));
 
     const kpis = [
-        { label: "Projects", value: String(totals.contracts), hint: fallback ? "every active project" : "active + draft", href: "#contracts", tone: "neutral" },
+        { label: "Accounts", value: String(totals.contracts), hint: fallback ? "every active account" : "active + draft", href: "#contracts", tone: "neutral" },
         {
             label: "Tasks this month",
             value: `${totals.month.done}/${totals.month.total}`,
@@ -126,8 +126,8 @@ export default async function MyClientsPage({ searchParams }: { searchParams: Pr
                     <h1 className="text-2xl font-semibold md:text-3xl">My accounts{me ? ` · ${me}` : ""}</h1>
                     <p className="text-sm text-muted-foreground">
                         {fallback
-                            ? "Pick who you are to see your own accounts — showing every active project."
-                            : "The projects you manage: what waits on you, where each one stands, and the one next move."}
+                            ? "Pick who you are to see your own accounts — showing every active account."
+                            : "The accounts you manage: what waits on you, where each one stands, and the one next move."}
                     </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 text-sm font-medium">
@@ -137,7 +137,7 @@ export default async function MyClientsPage({ searchParams }: { searchParams: Pr
                         </Link>
                     ) : null}
                     <Link href={`/projects${asQ}`} className="underline">
-                        All projects
+                        All accounts
                     </Link>
                 </div>
             </div>
@@ -174,7 +174,7 @@ export default async function MyClientsPage({ searchParams }: { searchParams: Pr
             <section id="contracts" className="scroll-mt-4 space-y-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                     <h2 className="text-sm font-medium">
-                        Projects <span className="tabular-nums text-muted-foreground">· {cards.length}</span>
+                        Accounts <span className="tabular-nums text-muted-foreground">· {cards.length}</span>
                     </h2>
                     <p className="text-xs text-muted-foreground">Most at risk first: overdue, then stale approvals, then the nearest due date.</p>
                 </div>
@@ -190,14 +190,14 @@ export default async function MyClientsPage({ searchParams }: { searchParams: Pr
                                 → {h.to} since <span className="tabular-nums">{h.at.slice(0, 10)}</span>
                             </span>
                         ))}
-                        . Nothing moves until they accept; withdraw on the project&apos;s Setup tab.
+                        . Nothing moves until they accept; withdraw on the account&apos;s Setup tab.
                     </p>
                 ) : null}
                 {cards.length === 0 ? (
                     <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
                         {fallback ? (
                             <>
-                                No active project on the books.{" "}
+                                No active account on the books.{" "}
                                 <Link href="/projects/new" className="underline">
                                     Create one
                                 </Link>{" "}
@@ -205,7 +205,7 @@ export default async function MyClientsPage({ searchParams }: { searchParams: Pr
                             </>
                         ) : (
                             <>
-                                You are not the account manager of any live project. Your own tasks are on{" "}
+                                You are not the account manager of any live account. Your own tasks are on{" "}
                                 <Link href={`/my-work${asQ}`} className="underline">
                                     My tasks
                                 </Link>

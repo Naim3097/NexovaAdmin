@@ -165,7 +165,7 @@ export function NewTaskButton({
                             />
                         </div>
                     </div>
-                    {beforeStart ? <p className="text-[11px] text-red-600 dark:text-red-400">The project starts {project.startDate}; pick that day or later.</p> : null}
+                    {beforeStart ? <p className="text-[11px] text-red-600 dark:text-red-400">The account starts {project.startDate}; pick that day or later.</p> : null}
                     <div className="space-y-1.5">
                         <Label htmlFor={`${uid}-title`} className="text-xs">
                             Title
@@ -189,13 +189,13 @@ export function NewTaskButton({
                             {members.map((m) => (
                                 <option key={m} value={m}>
                                     {m}
-                                    {m === defaultOwner ? " (project crew)" : ""}
+                                    {m === defaultOwner ? " (account crew)" : ""}
                                 </option>
                             ))}
                         </select>
                         <p className="text-[11px] text-muted-foreground">
                             {seat ? `${SEAT_LABEL[seat]} seat. ` : ""}
-                            {defaultOwner ? `Starts as ${defaultOwner} from the project crew.` : "Nobody on the project crew holds this seat yet."}
+                            {defaultOwner ? `Starts as ${defaultOwner} from the account crew.` : "Nobody on the account crew holds this seat yet."}
                         </p>
                     </div>
                     <div className="flex justify-end gap-2 border-t pt-3">

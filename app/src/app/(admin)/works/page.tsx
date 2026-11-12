@@ -104,11 +104,11 @@ export default async function WorksPage({ searchParams }: { searchParams: Promis
                 title="Tasks"
                 subtitle={
                     <>
-                        {view === "board" ? "Every task under every project, with who owns it." : "Every task under every project, by month, with who owns it."}
+                        {view === "board" ? "Every task under every account, with who owns it." : "Every task under every account, by month, with who owns it."}
                         <span className="mt-0.5 block text-xs">
-                            New items start as a task on a{" "}
+                            New items start as a task on an{" "}
                             <Link href={`/projects${asQ}`} className="underline">
-                                project
+                                account
                             </Link>
                             .
                         </span>
@@ -177,9 +177,9 @@ export default async function WorksPage({ searchParams }: { searchParams: Promis
                     filtered={isFiltered(filter) || Boolean(waiting) || unassigned}
                     clearHref={`/works${filterQuery({}, { ...keep, waiting: undefined, unassigned: undefined })}`}
                 >
-                    No tasks yet. They appear when a project is signed. New items start as a task on a{" "}
+                    No tasks yet. They appear when an account is signed. New items start as a task on an{" "}
                     <Link href={`/projects${asQ}`} className="underline">
-                        project
+                        account
                     </Link>
                     .
                 </TaskEmpty>

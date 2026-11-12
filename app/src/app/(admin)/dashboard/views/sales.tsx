@@ -94,8 +94,8 @@ export function SalesView({ data }: { data: DashboardData }) {
                     title={s.allTime ? "Won · all time" : `Won · last ${TREND_MONTHS} months`}
                     description={
                         s.targetMyr > 0
-                            ? `MYR signed per month (external projects by signing date) against the ${fmtMyrShort(s.targetMyr)} monthly target; the grey bar is the estimated value lost.`
-                            : "MYR signed per month (external projects by signing date); the grey bar is the estimated value lost. Set a monthly target in Settings → Agency profile to draw the line."
+                            ? `MYR signed per month (external accounts by signing date) against the ${fmtMyrShort(s.targetMyr)} monthly target; the grey bar is the estimated value lost.`
+                            : "MYR signed per month (external accounts by signing date); the grey bar is the estimated value lost. Set a monthly target in Settings → Agency profile to draw the line."
                     }
                 >
                     {anyTrend || s.targetMyr > 0 ? (

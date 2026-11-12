@@ -44,7 +44,7 @@ export function PhaseRows({ initial, termMonths, className }: { initial: Templat
             {/* Marks that the editor was on the form, so an empty list means "no phases" rather than "use the defaults". */}
             <input type="hidden" name="phase_rows" value="1" />
             <ul className="space-y-1.5">
-                {rows.length === 0 ? <li className="py-2 text-xs text-muted-foreground">No phases. The project will run without them; add one below.</li> : null}
+                {rows.length === 0 ? <li className="py-2 text-xs text-muted-foreground">No phases. The account will run without them; add one below.</li> : null}
                 {rows.map((r, i) => {
                     const last = r.fromMonth + r.months - 1;
                     const past = termMonths ? r.fromMonth > termMonths : false;
@@ -83,7 +83,7 @@ export function PhaseRows({ initial, termMonths, className }: { initial: Templat
                                 <span>mo</span>
                             </label>
                             <div className="flex items-center gap-0.5">
-                                <span className={cn("mr-1 hidden text-[11px] tabular-nums text-muted-foreground sm:inline", (past || clipped) && "text-amber-700 dark:text-amber-400")} title={past ? "Starts after the project ends" : clipped ? "Runs past the end of the project; it will be clipped" : undefined}>
+                                <span className={cn("mr-1 hidden text-[11px] tabular-nums text-muted-foreground sm:inline", (past || clipped) && "text-amber-700 dark:text-amber-400")} title={past ? "Starts after the account ends" : clipped ? "Runs past the end of the account; it will be clipped" : undefined}>
                                     {r.months > 1 ? `m${r.fromMonth}–${last}` : `m${r.fromMonth}`}
                                 </span>
                                 <Button type="button" variant="ghost" size="icon-sm" onClick={() => move(r.id, -1)} disabled={i === 0} aria-label="Move up" title="Move up">
@@ -104,7 +104,7 @@ export function PhaseRows({ initial, termMonths, className }: { initial: Templat
                 <Button type="button" variant="outline" size="sm" onClick={add}>
                     + Add phase
                 </Button>
-                <p className="text-[11px] text-muted-foreground">Month 1 is the first month of the project. Phases may overlap.</p>
+                <p className="text-[11px] text-muted-foreground">Month 1 is the first month of the account. Phases may overlap.</p>
             </div>
         </div>
     );

@@ -24,7 +24,7 @@ export function TemplateFields({ t, error }: { t?: ProjectTemplate | null; error
                 <div className="space-y-1.5">
                     <Label className="text-sm">Months</Label>
                     <Input name="months" type="number" min={MIN_TEMPLATE_MONTHS} max={MAX_TEMPLATE_MONTHS} step={1} required defaultValue={t?.months ?? 3} />
-                    <p className="text-[11px] text-muted-foreground">The project runs start + this many months.</p>
+                    <p className="text-[11px] text-muted-foreground">The account runs start + this many months.</p>
                 </div>
                 <div className="space-y-1.5 md:col-span-4">
                     <Label className="text-sm">One line on what it is for</Label>
@@ -40,7 +40,7 @@ export function TemplateFields({ t, error }: { t?: ProjectTemplate | null; error
 
             <div className="rounded-lg border p-3 md:p-4">
                 <p className="text-sm font-medium">Phases</p>
-                <p className="text-xs text-muted-foreground">The timeline a project made from this template starts with; month 1 is its first month. May be empty.</p>
+                <p className="text-xs text-muted-foreground">The timeline an account made from this template starts with; month 1 is its first month. May be empty.</p>
                 <PhaseRows initial={t?.phases ?? DEFAULT_TEMPLATE_PHASES} termMonths={t?.months} className="mt-3" />
             </div>
         </>

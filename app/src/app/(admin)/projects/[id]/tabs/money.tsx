@@ -202,7 +202,7 @@ function Invoices({ v }: { v: ContractView }) {
                 Invoices {c.billing.cadence === "monthly" ? "· one per month" : `· ${cadenceLabel(c.billing.cadence)}`}
             </h2>
             {linkedInvoices.length === 0 ? (
-                <p className="mt-2 text-xs text-muted-foreground">No invoices on this project yet.</p>
+                <p className="mt-2 text-xs text-muted-foreground">No invoices on this account yet.</p>
             ) : (
                 <ul className="mt-2 divide-y text-sm">
                     {linkedInvoices.map((i) => {
@@ -358,7 +358,7 @@ function Costs({ v }: { v: ContractView }) {
                     </p>
                 ) : null}
             </div>
-            <p className="text-xs text-muted-foreground">What this project costs besides people&apos;s time: ad spend paid for the client, freelancers, software.</p>
+            <p className="text-xs text-muted-foreground">What this account costs besides people&apos;s time: ad spend paid for the client, freelancers, software.</p>
 
             {c.costs.length === 0 ? (
                 <p className="mt-3 text-xs text-muted-foreground">No costs recorded yet.</p>

@@ -251,7 +251,7 @@ export async function createContractWithTasksAction(formData: FormData) {
             const created = await createClient({ name: newClientName, status: "onboarding", dealOwner: accountManager });
             clientName = created.name;
             createdClient = true;
-            await recordAudit({ entity: "client", entityId: created.id, kind: "create", summary: `Client ${created.name} created (onboarding) with project ${name}`, actor });
+            await recordAudit({ entity: "client", entityId: created.id, kind: "create", summary: `Client ${created.name} created (onboarding) with account ${name}`, actor });
         }
     }
     if (!clientName) back("client");
@@ -299,7 +299,7 @@ export async function createContractWithTasksAction(formData: FormData) {
         entity: "contract",
         entityId: c.id,
         kind: "create",
-        summary: `Project ${c.code} created for ${c.clientName}${createdClient ? " (new client)" : ""} · ${scopeSummary(requirements)}${
+        summary: `Account ${c.code} created for ${c.clientName}${createdClient ? " (new client)" : ""} · ${scopeSummary(requirements)}${
             isSigned(c) ? ` · signed ${signedAt} · ${plural(created.length, "task")} generated for ${plural(months.length, "month")}` : " · draft, tasks appear once signed"
         }`,
         actor,
@@ -411,7 +411,7 @@ export async function updateContractAction(formData: FormData) {
         entity: "contract",
         entityId: id,
         kind: "update",
-        summary: "Project details updated",
+        summary: "Account details updated",
         actor: await actorName(formData),
     });
     revalidate(id);
@@ -880,7 +880,7 @@ export async function requestHandoverAction(formData: FormData) {
     await notify({
         kind: "handover_requested",
         title: `Take over ${c.name}?`,
-        body: `${actor} asks ${target.name} to become account manager of ${c.code} (${c.clientName})${note ? ` — ${note}` : ""}. Accept or decline on the project.`,
+        body: `${actor} asks ${target.name} to become account manager of ${c.code} (${c.clientName})${note ? ` — ${note}` : ""}. Accept or decline on the account.`,
         link: `/projects/${id}?tab=setup`,
     });
     revalidateHandover(id);

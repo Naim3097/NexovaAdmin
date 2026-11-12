@@ -50,7 +50,7 @@ function ProjectMeta({ r }: { r: Pick<ProjectStatus, "clientName" | "internal" |
 }
 
 export function ProjectStatusBars({ rows, allTime = false }: { rows: ProjectStatus[]; allTime?: boolean }) {
-    if (rows.length === 0) return <Empty>{allTime ? "No project has tasks yet." : "No project has tasks in this month."}</Empty>;
+    if (rows.length === 0) return <Empty>{allTime ? "No account has tasks yet." : "No account has tasks in this month."}</Empty>;
     return (
         <ul className="divide-y">
             {rows.map((r) => {
@@ -155,14 +155,14 @@ function Count({ n, tone }: { n: number; tone: "bad" | "warn" }) {
 
 /** `doneLabel` heads the done/planned column: "Done this month", "Done · Dec 2026" or "Done · all time". */
 export function BehindTable({ rows, doneLabel = "Done this month" }: { rows: BehindRow[]; doneLabel?: string }) {
-    if (rows.length === 0) return <Empty>No project is behind.</Empty>;
+    if (rows.length === 0) return <Empty>No account is behind.</Empty>;
     return (
         <div className="overflow-x-auto">
             <table className="w-full min-w-[40rem] text-sm">
                 <thead>
                     <tr className="border-b text-left text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                         <th scope="col" className={TH}>
-                            Project
+                            Account
                         </th>
                         <th scope="col" className={cn(TH, "text-right")} title="Open tasks past their due date">
                             Overdue

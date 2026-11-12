@@ -23,7 +23,7 @@ export const FEED_LIMIT = 500;
 
 export const ENTITY_LABEL: Record<ActivityEntity, string> = {
     lead: "Leads",
-    contract: "Projects",
+    contract: "Accounts",
     task: "Tasks",
     invoice: "Invoices",
     content: "Content",

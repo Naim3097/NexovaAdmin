@@ -29,8 +29,8 @@ export function DeliveryView({ data }: { data: DashboardData }) {
             </Section>
             <Section
                 id="projects"
-                title="Status per project"
-                description={`Every project with tasks ${when}, the most overdue first. Internal projects included.`}
+                title="Status per account"
+                description={`Every account with tasks ${when}, the most overdue first. Internal accounts included.`}
                 action={<Legend series={STATUS_SERIES} className="justify-end" />}
             >
                 <ProjectStatusBars rows={snap.projects} allTime={allTime} />
@@ -43,7 +43,7 @@ export function DeliveryView({ data }: { data: DashboardData }) {
                     <ReviewAge rows={snap.reviewAge} />
                 </Section>
             </div>
-            <Section id="behind" title="Behind" description={`The ${BEHIND_ROWS} projects most behind, worst first: late tasks, then blocked, then unfinished ${when}.`}>
+            <Section id="behind" title="Behind" description={`The ${BEHIND_ROWS} accounts most behind, worst first: late tasks, then blocked, then unfinished ${when}.`}>
                 <BehindTable rows={snap.behind} doneLabel={doneLabel} />
             </Section>
         </>

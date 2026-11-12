@@ -118,7 +118,7 @@ export function ClientTab({ v }: { v: ContractView }) {
                             <dd className="font-medium">{client.dealOwner || "—"}</dd>
                         </div>
                         <div>
-                            <dt className="text-xs text-muted-foreground">Account manager on this project</dt>
+                            <dt className="text-xs text-muted-foreground">Account manager on this account</dt>
                             <dd className="font-medium">{c.accountManager || "—"}</dd>
                         </div>
                         <div>
@@ -136,10 +136,10 @@ export function ClientTab({ v }: { v: ContractView }) {
 
             <section className={CARD}>
                 <h2 className="text-sm font-medium">
-                    Other projects with {client.name} <span className="tabular-nums text-muted-foreground">· {clientContracts.length}</span>
+                    Other accounts with {client.name} <span className="tabular-nums text-muted-foreground">· {clientContracts.length}</span>
                 </h2>
                 {clientContracts.length === 0 ? (
-                    <p className="mt-1 text-sm text-muted-foreground">This is the only project on file for this client.</p>
+                    <p className="mt-1 text-sm text-muted-foreground">This is the only account on file for this client.</p>
                 ) : (
                     <ul className="mt-2 divide-y text-sm">
                         {clientContracts.map((x) => {

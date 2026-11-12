@@ -88,7 +88,7 @@ function AccountManager({ v }: { v: ContractView }) {
     } else if (isHandoverTarget && handover) {
         body = (
             <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-                <p className="text-sm font-medium">{handover.by || c.accountManager} asked you to take over this project</p>
+                <p className="text-sm font-medium">{handover.by || c.accountManager} asked you to take over this account</p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
                     {since}
                     {handover.note ? ` · ${handover.note}` : ""}
@@ -136,7 +136,7 @@ function AccountManager({ v }: { v: ContractView }) {
     } else if (isAccountManager) {
         body =
             others.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No other active team member to transfer this project to.</p>
+                <p className="text-sm text-muted-foreground">No other active team member to transfer this account to.</p>
             ) : (
                 <>
                     <form action={requestHandoverAction} className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] sm:items-end">
@@ -169,7 +169,7 @@ function AccountManager({ v }: { v: ContractView }) {
     } else {
         body = (
             <div className="text-sm text-muted-foreground">
-                <p>Only the account manager can transfer this project.</p>
+                <p>Only the account manager can transfer this account.</p>
                 {handover ? (
                     <p className="mt-1 text-amber-700 dark:text-amber-400">
                         Transfer to {handover.to} pending since {since}
@@ -189,7 +189,7 @@ function AccountManager({ v }: { v: ContractView }) {
                     <p className="mt-1 text-lg font-semibold">{c.accountManager || <span className="font-normal text-muted-foreground">unassigned</span>}</p>
                     <p className="mt-1 text-xs text-muted-foreground">
                         {c.accountManager
-                            ? "Owns the client, signs off the work and edits the plan; only they can transfer the project."
+                            ? "Owns the client, signs off the work and edits the plan; only they can transfer the account."
                             : "Owns the client, signs off the work and edits the plan; anyone may set the first one."}
                     </p>
                 </div>
@@ -259,7 +259,7 @@ function Details({ v }: { v: ContractView }) {
             <h2 className="text-sm font-medium">Details</h2>
             {c.templateName ? <p className="mt-1 text-xs text-muted-foreground">Started from the {c.templateName} template.</p> : null}
             {internal ? (
-                <p className="mt-1 text-xs text-muted-foreground">Internal project: our own company, no contract and no billing.</p>
+                <p className="mt-1 text-xs text-muted-foreground">Internal account: our own company, no contract and no billing.</p>
             ) : (
             <p className="mt-1 text-xs text-muted-foreground">
                 Reference <span className="text-foreground">{c.reference || "—"}</span>
@@ -327,17 +327,17 @@ function DangerZone({ v }: { v: ContractView }) {
                     <input type="hidden" name="status" value={cancelled ? "active" : "cancelled"} />
                     {asField}
                     <Button type="submit" size="sm" variant={cancelled ? "outline" : "destructive"}>
-                        {cancelled ? "Reactivate project" : "Cancel project"}
+                        {cancelled ? "Reactivate account" : "Cancel account"}
                     </Button>
                     <p className="mt-1 text-xs text-muted-foreground">
-                        {cancelled ? "Sets the project back to active; the stage stays where it was." : "Marks the project cancelled; its tasks and invoices stay as they are."}
+                        {cancelled ? "Sets the account back to active; the stage stays where it was." : "Marks the account cancelled; its tasks and invoices stay as they are."}
                     </p>
                 </form>
                 <form action={deleteContractAction}>
                     <input type="hidden" name="id" value={c.id} />
                     {asField}
                     <Button type="submit" variant="ghost" size="sm" className="text-destructive">
-                        Delete project
+                        Delete account
                     </Button>
                     <p className="mt-1 text-xs text-muted-foreground">Detaches its invoices, posts and campaigns; the tasks stay as they are.</p>
                 </form>

@@ -40,7 +40,7 @@ function Deliverables({ v }: { v: ContractView }) {
     /** The months a new row lands in right away: those with tasks already, from this month on. */
     const fillMonths = generatedMonths.filter((m) => m >= thisMonth);
     const fillHint = !signed
-        ? "Its tasks appear once the project is signed."
+        ? "Its tasks appear once the account is signed."
         : fillMonths.length === 0
           ? `No month from ${monthLabel(thisMonth)} has tasks yet, so its tasks come with the next month added on the Tasks tab.`
           : `Its tasks are added right away for ${
@@ -243,11 +243,11 @@ function Phases({ v }: { v: ContractView }) {
                         </PendingButton>
                         {error === "phase" ? (
                             <p role="alert" className="text-xs text-destructive md:col-span-5">
-                                That phase would start after the project ends{endYm ? ` (${shortMonth(endYm)})` : ""}.
+                                That phase would start after the account ends{endYm ? ` (${shortMonth(endYm)})` : ""}.
                             </p>
                         ) : null}
                         <p className="text-[11px] text-muted-foreground md:col-span-5">
-                            Counted from the project&apos;s first month{endYm ? ` and clipped to its end (${shortMonth(endYm)})` : ""}. Phases may overlap.
+                            Counted from the account&apos;s first month{endYm ? ` and clipped to its end (${shortMonth(endYm)})` : ""}. Phases may overlap.
                         </p>
                     </form>
                 </details>

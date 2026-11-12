@@ -109,7 +109,7 @@ export default async function OnboardingDetailPage({
                                 {ai.brief}
                             </p>
                             <p className="mt-3 text-xs text-muted-foreground">
-                                Tasks come from the client&apos;s project, not the AI.
+                                Tasks come from the client&apos;s account, not the AI.
                             </p>
                             {ai.generatedAt ? (
                                 <p className="mt-3 text-xs text-muted-foreground">
@@ -283,10 +283,10 @@ export default async function OnboardingDetailPage({
                                         </Link>
                                     </span>
                                 ))}
-                                ; tasks come from the project.
+                                ; tasks come from the account.
                             </>
                         ) : sub.status === "submitted" ? (
-                            "No project for this client yet — accept a quote on the pipeline deal to create one."
+                            "No account for this client yet — accept a quote on the pipeline deal to create one."
                         ) : (
                             "The form is still a draft."
                         )}

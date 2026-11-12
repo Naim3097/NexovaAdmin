@@ -317,14 +317,14 @@ export function buildPipelineSnapshot(
         if (renewsInDays !== null && renewsInDays <= RENEWAL_URGENT_DAYS) {
             reasons.push(
                 renewsInDays < 0
-                    ? `Project ended ${-renewsInDays}d ago — renew or close`
-                    : `Project ends in ${renewsInDays}d`,
+                    ? `Account ended ${-renewsInDays}d ago — renew or close`
+                    : `Account ends in ${renewsInDays}d`,
             );
         } else if (renewsInDays !== null && renewsInDays <= RENEWAL_WINDOW_DAYS) {
-            reasons.push(`Project ends in ${renewsInDays}d`);
+            reasons.push(`Account ends in ${renewsInDays}d`);
         }
         const red = active.filter((x) => x.health === "red");
-        if (red.length) reasons.push(`${red.length} project${red.length === 1 ? "" : "s"} at risk`);
+        if (red.length) reasons.push(`${red.length} account${red.length === 1 ? "" : "s"} at risk`);
         if (awaitingUs > 0) reasons.push(`${awaitingUs} revision${awaitingUs === 1 ? "" : "s"} waiting on us`);
         if (contentQuota > 0 && monthContent.length < contentQuota) {
             reasons.push(`${contentQuota - monthContent.length} of ${contentQuota} content not planned`);

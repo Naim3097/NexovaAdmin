@@ -136,7 +136,7 @@ export function setupChecklist(c: Contract, invoices: Invoice[], today: string):
             ok: linked.length > 0,
             detail: linked.length
                 ? linked.map((i) => `${i.number} · ${i.status}`).join(" · ")
-                : "No invoice linked to this project yet",
+                : "No invoice linked to this account yet",
             urgent: linked.length === 0 && c.status === "active",
         });
     }
@@ -233,12 +233,12 @@ export function clientJobStatus(clientName: string, contracts: Contract[], today
     const base = { active, all };
     if (active.length === 0) {
         if (all.some((c) => c.status === "draft")) {
-            return { ...base, state: "draft", label: "Draft project", tone: "warn" };
+            return { ...base, state: "draft", label: "Draft account", tone: "warn" };
         }
-        return { ...base, state: "none", label: "No project", tone: "bad" };
+        return { ...base, state: "none", label: "No account", tone: "bad" };
     }
     if (active.some((c) => hasEnded(c, today))) {
-        return { ...base, state: "ended", label: "Project ended", tone: "bad" };
+        return { ...base, state: "ended", label: "Account ended", tone: "bad" };
     }
     if (active.some((c) => !c.signedAt)) {
         return { ...base, state: "unsigned", label: "Contract unsigned", tone: "bad" };
@@ -252,7 +252,7 @@ export function clientJobStatus(clientName: string, contracts: Contract[], today
     return {
         ...base,
         state: "active",
-        label: active.length === 1 ? "Active project" : `${active.length} active projects`,
+        label: active.length === 1 ? "Active account" : `${active.length} active accounts`,
         tone: "good",
     };
 }

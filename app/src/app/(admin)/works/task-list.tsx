@@ -113,7 +113,7 @@ export function WorkTable({
                 <thead>
                     <tr className="text-left text-xs text-muted-foreground">
                         <th className="py-1 pr-3 font-medium">Task</th>
-                        {showContract ? <th className="py-1 pr-3 font-medium">Client · project</th> : null}
+                        {showContract ? <th className="py-1 pr-3 font-medium">Client · account</th> : null}
                         <th className="py-1 pr-3 font-medium">Type</th>
                         <th className="py-1 pr-3 font-medium">Channel</th>
                         <th className="py-1 pr-3 font-medium">Month</th>
@@ -153,7 +153,7 @@ export function WorkTable({
                                                 {contract.code}
                                             </Link>
                                         ) : (
-                                            "No project"
+                                            "No account"
                                         )}
                                     </td>
                                 ) : null}
@@ -210,7 +210,7 @@ export function ClientGroups({ groups, today, asQ, showPhase = true, actions }: 
                                             <span className="text-xs text-muted-foreground">AM {cg.contract.accountManager || "—"}</span>
                                         </>
                                     ) : (
-                                        <span className="font-medium text-muted-foreground">No project</span>
+                                        <span className="font-medium text-muted-foreground">No account</span>
                                     )}
                                     <span className="text-xs text-muted-foreground">· {countLabel(cg.works.length, "task")}</span>
                                 </div>

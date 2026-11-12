@@ -77,9 +77,9 @@ export default async function CampaignsPage({
                         Results entered by hand until the Meta, Google and TikTok APIs unfreeze.
                     </p>
                     <p className="text-xs text-muted-foreground">
-                        New items start as a task on a{" "}
+                        New items start as a task on an{" "}
                         <Link href={`/projects${asQ}`} className="underline">
-                            project
+                            account
                         </Link>
                         .
                     </p>
@@ -140,9 +140,9 @@ export default async function CampaignsPage({
                 </div>
                 {campaigns.length === 0 ? (
                     <p className="p-6 text-sm text-muted-foreground">
-                        No campaigns yet. New items start as a task on a{" "}
+                        No campaigns yet. New items start as a task on an{" "}
                         <Link href={`/projects${asQ}`} className="underline">
-                            project
+                            account
                         </Link>
                         .
                     </p>

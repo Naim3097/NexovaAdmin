@@ -88,7 +88,7 @@ const SECTIONS: { label: string; items: NavDef[] }[] = [
         items: [
             { href: "/onboarding", label: "Onboarding", icon: ClipboardList },
             { href: "/settings/clients", label: "Clients", icon: Building2 },
-            { href: "/projects", label: "Projects", icon: ClipboardCheck },
+            { href: "/projects", label: "Accounts", icon: ClipboardCheck },
             { href: "/reports", label: "Reports", icon: BarChart3 },
         ],
     },
@@ -125,7 +125,7 @@ const TAB = {
     myWork: { href: "/my-work", label: "My tasks", icon: ListChecks },
     myClients: { href: "/my-clients", label: "My accounts", icon: Briefcase },
     calendar: { href: "/calendar", label: "Calendar", icon: CalendarDays },
-    contracts: { href: "/projects", label: "Projects", icon: ClipboardCheck },
+    contracts: { href: "/projects", label: "Accounts", icon: ClipboardCheck },
 } satisfies Record<string, NavDef>;
 
 /**

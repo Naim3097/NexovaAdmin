@@ -225,7 +225,7 @@ export default async function AgencyProfilePage() {
                             placeholder="40000"
                         />
                         <p className="text-xs text-muted-foreground">
-                            The Sales dashboard measures projects signed each month against this. Leave empty for none.
+                            The Sales dashboard measures accounts signed each month against this. Leave empty for none.
                         </p>
                     </div>
                 </section>

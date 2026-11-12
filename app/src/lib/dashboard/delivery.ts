@@ -175,7 +175,7 @@ function projectRow(contractId: string, byId: Map<string, Contract>, internal: S
         return {
             id: contractId || "none",
             code: "",
-            name: "No project",
+            name: "No account",
             clientName: sample.clientName,
             accountManager: sample.accountManager,
             internal: internal.has(norm(sample.clientName)),

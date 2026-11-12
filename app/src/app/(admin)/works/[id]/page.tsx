@@ -123,7 +123,7 @@ export default async function WorkDetailPage({
                     {w.clientName}
                     {" · "}
                     <Link href={`/projects/${w.contractId}#works`} className="underline">
-                        {contract ? `${contract.code} · ${contract.name}` : "project"}
+                        {contract ? `${contract.code} · ${contract.name}` : "account"}
                     </Link>
                     {" · "}
                     {monthLabel(w.month)}
@@ -431,7 +431,7 @@ export default async function WorkDetailPage({
                         <Link href={`${LINKED_PATH[w.linked.kind]}/${w.linked.id}`} className="font-medium underline">
                             {LINKED_LABEL[w.linked.kind]}
                         </Link>
-                        <span className="text-muted-foreground"> — this task tracks it under the project; drafting, review and publishing happen there.</span>
+                        <span className="text-muted-foreground"> — this task tracks it under the account; drafting, review and publishing happen there.</span>
                     </p>
                 ) : (
                     <p className="mt-1 text-sm text-muted-foreground">This task is the work item itself.</p>

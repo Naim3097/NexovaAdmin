@@ -88,7 +88,7 @@ export async function createTaskAction(input: {
 }): Promise<QuickResult<{ id: string; title: string }>> {
     const member = await getActingMember(input.as || undefined);
     const c = input.contractId ? await getContractById(input.contractId) : null;
-    if (!c) return { ok: false, reason: "Project not found" };
+    if (!c) return { ok: false, reason: "Account not found" };
     if (!takesTasks(c)) {
         return { ok: false, reason: `${c.name} is not signed or running, so it takes no tasks` };
     }
@@ -101,7 +101,7 @@ export async function createTaskAction(input: {
     const title = String(input.title ?? "").trim().slice(0, 200);
     if (!title) return { ok: false, reason: "Give the task a title" };
     if (!YMD.test(input.dueDate)) return { ok: false, reason: "Pick a due date" };
-    if (c.startDate && input.dueDate < c.startDate) return { ok: false, reason: `Due before the project starts (${c.startDate})` };
+    if (c.startDate && input.dueDate < c.startDate) return { ok: false, reason: `Due before the account starts (${c.startDate})` };
     const month = input.dueDate.slice(0, 7);
 
     const team = await listTeamMembers();
@@ -145,7 +145,7 @@ export async function createTaskAction(input: {
         entity: "work",
         entityId: w.id,
         kind: "create",
-        summary: `Task added on the project: ${w.title} (${LINE_TYPE_LABEL[type]}, due ${w.dueDate}) under ${c.code}`,
+        summary: `Task added on the account: ${w.title} (${LINE_TYPE_LABEL[type]}, due ${w.dueDate}) under ${c.code}`,
         actor: by,
     });
     revalidateTask(w.id, c.id);

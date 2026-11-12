@@ -98,7 +98,7 @@ export default async function SeoArticleDetailPage({
                 </p>
                 {task ? (
                     <p className="mt-1 text-xs text-muted-foreground">
-                        Project task:{" "}
+                        Account task:{" "}
                         <Link href={`/works/${task.id}`} className="underline">
                             {task.title}
                         </Link>

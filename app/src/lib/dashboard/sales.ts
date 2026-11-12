@@ -286,7 +286,7 @@ export function salesSnapshot(input: SalesInput): SalesSnapshot {
         : targetMyr > 0
           ? `${closedPct}% of ${fmtMyrShort(targetMyr)}`
           : closed.length
-            ? `${plural(closed.length, "project")} signed`
+            ? `${plural(closed.length, "account")} signed`
             : "nothing signed yet";
 
     const tiles: SalesTile[] = [

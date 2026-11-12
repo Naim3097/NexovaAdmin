@@ -271,7 +271,7 @@ export function buildMoneySnapshot(input: MoneyInput): MoneySnapshot {
             key: "to-sign",
             label: "To sign",
             value: fmtMyrShort(toSignMyr),
-            hint: toSign.length ? `${n(toSign.length, "project")} unsigned` : "all signed",
+            hint: toSign.length ? `${n(toSign.length, "account")} unsigned` : "all signed",
             health: toSign.length ? "amber" : "green",
             href: "/projects?stage=created",
             count: toSign.length,

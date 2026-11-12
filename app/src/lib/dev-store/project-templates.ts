@@ -178,7 +178,7 @@ export async function getProjectTemplateById(id: string): Promise<ProjectTemplat
 
 export async function updateProjectTemplate(id: string, patch: ProjectTemplatePatch): Promise<ProjectTemplate> {
     const existing = await getProjectTemplateById(id);
-    if (!existing) throw new Error(`Project template ${id} not found`);
+    if (!existing) throw new Error(`Account template ${id} not found`);
     const next = normalizeProjectTemplate({ ...existing, ...patch, id, updatedAt: new Date().toISOString() });
     await write(next);
     return next;

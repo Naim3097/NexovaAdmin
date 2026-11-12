@@ -115,7 +115,7 @@ export default async function SettingsPage() {
             label: "Templates",
             count: `${projectTemplates.length} template${projectTemplates.length === 1 ? "" : "s"}`,
             description:
-                "Saved starts for a project: months, deliverables, phases. New project offers Custom or one of these.",
+                "Saved starts for an account: months, deliverables, phases. New account offers Custom or one of these.",
             icon: LayoutTemplate,
         },
         {

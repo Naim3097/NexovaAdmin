@@ -37,7 +37,7 @@ function SignFirst({ v }: { v: ContractView }) {
             <p className="mt-1 text-sm text-muted-foreground">
                 {internal
                     ? "Tasks appear once management approves this brief. Until then it is only a plan."
-                    : "Tasks appear once the contract is signed. Until then this project is only a plan."}
+                    : "Tasks appear once the contract is signed. Until then this account is only a plan."}
             </p>
             <ul className="mt-3 space-y-1 text-sm">
                 <li>
@@ -93,7 +93,7 @@ function PhasesBar({ v }: { v: ContractView }) {
     return (
         <nav aria-label="Phases" className="flex flex-wrap items-center gap-1.5 text-xs">
             {phases.length === 0 ? (
-                <span className="text-muted-foreground">No phases on this project yet.</span>
+                <span className="text-muted-foreground">No phases on this account yet.</span>
             ) : (
                 phases.map((ph, i) => {
                     const list = phaseWorks(ph.key, ph.name);

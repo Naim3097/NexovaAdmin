@@ -35,7 +35,7 @@ export default async function ProjectTemplatePage({ params, searchParams }: { pa
                 <h1 className="mt-1 text-2xl font-semibold md:text-3xl">{t.name}</h1>
                 <p className="text-sm text-muted-foreground">
                     {t.months} month{t.months === 1 ? "" : "s"} · {requirementsLabel(t.requirements) || "no deliverables"} ·{" "}
-                    {templatePhasesLabel(t.phases) || "no phases"}. Used as the start of a new project; the project is then edited on its own.
+                    {templatePhasesLabel(t.phases) || "no phases"}. Used as the start of a new account; the account is then edited on its own.
                 </p>
             </div>
 
@@ -52,7 +52,7 @@ export default async function ProjectTemplatePage({ params, searchParams }: { pa
                 <TemplateFields t={t} error={sp.error} />
                 <div className="flex flex-wrap items-center justify-between gap-2">
                     <Button variant="outline" nativeButton={false} render={<Link href={`/projects/new?template=${t.id}`} />}>
-                        New project from this
+                        New account from this
                     </Button>
                     <PendingButton pendingLabel="Saving…">Save changes</PendingButton>
                 </div>
@@ -62,7 +62,7 @@ export default async function ProjectTemplatePage({ params, searchParams }: { pa
                 <form action={deleteProjectTemplateAction} className="rounded-lg border border-destructive/40 bg-card p-4 md:p-6">
                     <input type="hidden" name="id" value={t.id} />
                     <h2 className="text-sm font-medium text-destructive">Delete template</h2>
-                    <p className="mt-1 text-xs text-muted-foreground">Projects already made from it are not touched.</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Accounts already made from it are not touched.</p>
                     <Button type="submit" variant="destructive" size="sm" className="mt-3">
                         Delete {t.name}
                     </Button>

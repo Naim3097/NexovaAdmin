@@ -304,11 +304,11 @@ function CardBody({ l, live }: { l: BoardLead; live: boolean }) {
                     {l.status === "won" ? (
                         l.contract ? (
                             <Link href={`/projects/${l.contract.id}`} draggable={false} className="block font-medium text-primary hover:underline">
-                                Project {l.contract.code} →
+                                Account {l.contract.code} →
                             </Link>
                         ) : (
                             <Link href={`/projects/new?client=${encodeURIComponent(l.clientName)}`} draggable={false} className="block font-medium text-primary hover:underline">
-                                Create project
+                                Create account
                             </Link>
                         )
                     ) : null}

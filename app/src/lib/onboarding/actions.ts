@@ -200,7 +200,7 @@ export async function submitOnboardingAction(
     await notify({
         kind: "onboarding_submitted",
         title: `Onboarding submitted: ${sub.clientName}`,
-        body: "Review the AI brief and convert to a project when ready.",
+        body: "Review the AI brief and convert to an account when ready.",
         link: `/onboarding/${sub.id}`,
     });
     revalidatePath(`/onboarding/${sub.id}`);

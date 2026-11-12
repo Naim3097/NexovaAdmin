@@ -120,7 +120,7 @@ export default async function ContentDetailPage({
                 </p>
                 {task ? (
                     <p className="mt-1 text-xs text-muted-foreground">
-                        Project task:{" "}
+                        Account task:{" "}
                         <Link href={`/works/${task.id}`} className="underline">
                             {task.title}
                         </Link>
@@ -189,7 +189,7 @@ export default async function ContentDetailPage({
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <Label className="text-sm">Project (optional)</Label>
+                        <Label className="text-sm">Account (optional)</Label>
                         <Select name="contractId" defaultValue={post.contractId ?? "none"}>
                             <SelectTrigger className="h-10">
                                 <SelectValue />

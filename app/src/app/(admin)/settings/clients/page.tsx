@@ -50,9 +50,9 @@ export default async function SettingsClientsPage({ searchParams }: { searchPara
                     <h1 className="mt-1 text-2xl font-semibold md:text-3xl">Clients</h1>
                     <p className="text-sm text-muted-foreground">
                         {clients.length} record{clients.length === 1 ? "" : "s"}
-                        {scoped ? " — the clients of the projects you are on" : ""}; the badge says whether we have a signed contract with them — see{" "}
+                        {scoped ? " — the clients of the accounts you are on" : ""}; the badge says whether we have a signed contract with them — see{" "}
                         <Link href="/projects" className="underline">
-                            Projects
+                            Accounts
                         </Link>
                         .
                     </p>
@@ -145,7 +145,7 @@ export default async function SettingsClientsPage({ searchParams }: { searchPara
                                             .reduce((s, i) => s + computeTotals(i).total, 0);
                                         return (
                                             <p className="text-xs text-muted-foreground tabular-nums">
-                                                {my.length} project{my.length === 1 ? "" : "s"} · {my.filter((x) => x.signedAt).length} signed ·{" "}
+                                                {my.length} account{my.length === 1 ? "" : "s"} · {my.filter((x) => x.signedAt).length} signed ·{" "}
                                                 {my.filter((x) => x.status === "active").length} active{c.internal ? " · internal, no billing" : ` · paid RM ${Math.round(paid).toLocaleString("en-MY")} to date`}
                                             </p>
                                         );

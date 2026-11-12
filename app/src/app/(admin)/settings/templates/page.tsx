@@ -28,9 +28,9 @@ export default async function SettingsTemplatesPage({ searchParams }: { searchPa
                 </Link>
                 <h1 className="mt-1 text-2xl font-semibold md:text-3xl">Templates</h1>
                 <p className="text-sm text-muted-foreground">
-                    {templates.length} template{templates.length === 1 ? "" : "s"}. A template is a saved start for a project: how many months, what gets
-                    delivered, which phases. New project offers Custom or a template; everything stays editable on the project. Changing a template
-                    never touches projects already made from it.
+                    {templates.length} template{templates.length === 1 ? "" : "s"}. A template is a saved start for an account: how many months, what gets
+                    delivered, which phases. New account offers Custom or a template; everything stays editable on the account. Changing a template
+                    never touches accounts already made from it.
                 </p>
             </div>
 
@@ -74,7 +74,7 @@ export default async function SettingsTemplatesPage({ searchParams }: { searchPa
                                 </div>
                                 <div className="flex shrink-0 items-center gap-2">
                                     <Button size="sm" variant="outline" nativeButton={false} render={<Link href={`/projects/new?template=${t.id}`} />}>
-                                        New project from this
+                                        New account from this
                                     </Button>
                                     <Link href={`/settings/templates/${t.id}`} className="text-sm underline underline-offset-4">
                                         Edit

@@ -68,12 +68,12 @@ function Contracted({ m, data }: { m: MoneySnapshot; data: DashboardData }) {
     const { points, notBilledMyr, backlogMyr, horizon, openEnded } = m.chart;
     const any = points.some((p) => p.values.contracted || p.values.billed || p.values.collected);
     const span = m.allTime
-        ? `From the first month with a project or an invoice to ${CHART_AHEAD} months ahead.`
+        ? `From the first month with an account or an invoice to ${CHART_AHEAD} months ahead.`
         : `Six months to ${shortMonthLabel(m.through)} and ${CHART_AHEAD} after.`;
     return (
         <Section
             title="Contracted vs billed vs collected"
-            description={`What the projects say we should bill each month, against what went out and what came in. ${span} Before SST, so the lines meet the contract values; months ahead show the contract only, dashed. Click a month to read the page on it.`}
+            description={`What the accounts say we should bill each month, against what went out and what came in. ${span} Before SST, so the lines meet the contract values; months ahead show the contract only, dashed. Click a month to read the page on it.`}
             action={FINANCES}
         >
             {any ? (
@@ -98,7 +98,7 @@ function Contracted({ m, data }: { m: MoneySnapshot; data: DashboardData }) {
                                 <dt className="text-xs text-muted-foreground">Backlog · to {shortMonthLabel(horizon)}</dt>
                                 <dd
                                     className="font-semibold tabular-nums"
-                                    title={openEnded ? `${plural(openEnded, "open-ended retainer")} counted to ${shortMonthLabel(horizon)}` : `Contracted after ${throughLabel(m)}, to the end of each active project`}
+                                    title={openEnded ? `${plural(openEnded, "open-ended retainer")} counted to ${shortMonthLabel(horizon)}` : `Contracted after ${throughLabel(m)}, to the end of each active account`}
                                 >
                                     {fmtMyrShort(backlogMyr)}
                                 </dd>
@@ -107,7 +107,7 @@ function Contracted({ m, data }: { m: MoneySnapshot; data: DashboardData }) {
                     </div>
                 </>
             ) : (
-                <Empty>No projects or invoices in this window yet.</Empty>
+                <Empty>No accounts or invoices in this window yet.</Empty>
             )}
         </Section>
     );
@@ -144,27 +144,27 @@ function Margin({ m }: { m: MoneySnapshot }) {
     const through = throughLabel(m);
     return (
         <Section
-            title="Margin by project"
-            description={`Billed to date (before SST), less people cost and other costs, through ${through}. ${m.allTime ? "Running and finished projects" : "Running projects"}; thinnest margin first.`}
+            title="Margin by account"
+            description={`Billed to date (before SST), less people cost and other costs, through ${through}. ${m.allTime ? "Running and finished accounts" : "Running accounts"}; thinnest margin first.`}
             action={
                 <Link href="/projects" className="text-xs underline">
-                    Projects
+                    Accounts
                 </Link>
             }
         >
             {rows.length === 0 ? (
-                <Empty>{m.allTime ? "No signed projects with a real client yet." : "No running projects with a real client."}</Empty>
+                <Empty>{m.allTime ? "No signed accounts with a real client yet." : "No running accounts with a real client."}</Empty>
             ) : (
                 <div className="-mx-2 overflow-x-auto px-2">
                     <table className="w-full min-w-[640px] text-sm">
                         <thead>
                             <tr className="border-b text-left text-xs text-muted-foreground">
-                                <th className={TH}>Project</th>
+                                <th className={TH}>Account</th>
                                 <th className={cn(TH, NUM)}>Revenue</th>
                                 <th className={cn(TH, NUM)} title="Planned hours × each person's cost rate">
                                     People
                                 </th>
-                                <th className={cn(TH, NUM)} title="Ad spend, freelancers, software and other costs on the project">
+                                <th className={cn(TH, NUM)} title="Ad spend, freelancers, software and other costs on the account">
                                     Other costs
                                 </th>
                                 <th className={cn(TH, NUM)}>Margin</th>
@@ -196,7 +196,7 @@ function Margin({ m }: { m: MoneySnapshot }) {
                                     </td>
                                     <td className={cn(TD, NUM)}>{fmtMyrWhole(r.peopleMyr)}</td>
                                     <td className={cn(TD, NUM)}>
-                                        <Link href={r.href} className={cn("hover:underline", !r.otherMyr && "text-muted-foreground")} title="Add or check costs on the project's Contract tab">
+                                        <Link href={r.href} className={cn("hover:underline", !r.otherMyr && "text-muted-foreground")} title="Add or check costs on the account's Contract tab">
                                             {r.otherMyr ? fmtMyrWhole(r.otherMyr) : "—"}
                                         </Link>
                                     </td>
@@ -218,7 +218,7 @@ function Margin({ m }: { m: MoneySnapshot }) {
                 </Link>
                 ). Other costs are added on the{" "}
                 <Link href="/projects" className="underline">
-                    project&rsquo;s
+                    account&rsquo;s
                 </Link>{" "}
                 Contract tab. Green from {MARGIN_GOOD_PCT}%, amber from {MARGIN_WATCH_PCT}%.
                 {unrated.length ? (

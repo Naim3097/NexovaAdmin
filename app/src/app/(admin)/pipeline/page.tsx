@@ -87,7 +87,7 @@ export default async function PipelinePage({ searchParams }: { searchParams: Pro
                 <div>
                     <h1 className="text-2xl font-semibold md:text-3xl">Pipeline</h1>
                     <p className="text-sm text-muted-foreground">
-                        Drag a deal to the next stage (or to Won / Lost); price it on a quote, and once won the account manager creates the project.
+                        Drag a deal to the next stage (or to Won / Lost); price it on a quote, and once won the account manager creates the account.
                     </p>
                 </div>
                 <div className="rounded-md border bg-card px-3 py-2 text-sm">

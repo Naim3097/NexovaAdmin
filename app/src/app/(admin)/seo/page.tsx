@@ -67,9 +67,9 @@ export default async function SeoPage({ searchParams }: { searchParams: Promise<
                         Brief → outline → draft → review → published, kept apart from the social calendar.
                     </p>
                     <p className="text-xs text-muted-foreground">
-                        New items start as a task on a{" "}
+                        New items start as a task on an{" "}
                         <Link href={`/projects${asQ}`} className="underline">
-                            project
+                            account
                         </Link>
                         .
                     </p>
@@ -78,9 +78,9 @@ export default async function SeoPage({ searchParams }: { searchParams: Promise<
 
             {articles.length === 0 ? (
                 <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
-                    No articles yet. New items start as a task on a{" "}
+                    No articles yet. New items start as a task on an{" "}
                     <Link href={`/projects${asQ}`} className="underline">
-                        project
+                        account
                     </Link>
                     .
                 </div>

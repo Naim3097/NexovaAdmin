@@ -1070,7 +1070,7 @@ async function main() {
         { name: "Tropicor", status: "active", closer: "Yusuf", industry: "Consumer goods", notes: "Campaign management.", since: ago(SIGNED.tropicor), checkIn: 6, checkInNote: "Weekly ads call: ROAS 3.1 on Meta; testing new gifting search terms on Google." },
         // History: a paused retainer and a churned one-off (fictional names).
         { name: "Sutera Batik Studio", status: "paused", closer: "Yusuf", industry: "Fashion retail", notes: "Past client: social media retainer, paused.", since: ago(SIGNED.sutera), checkIn: 95, checkInNote: "Paused until the next Raya collection is ready." },
-        { name: "Pak Long Kopitiam", status: "churned", closer: "Naim", industry: "Food & beverage", notes: "Past client: website and menu revamp.", since: ago(SIGNED.paklong), checkIn: 70, checkInNote: "Project closed. Final invoice still unpaid; owner not answering." },
+        { name: "Pak Long Kopitiam", status: "churned", closer: "Naim", industry: "Food & beverage", notes: "Past client: website and menu revamp.", since: ago(SIGNED.paklong), checkIn: 70, checkInNote: "Account closed. Final invoice still unpaid; owner not answering." },
     ];
     for (const c of CLIENTS) {
         const slug = c.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");

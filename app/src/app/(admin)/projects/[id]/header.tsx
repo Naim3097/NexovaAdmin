@@ -43,7 +43,7 @@ export function ContractHeader({ v }: { v: ContractView }) {
         <header className="rounded-lg border bg-card p-4 md:p-6">
             <div className="flex flex-wrap items-start justify-between gap-2">
                 <Link href={`/projects${v.asQ}`} className="text-sm text-muted-foreground hover:underline">
-                    Back to projects
+                    Back to accounts
                 </Link>
                 <div className="text-right">
                     <ActingAs members={v.activeTeam} current={v.actor} linkedMember={v.linked?.name ?? null} makeHref={(n) => tabHref(tab, { as: n })} />
@@ -136,7 +136,7 @@ export function ContractHeader({ v }: { v: ContractView }) {
 
             {/* Tabs + the everyday actions */}
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-3">
-                <nav aria-label="Project sections" className="flex flex-wrap items-center gap-1 text-xs">
+                <nav aria-label="Account sections" className="flex flex-wrap items-center gap-1 text-xs">
                     {TABS.filter((t) => !v.internal || t.key !== "money").map((t) => (
                         <Link key={t.key} href={tabHref(t.key)} aria-current={tab === t.key ? "page" : undefined} className={cn(TAB_LINK, tab === t.key ? TAB_ACTIVE : "hover:bg-accent")}>
                             {t.label}

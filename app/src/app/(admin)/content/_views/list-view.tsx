@@ -70,7 +70,7 @@ export async function ContentListView({ kind, params: sp }: { kind: ContentKind;
                     <h1 className="text-2xl font-semibold md:text-3xl">{label}</h1>
                     <p className="text-sm text-muted-foreground">{CONTENT_KIND_BLURB[kind]}</p>
                     <p className="text-xs text-muted-foreground">
-                        Added on the project: each {CONTENT_KIND_TASK[kind]} task brings its post here.
+                        Added on the account: each {CONTENT_KIND_TASK[kind]} task brings its post here.
                     </p>
                 </div>
                 <ContentViewLinks kind={kind} current="list" as={sp.as} />
@@ -115,7 +115,7 @@ export async function ContentListView({ kind, params: sp }: { kind: ContentKind;
                 {filtered.length === 0 ? (
                     <p className="p-6 text-sm text-muted-foreground">
                         {posts.length === 0
-                            ? `No ${label.toLowerCase()} yet. Add a ${CONTENT_KIND_TASK[kind]} task on a project.`
+                            ? `No ${label.toLowerCase()} yet. Add a ${CONTENT_KIND_TASK[kind]} task on an account.`
                             : "No posts match the current filters."}
                     </p>
                 ) : (

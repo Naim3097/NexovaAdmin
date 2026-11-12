@@ -166,7 +166,7 @@ export function TasksSection({ v }: { v: ContractView }) {
                             ]}
                         />
                     ) : (
-                        <span className="text-xs text-muted-foreground">No phases on this project yet.</span>
+                        <span className="text-xs text-muted-foreground">No phases on this account yet.</span>
                     )}
                 </div>
                 {group === "phase" && selectedPhase ? (
@@ -194,7 +194,7 @@ export function TasksSection({ v }: { v: ContractView }) {
                         <Link href={href({ view: "calendar", cm: thisMonth })} className="ml-1 rounded-md border px-2 py-1 hover:bg-accent">
                             Today
                         </Link>
-                        <span className="ml-2 text-muted-foreground">Tasks on their planned day (deadline shown when it differs), plus this project&apos;s invoice and payment dates. Drag a task to replan it.</span>
+                        <span className="ml-2 text-muted-foreground">Tasks on their planned day (deadline shown when it differs), plus this account&apos;s invoice and payment dates. Drag a task to replan it.</span>
                     </div>
                     <CalendarGrid year={calYear} month={calMonth} items={calItems} today={today} compact actor={calActor} asParam={asParam} tasks={calTasks} perDay={calPerDay} />
                 </div>
@@ -302,11 +302,11 @@ export function TasksSection({ v }: { v: ContractView }) {
                     </>
                 ) : takesNewTasks ? (
                     <span>
-                        New tasks come from the deliverables. {c.accountManager || "The account manager"}, management or the people on this project add extra
+                        New tasks come from the deliverables. {c.accountManager || "The account manager"}, management or the people on this account add extra
                         ones here.
                     </span>
                 ) : (
-                    <span>New tasks come from the deliverables. A closed project takes no new tasks.</span>
+                    <span>New tasks come from the deliverables. A closed account takes no new tasks.</span>
                 )}
             </div>
         </section>
