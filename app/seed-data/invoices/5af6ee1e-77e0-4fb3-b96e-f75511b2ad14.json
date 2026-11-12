@@ -1,0 +1,31 @@
+{
+  "id": "5af6ee1e-77e0-4fb3-b96e-f75511b2ad14",
+  "number": "INV-2026-0045",
+  "clientName": "Enfrasys",
+  "contractId": "d574b50b-00f3-4986-863a-ce22efad7c2e",
+  "status": "sent",
+  "issueDate": "2026-11-09",
+  "dueDate": "2026-11-23",
+  "items": [
+    {
+      "id": "37f7ffe1-9307-4ecf-9460-682b326d4198",
+      "description": "Enfrasys — content creation — 2026-11",
+      "details": "CON-2026-0010",
+      "quantity": 1,
+      "unitPriceMyr": 5500
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "createdAt": "2026-11-09T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.682Z",
+  "paidAt": null,
+  "paymentProvider": null,
+  "paymentLink": null,
+  "paymentExternalId": null,
+  "paymentMeta": {},
+  "paymentLinkCreatedAt": null
+}

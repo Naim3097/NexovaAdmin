@@ -37,7 +37,8 @@ import {
     type Campaign,
 } from "@/lib/data/campaigns";
 import { listContentPosts, type ContentPost } from "@/lib/data/content";
-import { listClients } from "@/lib/data/clients";
+import { activeProjectNames, clientMonthlyMyr } from "@/lib/clients/revenue";
+import { clientContentQuota } from "@/lib/clients/quota";
 import {
     listSeoArticles,
     type SeoArticle,
@@ -439,23 +440,26 @@ export type ClientMonthlyReport = {
      * calendar month.
      */
     contentDelivered: ContentPost[];
-    /** Chargeable extras beyond the client's plan this month. */
+    /**
+     * Work beyond what the client's projects promise this month: visuals over
+     * the monthly content quota and revisions past the client's limit. Counts
+     * only — extras are not priced on the client record any more; the account
+     * manager agrees any charge with the client.
+     */
     extras: {
         contentCount: number;
         revisionCount: number;
-        contentPrice: number;
-        revisionPrice: number;
-        contentCharge: number;
-        revisionCharge: number;
-        total: number;
     };
-    /** Monthly billing = fixed retainer + extras. */
+    /**
+     * Monthly billing, read off the client's ACTIVE projects: the sum of their
+     * monthly billing and the content a month their deliverables promise.
+     */
     billing: {
-        packageName: string;
+        /** Names of the active projects (what used to be the package name). */
+        projects: string[];
         retainer: number;
         includedContents: number;
         deliveredContents: number;
-        extrasTotal: number;
         total: number;
     };
     seoArticlesPublished: SeoArticle[];
@@ -480,25 +484,16 @@ export async function buildClientMonthlyReport(
     clientName: string,
     monthKey: string,
 ): Promise<ClientMonthlyReport> {
-    const [
-        campaigns,
-        contracts,
-        works,
-        invoices,
-        leads,
-        posts,
-        articles,
-        clients,
-    ] = await Promise.all([
-        listCampaigns(),
-        listContracts(),
-        listWorks(),
-        listInvoices(),
-        listLeads(),
-        listContentPosts(),
-        listSeoArticles(),
-        listClients(),
-    ]);
+    const [campaigns, contracts, works, invoices, leads, posts, articles] =
+        await Promise.all([
+            listCampaigns(),
+            listContracts(),
+            listWorks(),
+            listInvoices(),
+            listLeads(),
+            listContentPosts(),
+            listSeoArticles(),
+        ]);
 
     const monthStart = `${monthKey}-01`;
     const monthEnd = lastDayOfMonth(monthKey);
@@ -629,17 +624,16 @@ export async function buildClientMonthlyReport(
         )
         .sort(bySequence);
 
-    // Chargeable extras: VISUALS beyond the monthly quota (carousel = several
-    // visuals, single = 1) + revisions beyond the limit, priced from the
-    // client's per-extra rates. Exact overage: total visuals used − quota.
-    const clientCfg = clients.find((c) => isClient(c.name));
+    // Extras: VISUALS beyond the monthly quota the client's projects promise
+    // (carousel = several visuals, single = 1) + revisions beyond the client's
+    // limit. Counts only. Exact overage: total visuals used − quota.
     const monthContent = posts.filter(
         (p) => isClient(p.clientName) && p.planMonth === monthKey,
     );
     const monthVisuals = monthContent
         .filter((p) => p.status !== "archived")
         .reduce((sum, p) => sum + Math.max(1, p.visualCount || 1), 0);
-    const quota = clientCfg?.monthlyContentQuota ?? 0;
+    const quota = clientContentQuota(clientName, contracts);
     const extraContentCount =
         quota > 0
             ? Math.max(0, monthVisuals - quota)
@@ -650,31 +644,21 @@ export async function buildClientMonthlyReport(
         (n, p) => n + (p.billableRevisions || 0),
         0,
     );
-    const contentPrice = clientCfg?.extraContentPrice ?? 0;
-    const revisionPrice = clientCfg?.extraRevisionPrice ?? 0;
     const extras = {
         contentCount: extraContentCount,
         revisionCount: extraRevisionCount,
-        contentPrice,
-        revisionPrice,
-        contentCharge: +(extraContentCount * contentPrice).toFixed(2),
-        revisionCharge: +(extraRevisionCount * revisionPrice).toFixed(2),
-        total: +(
-            extraContentCount * contentPrice +
-            extraRevisionCount * revisionPrice
-        ).toFixed(2),
     };
 
-    const retainer = clientCfg?.monthlyRetainerMyr ?? 0;
+    // Billing comes off the active projects: their monthly billing summed.
+    const retainer = clientMonthlyMyr(clientName, contracts);
     const billing = {
-        packageName: clientCfg?.packageName ?? "",
+        projects: activeProjectNames(clientName, contracts),
         retainer,
-        includedContents: clientCfg?.monthlyContentQuota ?? 0,
+        includedContents: quota,
         deliveredContents: monthContent.filter(
             (p) => p.status !== "archived" && hasOutput(p),
         ).length,
-        extrasTotal: extras.total,
-        total: +(retainer + extras.total).toFixed(2),
+        total: retainer,
     };
     const seoArticlesPublished = articles.filter(
         (a) =>

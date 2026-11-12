@@ -1,0 +1,49 @@
+{
+  "id": "887a23f4-f603-4074-82ab-6fd5c518660e",
+  "contractId": "d574b50b-00f3-4986-863a-ce22efad7c2e",
+  "clientName": "Enfrasys",
+  "accountManager": "Izzad",
+  "plannerLineId": "req:custom:2026-11:3:1",
+  "addendumVersion": 0,
+  "type": "custom",
+  "title": "Kickoff workshop",
+  "channel": "Workshop",
+  "month": "2026-11",
+  "phaseKey": "kickoff",
+  "phaseName": "Kickoff",
+  "dueDate": "2026-11-10",
+  "defaultDueDate": "2026-11-10",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "am",
+      "member": "Naim",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "none",
+  "milestone": false,
+  "linked": null,
+  "startedAt": "2026-11-05T06:27:03.731Z",
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": "2026-11-10T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-11-03T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.941Z"
+}

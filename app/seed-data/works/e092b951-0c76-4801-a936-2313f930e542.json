@@ -1,0 +1,52 @@
+{
+  "id": "e092b951-0c76-4801-a936-2313f930e542",
+  "contractId": "ee0609d4-3179-4475-8f59-8d96c5c3edb4",
+  "clientName": "Rouang",
+  "accountManager": "Izzad",
+  "plannerLineId": "req:static:2026-10:0:3",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Carousel: Project showcase — Shah Alam terrace",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-13",
+  "defaultDueDate": "2026-10-13",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Izzad",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "9df381cd-f78a-47a2-8f83-fda36b7412c0"
+  },
+  "startedAt": "2026-10-07T06:27:03.731Z",
+  "submittedAt": "2026-10-11T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/e092b951",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Izzad)",
+    "at": "2026-10-12T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-12T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-06-26T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.533Z"
+}

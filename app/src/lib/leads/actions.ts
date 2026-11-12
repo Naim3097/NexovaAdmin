@@ -23,6 +23,7 @@ import {
     updateClient as updateClientRecord,
 } from "@/lib/data/clients";
 import { addInvoiceItem, createInvoice, updateInvoice } from "@/lib/data/invoices";
+import { moveLeadAction } from "@/lib/leads/quick-actions";
 import { pickAssignee, scoreLead } from "@/lib/leads/scoring";
 import { notify } from "@/lib/data/notifications";
 import { diffFields, recordAudit } from "@/lib/data/audit";
@@ -149,36 +150,16 @@ export async function updateLeadAction(formData: FormData) {
     revalidatePath("/pipeline");
 }
 
+/**
+ * The lead page's "Move to" buttons. The pipeline's drag-and-drop goes through
+ * the same `moveLeadAction`, so both write one audit entry and send the same
+ * won / lost notification.
+ */
 export async function setLeadStatusAction(formData: FormData) {
     const id = String(formData.get("id") ?? "");
     const status = asStatus(formData.get("status"));
     if (!id) return;
-    const before = await getLeadById(id);
-    await updateLead(id, { status, autoIntake: false });
-    if (before && before.status !== status) {
-        await recordAudit({
-            entity: "lead",
-            entityId: id,
-            kind: "status",
-            summary: `Status: ${before.status} → ${status}`,
-            changes: [{ field: "status", before: before.status, after: status }],
-        });
-    }
-    if (before && before.status !== status && (status === "won" || status === "lost")) {
-        await notify({
-            kind: status === "won" ? "lead_won" : "lead_lost",
-            title: `Lead ${status}: ${before.name}${before.company ? ` (${before.company})` : ""}`,
-            body:
-                status === "won"
-                    ? `Estimated value: MYR ${before.estValueMyr.toLocaleString()}`
-                    : "",
-            link: `/leads/${id}`,
-        });
-    }
-    revalidatePath(`/leads/${id}`);
-    revalidatePath("/leads");
-    revalidatePath("/pipeline");
-    revalidatePath("/dashboard");
+    await moveLeadAction({ id, to: status });
 }
 
 export async function deleteLeadAction(formData: FormData) {
@@ -235,6 +216,8 @@ export async function promoteLeadToClientAction(formData: FormData) {
         (await createClientRecord({
             name: clientName,
             status: "active",
+            // Whoever worked the lead closed the deal.
+            dealOwner: lead.assignedTo,
             contactName: lead.name,
             contactEmail: lead.email,
             contactPhone: lead.phone,

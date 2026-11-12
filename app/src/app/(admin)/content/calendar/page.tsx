@@ -1,9 +1,18 @@
+/**
+ * Content calendar: posts on their scheduled day, a month at a time. Friday to
+ * Sunday and Kuala Lumpur public holidays sit on a grey cell (a holiday shows
+ * its name); posts can still be scheduled and shown there.
+ */
 import Link from "next/link";
 import { listContentPosts, type ContentPost } from "@/lib/data/content";
+import { OFF_DAY_LEGEND, dayKind } from "@/lib/calendar/days";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+/** Friday to Sunday: the columns outside the Mon–Thu working week. */
+const OFF_COLUMN = WEEKDAYS.map((d) => d === "Fri" || d === "Sat" || d === "Sun");
 
 function parseMonth(input: string | undefined): { year: number; month: number } {
     const now = new Date();
@@ -116,8 +125,8 @@ export default async function ContentCalendarPage({
             <div className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
                 <div className="min-w-[900px] rounded-lg border bg-card md:min-w-0">
                     <div className="grid grid-cols-7 border-b text-xs font-medium text-muted-foreground">
-                        {WEEKDAYS.map((d) => (
-                            <div key={d} className="px-2 py-2">
+                        {WEEKDAYS.map((d, i) => (
+                            <div key={d} className={cn("px-2 py-2", OFF_COLUMN[i] && "bg-muted/50")}>
                                 {d}
                             </div>
                         ))}
@@ -128,13 +137,18 @@ export default async function ContentCalendarPage({
                             const inMonth = d.getMonth() === month;
                             const isToday = iso === todayIso;
                             const dayPosts = byDate.get(iso) ?? [];
+                            const { off, holiday } = dayKind(iso);
                             return (
                                 <div
                                     key={iso}
-                                    className={`min-h-28 border-b border-r p-2 last:border-r-0 ${inMonth ? "" : "bg-muted/30"
-                                        }`}
+                                    className={cn(
+                                        "min-h-28 border-b border-r p-2 last:border-r-0",
+                                        // Off days (Fri–Sun, public holidays) are grey; days outside the month sit a shade further back.
+                                        inMonth ? off && "bg-muted/50" : off ? "bg-muted/70" : "bg-muted/25",
+                                    )}
+                                    title={holiday ? `${holiday} — Kuala Lumpur public holiday` : undefined}
                                 >
-                                    <div className="flex items-center justify-between">
+                                    <div className="flex items-center justify-between gap-1">
                                         <span
                                             className={`text-xs ${isToday
                                                     ? "rounded-full bg-primary px-2 py-0.5 font-medium text-primary-foreground"
@@ -145,8 +159,13 @@ export default async function ContentCalendarPage({
                                         >
                                             {d.getDate()}
                                         </span>
+                                        {holiday ? (
+                                            <span className="min-w-0 flex-1 truncate text-[10px] text-muted-foreground" title={holiday}>
+                                                {holiday}
+                                            </span>
+                                        ) : null}
                                         {dayPosts.length > 0 ? (
-                                            <span className="text-[10px] text-muted-foreground">
+                                            <span className="shrink-0 text-[10px] text-muted-foreground">
                                                 {dayPosts.length}
                                             </span>
                                         ) : null}
@@ -183,6 +202,11 @@ export default async function ContentCalendarPage({
                     </div>
                 </div>
             </div>
+
+            <p className="-mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                <span className="inline-block size-3 shrink-0 rounded-sm border bg-muted/50" aria-hidden="true" />
+                {OFF_DAY_LEGEND}
+            </p>
 
             <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                 <span>Legend:</span>

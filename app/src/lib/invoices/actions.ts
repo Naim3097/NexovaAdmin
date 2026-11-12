@@ -15,7 +15,10 @@ import {
 } from "@/lib/data/invoices";
 import { computeTotals, getInvoiceById, listInvoices } from "@/lib/data/invoices";
 import { billingAddressFor, listClients } from "@/lib/data/clients";
+import { listContracts } from "@/lib/data/contracts";
 import { listContentPosts, visualsUsed } from "@/lib/data/content";
+import { activeProjectNames, clientMonthlyMyr } from "@/lib/clients/revenue";
+import { clientContentQuota } from "@/lib/clients/quota";
 import { notify } from "@/lib/data/notifications";
 import { diffFields, recordAudit } from "@/lib/data/audit";
 import {
@@ -339,12 +342,14 @@ export async function refreshPaymentStatusAction(
 
 /**
  * Monthly retainer run (audit rec #2): one click drafts this month's retainer
- * invoice for every active client with a retainer amount configured.
+ * invoice for every active client whose active projects bill monthly. The
+ * amount is the sum of those projects' monthly billing.
  *
  * Idempotent via a notes marker `[retainer:YYYY-MM]` — re-running skips clients
- * already invoiced this month. Adds a quota-overage line when the month's
- * visuals exceed the client's quota and an extra-visual price is set.
- * Invoices land as DRAFTS for Farisha to review and send (SOP 5).
+ * already invoiced this month. Visuals beyond the month's content quota are
+ * no longer priced on the client record, so they go into the invoice notes
+ * for the reviewer to add a line by hand. Invoices land as DRAFTS for the
+ * finance person to review and send (SOP 5).
  */
 export async function generateRetainerInvoicesAction(
     _prev: ActionResult,
@@ -357,8 +362,9 @@ export async function generateRetainerInvoicesAction(
         .slice(0, 10);
     const marker = `[retainer:${month}]`;
 
-    const [clients, invoices, posts] = await Promise.all([
+    const [clients, contracts, invoices, posts] = await Promise.all([
         listClients(),
+        listContracts(),
         listInvoices(),
         listContentPosts(),
     ]);
@@ -368,7 +374,9 @@ export async function generateRetainerInvoicesAction(
     const names: string[] = [];
 
     for (const c of clients) {
-        if (c.status !== "active" || !(c.monthlyRetainerMyr > 0)) continue;
+        if (c.status !== "active") continue;
+        const monthlyMyr = clientMonthlyMyr(c.name, contracts);
+        if (!(monthlyMyr > 0)) continue;
         const already = invoices.some(
             (i) => i.clientName === c.name && i.notes.includes(marker),
         );
@@ -377,31 +385,29 @@ export async function generateRetainerInvoicesAction(
             continue;
         }
 
+        // Visuals beyond the month's quota: a note for the reviewer, not a line.
+        const quota = clientContentQuota(c.name, contracts);
+        const used = visualsUsed(posts, c.name, month);
+        const over = quota > 0 ? Math.max(0, used - quota) : 0;
+        const overNote =
+            over > 0
+                ? ` ${over} visual${over === 1 ? "" : "s"} beyond the monthly plan (${used}/${quota}) — add a line if chargeable.`
+                : "";
+
         const inv = await createInvoice({
             clientName: c.name,
             issueDate: today,
             dueDate: due,
         });
         await updateInvoice(inv.id, {
-            notes: `Monthly retainer for ${month}. ${marker}`,
+            notes: `Monthly retainer for ${month}.${overNote} ${marker}`,
             billToAddress: c.billingAddress || "",
         });
         await addInvoiceItem(inv.id, {
-            description: `Monthly retainer — ${c.packageName || "service package"} (${month})`,
+            description: `Monthly retainer — ${activeProjectNames(c.name, contracts).join(", ") || "active projects"} (${month})`,
             quantity: 1,
-            unitPriceMyr: c.monthlyRetainerMyr,
+            unitPriceMyr: monthlyMyr,
         });
-
-        // Quota overage → billable extras line (per-visual pricing).
-        const used = visualsUsed(posts, c.name, month);
-        const over = Math.max(0, used - (c.monthlyContentQuota || 0));
-        if (over > 0 && c.monthlyContentQuota > 0 && c.extraContentPrice > 0) {
-            await addInvoiceItem(inv.id, {
-                description: `Additional visuals beyond quota (${used}/${c.monthlyContentQuota} used in ${month})`,
-                quantity: over,
-                unitPriceMyr: c.extraContentPrice,
-            });
-        }
 
         await recordAudit({
             entity: "invoice",
@@ -418,7 +424,7 @@ export async function generateRetainerInvoicesAction(
         return {
             ok: false,
             message:
-                "No active clients have a retainer amount set — fill 'Monthly retainer' on client records first.",
+                "No active client has an active project billed monthly — set the billing on their projects first.",
         };
     }
     return {

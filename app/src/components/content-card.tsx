@@ -31,7 +31,6 @@ export function ContentCard({
     href,
     clientReview = false,
     revisionLimit = 3,
-    extraRevisionPrice = 0,
 }: {
     post: ContentPost;
     href?: string;
@@ -39,8 +38,8 @@ export function ContentCard({
     statusLabel?: string;
     statusVariant?: "default" | "secondary" | "outline" | "destructive";
     clientReview?: boolean;
+    /** The client's revision limit (a client rule); past it, the card says so. */
     revisionLimit?: number;
-    extraRevisionPrice?: number;
 }) {
     const awaiting = post.reviewStatus === "awaiting_client";
     const atLimit = post.revisionsUsed >= revisionLimit;
@@ -132,13 +131,11 @@ export function ContentCard({
                                     {atLimit ? (
                                         <p className="rounded-md border border-amber-400/40 bg-amber-50 p-2 text-xs text-amber-800">
                                             You&apos;ve used your{" "}
-                                            {revisionLimit} included revision(s).
-                                            Further changes are charged at{" "}
-                                            <strong>
-                                                MYR{" "}
-                                                {extraRevisionPrice.toFixed(2)}
-                                            </strong>{" "}
-                                            each.
+                                            {revisionLimit} included revision
+                                            {revisionLimit === 1 ? "" : "s"}.
+                                            Further changes go beyond your plan —
+                                            your account manager will confirm any
+                                            charge.
                                         </p>
                                     ) : null}
                                     <Textarea

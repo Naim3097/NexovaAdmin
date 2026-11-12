@@ -1,0 +1,52 @@
+{
+  "id": "5b7ba15b-fbb0-4008-b37f-ded26611747f",
+  "contractId": "8dc8c820-cc95-428e-9a8f-6630adbd3fc9",
+  "clientName": "LeanX",
+  "accountManager": "Bob",
+  "plannerLineId": "req:static:2026-12:0:7",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Carousel: Cashflow tips for SMEs",
+  "channel": "Instagram",
+  "month": "2026-12",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-12-24",
+  "defaultDueDate": "2026-12-24",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 1.75
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "780ede80-b816-4e50-9f73-5183dfcc1931"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2025-12-22T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.324Z"
+}

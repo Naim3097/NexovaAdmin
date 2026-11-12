@@ -1,0 +1,52 @@
+{
+  "id": "89ca1d3d-51d3-4e00-8ce6-5cb3387451bc",
+  "contractId": "ee0609d4-3179-4475-8f59-8d96c5c3edb4",
+  "clientName": "Rouang",
+  "accountManager": "Izzad",
+  "plannerLineId": "req:static:2026-12:0:2",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Carousel: A renovation timeline, step by step",
+  "channel": "Instagram",
+  "month": "2026-12",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-12-09",
+  "defaultDueDate": "2026-12-09",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Izzad",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "54e9bba1-edfe-4314-836c-2712c520c341"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-06-26T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.519Z"
+}

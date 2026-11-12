@@ -1,0 +1,52 @@
+{
+  "id": "e8d716f8-291e-473a-a908-329a14ca7ab0",
+  "contractId": "ee0609d4-3179-4475-8f59-8d96c5c3edb4",
+  "clientName": "Rouang",
+  "accountManager": "Izzad",
+  "plannerLineId": "req:static:2026-12:0:5",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Static: Book a free site consultation",
+  "channel": "Instagram",
+  "month": "2026-12",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-12-22",
+  "defaultDueDate": "2026-12-22",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Izzad",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "586f7cc9-1b09-4e53-9ae0-d7d63ee7f294"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-06-26T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.523Z"
+}

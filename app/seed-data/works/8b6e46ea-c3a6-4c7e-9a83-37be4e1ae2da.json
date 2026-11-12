@@ -1,0 +1,49 @@
+{
+  "id": "8b6e46ea-c3a6-4c7e-9a83-37be4e1ae2da",
+  "contractId": "8dc8c820-cc95-428e-9a8f-6630adbd3fc9",
+  "clientName": "LeanX",
+  "accountManager": "Bob",
+  "plannerLineId": "req:custom:2026-10:4:1",
+  "addendumVersion": 0,
+  "type": "custom",
+  "title": "Monthly strategy call · Oct",
+  "channel": "Call",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-01",
+  "defaultDueDate": "2026-10-01",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "am",
+      "member": "Naim",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "none",
+  "milestone": false,
+  "linked": null,
+  "startedAt": "2026-09-25T06:27:03.731Z",
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": "2026-09-30T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2025-12-22T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.351Z"
+}

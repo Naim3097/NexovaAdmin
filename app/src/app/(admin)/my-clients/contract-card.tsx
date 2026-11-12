@@ -1,14 +1,11 @@
 /**
- * One contract on the My accounts page: who and where it stands, the same
- * health chips as the contract header, and the one next move.
+ * One project on the My accounts page: who and where it stands, the same
+ * health chips as the project header, and the one next move.
  */
 import Link from "next/link";
 import { CONTRACT_STAGE_LABEL } from "@/lib/data/contracts";
 import { CONTRACT_ENDING_SOON_DAYS, endedDaysAgo, endsInDays } from "@/lib/contracts/helpers";
-import { monthLabel } from "@/lib/works/helpers";
-import { requestMonthAction } from "@/lib/works/actions";
 import { Badge } from "@/components/ui/badge";
-import { PendingButton } from "@/components/pending-button";
 import { cn } from "@/lib/utils";
 import type { ClientCard } from "./derive";
 
@@ -18,7 +15,7 @@ const TONE: Record<ClientCard["action"]["tone"], string> = {
     ok: "text-emerald-700 dark:text-emerald-400",
 };
 
-export function ContractCard({ card, today, asQ, asField }: { card: ClientCard; today: string; asQ: string; asField: React.ReactNode }) {
+export function ContractCard({ card, today, asQ }: { card: ClientCard; today: string; asQ: string }) {
     const { c, p, overdue, awaiting, nextMilestone, nextInvoice, invoiceOverdue, urgent, action, links } = card;
     const ended = endedDaysAgo(c, today);
     const endsIn = endsInDays(c, today);
@@ -54,7 +51,7 @@ export function ContractCard({ card, today, asQ, asField }: { card: ClientCard; 
                 </div>
             </div>
 
-            {/* Health strip — the contract header's chips, same rules. */}
+            {/* Health strip — the project header's chips, same rules. */}
             <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
                 <Link href={links.listOf({})}>
                     <Badge variant="outline" className="tabular-nums">
@@ -97,17 +94,7 @@ export function ContractCard({ card, today, asQ, asField }: { card: ClientCard; 
             <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 border-t pt-2 text-sm">
                 <span className="text-xs uppercase tracking-wide text-muted-foreground">Next</span>
                 <span className={cn("font-medium", TONE[action.tone])}>{action.text}</span>
-                {action.kind === "requests" && action.month ? (
-                    <form action={requestMonthAction} className="inline-flex items-center gap-2">
-                        <span className="text-muted-foreground">→</span>
-                        <input type="hidden" name="contractId" value={c.id} />
-                        <input type="hidden" name="month" value={action.month} />
-                        {asField}
-                        <PendingButton size="sm" variant="outline" pendingLabel="Sending…">
-                            {action.cta} · {monthLabel(action.month)} ({card.unrequestedNext.length})
-                        </PendingButton>
-                    </form>
-                ) : action.cta ? (
+                {action.cta ? (
                     <>
                         <span className="text-muted-foreground">→</span>
                         <Link href={action.href} className="underline">

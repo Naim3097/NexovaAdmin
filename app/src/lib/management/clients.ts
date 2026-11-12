@@ -18,6 +18,7 @@ import type { Quotation } from "@/lib/data/quotations";
 import { computeTotals as invoiceTotals } from "@/lib/data/invoices";
 import { computeTotals as quoteTotals } from "@/lib/data/quotations";
 import { isOpen, nextDue } from "@/lib/works/helpers";
+import { clientContentQuota } from "@/lib/clients/quota";
 import {
     daysSince,
     daysUntil,
@@ -26,7 +27,7 @@ import {
     todayYmd,
     type Health,
 } from "@/lib/management/metrics";
-import { clientMrr } from "@/lib/management/pipeline";
+import { clientMrr, nextProjectEnd } from "@/lib/management/pipeline";
 
 /** Nothing delivered to a client for this long counts against care. */
 export const QUIET_DAYS = 14;
@@ -38,13 +39,13 @@ export type RosterRow = {
     name: string;
     status: string;
     industry: string;
-    packageName: string;
+    /** Monthly billing of the active projects + live campaign fees. */
     mrr: number;
-    accountManager: string;
+    /** Who closed the deal (the client's person; projects have their own AM). */
+    dealOwner: string;
     since: string;
-    renewsOn: string;
     activeContracts: number;
-    /** Contracts whose stage reached "completed". */
+    /** Projects whose stage reached "completed". */
     completedContracts: number;
     openTasks: number;
     liveCampaigns: number;
@@ -57,7 +58,7 @@ export type InactiveRow = {
     name: string;
     status: string;
     industry: string;
-    accountManager: string;
+    dealOwner: string;
     since: string;
     lastContract: string;
     lastContractAt: string;
@@ -75,8 +76,7 @@ export type CareSignal = {
 export type CareRow = {
     id: string;
     name: string;
-    accountManager: string;
-    packageName: string;
+    dealOwner: string;
     score: number;
     health: Health;
     signals: CareSignal[];
@@ -89,7 +89,9 @@ export type CareRow = {
     revisionLimit: number;
     contentPosted: number;
     contentPlanned: number;
+    /** Content a month promised by the active projects. */
     contentQuota: number;
+    /** Days to the nearest active project end date; null when all are open-ended. */
     renewsInDays: number | null;
     overdueInvoices: number;
     href: string;
@@ -211,7 +213,7 @@ export function buildClientsSnapshot(
                 name: c.name,
                 status: c.status,
                 industry: c.industry,
-                accountManager: c.accountManager,
+                dealOwner: c.dealOwner,
                 since: c.createdAt.slice(0, 10),
                 lastContract: last?.name ?? "",
                 lastContractAt: last ? last.updatedAt.slice(0, 10) : "",
@@ -239,7 +241,9 @@ export function buildClientsSnapshot(
         const overdueInvoices = clientInvoices.filter(
             (i) => i.status === "overdue" || (i.status === "sent" && i.dueDate < today),
         ).length;
-        const renewsInDays = c.packageRenewsOn ? daysUntil(c.packageRenewsOn, today) : null;
+        const renewsOn = nextProjectEnd(c.name, contracts);
+        const renewsInDays = renewsOn ? daysUntil(renewsOn, today) : null;
+        const contentQuota = clientContentQuota(c.name, contracts);
         const liveCampaigns = campaigns.filter((x) => x.clientName === c.name && x.status === "live").length;
 
         // Last thing the client actually received: a posted item or a
@@ -280,7 +284,7 @@ export function buildClientsSnapshot(
             score -= Math.min(20, amber.length * 10);
             signals.push({ label: "Delivery to watch", tone: "warn", detail: amber.map((x) => `${x.name}: ${x.note}`).join(" · ") });
         } else if (active.length) {
-            signals.push({ label: "Delivery on track", tone: "good", detail: `${active.length} contract${active.length === 1 ? "" : "s"} moving · ${openWorks.length} open task${openWorks.length === 1 ? "" : "s"}` });
+            signals.push({ label: "Delivery on track", tone: "good", detail: `${active.length} project${active.length === 1 ? "" : "s"} moving · ${openWorks.length} open task${openWorks.length === 1 ? "" : "s"}` });
         }
         if (awaitingUs > 0) {
             score -= 10;
@@ -289,19 +293,19 @@ export function buildClientsSnapshot(
         if (awaitingClient > 0) {
             signals.push({ label: "Awaiting client", tone: "warn", detail: `${awaitingClient} item${awaitingClient === 1 ? "" : "s"} waiting for approval — chase gently` });
         }
-        if (c.monthlyContentQuota > 0) {
+        if (contentQuota > 0) {
             const dayOfMonth = Number(today.slice(8, 10));
             const daysInMonth = new Date(Date.UTC(Number(year), Number(today.slice(5, 7)), 0)).getUTCDate();
-            const expected = Math.floor((c.monthlyContentQuota * dayOfMonth) / daysInMonth);
-            if (monthContent.length < c.monthlyContentQuota) {
+            const expected = Math.floor((contentQuota * dayOfMonth) / daysInMonth);
+            if (monthContent.length < contentQuota) {
                 score -= 10;
-                signals.push({ label: "Content under-planned", tone: "warn", detail: `${monthContent.length} of ${c.monthlyContentQuota} planned this month` });
+                signals.push({ label: "Content under-planned", tone: "warn", detail: `${monthContent.length} of ${contentQuota} planned this month` });
             }
             if (contentPosted < expected) {
                 score -= 10;
                 signals.push({ label: "Content behind pace", tone: "bad", detail: `${contentPosted} posted, ~${expected} expected by today` });
             } else {
-                signals.push({ label: "Content on pace", tone: "good", detail: `${contentPosted}/${c.monthlyContentQuota} posted` });
+                signals.push({ label: "Content on pace", tone: "good", detail: `${contentPosted}/${contentQuota} posted` });
             }
         }
         if (revisionsAtLimit > 0) {
@@ -326,11 +330,15 @@ export function buildClientsSnapshot(
             signals.push({
                 label: "No work in progress",
                 tone: "bad",
-                detail: active.length ? "Active contract with no open tasks — plan the next month" : "Active account with nothing being delivered",
+                detail: active.length ? "Active project with no open tasks — plan the next month" : "Active account with nothing being delivered",
             });
         }
         if (renewsInDays !== null && renewsInDays <= 30) {
-            signals.push({ label: renewsInDays < 0 ? "Renewal overdue" : "Renewal due", tone: "warn", detail: renewsInDays < 0 ? `${-renewsInDays}d past ${c.packageRenewsOn}` : `in ${renewsInDays}d (${c.packageRenewsOn})` });
+            signals.push({
+                label: renewsInDays < 0 ? "Project ended" : "Project ending",
+                tone: "warn",
+                detail: renewsInDays < 0 ? `${-renewsInDays}d past ${renewsOn} — renew or close it` : `ends in ${renewsInDays}d (${renewsOn}) — talk renewal`,
+            });
         }
         score = Math.max(0, Math.min(100, score));
         const health: Health = score >= CARE_GREEN ? "green" : score >= CARE_AMBER ? "amber" : "red";
@@ -338,8 +346,7 @@ export function buildClientsSnapshot(
         care.push({
             id: c.id,
             name: c.name,
-            accountManager: c.accountManager,
-            packageName: c.packageName,
+            dealOwner: c.dealOwner,
             score,
             health,
             signals,
@@ -352,7 +359,7 @@ export function buildClientsSnapshot(
             revisionLimit: c.contentRevisionLimit,
             contentPosted,
             contentPlanned: monthContent.length,
-            contentQuota: c.monthlyContentQuota,
+            contentQuota,
             renewsInDays,
             overdueInvoices,
             href,
@@ -363,11 +370,9 @@ export function buildClientsSnapshot(
             name: c.name,
             status: c.status,
             industry: c.industry,
-            packageName: c.packageName,
-            mrr: clientMrr(c, campaigns),
-            accountManager: c.accountManager,
+            mrr: clientMrr(c, contracts, campaigns),
+            dealOwner: c.dealOwner,
             since: c.createdAt.slice(0, 10),
-            renewsOn: c.packageRenewsOn,
             activeContracts: active.length,
             completedContracts: sums.filter((x) => x.stage === "completed" || x.status === "completed").length,
             openTasks: openWorks.length,
@@ -384,7 +389,7 @@ export function buildClientsSnapshot(
     const billingRows: BillingRow[] = clients
         .filter((c) => c.status !== "prospect")
         .map((c) => {
-            const contractMyr = c.status === "active" ? clientMrr(c, campaigns) : 0;
+            const contractMyr = c.status === "active" ? clientMrr(c, contracts, campaigns) : 0;
             const mine = invoices.filter((i) => i.clientName === c.name && i.status !== "void");
             const cells: BillingCell[] = months.map((m) => {
                 const inMonth = mine.filter((i) => i.issueDate.startsWith(m));
@@ -453,7 +458,7 @@ export function buildClientsSnapshot(
         today,
         kpis: {
             activeClients: activeClients.length,
-            activeMrr: activeClients.reduce((s, c) => s + clientMrr(c, campaigns), 0),
+            activeMrr: activeClients.reduce((s, c) => s + clientMrr(c, contracts, campaigns), 0),
             pausedClients: clients.filter((c) => c.status === "paused").length,
             churnedClients: clients.filter((c) => c.status === "churned").length,
             prospects: clients.filter((c) => c.status === "prospect").length,

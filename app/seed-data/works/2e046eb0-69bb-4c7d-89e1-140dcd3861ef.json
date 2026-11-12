@@ -1,0 +1,52 @@
+{
+  "id": "2e046eb0-69bb-4c7d-89e1-140dcd3861ef",
+  "contractId": "01149f98-ad2c-41a5-a4f9-10b85c31d526",
+  "clientName": "Leanis Solution Sdn Bhd",
+  "accountManager": "Bob",
+  "plannerLineId": "req:seo:2027-01:2:1",
+  "addendumVersion": 0,
+  "type": "seo",
+  "title": "Lean management for Malaysian SMEs",
+  "channel": "Blog",
+  "month": "2027-01",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2027-01-14",
+  "defaultDueDate": "2027-01-14",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 3
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "seo",
+    "id": "672b84a2-9eef-42dd-9ee5-eb58fc6d8c8f"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-08-27T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.504Z"
+}

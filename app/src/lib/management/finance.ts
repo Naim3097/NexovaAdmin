@@ -168,7 +168,7 @@ export function buildFinanceSnapshot(input: FinanceInput, today: string = todayY
         note,
         endsInDays: endsInDays(c, today),
         hasRenewal: hasRenewal(c),
-        href: c.status === "active" && !c.signedAt ? `/contracts/${c.id}?tab=setup` : `/contracts/${c.id}`,
+        href: c.status === "active" && !c.signedAt ? `/projects/${c.id}?tab=money#terms` : `/projects/${c.id}`,
     });
 
     const toPrepare: ContractRow[] = [];

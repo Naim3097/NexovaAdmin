@@ -96,7 +96,7 @@ function TaskRow({ w, me, today, contract, asQ }: RowProps) {
                     {contract ? (
                         <>
                             {" · "}
-                            <Link href={`/contracts/${contract.id}#works`} className="hover:underline">
+                            <Link href={`/projects/${contract.id}#works`} className="hover:underline">
                                 {contract.code}
                             </Link>
                         </>

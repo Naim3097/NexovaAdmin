@@ -151,7 +151,7 @@ export default async function ClientReportPrintPage({
         });
     if (report.contracts.length > 0)
         kpis.push({
-            label: "Active contracts",
+            label: "Active projects",
             value: String(report.contracts.length),
         });
 
@@ -463,10 +463,10 @@ export default async function ClientReportPrintPage({
                     </section>
                 ) : null}
 
-                {/* ─── Contracts ─── */}
+                {/* ─── Projects ─── */}
                 {report.contracts.length > 0 ? (
                     <section className="mt-10">
-                        <SectionTitle no={nextNo()}>Contracts</SectionTitle>
+                        <SectionTitle no={nextNo()}>Projects</SectionTitle>
                         <ul className="mt-4 space-y-3">
                             {report.contracts.map((r) => (
                                 <li
@@ -548,9 +548,10 @@ export default async function ClientReportPrintPage({
                                 {report.billing.retainer > 0 ? (
                                     <tr className="border-b border-neutral-100">
                                         <td className="py-2 pr-3">
-                                            {report.billing.packageName
-                                                ? `${report.billing.packageName} retainer`
-                                                : "Monthly retainer"}
+                                            Monthly retainer
+                                            {report.billing.projects.length > 0
+                                                ? ` · ${report.billing.projects.join(", ")}`
+                                                : ""}
                                             {report.billing.includedContents >
                                             0 ? (
                                                 <span className="text-neutral-500">
@@ -574,38 +575,6 @@ export default async function ClientReportPrintPage({
                                         </td>
                                     </tr>
                                 ) : null}
-                                {report.extras.contentCount > 0 ? (
-                                    <tr className="border-b border-neutral-100">
-                                        <td className="py-2 pr-3">
-                                            Additional visuals (
-                                            {report.extras.contentCount} ×{" "}
-                                            {fmtMyr(report.extras.contentPrice)}
-                                            )
-                                        </td>
-                                        <td className="py-2 text-right tabular-nums">
-                                            {fmtMyr(
-                                                report.extras.contentCharge,
-                                            )}
-                                        </td>
-                                    </tr>
-                                ) : null}
-                                {report.extras.revisionCount > 0 ? (
-                                    <tr className="border-b border-neutral-100">
-                                        <td className="py-2 pr-3">
-                                            Additional revisions (
-                                            {report.extras.revisionCount} ×{" "}
-                                            {fmtMyr(
-                                                report.extras.revisionPrice,
-                                            )}
-                                            )
-                                        </td>
-                                        <td className="py-2 text-right tabular-nums">
-                                            {fmtMyr(
-                                                report.extras.revisionCharge,
-                                            )}
-                                        </td>
-                                    </tr>
-                                ) : null}
                                 <tr className="font-semibold">
                                     <td className="py-2 pr-3">Total</td>
                                     <td className="py-2 text-right tabular-nums">
@@ -614,6 +583,22 @@ export default async function ClientReportPrintPage({
                                 </tr>
                             </tbody>
                         </table>
+                        {report.extras.contentCount > 0 || report.extras.revisionCount > 0 ? (
+                            <p className="mt-2 text-xs text-neutral-500">
+                                Beyond the plan this month:{" "}
+                                {[
+                                    report.extras.contentCount > 0
+                                        ? `${report.extras.contentCount} additional visual${report.extras.contentCount === 1 ? "" : "s"}`
+                                        : "",
+                                    report.extras.revisionCount > 0
+                                        ? `${report.extras.revisionCount} additional revision${report.extras.revisionCount === 1 ? "" : "s"}`
+                                        : "",
+                                ]
+                                    .filter(Boolean)
+                                    .join(" · ")}
+                                . Any charge for these is agreed separately.
+                            </p>
+                        ) : null}
                     </section>
                 ) : null}
 

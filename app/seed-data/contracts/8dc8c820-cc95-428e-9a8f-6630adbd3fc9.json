@@ -1,0 +1,117 @@
+{
+  "id": "8dc8c820-cc95-428e-9a8f-6630adbd3fc9",
+  "code": "CON-2026-0006",
+  "name": "LeanX — brand growth",
+  "clientName": "LeanX",
+  "accountManager": "Bob",
+  "status": "active",
+  "phases": [
+    {
+      "key": "kickoff",
+      "name": "Kickoff",
+      "summary": "Onboarding, brand audit, access, strategy sign-off.",
+      "startMonth": "2026-01",
+      "endMonth": "2026-01"
+    },
+    {
+      "key": "foundation",
+      "name": "Foundation",
+      "summary": "Brand kit, content pillars and account setup.",
+      "startMonth": "2026-01",
+      "endMonth": "2026-02"
+    },
+    {
+      "key": "production",
+      "name": "Production",
+      "summary": "Monthly statics, videos, campaigns and articles.",
+      "startMonth": "2026-01",
+      "endMonth": "2026-12"
+    },
+    {
+      "key": "review",
+      "name": "Review",
+      "summary": "Performance review, renewal proposal, next plan.",
+      "startMonth": "2026-12",
+      "endMonth": "2026-12"
+    }
+  ],
+  "requirements": [
+    {
+      "type": "static",
+      "name": "Instagram static",
+      "count": 8,
+      "per": "month",
+      "channel": "Instagram"
+    },
+    {
+      "type": "video",
+      "name": "Reel / TikTok",
+      "count": 3,
+      "per": "month",
+      "channel": "Instagram"
+    },
+    {
+      "type": "seo",
+      "name": "Blog article",
+      "count": 2,
+      "per": "month",
+      "channel": "Blog"
+    },
+    {
+      "type": "campaign",
+      "name": "Meta campaign: merchant acquisition",
+      "count": 1,
+      "per": "month",
+      "channel": "Meta"
+    },
+    {
+      "type": "custom",
+      "name": "Monthly strategy call",
+      "count": 1,
+      "per": "month",
+      "channel": "Call"
+    },
+    {
+      "type": "custom",
+      "name": "Monthly performance report",
+      "count": 1,
+      "per": "month",
+      "channel": "Report"
+    },
+    {
+      "type": "website",
+      "name": "Website update",
+      "count": 1,
+      "per": "month",
+      "channel": "Website"
+    }
+  ],
+  "crew": {
+    "dm": "Bob",
+    "creative": "Bob",
+    "dev": "Zafran",
+    "am": "Bob"
+  },
+  "handover": null,
+  "templateName": "Scale",
+  "stage": "delivering",
+  "startDate": "2026-01-01",
+  "endDate": "2026-12-31",
+  "reference": "LX-GROW-01",
+  "quotationId": null,
+  "valueMyr": 96000,
+  "signedAt": "2025-12-22",
+  "signedBy": "Client director",
+  "fileUrl": "https://drive.example.com/contracts/signed.pdf",
+  "terms": "Twelve months: 8 statics, 3 videos and 2 SEO articles a month, one Meta campaign, a website update, a monthly report and strategy call.",
+  "billing": {
+    "cadence": "monthly",
+    "amountMyr": 8000,
+    "invoiceDay": 2
+  },
+  "notes": "",
+  "renewalStatus": "renewing",
+  "costs": [],
+  "createdAt": "2025-12-22T06:27:03.731Z",
+  "updatedAt": "2025-12-22T06:27:03.731Z"
+}

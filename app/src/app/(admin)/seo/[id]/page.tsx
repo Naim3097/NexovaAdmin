@@ -50,7 +50,7 @@ export default async function SeoArticleDetailPage({
     const article = await getSeoArticleById(id);
     if (!article) notFound();
     const [team, works] = await Promise.all([listTeamMembers(), listWorks()]);
-    // The contract task this article is the work for, if it came from a planner line.
+    // The project task this article is the work for, if it came from a planner line.
     const task = works.find((w) => w.linked?.kind === "seo" && w.linked.id === article.id);
     const wc = wordCount(article.body);
     const wcPct = article.targetWordCount
@@ -98,7 +98,7 @@ export default async function SeoArticleDetailPage({
                 </p>
                 {task ? (
                     <p className="mt-1 text-xs text-muted-foreground">
-                        Contract task:{" "}
+                        Project task:{" "}
                         <Link href={`/works/${task.id}`} className="underline">
                             {task.title}
                         </Link>

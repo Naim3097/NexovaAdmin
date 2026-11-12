@@ -1,0 +1,22 @@
+{
+  "id": "b7d48330-39fc-4c7d-b9c8-ce1b7ccde8eb",
+  "name": "Rohani Salleh",
+  "company": "Rumah Kebajikan Kasih Murni",
+  "email": "rumah-kebajikan-kasih-murni@example.com",
+  "phone": "",
+  "source": "tiktok",
+  "sourceCampaignId": null,
+  "interestedIn": "Fundraising campaigns, video",
+  "estValueMyr": 18000,
+  "status": "proposal",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Naim",
+  "score": 78,
+  "autoIntake": false,
+  "lostReason": "",
+  "lostNote": "",
+  "createdAt": "2026-10-19T06:27:03.731Z",
+  "updatedAt": "2026-11-07T06:27:03.731Z"
+}

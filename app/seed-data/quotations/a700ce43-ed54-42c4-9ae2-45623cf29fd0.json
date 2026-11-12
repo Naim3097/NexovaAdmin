@@ -1,0 +1,31 @@
+{
+  "id": "a700ce43-ed54-42c4-9ae2-45623cf29fd0",
+  "number": "QUO-2026-0005",
+  "clientName": "Rumah Kebajikan Kasih Murni",
+  "status": "sent",
+  "issueDate": "2026-11-07",
+  "validUntil": "2026-11-21",
+  "items": [
+    {
+      "id": "333a7801-d3f1-4e60-b90d-a65ed50eb5d5",
+      "description": "Fundraising campaigns and video — 6 months",
+      "details": "",
+      "quantity": 1,
+      "unitPriceMyr": 18000
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "subject": "Fundraising campaigns and video — 6 months",
+  "scopeIncludes": "",
+  "exclusions": "",
+  "terms": "",
+  "showAcceptance": true,
+  "convertedInvoiceId": null,
+  "createdAt": "2026-11-07T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.239Z",
+  "acceptedAt": null
+}

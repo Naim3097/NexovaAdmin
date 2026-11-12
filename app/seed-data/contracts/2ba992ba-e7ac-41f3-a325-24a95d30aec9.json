@@ -1,0 +1,66 @@
+{
+  "id": "2ba992ba-e7ac-41f3-a325-24a95d30aec9",
+  "code": "CON-2026-0012",
+  "name": "Sutera Batik — social retainer",
+  "clientName": "Sutera Batik Studio",
+  "accountManager": "Bob",
+  "status": "completed",
+  "phases": [
+    {
+      "key": "kickoff",
+      "name": "Kickoff",
+      "summary": "Onboarding, brand audit, access, strategy sign-off.",
+      "startMonth": "2026-01",
+      "endMonth": "2026-01"
+    },
+    {
+      "key": "foundation",
+      "name": "Foundation",
+      "summary": "Brand kit, content pillars and account setup.",
+      "startMonth": "2026-01",
+      "endMonth": "2026-02"
+    },
+    {
+      "key": "production",
+      "name": "Production",
+      "summary": "Monthly statics, videos, campaigns and articles.",
+      "startMonth": "2026-01",
+      "endMonth": "2026-05"
+    },
+    {
+      "key": "review",
+      "name": "Review",
+      "summary": "Performance review, renewal proposal, next plan.",
+      "startMonth": "2026-05",
+      "endMonth": "2026-05"
+    }
+  ],
+  "requirements": [],
+  "crew": {
+    "dm": "Bob",
+    "creative": "Izzad",
+    "am": "Bob"
+  },
+  "handover": null,
+  "templateName": "",
+  "stage": "completed",
+  "startDate": "2026-01-01",
+  "endDate": "2026-05-31",
+  "reference": "SB-SOC-01",
+  "quotationId": null,
+  "valueMyr": 12500,
+  "signedAt": "2025-12-28",
+  "signedBy": "Client director",
+  "fileUrl": "https://drive.example.com/contracts/signed.pdf",
+  "terms": "Five months of social media for the Raya collection. Paused by the client.",
+  "billing": {
+    "cadence": "monthly",
+    "amountMyr": 2500,
+    "invoiceDay": 2
+  },
+  "notes": "",
+  "renewalStatus": "",
+  "costs": [],
+  "createdAt": "2025-12-28T06:27:03.731Z",
+  "updatedAt": "2025-12-28T06:27:03.731Z"
+}

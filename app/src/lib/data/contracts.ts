@@ -15,11 +15,21 @@ export {
     CONTRACT_STAGE_LABEL,
     CONTRACT_STATUSES,
     emptyBilling,
+    isSigned,
     normalizeContract,
     normalizeCrew,
     normalizeRequirements,
-    REQUIREMENT_CADENCES,
+    normalizeStage,
+    REQUIREMENT_PERS,
+    PER_LABEL,
+    PER_SHORT,
+    DEFAULT_CHANNEL,
+    requirementLabel,
+    requirementName,
+    requirementsLabel,
+    tasksPerMonth,
     sortContracts,
+    stageLabel,
 } from "@/lib/dev-store/contracts";
 export type {
     BillingCadence,
@@ -29,7 +39,7 @@ export type {
     Crew,
     Handover,
     Requirement,
-    RequirementCadence,
+    RequirementPer,
     ContractPatch,
     ContractStage,
     ContractStatus,
@@ -54,6 +64,7 @@ function rowToContract(row: ContractRow): Contract {
         requirements: row.requirements as Contract["requirements"],
         crew: row.crew as Contract["crew"],
         handover: row.handover as Contract["handover"],
+        templateName: row.template_name ?? "",
         stage: row.stage as Contract["stage"],
         startDate: row.start_date ?? "",
         endDate: row.end_date ?? "",
@@ -66,6 +77,8 @@ function rowToContract(row: ContractRow): Contract {
         terms: row.terms,
         billing: row.billing as Contract["billing"],
         notes: row.notes,
+        renewalStatus: row.renewal_status as Contract["renewalStatus"],
+        costs: row.costs as Contract["costs"],
         createdAt: row.created_at,
         updatedAt: row.updated_at,
     });
@@ -83,6 +96,7 @@ function toInsert(c: Contract): Insert {
         requirements: c.requirements,
         crew: c.crew,
         handover: c.handover,
+        template_name: c.templateName,
         stage: c.stage,
         start_date: c.startDate || null,
         end_date: c.endDate || null,
@@ -95,6 +109,8 @@ function toInsert(c: Contract): Insert {
         terms: c.terms,
         billing: c.billing,
         notes: c.notes,
+        renewal_status: c.renewalStatus,
+        costs: c.costs,
         created_at: c.createdAt,
         updated_at: c.updatedAt,
     };
@@ -110,6 +126,7 @@ function patchToUpdate(patch: dev.ContractPatch): Update {
     if (patch.requirements !== undefined) out.requirements = patch.requirements;
     if (patch.crew !== undefined) out.crew = patch.crew;
     if (patch.handover !== undefined) out.handover = patch.handover;
+    if (patch.templateName !== undefined) out.template_name = patch.templateName;
     if (patch.stage !== undefined) out.stage = patch.stage;
     if (patch.startDate !== undefined) out.start_date = patch.startDate || null;
     if (patch.endDate !== undefined) out.end_date = patch.endDate || null;
@@ -122,6 +139,8 @@ function patchToUpdate(patch: dev.ContractPatch): Update {
     if (patch.terms !== undefined) out.terms = patch.terms;
     if (patch.billing !== undefined) out.billing = patch.billing;
     if (patch.notes !== undefined) out.notes = patch.notes;
+    if (patch.renewalStatus !== undefined) out.renewal_status = patch.renewalStatus;
+    if (patch.costs !== undefined) out.costs = patch.costs;
     out.updated_at = patch.updatedAt ?? new Date().toISOString();
     return out;
 }

@@ -1,0 +1,52 @@
+{
+  "id": "7e169851-19dc-46e0-ac4a-cdc3151d5a07",
+  "contractId": "ee0609d4-3179-4475-8f59-8d96c5c3edb4",
+  "clientName": "Rouang",
+  "accountManager": "Izzad",
+  "plannerLineId": "req:campaign:2026-10:2:1",
+  "addendumVersion": 0,
+  "type": "campaign",
+  "title": "Meta lead-gen: free site consultation · Oct",
+  "channel": "Meta",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-15",
+  "defaultDueDate": "2026-10-15",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Danisy",
+      "pct": 100,
+      "hours": 6
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "campaign",
+    "id": "628a25f9-fd2d-464f-a040-f897f05f4f36"
+  },
+  "startedAt": "2026-10-09T06:27:03.731Z",
+  "submittedAt": "2026-10-13T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/7e169851",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Izzad",
+    "at": "2026-10-14T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-14T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-06-26T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.542Z"
+}

@@ -1,0 +1,52 @@
+{
+  "id": "1fa5fa8b-e761-4707-a7af-9d92b25d333e",
+  "contractId": "0e0938d5-dcab-4d66-ab19-02e5220e078c",
+  "clientName": "Zakat Selangor",
+  "accountManager": "Hakim",
+  "plannerLineId": "req:video:2026-10:0:3",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "TikTok: Zakat on your first salary",
+  "channel": "TikTok",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-21",
+  "defaultDueDate": "2026-10-21",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 4.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "be4a03c1-460d-4d96-bcaa-8f93f2fab0ab"
+  },
+  "startedAt": "2026-10-15T06:27:03.731Z",
+  "submittedAt": "2026-10-19T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/1fa5fa8b",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Hakim)",
+    "at": "2026-10-20T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-20T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-06-03T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.756Z"
+}

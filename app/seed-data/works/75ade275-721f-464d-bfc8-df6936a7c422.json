@@ -1,0 +1,52 @@
+{
+  "id": "75ade275-721f-464d-bfc8-df6936a7c422",
+  "contractId": "01149f98-ad2c-41a5-a4f9-10b85c31d526",
+  "clientName": "Leanis Solution Sdn Bhd",
+  "accountManager": "Bob",
+  "plannerLineId": "req:video:2026-10:1:1",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "Reel: Office tour",
+  "channel": "LinkedIn",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-08",
+  "defaultDueDate": "2026-10-08",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 4.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "36875a14-f8e5-4c6f-9a5a-5e93310d76a2"
+  },
+  "startedAt": "2026-10-02T06:27:03.731Z",
+  "submittedAt": "2026-10-06T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/75ade275",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Bob)",
+    "at": "2026-10-07T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-07T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-08-27T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.514Z"
+}

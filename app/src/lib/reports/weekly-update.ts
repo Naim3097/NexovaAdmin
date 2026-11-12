@@ -10,8 +10,12 @@
  *   Waiting for client  — drafts awaiting review (with age), contract tasks
  *                         awaiting the client's approval, sent/overdue invoices
  *   Next week           — items scheduled in the next 7 days
- *   Issues / risks      — quota overage (billable visuals), overdue invoices,
+ *   Issues / risks      — visuals beyond the month's plan, overdue invoices,
  *                         reviews stuck > 3 days
+ *
+ * The content quota comes from the client's active projects (their "post"
+ * deliverables), and the sign-off names the account manager(s) of those
+ * projects — the client record carries neither any more.
  */
 import type { ContentPost } from "@/lib/dev-store/content";
 import type { Contract } from "@/lib/data/contracts";
@@ -20,9 +24,11 @@ import type { Invoice } from "@/lib/dev-store/invoices";
 import type { Client } from "@/lib/dev-store/clients";
 import { computeTotals } from "@/lib/dev-store/invoices";
 import { visualsUsed } from "@/lib/data/content";
+import { clientContentQuota } from "@/lib/clients/quota";
 
 export type WeeklyUpdate = {
     clientName: string;
+    /** Account manager(s) of the client's active projects, "" when none. */
     accountManager: string;
     rangeLabel: string;
     completed: string[];
@@ -152,16 +158,17 @@ export function buildWeeklyUpdate(input: {
         }
     }
 
-    // Issues / risks — quota overage, overdue invoices, stuck reviews.
+    // Issues / risks — visuals beyond the plan, overdue invoices, stuck reviews.
     const issues: string[] = [];
-    if (client.monthlyContentQuota > 0) {
+    const quota = clientContentQuota(client.name, input.contracts);
+    if (quota > 0) {
         const used = visualsUsed(mine, client.name, month);
-        if (used > client.monthlyContentQuota) {
+        if (used > quota) {
             issues.push(
-                `Quota ${used}/${client.monthlyContentQuota} visuals this month — ${used - client.monthlyContentQuota} billable as extras`,
+                `${used}/${quota} visuals this month — ${used - quota} beyond the plan`,
             );
-        } else if (used === client.monthlyContentQuota) {
-            issues.push(`Monthly quota fully used (${used}/${client.monthlyContentQuota} visuals)`);
+        } else if (used === quota) {
+            issues.push(`Monthly plan fully used (${used}/${quota} visuals)`);
         }
     }
     const overdueCount = myInvoices.filter(
@@ -180,9 +187,18 @@ export function buildWeeklyUpdate(input: {
     const start = new Date(weekAgo).toLocaleDateString(undefined, { day: "numeric", month: "short" });
     const end = new Date(now).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
 
+    const accountManagers = [
+        ...new Set(
+            myContracts
+                .filter((c) => c.status === "active")
+                .map((c) => c.accountManager.trim())
+                .filter(Boolean),
+        ),
+    ];
+
     return {
         clientName: client.name,
-        accountManager: client.accountManager,
+        accountManager: accountManagers.join(" / "),
         rangeLabel: `${start} – ${end}`,
         completed,
         inProgress,

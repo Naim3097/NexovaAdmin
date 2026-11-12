@@ -1,0 +1,52 @@
+{
+  "id": "569f7b7c-2c64-4a1b-9091-c567a522d434",
+  "contractId": "d574b50b-00f3-4986-863a-ce22efad7c2e",
+  "clientName": "Enfrasys",
+  "accountManager": "Izzad",
+  "plannerLineId": "req:video:2026-11:1:1",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "Video: Explainer — cloud cost control",
+  "channel": "LinkedIn",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-12",
+  "defaultDueDate": "2026-11-12",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "in_progress",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Izzad",
+      "pct": 100,
+      "hours": 6
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "ea0dbd88-db8e-4cb6-9f14-95a5897a7ac2"
+  },
+  "startedAt": "2026-11-10T06:27:03.731Z",
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-11-03T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.938Z"
+}

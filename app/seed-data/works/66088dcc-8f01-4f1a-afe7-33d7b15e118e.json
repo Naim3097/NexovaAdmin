@@ -1,0 +1,52 @@
+{
+  "id": "66088dcc-8f01-4f1a-afe7-33d7b15e118e",
+  "contractId": "01149f98-ad2c-41a5-a4f9-10b85c31d526",
+  "clientName": "Leanis Solution Sdn Bhd",
+  "accountManager": "Bob",
+  "plannerLineId": "req:static:2026-10:0:3",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "LinkedIn: Leanis at a glance",
+  "channel": "LinkedIn",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-13",
+  "defaultDueDate": "2026-10-13",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 1.75
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "7a2d7add-7506-42da-9eae-e079517a03ce"
+  },
+  "startedAt": "2026-10-07T06:27:03.731Z",
+  "submittedAt": "2026-10-11T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/66088dcc",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Bob)",
+    "at": "2026-10-12T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-12T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-08-27T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.510Z"
+}

@@ -1,0 +1,52 @@
+{
+  "id": "6023097b-4434-4073-a617-e1909502a8ef",
+  "contractId": "d574b50b-00f3-4986-863a-ce22efad7c2e",
+  "clientName": "Enfrasys",
+  "accountManager": "Izzad",
+  "plannerLineId": "req:video:2026-12:1:2",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "Video: Customer interview",
+  "channel": "YouTube",
+  "month": "2026-12",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-12-10",
+  "defaultDueDate": "2026-12-10",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Izzad",
+      "pct": 100,
+      "hours": 6
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "d6524a72-12c4-41a1-8c83-65c69880ec83"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-11-03T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.912Z"
+}

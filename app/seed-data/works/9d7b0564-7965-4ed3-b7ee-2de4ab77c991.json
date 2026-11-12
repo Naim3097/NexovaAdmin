@@ -1,0 +1,52 @@
+{
+  "id": "9d7b0564-7965-4ed3-b7ee-2de4ab77c991",
+  "contractId": "be8d2563-6668-4eca-8ae3-f93933ff08cb",
+  "clientName": "Baitul Irfan",
+  "accountManager": "Bob",
+  "plannerLineId": "req:video:2027-01:2:2",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "Video: Where your wakaf goes",
+  "channel": "Facebook",
+  "month": "2027-01",
+  "phaseKey": "drives",
+  "phaseName": "Monthly drives",
+  "dueDate": "2027-01-21",
+  "defaultDueDate": "2027-01-21",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 4.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "d29c44cb-9a86-416d-bc53-150e9b2fba89"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-07-29T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.727Z"
+}

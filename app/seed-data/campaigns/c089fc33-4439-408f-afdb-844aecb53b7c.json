@@ -1,0 +1,21 @@
+{
+  "id": "c089fc33-4439-408f-afdb-844aecb53b7c",
+  "name": "Donation campaign: Wakaf one brick",
+  "clientName": "Baitul Irfan",
+  "contractId": "be8d2563-6668-4eca-8ae3-f93933ff08cb",
+  "platform": "meta",
+  "objective": "leads",
+  "status": "planning",
+  "startDate": "2026-12-10",
+  "endDate": "",
+  "monthlyBudgetMyr": 0,
+  "feeModel": "none",
+  "flatFeeMyr": 0,
+  "percentFee": 0,
+  "externalId": "",
+  "landingUrl": "",
+  "notes": "",
+  "metrics": [],
+  "createdAt": "2026-11-12T06:27:04.609Z",
+  "updatedAt": "2026-11-12T06:27:04.703Z"
+}

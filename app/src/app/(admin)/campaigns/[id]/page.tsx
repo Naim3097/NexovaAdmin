@@ -49,7 +49,7 @@ export default async function CampaignDetailPage({
     const { id } = await params;
     const [campaign, contracts, works] = await Promise.all([getCampaignById(id), listContracts(), listWorks()]);
     if (!campaign) notFound();
-    // The contract task this campaign is the work for, if it came from a planner line.
+    // The project task this campaign is the work for, if it came from a planner line.
     const task = works.find((w) => w.linked?.kind === "campaign" && w.linked.id === campaign.id);
     const contractOptions = contracts.filter(
         (c) => c.id === campaign.contractId || (c.clientName === campaign.clientName && (c.status === "active" || c.status === "draft")),
@@ -90,7 +90,7 @@ export default async function CampaignDetailPage({
                 </div>
                 {task ? (
                     <p className="mt-1 text-xs text-muted-foreground">
-                        Contract task:{" "}
+                        Project task:{" "}
                         <Link href={`/works/${task.id}`} className="underline">
                             {task.title}
                         </Link>
@@ -241,7 +241,7 @@ export default async function CampaignDetailPage({
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <Label className="text-sm">Contract (optional)</Label>
+                        <Label className="text-sm">Project (optional)</Label>
                         <Select name="contractId" defaultValue={campaign.contractId ?? "none"}>
                             <SelectTrigger className="h-10">
                                 <SelectValue />

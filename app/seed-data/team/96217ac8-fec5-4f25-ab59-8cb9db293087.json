@@ -1,0 +1,37 @@
+{
+  "id": "96217ac8-fec5-4f25-ab59-8cb9db293087",
+  "name": "Danisy",
+  "role": "Chief Technical Officer",
+  "category": "dm",
+  "email": "danisy@nexova.local",
+  "phone": "",
+  "skills": "performance marketing, analytics, tracking, martech",
+  "active": true,
+  "userId": null,
+  "accessLevel": "standard",
+  "systemRoles": [
+    "management"
+  ],
+  "functions": [
+    "delivery"
+  ],
+  "weeklyHours": 32,
+  "setAside": [
+    {
+      "label": "Management",
+      "hours": 8
+    }
+  ],
+  "hoursByType": {
+    "campaign": 6,
+    "seo": 4,
+    "static": 2,
+    "video": 5,
+    "custom": 1.5,
+    "website": 8
+  },
+  "costRateMyr": 130,
+  "daysOff": {},
+  "createdAt": "2026-11-12T06:27:04.169Z",
+  "updatedAt": "2026-11-12T06:27:04.169Z"
+}

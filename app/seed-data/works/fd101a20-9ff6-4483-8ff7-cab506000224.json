@@ -1,0 +1,52 @@
+{
+  "id": "fd101a20-9ff6-4483-8ff7-cab506000224",
+  "contractId": "6d1e4aab-758f-42fd-9862-f8590788625b",
+  "clientName": "Tropicor",
+  "accountManager": "Danisy",
+  "plannerLineId": "req:campaign:2026-10:0:2",
+  "addendumVersion": 0,
+  "type": "campaign",
+  "title": "Meta campaign: Retargeting — cart abandoners",
+  "channel": "Meta",
+  "month": "2026-10",
+  "phaseKey": "optimise",
+  "phaseName": "Optimise",
+  "dueDate": "2026-10-21",
+  "defaultDueDate": "2026-10-21",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Danisy",
+      "pct": 100,
+      "hours": 6
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "campaign",
+    "id": "fe51fc3c-e830-4442-8f52-18f10f8ba76a"
+  },
+  "startedAt": "2026-10-15T06:27:03.731Z",
+  "submittedAt": "2026-10-19T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/fd101a20",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Danisy",
+    "at": "2026-10-20T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-20T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-09-29T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.083Z"
+}

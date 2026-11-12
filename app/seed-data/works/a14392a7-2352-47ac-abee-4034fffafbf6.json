@@ -1,0 +1,52 @@
+{
+  "id": "a14392a7-2352-47ac-abee-4034fffafbf6",
+  "contractId": "8dc8c820-cc95-428e-9a8f-6630adbd3fc9",
+  "clientName": "LeanX",
+  "accountManager": "Bob",
+  "plannerLineId": "req:static:2026-11:0:1",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Carousel: LeanX for online sellers",
+  "channel": "Instagram",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-03",
+  "defaultDueDate": "2026-11-03",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 1.75
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "0b0e4aa7-889b-4b23-9496-203dd1b983fc"
+  },
+  "startedAt": "2026-10-28T06:27:03.731Z",
+  "submittedAt": "2026-11-01T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/a14392a7",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Bob)",
+    "at": "2026-11-02T06:27:03.731Z"
+  },
+  "completedAt": "2026-11-02T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2025-12-22T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.353Z"
+}

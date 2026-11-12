@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getCurrentTeamMember, getCurrentUser } from "@/lib/auth";
+import { getActingMember, getCurrentTeamMember, getCurrentUser } from "@/lib/auth";
+import { isAdmin } from "@/lib/roles";
 import {
     createContract,
     deleteContract,
@@ -12,29 +13,35 @@ import {
     CONTRACT_STAGES,
     CONTRACT_STATUSES,
     type BillingCadence,
-    type Contract,
     type ContractStage,
     type ContractStatus,
     type Crew,
     type Requirement,
+    isSigned,
+    requirementLabel,
+    requirementsLabel,
 } from "@/lib/data/contracts";
 import { updateInvoice, listInvoices } from "@/lib/data/invoices";
 import { createClient, listClients, updateClient } from "@/lib/data/clients";
 import { listContentPosts, updateContentPost } from "@/lib/data/content";
 import { listCampaigns, updateCampaign } from "@/lib/data/campaigns";
-import { listWorks, updateWork, type Work, type WorkShare } from "@/lib/data/works";
-import { listTeamMembers, type TeamMember } from "@/lib/data/team";
-import { LINE_TYPES, SEATS, type PlannerPhase } from "@/lib/data/planners";
-import { getDefaultPhaseTemplate, getPhaseTemplateById } from "@/lib/data/phase-templates";
+import { listWorks, updateWork, type Work } from "@/lib/data/works";
+import { listTeamMembers } from "@/lib/data/team";
+import { SEATS, type PlannerPhase } from "@/lib/data/planners";
 import { phaseKeyFrom } from "@/lib/dev-store/planners";
+import { normalizeRequirement } from "@/lib/contracts/requirements";
+import { deliverablesFromForm, hasPhaseRows, phaseRowsFromForm } from "@/lib/contracts/rows";
+import { DEFAULT_TEMPLATE_PHASES, MAX_PHASE_MONTHS, phasesForProject } from "@/lib/contracts/phases";
 import { recordAudit } from "@/lib/data/audit";
 import { notify } from "@/lib/data/notifications";
 import { raiseMonthInvoice } from "@/lib/contracts/invoicing";
+import { COST_KIND_LABEL, isCostKind, normalizeCosts, type ProjectCost } from "@/lib/contracts/costs";
 import { contractMonths, generateContractTasks, isGenerated } from "@/lib/contracts/generate";
 import { withHours } from "@/lib/capacity/helpers";
-import { monthLabel } from "@/lib/works/helpers";
+import { monthLabel, todayKey } from "@/lib/works/helpers";
+import { fmtMyr } from "@/lib/format";
 
-/** The "— new client —" option on the contract form. */
+/** The "— new client —" option on the new-project form. */
 const NEW_CLIENT = "__new";
 
 function clean(v: FormDataEntryValue | null): string {
@@ -88,23 +95,21 @@ function hrefWith(path: string, formData: FormData, params: Record<string, strin
 }
 
 function revalidate(id?: string) {
-    revalidatePath("/contracts");
-    if (id) revalidatePath(`/contracts/${id}`);
+    revalidatePath("/projects");
+    if (id) revalidatePath(`/projects/${id}`);
     revalidatePath("/settings/clients");
     revalidatePath("/content");
     revalidatePath("/campaigns");
     revalidatePath("/invoices");
     revalidatePath("/pipeline");
-    revalidatePath("/management");
-    revalidatePath("/management/work");
-    revalidatePath("/management/contracts");
-    revalidatePath("/management/clients");
+    revalidatePath("/works");
+    revalidatePath("/dashboard");
 }
 
 /** Pages that list tasks, after tasks were created or re-assigned. */
 function revalidateTasks(id: string) {
     revalidate(id);
-    revalidatePath(`/contracts/${id}/document`);
+    revalidatePath(`/projects/${id}/document`);
     revalidatePath("/works");
     revalidatePath("/my-work");
     revalidatePath("/calendar");
@@ -115,28 +120,13 @@ function revalidateTasks(id: string) {
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
 // ---------------------------------------------------------------------------
-// Requirements and crew — read from a form
+// Deliverables and crew — read from a form
+//
+// The deliverable rows (`del_<i>_*`) are read with deliverablesFromForm; rows
+// without a count are dropped, so "at least one deliverable" is simply a
+// non-empty result. The crew (one person per seat) is set once, at creation;
+// later changes are made per task.
 // ---------------------------------------------------------------------------
-
-/**
- * One row per task type on the form: `req_<type>_count`, `req_<type>_cadence`
- * ("monthly" | "once") and `req_<type>_channel`. Rows with a count of 0 are
- * dropped, so "at least one requirement" is simply a non-empty result.
- */
-function requirementsFrom(formData: FormData): Requirement[] {
-    const out: Requirement[] = [];
-    for (const type of LINE_TYPES) {
-        const count = Math.max(0, Math.round(num(formData.get(`req_${type}_count`))));
-        if (count <= 0) continue;
-        out.push({
-            type,
-            count,
-            cadence: clean(formData.get(`req_${type}_cadence`)) === "once" ? "once" : "monthly",
-            channel: clean(formData.get(`req_${type}_channel`)),
-        });
-    }
-    return out;
-}
 
 /** One select per seat: `crew_<seat>`; "none" leaves the seat open. */
 function crewFrom(formData: FormData): Crew {
@@ -148,47 +138,13 @@ function crewFrom(formData: FormData): Crew {
     return crew;
 }
 
-/** "3 posts/mo · 1 campaign/mo · 1 website item (once)" for audit lines. */
-function requirementsSummary(reqs: Requirement[]): string {
-    const words: Record<Requirement["type"], [string, string]> = {
-        post: ["post", "posts"],
-        campaign: ["campaign", "campaigns"],
-        seo: ["SEO article", "SEO articles"],
-        website: ["website item", "website items"],
-        branding: ["branding item", "branding items"],
-        custom: ["custom task", "custom tasks"],
-    };
-    return reqs.map((r) => `${r.count} ${words[r.type][r.count === 1 ? 0 : 1]}${r.cadence === "monthly" ? "/mo" : " (once)"}`).join(" · ") || "no requirements";
-}
-
-function crewSummary(crew: Crew): string {
-    const parts = SEATS.filter((s) => crew[s]).map((s) => `${s}: ${crew[s]}`);
-    return parts.join(" · ") || "no crew";
-}
-
-/**
- * The crew applied to one task, seat by seat: every share keeps its seat and
- * percentage, the person comes from the crew (the AM seat from the account
- * manager), and the hours are refilled from the new person's profile when the
- * person changed. Shares on seats the crew leaves open keep their holder.
- */
-function crewShares(w: Work, c: Pick<Contract, "crew" | "accountManager">, team: TeamMember[]): WorkShare[] {
-    return withHours(
-        w.split.map((s) => {
-            const member = c.crew[s.seat] ?? (s.seat === "am" ? c.accountManager || s.member : s.member);
-            return { seat: s.seat, pct: s.pct, member, hours: member === s.member ? s.hours : 0 };
-        }),
-        team,
-        w.type,
-    );
-}
-
-function sameShares(a: WorkShare[], b: WorkShare[]): boolean {
-    return a.length === b.length && a.every((s, i) => s.seat === b[i].seat && s.member === b[i].member && s.pct === b[i].pct && s.hours === b[i].hours);
+/** "Awareness post on Instagram · 4/wk · Website · once" for audit lines. */
+function scopeSummary(reqs: Requirement[]): string {
+    return requirementsLabel(reqs) || "no deliverables";
 }
 
 // ---------------------------------------------------------------------------
-// Phases — from a template
+// Phases — helpers
 // ---------------------------------------------------------------------------
 
 type ContractPhase = PlannerPhase;
@@ -209,47 +165,11 @@ function uniqueKey(base: string, taken: Set<string>): string {
 
 const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
 
-/**
- * Copy a template's phases onto a contract. Months survive from `previous`
- * where a phase of the same name already existed.
- */
-function phasesFromTemplate(template: ContractPhase[], previous: ContractPhase[] = []): ContractPhase[] {
-    const taken = new Set<string>();
-    return template
-        .filter((ph) => ph.name)
-        .map((ph) => {
-            const prev = previous.find((p) => sameName(p.name, ph.name));
-            return {
-                key: uniqueKey(ph.key || phaseKeyFrom(ph.name), taken),
-                name: ph.name,
-                summary: ph.summary,
-                startMonth: ph.startMonth || prev?.startMonth || "",
-                endMonth: ph.endMonth || prev?.endMonth || "",
-            };
-        });
-}
-
-/**
- * Give undated phases contiguous slices of the contract months, in order, so
- * generated tasks land in a phase from day one. Phases that already carry a
- * month are left alone; the account manager re-dates them on the Plan tab.
- */
-function spreadPhases(phases: ContractPhase[], months: string[]): ContractPhase[] {
-    if (months.length === 0 || phases.length === 0 || phases.some((ph) => ph.startMonth || ph.endMonth)) return phases;
-    const n = phases.length;
-    const m = months.length;
-    return phases.map((ph, i) => {
-        const from = m >= n ? Math.floor((i * m) / n) : Math.min(i, m - 1);
-        const to = m >= n ? Math.floor(((i + 1) * m) / n) - 1 : Math.min(i, m - 1);
-        return { ...ph, startMonth: months[from], endMonth: months[Math.max(from, to)] };
-    });
-}
-
 // ---------------------------------------------------------------------------
-// Contract creation — with its tasks
+// Project creation — with its tasks
 // ---------------------------------------------------------------------------
 
-/** Fields the new-contract form sends back to itself when it is rejected. */
+/** Fields the new-project form sends back to itself when it is rejected. */
 const NEW_FORM_FIELDS = [
     "name",
     "clientName",
@@ -263,37 +183,46 @@ const NEW_FORM_FIELDS = [
     "cadence",
     "amountMyr",
     "invoiceDay",
-    "templateId",
     "notes",
 ] as const;
 
-/** `/contracts/new?error=…` with everything typed so far, so nothing is lost. */
+/**
+ * The row editors' fields (`<prefix>_<i>_<field>`), as posted, until the first
+ * row without `first`. The `first` field is carried even when empty so the
+ * rows stay contiguous for the reader on the other side.
+ */
+function copyRows(formData: FormData, params: Record<string, string>, prefix: string, first: string, fields: readonly string[]) {
+    for (let i = 0; formData.get(`${prefix}_${i}_${first}`) !== null; i += 1) {
+        for (const k of fields) {
+            const v = clean(formData.get(`${prefix}_${i}_${k}`));
+            if (v || k === first) params[`${prefix}_${i}_${k}`] = v;
+        }
+    }
+}
+
+/** `/projects/new?error=…` with everything typed so far, so nothing is lost. */
 function newFormHref(formData: FormData, error: string): string {
     const params: Record<string, string> = { error };
     for (const k of NEW_FORM_FIELDS) {
         const v = clean(formData.get(k));
         if (v) params[k] = v;
     }
-    for (const type of LINE_TYPES) {
-        // Only rows with a count carry their cadence / channel back.
-        if (Math.round(num(formData.get(`req_${type}_count`))) <= 0) continue;
-        for (const k of ["count", "cadence", "channel"] as const) {
-            const v = clean(formData.get(`req_${type}_${k}`));
-            if (v) params[`req_${type}_${k}`] = v;
-        }
-    }
+    copyRows(formData, params, "del", "type", ["type", "name", "count", "per", "channel"]);
+    copyRows(formData, params, "phase", "name", ["key", "name", "summary", "from", "months"]);
     for (const seat of SEATS) {
         const v = pick(formData.get(`crew_${seat}`));
         if (v) params[`crew_${seat}`] = v;
     }
-    return hrefWith("/contracts/new", formData, params);
+    return hrefWith("/projects/new", formData, params);
 }
 
 /**
- * The account manager creates the contract in one go: client (existing or new),
- * terms, phases from a template, the requirements and the crew. The tasks for
- * every month of the contract (three ahead when open-ended) are generated at
- * once, with their post / campaign / article records.
+ * The account manager creates the project in one go: client (existing or new),
+ * terms, the deliverables, the phases (relative months, placed against the
+ * start date) and the crew. When it is created signed, the tasks for every
+ * month of the project (three ahead when open-ended) are generated at once,
+ * with their post / campaign / article records; a draft gets them when it is
+ * marked signed.
  */
 export async function createContractWithTasksAction(formData: FormData) {
     const back = (error: string): never => redirect(newFormHref(formData, error));
@@ -301,7 +230,7 @@ export async function createContractWithTasksAction(formData: FormData) {
     const name = clean(formData.get("name"));
     if (!name) back("name");
 
-    const requirements = requirementsFrom(formData);
+    const requirements = deliverablesFromForm(formData);
     if (requirements.length === 0) back("requirements");
 
     // Client: an existing record, or a new one created in onboarding.
@@ -318,10 +247,10 @@ export async function createContractWithTasksAction(formData: FormData) {
         const existing = clients.find((c) => sameName(c.name, newClientName));
         if (existing) clientName = existing.name;
         else {
-            const created = await createClient({ name: newClientName, status: "onboarding", accountManager });
+            const created = await createClient({ name: newClientName, status: "onboarding", dealOwner: accountManager });
             clientName = created.name;
             createdClient = true;
-            await recordAudit({ entity: "client", entityId: created.id, kind: "create", summary: `Client ${created.name} created (onboarding) with contract ${name}`, actor });
+            await recordAudit({ entity: "client", entityId: created.id, kind: "create", summary: `Client ${created.name} created (onboarding) with project ${name}`, actor });
         }
     }
     if (!clientName) back("client");
@@ -332,11 +261,11 @@ export async function createContractWithTasksAction(formData: FormData) {
     if (endDate && endDate < startDate) back("dates");
     const signedAt = ymd(formData.get("signedAt"));
 
-    // Phases: the chosen template (the default when none was chosen), spread over the months.
-    const templateId = pick(formData.get("templateId"));
-    const template = templateId ? await getPhaseTemplateById(templateId) : await getDefaultPhaseTemplate();
+    // Phases: the rows on the form (month 1 = the start month), placed against the
+    // start date and clipped to the term; a form without the editor gets the built-in list.
+    const phaseRows = hasPhaseRows(formData) ? phaseRowsFromForm(formData) : DEFAULT_TEMPLATE_PHASES;
+    const phases = phasesForProject(phaseRows, startDate, endDate);
     const months = contractMonths({ startDate, endDate });
-    const phases = spreadPhases(phasesFromTemplate(template?.phases ?? []), months);
 
     const crew = crewFrom(formData);
     const c = await createContract({
@@ -359,78 +288,81 @@ export async function createContractWithTasksAction(formData: FormData) {
             invoiceDay: invoiceDayOf(formData.get("invoiceDay")),
         },
         notes: clean(formData.get("notes")),
+        templateName: clean(formData.get("templateName")),
     });
 
-    const team = await listTeamMembers();
-    const created = await generateContractTasks(c, team, [], contractMonths(c));
+    // The gate: tasks exist only once the contract is signed. A project written
+    // with its signed date gets them now; a draft gets them when it is marked signed.
+    const created = isSigned(c) ? await generateContractTasks(c, await listTeamMembers(), [], contractMonths(c)) : [];
     await recordAudit({
         entity: "contract",
         entityId: c.id,
         kind: "create",
-        summary: `Contract ${c.code} created for ${c.clientName}${createdClient ? " (new client)" : ""}${signedAt ? ` · signed ${signedAt}` : " · not yet signed"} · ${requirementsSummary(requirements)} · ${plural(created.length, "task")} generated for ${plural(months.length, "month")}`,
+        summary: `Project ${c.code} created for ${c.clientName}${createdClient ? " (new client)" : ""} · ${scopeSummary(requirements)}${
+            isSigned(c) ? ` · signed ${signedAt} · ${plural(created.length, "task")} generated for ${plural(months.length, "month")}` : " · draft, tasks appear once signed"
+        }`,
         actor,
     });
     revalidateTasks(c.id);
-    redirect(hrefWith(`/contracts/${c.id}`, formData));
-}
-
-/** Replace the requirements. Months already generated keep their tasks; later months follow the new list. */
-export async function saveRequirementsAction(formData: FormData) {
-    const id = clean(formData.get("id"));
-    if (!id) return;
-    const existing = await getContractById(id);
-    if (!existing) return;
-    const requirements = requirementsFrom(formData);
-    if (requirements.length === 0) redirect(hrefWith(`/contracts/${id}`, formData, { tab: "plan", error: "requirements" }) + "#requirements");
-    await updateContract(id, { requirements });
-    await recordAudit({
-        entity: "contract",
-        entityId: id,
-        kind: "update",
-        summary: `Requirements: ${requirementsSummary(requirements)} (was ${requirementsSummary(existing.requirements)})`,
-        actor: await actorName(formData),
-    });
-    revalidate(id);
-    redirect(hrefWith(`/contracts/${id}`, formData, { tab: "plan" }) + "#requirements");
+    redirect(hrefWith(`/projects/${c.id}`, formData));
 }
 
 /**
- * Save the crew (one person per seat). With `applyOpen`, every task on the
- * contract not yet started is re-assigned to the crew, seat by seat.
+ * Add one deliverable row to the plan (the Plan tab is additive: existing rows
+ * are changed or removed task by task on the Tasks tab). On a signed project
+ * the row's tasks are generated right away for every month that already has
+ * generated tasks, from the current month on — never into a past month. The
+ * row is the last one, so `onlyIndex` is `requirements.length - 1`.
  */
-export async function saveCrewAction(formData: FormData) {
+export async function addDeliverableAction(formData: FormData) {
     const id = clean(formData.get("id"));
     if (!id) return;
-    const existing = await getContractById(id);
-    if (!existing) return;
-    const crew = crewFrom(formData);
-    const c = await updateContract(id, { crew });
-    let touched = 0;
-    if (clean(formData.get("applyOpen")) === "1") {
+    const c = await getContractById(id);
+    if (!c) return;
+    const row = normalizeRequirement({
+        type: clean(formData.get("type")),
+        name: clean(formData.get("name")),
+        count: Number(clean(formData.get("count"))) || 0,
+        per: clean(formData.get("per")),
+        channel: clean(formData.get("channel")),
+    });
+    if (!row) redirect(hrefWith(`/projects/${id}`, formData, { tab: "plan", error: "deliverable" }) + "#requirements");
+    const requirements = [...c.requirements, row];
+    const updated = await updateContract(id, { requirements });
+
+    let created: Work[] = [];
+    let months: string[] = [];
+    if (isSigned(updated)) {
         const [team, works] = await Promise.all([listTeamMembers(), listWorks()]);
-        const open = works.filter((w) => w.contractId === id && w.status === "not_started");
-        for (const w of open) {
-            const split = crewShares(w, c, team);
-            if (sameShares(split, w.split)) continue;
-            await updateWork(w.id, { split });
-            touched += 1;
+        const existing = works.filter((w) => w.contractId === id);
+        const thisMonth = todayKey().slice(0, 7);
+        months = [...new Set(existing.filter(isGenerated).map((w) => w.month))].filter((m) => m >= thisMonth).sort();
+        if (months.length > 0) {
+            created = await generateContractTasks(updated, team, existing, months, { onlyIndex: requirements.length - 1 });
         }
     }
+    const label = `${requirementLabel(row)}${row.channel ? ` on ${row.channel}` : ""}`;
     await recordAudit({
         entity: "contract",
         entityId: id,
         kind: "update",
-        summary: `Crew: ${crewSummary(crew)}${touched ? ` · ${plural(touched, "open task")} re-assigned` : ""}`,
+        summary: `Deliverable added: ${label}${
+            created.length
+                ? ` · ${plural(created.length, "task")} generated for ${months.length === 1 ? monthLabel(months[0]) : `${monthLabel(months[0])} → ${monthLabel(months[months.length - 1])}`}`
+                : isSigned(updated)
+                  ? " · tasks follow with the next month added"
+                  : " · tasks appear once signed"
+        } · scope now ${scopeSummary(requirements)}`,
         actor: await actorName(formData),
     });
-    if (touched) revalidateTasks(id);
+    if (created.length) revalidateTasks(id);
     else revalidate(id);
-    redirect(hrefWith(`/contracts/${id}`, formData, { tab: "plan" }) + "#crew");
+    redirect(hrefWith(`/projects/${id}`, formData, { tab: "plan" }) + "#requirements");
 }
 
 /**
  * Generate the tasks of one more month from the requirements. Any month of the
- * span that has none yet is accepted; on an open-ended contract that includes
+ * span that has none yet is accepted; on an open-ended project that includes
  * the month after the last generated one, which is how it keeps rolling.
  */
 export async function addNextMonthAction(formData: FormData) {
@@ -438,7 +370,7 @@ export async function addNextMonthAction(formData: FormData) {
     const month = ym(formData.get("month"));
     if (!id || !month) return;
     const c = await getContractById(id);
-    if (!c) return;
+    if (!c || !isSigned(c)) return;
     const [team, works] = await Promise.all([listTeamMembers(), listWorks()]);
     const existing = works.filter((w) => w.contractId === id);
     const first = (c.startDate || month).slice(0, 7);
@@ -450,15 +382,15 @@ export async function addNextMonthAction(formData: FormData) {
         entity: "contract",
         entityId: id,
         kind: "update",
-        summary: `${plural(created.length, "task")} generated for ${monthLabel(month)} · ${requirementsSummary(c.requirements)}`,
+        summary: `${plural(created.length, "task")} generated for ${monthLabel(month)} · ${scopeSummary(c.requirements)}`,
         actor: await actorName(formData),
     });
     revalidateTasks(id);
-    redirect(hrefWith(`/contracts/${id}`, formData, { wm: month }) + "#works");
+    redirect(hrefWith(`/projects/${id}`, formData, { wm: month }) + "#works");
 }
 
 // ---------------------------------------------------------------------------
-// Contract — details, status, terms, billing
+// Project — details, status, terms, billing
 // ---------------------------------------------------------------------------
 
 export async function updateContractAction(formData: FormData) {
@@ -478,7 +410,7 @@ export async function updateContractAction(formData: FormData) {
         entity: "contract",
         entityId: id,
         kind: "update",
-        summary: "Contract details updated",
+        summary: "Project details updated",
         actor: await actorName(formData),
     });
     revalidate(id);
@@ -502,7 +434,7 @@ export async function setContractStatusAction(formData: FormData) {
     revalidate(id);
 }
 
-/** Delete the contract and detach everything that pointed at it. */
+/** Delete the project and detach everything that pointed at it. */
 export async function deleteContractAction(formData: FormData) {
     const id = clean(formData.get("id"));
     if (!id) return;
@@ -518,7 +450,7 @@ export async function deleteContractAction(formData: FormData) {
     ]);
     await deleteContract(id);
     revalidate();
-    redirect(hrefWith("/contracts", formData));
+    redirect(hrefWith("/projects", formData));
 }
 
 export async function saveTermsAction(formData: FormData) {
@@ -563,6 +495,7 @@ export async function saveBillingAction(formData: FormData) {
     revalidate(id);
 }
 
+
 /** Raise the invoice for one month (draft, retainer line prefilled). Shared with month generation. */
 export async function createMonthInvoiceAction(formData: FormData) {
     const id = clean(formData.get("id"));
@@ -583,23 +516,24 @@ export async function createMonthInvoiceAction(formData: FormData) {
 }
 
 /**
- * The client record follows the contract lifecycle: a new client sits in
- * onboarding until the contract reaches "official", then goes active.
+ * The client record follows the project lifecycle: a new client sits in
+ * onboarding from signing until the project is running, then goes active.
  */
 async function syncClientStatus(clientName: string, stage: ContractStage) {
     const client = (await listClients()).find((c) => c.name === clientName);
-    if (!client) return;
-    if (stage === "onboarding" && (client.status === "prospect" || client.status === "churned")) {
+    if (!client || client.internal) return;
+    if (stage === "signed" && (client.status === "prospect" || client.status === "churned")) {
         await updateClient(client.id, { status: "onboarding" });
-    } else if ((stage === "official" || stage === "delivering") && (client.status === "onboarding" || client.status === "prospect")) {
+    } else if (stage === "delivering" && (client.status === "onboarding" || client.status === "prospect")) {
         await updateClient(client.id, { status: "active" });
     }
 }
 
 /**
- * Move the contract along its lifecycle. Reaching "signed" stamps the signed
- * date when missing; reaching "official" makes the client active. Existing
- * clients jump from signed straight to "official".
+ * Move the project along Draft → Signed → Running → Closed. Reaching "signed"
+ * is the gate: it stamps the signed date when missing and generates the
+ * tasks from the scope (the first time only); "running" makes the client
+ * active. On an internal project "signed" is management approving the brief.
  */
 export async function setStageAction(formData: FormData) {
     const id = clean(formData.get("id"));
@@ -617,21 +551,32 @@ export async function setStageAction(formData: FormData) {
     if (stage === "completed") patch.status = "completed";
     else if (existing.status === "draft") patch.status = "active";
     const c = await updateContract(id, patch);
+    let generated = 0;
+    if (passesSigned) {
+        const [team, works] = await Promise.all([listTeamMembers(), listWorks()]);
+        const existingWorks = works.filter((w) => w.contractId === id);
+        if (!existingWorks.some(isGenerated)) {
+            generated = (await generateContractTasks(c, team, existingWorks, contractMonths(c))).length;
+        }
+    }
     await recordAudit({
         entity: "contract",
         entityId: id,
         kind: "status",
-        summary: `Stage: ${existing.stage} → ${stage}${passesSigned && !existing.signedAt ? ` · signed ${today}` : ""}`,
+        summary: `Stage: ${existing.stage} → ${stage}${passesSigned && !existing.signedAt ? ` · signed ${today}` : ""}${
+            generated ? ` · ${plural(generated, "task")} generated · ${scopeSummary(c.requirements)}` : ""
+        }`,
         actor,
         changes: [{ field: "stage", before: existing.stage, after: stage }],
     });
     await syncClientStatus(c.clientName, c.stage);
+    if (generated) revalidateTasks(id);
     revalidate(id);
     revalidatePath("/works");
     revalidatePath("/calendar");
 }
 
-/** Link an existing invoice (milestone / one-off) to this contract. */
+/** Link an existing invoice (a one-off, or one raised by hand) to this project. */
 export async function linkInvoiceAction(formData: FormData) {
     const id = clean(formData.get("id"));
     const invoiceId = pick(formData.get("invoiceId"));
@@ -641,7 +586,71 @@ export async function linkInvoiceAction(formData: FormData) {
 }
 
 // ---------------------------------------------------------------------------
-// Work under the contract
+// Costs — money spent on the project besides people's time (ad spend paid on
+// the client's behalf, freelancers, software). The Money dashboard's margin
+// subtracts them. Anyone who can open the project adds a row; only an admin
+// deletes one.
+// ---------------------------------------------------------------------------
+
+function revalidateCosts(id: string) {
+    revalidatePath(`/projects/${id}`);
+    revalidatePath("/dashboard");
+}
+
+/** Add one cost row; `addedBy` is whoever is acting. Rows without a label or an amount are ignored. */
+export async function addProjectCostAction(formData: FormData) {
+    const id = clean(formData.get("id"));
+    const c = id ? await getContractById(id) : null;
+    if (!c) return;
+    const label = clean(formData.get("label")).slice(0, 120);
+    const amountMyr = num(formData.get("amountMyr"));
+    if (!label || !(amountMyr > 0)) return;
+    const kindRaw = clean(formData.get("kind"));
+    const actor = await actorName(formData);
+    const row: ProjectCost = {
+        id: crypto.randomUUID(),
+        label,
+        kind: isCostKind(kindRaw) ? kindRaw : "other",
+        amountMyr,
+        date: ymd(formData.get("date")) || todayKey(),
+        addedBy: actor,
+    };
+    const costs = normalizeCosts([...c.costs, row]);
+    const saved = costs.find((x) => x.id === row.id) ?? row;
+    await updateContract(id, { costs });
+    await recordAudit({
+        entity: "contract",
+        entityId: id,
+        kind: "update",
+        summary: `Cost added: ${saved.label} · ${COST_KIND_LABEL[saved.kind]} · ${fmtMyr(saved.amountMyr)} · ${saved.date}`,
+        actor,
+    });
+    revalidateCosts(id);
+}
+
+/** Remove one cost row. Admins only: the button is hidden for everyone else, and this checks again. */
+export async function deleteProjectCostAction(formData: FormData) {
+    const id = clean(formData.get("id"));
+    const costId = clean(formData.get("costId"));
+    const c = id && costId ? await getContractById(id) : null;
+    if (!c) return;
+    const member = await getActingMember(pick(formData.get("as")) || undefined);
+    if (!isAdmin(member)) return;
+    const row = c.costs.find((x) => x.id === costId);
+    if (!row) return;
+    await updateContract(id, { costs: c.costs.filter((x) => x.id !== costId) });
+    await recordAudit({
+        entity: "contract",
+        entityId: id,
+        kind: "update",
+        summary: `Cost removed: ${row.label || COST_KIND_LABEL[row.kind]} · ${fmtMyr(row.amountMyr)} · ${row.date} (added by ${row.addedBy || "someone"})`,
+        actor: await actorName(formData),
+    });
+    revalidateCosts(id);
+}
+
+// ---------------------------------------------------------------------------
+// Work under the project
 // ---------------------------------------------------------------------------
 
 const WORK_KINDS = ["content", "campaign"] as const;
@@ -652,7 +661,7 @@ async function setWorkContract(kind: WorkKind, workId: string, contractId: strin
     else await updateCampaign(workId, { contractId });
 }
 
-/** Put an existing content post / campaign under this contract. */
+/** Put an existing content post / campaign under this project. */
 export async function linkWorkAction(formData: FormData) {
     const id = clean(formData.get("id"));
     const kind = clean(formData.get("kind"));
@@ -681,7 +690,7 @@ export async function unlinkWorkAction(formData: FormData) {
 }
 
 // ---------------------------------------------------------------------------
-// Phases (the contract's own — from a template at creation, edited freely)
+// Phases (the project's own — set from the form at creation, edited freely)
 // ---------------------------------------------------------------------------
 
 /** Does this task sit in the phase: by key, or by name when it carries no key (hand-added tasks). */
@@ -695,11 +704,18 @@ async function contractWorks(contractId: string): Promise<Work[]> {
 
 function revalidatePhases(id: string) {
     revalidate(id);
-    revalidatePath(`/contracts/${id}/document`);
+    revalidatePath(`/projects/${id}/document`);
     revalidatePath("/works");
     revalidatePath("/calendar");
 }
 
+/**
+ * Add a phase. The months come either as real `startMonth` / `endMonth`
+ * (YYYY-MM) or, from the Plan tab, as a relative row — `fromMonth` (1 = the
+ * project's first month) and `months` — placed against the start date and
+ * clipped to the term with phasesForProject. A relative row that would start
+ * after the project ends is refused (`?error=phase`).
+ */
 export async function addContractPhaseAction(formData: FormData) {
     const id = clean(formData.get("id"));
     const name = clean(formData.get("name"));
@@ -707,13 +723,19 @@ export async function addContractPhaseAction(formData: FormData) {
     const c = await getContractById(id);
     if (!c) return;
     const phases = c.phases;
-    const phase: ContractPhase = {
-        key: uniqueKey(phaseKeyFrom(name), new Set(phases.map((ph) => ph.key))),
-        name,
-        summary: clean(formData.get("summary")),
-        startMonth: ym(formData.get("startMonth")),
-        endMonth: ym(formData.get("endMonth")),
-    };
+    const key = uniqueKey(phaseKeyFrom(name), new Set(phases.map((ph) => ph.key)));
+    const summary = clean(formData.get("summary"));
+    let startMonth = ym(formData.get("startMonth"));
+    let endMonth = ym(formData.get("endMonth"));
+    if (!startMonth && !endMonth && formData.has("fromMonth")) {
+        const relative = (v: FormDataEntryValue | null) => Math.min(MAX_PHASE_MONTHS, Math.max(1, Math.round(num(v) || 1)));
+        const row = { key, name, summary, fromMonth: relative(formData.get("fromMonth")), months: relative(formData.get("months")) };
+        const placed = phasesForProject([row], c.startDate, c.endDate)[0];
+        if (!placed) redirect(hrefWith(`/projects/${id}`, formData, { tab: "plan", error: "phase" }) + "#phases");
+        startMonth = placed.startMonth;
+        endMonth = placed.endMonth;
+    }
+    const phase: ContractPhase = { key, name, summary, startMonth, endMonth };
     await updateContract(id, { phases: [...phases, phase] });
     await recordAudit({
         entity: "contract",
@@ -723,6 +745,7 @@ export async function addContractPhaseAction(formData: FormData) {
         actor: await actorName(formData),
     });
     revalidatePhases(id);
+    if (formData.has("fromMonth")) redirect(hrefWith(`/projects/${id}`, formData, { tab: "plan" }) + "#phases");
 }
 
 /** Save one phase. Renaming cascades to every task in the phase. */
@@ -816,42 +839,12 @@ async function movePhase(formData: FormData, dir: "up" | "down") {
     revalidatePhases(id);
 }
 
-/**
- * Replace the contract's phases with a template's. Tasks whose phase name
- * matches a template phase are re-keyed to it; the others are left as they
- * are. Months survive where a phase of the same name already existed.
- */
-export async function applyPhaseTemplateAction(formData: FormData) {
-    const id = clean(formData.get("id"));
-    const templateId = pick(formData.get("templateId"));
-    if (!id || !templateId) return;
-    const [c, template] = await Promise.all([getContractById(id), getPhaseTemplateById(templateId)]);
-    if (!c || !template) return;
-    const phases = phasesFromTemplate(template.phases, c.phases);
-    await updateContract(id, { phases });
-    const relink = (await contractWorks(id)).flatMap((w) => {
-        if (!w.phaseName) return [];
-        const target = phases.find((ph) => sameName(ph.name, w.phaseName));
-        if (!target || (w.phaseKey === target.key && w.phaseName === target.name)) return [];
-        return [updateWork(w.id, { phaseKey: target.key, phaseName: target.name })];
-    });
-    await Promise.all(relink);
-    await recordAudit({
-        entity: "contract",
-        entityId: id,
-        kind: "update",
-        summary: `Phases replaced from template "${template.name}" · ${phases.map((ph) => ph.name).join(" → ") || "no phases"}${relink.length ? ` · ${plural(relink.length, "task")} re-linked` : ""}`,
-        actor: await actorName(formData),
-    });
-    revalidatePhases(id);
-}
-
 // ---------------------------------------------------------------------------
 // Account-manager handover
 //
-// Anyone may create a contract, but once it has an account manager only that
+// Anyone may create a project, but once it has an account manager only that
 // person can pass the role on, and the transfer happens when the named
-// colleague accepts. Until then the contract shows "handover pending".
+// colleague accepts. Until then the project shows "transfer pending".
 // ---------------------------------------------------------------------------
 
 function revalidateHandover(id: string) {
@@ -886,8 +879,8 @@ export async function requestHandoverAction(formData: FormData) {
     await notify({
         kind: "handover_requested",
         title: `Take over ${c.name}?`,
-        body: `${actor} asks ${target.name} to become account manager of ${c.code} (${c.clientName})${note ? ` — ${note}` : ""}. Accept or decline on the contract.`,
-        link: `/contracts/${id}?tab=setup`,
+        body: `${actor} asks ${target.name} to become account manager of ${c.code} (${c.clientName})${note ? ` — ${note}` : ""}. Accept or decline on the project.`,
+        link: `/projects/${id}?tab=setup`,
     });
     revalidateHandover(id);
 }
@@ -927,12 +920,12 @@ export async function acceptHandoverAction(formData: FormData) {
         kind: "handover_accepted",
         title: `${to} now manages ${c.name}`,
         body: `${to} accepted the handover of ${c.code} (${c.clientName}) from ${from || "nobody"}.`,
-        link: `/contracts/${id}`,
+        link: `/projects/${id}`,
     });
     revalidateHandover(id);
 }
 
-/** The asked colleague declines; the current AM keeps the contract. */
+/** The asked colleague declines; the current AM keeps the project. */
 export async function declineHandoverAction(formData: FormData) {
     const id = clean(formData.get("id"));
     const note = clean(formData.get("note"));
@@ -952,7 +945,7 @@ export async function declineHandoverAction(formData: FormData) {
         kind: "handover_declined",
         title: `${actor} declined ${c.name}`,
         body: `${actor} did not take over ${c.code} (${c.clientName}); ${c.accountManager || "nobody"} stays account manager${note ? ` — ${note}` : ""}.`,
-        link: `/contracts/${id}?tab=setup`,
+        link: `/projects/${id}?tab=setup`,
     });
     revalidateHandover(id);
 }

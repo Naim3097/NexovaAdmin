@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { getActingMember } from "@/lib/auth";
+import { getActingMember, getCurrentTeamMember } from "@/lib/auth";
 import {
     LEAD_SOURCES,
     LEAD_STATUSES,
@@ -11,6 +11,7 @@ import { listCampaigns } from "@/lib/data/campaigns";
 import { listContracts } from "@/lib/data/contracts";
 import { listTeamMembers } from "@/lib/data/team";
 import { seesPipeline } from "@/lib/scope";
+import { lostReasonLabel } from "@/lib/leads/lost";
 import { scoreLead } from "@/lib/leads/scoring";
 import { Button } from "@/components/ui/button";
 import { SaveButton } from "@/components/save-button";
@@ -37,6 +38,7 @@ import {
     setLeadStatusAction,
     updateLeadAction,
 } from "@/lib/leads/actions";
+import { LostReasonControl } from "./lost-control";
 
 export const dynamic = "force-dynamic";
 
@@ -67,8 +69,10 @@ export default async function LeadDetailPage({
     searchParams: Promise<SearchParams>;
 }) {
     const [{ id }, sp] = await Promise.all([params, searchParams]);
-    const me = await getActingMember(one(sp, "as"));
+    const [me, linked] = await Promise.all([getActingMember(one(sp, "as") || undefined), getCurrentTeamMember()]);
     if (!seesPipeline(me)) redirect("/home");
+    // The lost-reason save learns who is acting from `as` only under the dev bypass (a real login resolves itself).
+    const asParam = me && !linked ? me.name : undefined;
     const lead = await getLeadById(id);
     if (!lead) notFound();
     const [campaigns, team, contracts] = await Promise.all([
@@ -77,7 +81,7 @@ export default async function LeadDetailPage({
         listContracts(),
     ]);
     // The client this deal becomes (its company, or the contact's name) and
-    // the contract already recorded under it, if any — newest first.
+    // the project already recorded under it, if any — newest first.
     const clientName = lead.company || lead.name;
     const contract = contracts
         .filter((c) => c.status !== "cancelled" && norm(c.clientName) === norm(clientName))
@@ -228,25 +232,54 @@ export default async function LeadDetailPage({
                 </form>
             </section>
 
-            {/* Status changer */}
+            {/* Status changer — Lost asks why before it saves. */}
             <section className="rounded-lg border bg-card p-4 md:p-6">
                 <h2 className="text-sm font-medium">Move to</h2>
                 <div className="mt-3 flex flex-wrap gap-2">
-                    {LEAD_STATUSES.map((s) => (
-                        <form key={s} action={setLeadStatusAction}>
-                            <input type="hidden" name="id" value={lead.id} />
-                            <input type="hidden" name="status" value={s} />
-                            <Button
-                                type="submit"
-                                size="sm"
-                                variant={lead.status === s ? "default" : "outline"}
-                                disabled={lead.status === s}
-                            >
-                                {STATUS_LABEL[s]}
-                            </Button>
-                        </form>
-                    ))}
+                    {LEAD_STATUSES.map((s) =>
+                        s === "lost" && lead.status !== "lost" ? (
+                            <LostReasonControl
+                                key={s}
+                                mode="move"
+                                id={lead.id}
+                                name={lead.name}
+                                lostReason={lead.lostReason}
+                                lostNote={lead.lostNote}
+                                asParam={asParam}
+                            />
+                        ) : (
+                            <form key={s} action={setLeadStatusAction}>
+                                <input type="hidden" name="id" value={lead.id} />
+                                <input type="hidden" name="status" value={s} />
+                                <Button
+                                    type="submit"
+                                    size="sm"
+                                    variant={lead.status === s ? "default" : "outline"}
+                                    disabled={lead.status === s}
+                                >
+                                    {STATUS_LABEL[s]}
+                                </Button>
+                            </form>
+                        ),
+                    )}
                 </div>
+                {lead.status === "lost" ? (
+                    <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+                        <span className="text-muted-foreground">Lost:</span>
+                        <span className={lead.lostReason ? "font-medium" : "italic text-muted-foreground"}>
+                            {lostReasonLabel(lead.lostReason)}
+                        </span>
+                        {lead.lostNote ? <span className="text-muted-foreground">— {lead.lostNote}</span> : null}
+                        <LostReasonControl
+                            mode="edit"
+                            id={lead.id}
+                            name={lead.name}
+                            lostReason={lead.lostReason}
+                            lostNote={lead.lostNote}
+                            asParam={asParam}
+                        />
+                    </p>
+                ) : null}
             </section>
 
             {/* Edit form */}
@@ -420,7 +453,8 @@ export default async function LeadDetailPage({
                         </p>
                         <p className="mt-0.5 text-xs text-muted-foreground">
                             Creates the client record (or links an existing
-                            one) and marks this lead won.
+                            one) and marks this lead won. The lead&apos;s owner
+                            becomes the client&apos;s deal owner.
                         </p>
                     </div>
                     <form action={promoteLeadToClientAction}>
@@ -431,26 +465,26 @@ export default async function LeadDetailPage({
                     </form>
                 </div>
 
-                {/* 2b · Sign the contract */}
+                {/* 2b · Create the project */}
                 <div className="flex flex-col gap-3 border-b p-4 md:flex-row md:items-center md:justify-between md:px-6">
                     <div className="max-w-sm">
                         <p className="text-sm font-medium">
                             <span className="mr-2 font-mono text-xs text-primary">2b</span>
-                            Create the contract
+                            Create the project
                         </p>
                         <p className="mt-0.5 text-xs text-muted-foreground">
                             {contract
                                 ? `${contract.code} · ${contract.name}${contract.signedAt ? "" : " · not yet signed"}`
-                                : "The account manager sets up the contract under the client; its tasks come from there."}
+                                : "The account manager sets up the project under the client; it stays a draft until the contract is signed, and its tasks come from there."}
                         </p>
                     </div>
                     {contract ? (
                         <Button
                             variant="outline"
                             nativeButton={false}
-                            render={<Link href={`/contracts/${contract.id}`} />}
+                            render={<Link href={`/projects/${contract.id}`} />}
                         >
-                            Open contract
+                            Open project
                         </Button>
                     ) : (
                         <Button
@@ -458,11 +492,11 @@ export default async function LeadDetailPage({
                             nativeButton={false}
                             render={
                                 <Link
-                                    href={`/contracts/new?client=${encodeURIComponent(clientName)}`}
+                                    href={`/projects/new?client=${encodeURIComponent(clientName)}`}
                                 />
                             }
                         >
-                            Create contract
+                            Create project
                         </Button>
                     )}
                 </div>

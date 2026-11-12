@@ -1,0 +1,52 @@
+{
+  "id": "108feebd-d9a2-44e4-940a-b2412e0174be",
+  "contractId": "be8d2563-6668-4eca-8ae3-f93933ff08cb",
+  "clientName": "Baitul Irfan",
+  "accountManager": "Bob",
+  "plannerLineId": "req:video:2026-12:2:1",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "Video: Surau construction progress",
+  "channel": "Facebook",
+  "month": "2026-12",
+  "phaseKey": "drives",
+  "phaseName": "Monthly drives",
+  "dueDate": "2026-12-10",
+  "defaultDueDate": "2026-12-10",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 4.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "febaff31-5458-4f14-854c-c7c9c20e27aa"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-07-29T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.713Z"
+}

@@ -23,7 +23,7 @@ import { SelectNav } from "@/components/select-nav";
 import { cn } from "@/lib/utils";
 import { FilterRow } from "@/app/(admin)/works/filter-bar";
 import { ActingAs, DueLabel, SplitLabel, TaskStatusBadge } from "@/app/(admin)/works/ui";
-import { NewButton, NewSection } from "@/components/new-button";
+import { NewSection } from "@/components/new-button";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +41,7 @@ function byDue(list: Work[]): Work[] {
 type ContractGroup = { key: string; contract: Contract | null; works: Work[] };
 type ClientGroup = { client: string; contracts: ContractGroup[] };
 
-/** Client → contract → tasks by due date. */
+/** Client → project → tasks by due date. */
 function groupByClient(list: Work[], contracts: Contract[]): ClientGroup[] {
     const byId = new Map(contracts.map((c) => [c.id, c]));
     const clients = new Map<string, Map<string, ContractGroup>>();
@@ -64,13 +64,13 @@ function groupByClient(list: Work[], contracts: Contract[]): ClientGroup[] {
         }));
 }
 
-/** Phase names of the contracts these tasks belong to, in contract order, de-duplicated. */
+/** Phase names of the projects these tasks belong to, in project order, de-duplicated. */
 function phaseOrderOf(list: Work[], contracts: Contract[]): string[] {
     const ids = new Set(list.map((w) => w.contractId));
     return [...new Set(contracts.filter((c) => ids.has(c.id)).flatMap((c) => c.phases.map((p) => p.name)))];
 }
 
-/** The client → contract → task table the list renders. */
+/** The client → project → task table the list renders. */
 function ClientGroups({ groups, today, asQ, showPhase = true }: { groups: ClientGroup[]; today: string; asQ: string; showPhase?: boolean }) {
     return (
         <ul className="divide-y">
@@ -83,13 +83,13 @@ function ClientGroups({ groups, today, asQ, showPhase = true }: { groups: Client
                                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
                                     {cg.contract ? (
                                         <>
-                                            <Link href={`/contracts/${cg.contract.id}#works`} className="font-medium hover:underline">
+                                            <Link href={`/projects/${cg.contract.id}#works`} className="font-medium hover:underline">
                                                 {cg.contract.code} · {cg.contract.name}
                                             </Link>
                                             <span className="text-xs text-muted-foreground">AM {cg.contract.accountManager || "—"}</span>
                                         </>
                                     ) : (
-                                        <span className="font-medium text-muted-foreground">No contract</span>
+                                        <span className="font-medium text-muted-foreground">No project</span>
                                     )}
                                     <span className="text-xs text-muted-foreground">
                                         · {cg.works.length} task{cg.works.length === 1 ? "" : "s"}
@@ -185,12 +185,11 @@ export default async function WebsitePage({ searchParams }: { searchParams: Prom
     const filtered = applyFilter(works, filter, today);
     const keep: Record<string, string | undefined> = { group: group === "phase" ? "phase" : undefined, as: as || undefined };
     const href = (f: typeof filter, extra: Record<string, string | undefined> = {}) => `/website${filterQuery(f, { ...keep, ...extra })}`;
-    // This page as is, with the add form open (`?new=1#new`).
-    const newHref = `${href(filter, { new: "1" })}#new`;
+    // The folded add form opens on `?new=1`.
     const openNew = one(sp, "new") === "1";
     const phaseOrder = phaseOrderOf(filtered, contracts);
 
-    // Phases in the contracts' own order (then any stray names), for the Phase dropdown.
+    // Phases in the projects' own order (then any stray names), for the Phase dropdown.
     const phases = [...new Set([...phaseOrderOf(works, contracts), ...works.map((w) => w.phaseName)])].filter(Boolean);
     const clients = [...new Set(works.map((w) => w.clientName).filter(Boolean))].sort();
     const ams = [...new Set(contracts.map((c) => c.accountManager).filter(Boolean))].sort();
@@ -212,13 +211,13 @@ export default async function WebsitePage({ searchParams }: { searchParams: Prom
             <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
                 <div>
                     <h1 className="text-2xl font-semibold md:text-3xl">Website</h1>
-                    <p className="text-sm text-muted-foreground">Pages, sections, integrations and launches, one task each under a contract.</p>
+                    <p className="text-sm text-muted-foreground">Pages, sections, integrations and launches, one task each under a project.</p>
+                    <p className="text-xs text-muted-foreground">Items come from project tasks. The account manager adds them on the project.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                     <Link href={`/works${filterQuery({ type: "website" }, { as: as || undefined })}`} className="text-sm font-medium underline">
                         All tasks
                     </Link>
-                    <NewButton href={newHref}>+ New task</NewButton>
                 </div>
             </div>
 
@@ -231,10 +230,10 @@ export default async function WebsitePage({ searchParams }: { searchParams: Prom
                     <p className="text-xs text-muted-foreground">An extra page, section, integration or launch outside the plan; plan items appear here on their own.</p>
                     <div className="grid gap-4 md:grid-cols-3">
                         <div className="space-y-1.5 md:col-span-2">
-                            <Label className="text-sm">Contract</Label>
+                            <Label className="text-sm">Project</Label>
                             <Select name="contractId" required>
                                 <SelectTrigger className="h-10 w-full">
-                                    <SelectValue placeholder={activeContracts.length ? "Pick a contract" : "No active contracts"} />
+                                    <SelectValue placeholder={activeContracts.length ? "Pick a project" : "No active projects"} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {activeContracts.map((c) => (
@@ -363,9 +362,9 @@ export default async function WebsitePage({ searchParams }: { searchParams: Prom
                         </>
                     ) : (
                         <>
-                            No website tasks yet. They come from the website lines of an accepted proposal, or{" "}
-                            <Link href={newHref} className="underline">
-                                add one
+                            No website tasks yet. They come from the website lines of a project; the account manager adds them on the{" "}
+                            <Link href={`/projects${asQ}`} className="underline">
+                                project
                             </Link>
                             .
                         </>

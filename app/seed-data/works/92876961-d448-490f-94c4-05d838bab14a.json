@@ -1,0 +1,52 @@
+{
+  "id": "92876961-d448-490f-94c4-05d838bab14a",
+  "contractId": "6d1e4aab-758f-42fd-9862-f8590788625b",
+  "clientName": "Tropicor",
+  "accountManager": "Danisy",
+  "plannerLineId": "req:campaign:2026-10:0:1",
+  "addendumVersion": 0,
+  "type": "campaign",
+  "title": "Meta campaign: Festive gift boxes",
+  "channel": "Meta",
+  "month": "2026-10",
+  "phaseKey": "optimise",
+  "phaseName": "Optimise",
+  "dueDate": "2026-10-08",
+  "defaultDueDate": "2026-10-08",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Danisy",
+      "pct": 100,
+      "hours": 6
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "campaign",
+    "id": "2fa5c238-294e-49ba-8e89-a1b0ad9ab09f"
+  },
+  "startedAt": "2026-10-02T06:27:03.731Z",
+  "submittedAt": "2026-10-06T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/92876961",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Danisy",
+    "at": "2026-10-07T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-07T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-09-29T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.082Z"
+}

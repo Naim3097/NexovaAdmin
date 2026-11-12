@@ -109,7 +109,7 @@ export default async function OnboardingDetailPage({
                                 {ai.brief}
                             </p>
                             <p className="mt-3 text-xs text-muted-foreground">
-                                Tasks come from the client&apos;s contract, not the AI.
+                                Tasks come from the client&apos;s project, not the AI.
                             </p>
                             {ai.generatedAt ? (
                                 <p className="mt-3 text-xs text-muted-foreground">
@@ -267,7 +267,7 @@ export default async function OnboardingDetailPage({
             </section>
             ) : null}
 
-            {/* Contract + delete */}
+            {/* Project + delete */}
             <section className="flex flex-col gap-3 rounded-lg border bg-card p-4 md:flex-row md:items-center md:justify-between md:p-6">
                 <div>
                     <h2 className="text-sm font-medium">Actions</h2>
@@ -278,15 +278,15 @@ export default async function OnboardingDetailPage({
                                 {clientContracts.map((c, i) => (
                                     <span key={c.id}>
                                         {i > 0 ? ", " : ""}
-                                        <Link href={`/contracts/${c.id}`} className="underline">
+                                        <Link href={`/projects/${c.id}`} className="underline">
                                             {c.code}
                                         </Link>
                                     </span>
                                 ))}
-                                ; tasks come from the contract.
+                                ; tasks come from the project.
                             </>
                         ) : sub.status === "submitted" ? (
-                            "No contract for this client yet — accept a quote on the pipeline deal to create one."
+                            "No project for this client yet — accept a quote on the pipeline deal to create one."
                         ) : (
                             "The form is still a draft."
                         )}

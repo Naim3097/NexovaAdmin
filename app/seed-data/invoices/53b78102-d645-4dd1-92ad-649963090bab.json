@@ -1,0 +1,31 @@
+{
+  "id": "53b78102-d645-4dd1-92ad-649963090bab",
+  "number": "INV-2026-0046",
+  "clientName": "Tropicor",
+  "contractId": "6d1e4aab-758f-42fd-9862-f8590788625b",
+  "status": "paid",
+  "issueDate": "2026-10-02",
+  "dueDate": "2026-10-16",
+  "items": [
+    {
+      "id": "31158fd2-b322-41c3-929d-d98d9fbf16a5",
+      "description": "Tropicor — campaign management — 2026-10",
+      "details": "CON-2026-0011",
+      "quantity": 1,
+      "unitPriceMyr": 9500
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "createdAt": "2026-10-02T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.697Z",
+  "paidAt": "2026-10-07T06:27:03.731Z",
+  "paymentProvider": null,
+  "paymentLink": null,
+  "paymentExternalId": null,
+  "paymentMeta": {},
+  "paymentLinkCreatedAt": null
+}

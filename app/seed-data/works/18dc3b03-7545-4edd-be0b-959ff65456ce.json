@@ -1,0 +1,52 @@
+{
+  "id": "18dc3b03-7545-4edd-be0b-959ff65456ce",
+  "contractId": "8dc8c820-cc95-428e-9a8f-6630adbd3fc9",
+  "clientName": "LeanX",
+  "accountManager": "Bob",
+  "plannerLineId": "req:seo:2026-10:2:2",
+  "addendumVersion": 0,
+  "type": "seo",
+  "title": "Choosing a payment gateway",
+  "channel": "Blog",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-21",
+  "defaultDueDate": "2026-10-21",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 3
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "seo",
+    "id": "521765a6-062a-4f64-bb67-5f217f081dae"
+  },
+  "startedAt": "2026-10-15T06:27:03.731Z",
+  "submittedAt": "2026-10-19T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/18dc3b03",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Bob",
+    "at": "2026-10-20T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-20T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2025-12-22T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.348Z"
+}

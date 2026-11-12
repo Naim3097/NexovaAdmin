@@ -1,0 +1,52 @@
+{
+  "id": "f2969781-3068-4b48-9d35-2a03c95e7f2e",
+  "contractId": "cc412500-078b-465c-b702-e2d6ab336cd0",
+  "clientName": "Payright",
+  "accountManager": "Bob",
+  "plannerLineId": "req:video:2026-11:1:1",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "Reel: Merchant story — a bakery in Klang",
+  "channel": "Instagram",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-10",
+  "defaultDueDate": "2026-11-10",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Izzad",
+      "pct": 100,
+      "hours": 6
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "4014d1f1-a8e7-4a3b-8e6d-8a1dd2b99583"
+  },
+  "startedAt": "2026-11-04T06:27:03.731Z",
+  "submittedAt": "2026-11-08T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/f2969781",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Bob)",
+    "at": "2026-11-09T06:27:03.731Z"
+  },
+  "completedAt": "2026-11-09T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-02-25T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.169Z"
+}

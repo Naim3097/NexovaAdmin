@@ -1,0 +1,51 @@
+{
+  "id": "d2e67835-493a-44a8-ae83-0379d69255f6",
+  "name": "Yusuf",
+  "role": "Head of Business Operations",
+  "category": "closer",
+  "email": "yusuf@nexova.local",
+  "phone": "",
+  "skills": "operations, finance, sales, reporting",
+  "active": true,
+  "userId": null,
+  "accessLevel": "admin",
+  "systemRoles": [
+    "admin",
+    "management"
+  ],
+  "functions": [
+    "delivery",
+    "finance"
+  ],
+  "weeklyHours": 32,
+  "setAside": [
+    {
+      "label": "Management",
+      "hours": 8
+    },
+    {
+      "label": "Sales",
+      "hours": 6
+    },
+    {
+      "label": "Operations",
+      "hours": 6
+    },
+    {
+      "label": "Finance review",
+      "hours": 4
+    }
+  ],
+  "hoursByType": {
+    "custom": 2,
+    "static": 2,
+    "video": 5,
+    "campaign": 6,
+    "seo": 4,
+    "website": 8
+  },
+  "costRateMyr": 130,
+  "daysOff": {},
+  "createdAt": "2026-11-12T06:27:04.171Z",
+  "updatedAt": "2026-11-12T06:27:04.171Z"
+}

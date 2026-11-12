@@ -1,0 +1,16 @@
+{
+  "id": "a68aed67-9d6f-4c02-bd84-765df813cf3d",
+  "at": "2026-11-12T02:12:07.062Z",
+  "entity": "lead",
+  "entityId": "268c4ad8-1ad0-47f8-9d54-2ee435d6eac0",
+  "kind": "status",
+  "summary": "Status: new → contacted",
+  "actor": "Daniel",
+  "changes": [
+    {
+      "field": "status",
+      "before": "new",
+      "after": "contacted"
+    }
+  ]
+}

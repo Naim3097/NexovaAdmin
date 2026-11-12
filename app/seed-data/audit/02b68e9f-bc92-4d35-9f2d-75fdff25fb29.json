@@ -1,0 +1,16 @@
+{
+  "id": "02b68e9f-bc92-4d35-9f2d-75fdff25fb29",
+  "at": "2026-11-11T07:17:26.570Z",
+  "entity": "work",
+  "entityId": "727ed49b-a47e-466d-aab1-6505222c6226",
+  "kind": "status",
+  "summary": "Reducing failed transactions at checkout: not started → in progress",
+  "actor": "Syafiq",
+  "changes": [
+    {
+      "field": "status",
+      "before": "not_started",
+      "after": "in_progress"
+    }
+  ]
+}

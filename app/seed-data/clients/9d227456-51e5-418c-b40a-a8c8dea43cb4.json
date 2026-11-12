@@ -1,0 +1,21 @@
+{
+  "id": "9d227456-51e5-418c-b40a-a8c8dea43cb4",
+  "name": "Kembara",
+  "status": "active",
+  "dealOwner": "Yusuf",
+  "contactName": "Demo contact",
+  "contactEmail": "kembara@example.com",
+  "contactPhone": "",
+  "billingAddress": "",
+  "website": "",
+  "industry": "Non-profit (donations)",
+  "notes": "A one-off website for donations.",
+  "contentRevisionLimit": 3,
+  "portalToken": "",
+  "userId": null,
+  "internal": false,
+  "lastCheckInAt": "2026-11-10",
+  "lastCheckInNote": "Build check-in: payment gateway sandbox approved, launch date holding.",
+  "createdAt": "2026-10-01T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.195Z"
+}

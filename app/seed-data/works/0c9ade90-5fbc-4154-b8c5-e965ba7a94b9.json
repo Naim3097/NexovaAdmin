@@ -1,0 +1,52 @@
+{
+  "id": "0c9ade90-5fbc-4154-b8c5-e965ba7a94b9",
+  "contractId": "649c59c0-6455-4332-a82e-30eda362c9c0",
+  "clientName": "LeanX Digital",
+  "accountManager": "Yusuf",
+  "plannerLineId": "req:static:2027-01:1:2",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "LinkedIn: We are hiring a designer",
+  "channel": "LinkedIn",
+  "month": "2027-01",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2027-01-12",
+  "defaultDueDate": "2027-01-12",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Naim",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "38ea349d-b672-4fa2-934f-3b3f2a4a6103"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-07-01T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.910Z"
+}

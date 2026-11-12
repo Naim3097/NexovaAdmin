@@ -1,0 +1,52 @@
+{
+  "id": "9faf2036-8234-4015-8773-b6db51476c81",
+  "contractId": "649c59c0-6455-4332-a82e-30eda362c9c0",
+  "clientName": "LeanX Digital",
+  "accountManager": "Yusuf",
+  "plannerLineId": "req:video:2026-11:0:1",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "Founder video: Lessons from our clients this year",
+  "channel": "LinkedIn",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-05",
+  "defaultDueDate": "2026-11-05",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Naim",
+      "pct": 100,
+      "hours": 5
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "fbcc3fc8-dac5-4004-a455-f401dfb6a4b6"
+  },
+  "startedAt": "2026-11-02T06:27:03.731Z",
+  "submittedAt": "2026-11-06T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/9faf2036",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Yusuf",
+    "at": "2026-11-07T06:27:03.731Z"
+  },
+  "completedAt": "2026-11-07T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-07-01T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.931Z"
+}

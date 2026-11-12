@@ -1,0 +1,52 @@
+{
+  "id": "50581356-735d-4be0-b73f-68b124439a4d",
+  "contractId": "649c59c0-6455-4332-a82e-30eda362c9c0",
+  "clientName": "LeanX Digital",
+  "accountManager": "Yusuf",
+  "plannerLineId": "req:seo:2026-12:2:2",
+  "addendumVersion": 0,
+  "type": "seo",
+  "title": "Short-form video for B2B brands",
+  "channel": "Blog",
+  "month": "2026-12",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-12-21",
+  "defaultDueDate": "2026-12-21",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Yusuf",
+      "pct": 100,
+      "hours": 4
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "seo",
+    "id": "7eadeef7-c652-4edd-ab84-f8529ab408bb"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-07-01T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.901Z"
+}

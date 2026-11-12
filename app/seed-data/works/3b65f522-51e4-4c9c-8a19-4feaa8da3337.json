@@ -1,0 +1,52 @@
+{
+  "id": "3b65f522-51e4-4c9c-8a19-4feaa8da3337",
+  "contractId": "0e0938d5-dcab-4d66-ab19-02e5220e078c",
+  "clientName": "Zakat Selangor",
+  "accountManager": "Hakim",
+  "plannerLineId": "req:video:2026-10:0:2",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "TikTok: Who receives zakat?",
+  "channel": "TikTok",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-14",
+  "defaultDueDate": "2026-10-14",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 4.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "834e92d6-39ed-4b17-921b-e4767a863d5b"
+  },
+  "startedAt": "2026-10-08T06:27:03.731Z",
+  "submittedAt": "2026-10-12T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/3b65f522",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Hakim)",
+    "at": "2026-10-13T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-13T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-06-03T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.755Z"
+}

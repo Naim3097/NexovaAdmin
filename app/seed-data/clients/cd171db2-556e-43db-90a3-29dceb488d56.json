@@ -1,0 +1,21 @@
+{
+  "id": "cd171db2-556e-43db-90a3-29dceb488d56",
+  "name": "Baitul Irfan",
+  "status": "active",
+  "dealOwner": "Naim",
+  "contactName": "Demo contact",
+  "contactEmail": "baitul-irfan@example.com",
+  "contactPhone": "",
+  "billingAddress": "",
+  "website": "",
+  "industry": "Non-profit (surau)",
+  "notes": "NGO raising donations for a surau; marketing to get donations.",
+  "contentRevisionLimit": 3,
+  "portalToken": "",
+  "userId": null,
+  "internal": false,
+  "lastCheckInAt": "2026-11-08",
+  "lastCheckInNote": "Committee meeting: approved the roof fund appeal. September and October invoices wait on the treasurer's sign-off.",
+  "createdAt": "2026-07-29T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.187Z"
+}

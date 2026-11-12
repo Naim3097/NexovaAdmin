@@ -1,0 +1,52 @@
+{
+  "id": "970e9831-daae-4dd6-aeeb-2641f0b09bc8",
+  "contractId": "649c59c0-6455-4332-a82e-30eda362c9c0",
+  "clientName": "LeanX Digital",
+  "accountManager": "Yusuf",
+  "plannerLineId": "req:video:2026-12:0:1",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "Founder video: How we plan a month of content",
+  "channel": "LinkedIn",
+  "month": "2026-12",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-12-03",
+  "defaultDueDate": "2026-12-03",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Naim",
+      "pct": 100,
+      "hours": 5
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "42f37f1d-e5b6-41a3-83e9-1e31419ac93e"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-07-01T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.890Z"
+}

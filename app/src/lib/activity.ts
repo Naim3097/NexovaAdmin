@@ -151,7 +151,7 @@ export async function listActivity(): Promise<ActivityEvent[]> {
         }
     }
 
-    // Contracts
+    // Projects
     for (const c of contracts) {
         out.push({
             id: `contract:${c.id}:created`,
@@ -159,12 +159,12 @@ export async function listActivity(): Promise<ActivityEvent[]> {
             entity: "contract",
             entityId: c.id,
             kind: "contract.created",
-            title: `Contract created: ${c.name}`,
+            title: `Project created: ${c.name}`,
             detail: `${c.code} · ${c.clientName}${c.valueMyr > 0
                     ? ` · MYR ${c.valueMyr.toLocaleString()}`
                     : ""
                 }`,
-            href: `/contracts/${c.id}`,
+            href: `/projects/${c.id}`,
             amountMyr: c.valueMyr || 0,
             actor: c.accountManager,
         });
@@ -178,14 +178,14 @@ export async function listActivity(): Promise<ActivityEvent[]> {
                 title: `Contract signed: ${c.name}`,
                 detail: `${c.code} · ${c.clientName}${c.signedBy ? ` · by ${c.signedBy}` : ""
                     }`,
-                href: `/contracts/${c.id}`,
+                href: `/projects/${c.id}`,
                 amountMyr: c.valueMyr || 0,
                 actor: c.signedBy,
             });
         }
     }
 
-    // Contract tasks — a submission is only an event while it still waits;
+    // Project tasks — a submission is only an event while it still waits;
     // once approved the completion supersedes it.
     const contractName = new Map(contracts.map((c) => [c.id, c.name]));
     for (const w of works) {

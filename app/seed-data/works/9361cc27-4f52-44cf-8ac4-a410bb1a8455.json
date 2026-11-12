@@ -1,0 +1,49 @@
+{
+  "id": "9361cc27-4f52-44cf-8ac4-a410bb1a8455",
+  "contractId": "ee0609d4-3179-4475-8f59-8d96c5c3edb4",
+  "clientName": "Rouang",
+  "accountManager": "Izzad",
+  "plannerLineId": "req:custom:2026-12:3:1",
+  "addendumVersion": 0,
+  "type": "custom",
+  "title": "Monthly report · Dec",
+  "channel": "Report",
+  "month": "2026-12",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-12-16",
+  "defaultDueDate": "2026-12-16",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "am",
+      "member": "Izzad",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": null,
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-06-26T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.529Z"
+}

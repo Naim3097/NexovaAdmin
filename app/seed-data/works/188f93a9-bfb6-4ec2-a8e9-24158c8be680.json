@@ -1,0 +1,52 @@
+{
+  "id": "188f93a9-bfb6-4ec2-a8e9-24158c8be680",
+  "contractId": "0e0938d5-dcab-4d66-ab19-02e5220e078c",
+  "clientName": "Zakat Selangor",
+  "accountManager": "Hakim",
+  "plannerLineId": "req:video:2026-12:1:2",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "Reel: Asnaf stories",
+  "channel": "Instagram",
+  "month": "2026-12",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-12-21",
+  "defaultDueDate": "2026-12-21",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 4.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "675d81ca-e0a2-4ba2-9a2f-16b9d45897bb"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-06-03T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.717Z"
+}

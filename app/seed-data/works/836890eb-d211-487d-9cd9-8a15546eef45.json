@@ -1,0 +1,52 @@
+{
+  "id": "836890eb-d211-487d-9cd9-8a15546eef45",
+  "contractId": "767be1f1-c1f8-4d74-84db-0b4537e896a4",
+  "clientName": "Dr Kartini",
+  "accountManager": "Hakim",
+  "plannerLineId": "req:video:2026-11:1:3",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "TikTok: Skincare on a budget",
+  "channel": "Instagram",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-23",
+  "defaultDueDate": "2026-11-23",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Izzad",
+      "pct": 100,
+      "hours": 6
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "8e1eb6fc-ce05-476d-9859-8cf52f986fc5"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-05-28T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.365Z"
+}

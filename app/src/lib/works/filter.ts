@@ -1,5 +1,5 @@
 /**
- * The one task filter every view shares (contract board, calendar, the
+ * The one task filter every view shares (project board, calendar, the
  * Deliverables list, the Website section …). Lives in the URL so a filtered
  * board can be shared as a link; "Me" is the one-click chip that narrows a
  * view to the tasks the signed-in person holds a share of (plus the ones
@@ -90,6 +90,15 @@ export function applyFilter(works: Work[], f: WorkFilter, today: string): Work[]
         if (q && !`${w.title} ${w.channel} ${w.clientName} ${w.notes}`.toLowerCase().includes(q)) return false;
         return true;
     });
+}
+
+/**
+ * An open task with a seat nobody holds: a share with a percentage but no
+ * person. The "No owner" view on Tasks (`/works?unassigned=1`) and the
+ * Dashboard's "no owner" count use the same rule.
+ */
+export function hasOpenSeat(w: Pick<Work, "status" | "split">): boolean {
+    return w.status !== "completed" && w.split.some((s) => s.pct > 0 && !s.member.trim());
 }
 
 /** Query string for a filter plus any extra params the page keeps (view, month …). */

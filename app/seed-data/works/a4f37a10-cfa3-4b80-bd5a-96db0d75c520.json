@@ -1,0 +1,52 @@
+{
+  "id": "a4f37a10-cfa3-4b80-bd5a-96db0d75c520",
+  "contractId": "649c59c0-6455-4332-a82e-30eda362c9c0",
+  "clientName": "LeanX Digital",
+  "accountManager": "Yusuf",
+  "plannerLineId": "req:seo:2026-12:2:1",
+  "addendumVersion": 0,
+  "type": "seo",
+  "title": "How NGOs can raise donations online",
+  "channel": "Blog",
+  "month": "2026-12",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-12-10",
+  "defaultDueDate": "2026-12-10",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Yusuf",
+      "pct": 100,
+      "hours": 4
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "seo",
+    "id": "521e291e-e103-4359-85c9-a00df8157852"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-07-01T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.900Z"
+}

@@ -1,38 +1,19 @@
 /**
- * Invoice automation for contracts — shared by the contract actions, the work
- * generator and the lifecycle advance. Server-side only (reads/writes the
- * data layer), but not a server-action module.
+ * Invoice automation for projects — shared by the project actions and the
+ * demo seed. A project bills monthly (one invoice per month) or once
+ * (one-off). Server-side only (reads/writes the data layer), but not a
+ * server-action module.
  */
 import type { Contract } from "@/lib/data/contracts";
 import { createInvoice, listInvoices, updateInvoice, type Invoice } from "@/lib/data/invoices";
 import { listClients } from "@/lib/data/clients";
-import type { ScheduleRow } from "@/lib/data/planners";
 import { invoiceForMonth } from "@/lib/contracts/helpers";
 
 /**
- * Raise the draft invoice for one row of the proposal's payment schedule
- * (deposit, month n, milestone …). Issued on the row's due date, payable 14
- * days later. Returns the existing invoice when the row was already raised.
- */
-export async function raiseScheduleInvoice(c: Contract, row: ScheduleRow, billToAddress = ""): Promise<Invoice | null> {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(row.dueDate) || !(row.amountMyr > 0)) return null;
-    if (row.invoiceId) {
-        const existing = (await listInvoices()).find((i) => i.id === row.invoiceId);
-        if (existing) return existing;
-    }
-    const dueDate = new Date(Date.parse(`${row.dueDate}T00:00:00Z`) + 14 * 86_400_000).toISOString().slice(0, 10);
-    const inv = await createInvoice({ clientName: c.clientName, contractId: c.id, issueDate: row.dueDate, dueDate });
-    await updateInvoice(inv.id, {
-        items: [{ id: crypto.randomUUID(), description: `${c.name} — ${row.label}`, details: c.code, quantity: 1, unitPriceMyr: row.amountMyr }],
-        billToAddress,
-    });
-    return inv;
-}
-
-/**
- * Raise the draft invoice for one month of a contract (retainer line
- * prefilled, issue date on the contract's invoice day, due 14 days later).
- * Returns the existing invoice when the month is already raised.
+ * Raise the draft invoice for one month of a project (retainer line
+ * prefilled, issue date on the project's invoice day, due 14 days later).
+ * Returns the existing invoice when the month is already raised. On a one-off
+ * project it raises the single invoice for the whole amount.
  */
 export async function raiseMonthInvoice(c: Contract, month: string): Promise<Invoice | null> {
     if (!/^\d{4}-\d{2}$/.test(month)) return null;

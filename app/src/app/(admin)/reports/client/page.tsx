@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getActingMember, requireTeamAccess } from "@/lib/auth";
-import { hasFunction } from "@/lib/roles";
-import { seesFinance } from "@/lib/scope";
+import { canSee, homeFor } from "@/lib/roles";
 import { listAllClientNames } from "@/lib/reports";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -41,9 +40,9 @@ async function openClientReportAction(formData: FormData) {
 
 export default async function ClientReportPickerPage() {
     await requireTeamAccess();
-    // Reports: managers, finance and account managers.
+    // Reports: management and the delivery or finance duty.
     const member = await getActingMember();
-    if (!seesFinance(member) && !hasFunction(member, "account_manager")) redirect("/home");
+    if (!canSee(member, "/reports")) redirect(homeFor(member));
     const clients = (await listAllClientNames()).filter(
         (c) => c !== "Nexov",
     );

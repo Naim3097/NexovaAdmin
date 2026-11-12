@@ -1,0 +1,22 @@
+{
+  "id": "bd246598-cc11-4caf-9581-128bcf118296",
+  "name": "Rizal Jaya",
+  "company": "Bengkel Motor Jaya",
+  "email": "bengkel-motor-jaya@example.com",
+  "phone": "",
+  "source": "facebook",
+  "sourceCampaignId": null,
+  "interestedIn": "Meta ads",
+  "estValueMyr": 4500,
+  "status": "lost",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Naim",
+  "score": 42,
+  "autoIntake": false,
+  "lostReason": "no_response",
+  "lostNote": "Three follow-ups over two weeks, no reply.",
+  "createdAt": "2026-09-13T06:27:03.731Z",
+  "updatedAt": "2026-10-08T06:27:03.731Z"
+}

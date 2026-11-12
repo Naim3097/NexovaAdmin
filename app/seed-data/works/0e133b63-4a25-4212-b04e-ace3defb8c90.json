@@ -1,0 +1,52 @@
+{
+  "id": "0e133b63-4a25-4212-b04e-ace3defb8c90",
+  "contractId": "649c59c0-6455-4332-a82e-30eda362c9c0",
+  "clientName": "LeanX Digital",
+  "accountManager": "Yusuf",
+  "plannerLineId": "req:seo:2026-11:2:1",
+  "addendumVersion": 0,
+  "type": "seo",
+  "title": "A content calendar template for SMEs",
+  "channel": "Blog",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-10",
+  "defaultDueDate": "2026-11-10",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Yusuf",
+      "pct": 100,
+      "hours": 4
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "seo",
+    "id": "34745dac-f573-4c6d-a377-2955ffb9d9d4"
+  },
+  "startedAt": "2026-11-04T06:27:03.731Z",
+  "submittedAt": "2026-11-08T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/0e133b63",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Yusuf",
+    "at": "2026-11-09T06:27:03.731Z"
+  },
+  "completedAt": "2026-11-09T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-07-01T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.936Z"
+}

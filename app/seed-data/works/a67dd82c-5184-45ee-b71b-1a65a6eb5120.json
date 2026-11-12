@@ -1,0 +1,52 @@
+{
+  "id": "a67dd82c-5184-45ee-b71b-1a65a6eb5120",
+  "contractId": "0e0938d5-dcab-4d66-ab19-02e5220e078c",
+  "clientName": "Zakat Selangor",
+  "accountManager": "Hakim",
+  "plannerLineId": "req:video:2026-11:0:3",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "TikTok: Where your zakat goes",
+  "channel": "TikTok",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-18",
+  "defaultDueDate": "2026-11-18",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "in_progress",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 4.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "7b411bfa-2b6d-4b22-93d3-0bcbe879b278"
+  },
+  "startedAt": "2026-11-10T06:27:03.731Z",
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "internal",
+  "waitingSince": "2026-11-11T06:27:03.731Z",
+  "createdAt": "2026-06-03T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.773Z"
+}

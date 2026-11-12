@@ -74,37 +74,45 @@ export default async function PortalBillingPage({
                 </div>
             </div>
 
-            {/* This month */}
+            {/* This month — the monthly billing of the active projects */}
             <Card>
                 <CardHeader className="pb-2">
                     <CardTitle className="text-base">
                         This month
-                        {billing.packageName
-                            ? ` · ${billing.packageName}`
+                        {billing.projects.length > 0
+                            ? ` · ${billing.projects.join(", ")}`
                             : ""}
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-1 text-sm">
                     <Row
-                        label={`Monthly retainer (${billing.deliveredContents}/${billing.includedContents} content delivered)`}
+                        label={
+                            billing.includedContents > 0
+                                ? `Monthly retainer (${billing.deliveredContents}/${billing.includedContents} content delivered)`
+                                : "Monthly retainer"
+                        }
                         value={fmtMyr(billing.retainer)}
                     />
-                    {extras.contentCount > 0 ? (
-                        <Row
-                            label={`Extra visuals × ${extras.contentCount}`}
-                            value={fmtMyr(extras.contentCharge)}
-                        />
-                    ) : null}
-                    {extras.revisionCount > 0 ? (
-                        <Row
-                            label={`Extra revisions × ${extras.revisionCount}`}
-                            value={fmtMyr(extras.revisionCharge)}
-                        />
-                    ) : null}
                     <div className="mt-1 flex items-center justify-between border-t pt-1 font-semibold">
                         <span>Estimated total</span>
                         <span>{fmtMyr(billing.total)}</span>
                     </div>
+                    {extras.contentCount > 0 || extras.revisionCount > 0 ? (
+                        <p className="pt-1 text-xs text-muted-foreground">
+                            Beyond your plan this month:{" "}
+                            {[
+                                extras.contentCount > 0
+                                    ? `${extras.contentCount} extra visual${extras.contentCount === 1 ? "" : "s"}`
+                                    : "",
+                                extras.revisionCount > 0
+                                    ? `${extras.revisionCount} extra revision${extras.revisionCount === 1 ? "" : "s"}`
+                                    : "",
+                            ]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            . Your account manager will confirm any charge.
+                        </p>
+                    ) : null}
                     <p className="pt-1 text-xs text-muted-foreground">
                         An estimate for {month}. Your formal invoice appears below
                         once issued.

@@ -1,23 +1,35 @@
 /**
  * Demo seed for the LOCAL dev-store (.dev-data/) — never touches Supabase.
  *
- * Fills the sandbox with a believable agency snapshot (team, clients, leads,
- * quotations, contracts with their tasks and the posts / campaigns / SEO
- * articles they are done in, invoices across several months) so the
- * Management tabs have real shapes to show: an overloaded designer, an idle
- * SEO specialist, a client waiting on review, stale leads, an expiring quote,
- * a retainer month whose invoice was never sent, overdue invoices, overdue
- * tasks, a task whose date the account manager moved, an unsigned contract
- * with tasks waiting.
+ * Fills the sandbox with the agency as it really is: the eight people on the
+ * team (their job roles, categories, set-aside hours, days off, cost rates)
+ * and the eleven real clients, each with one project, its deliverables, the
+ * tasks generated from them, the posts / campaigns / SEO articles those tasks
+ * are done in, the invoices and the project costs. Fees, contacts and dates
+ * are placeholders the owner edits; the shapes are what the Dashboard tabs
+ * need to have something to say:
  *
- * Delivery is requirement-based: the account manager creates the contract
- * with its REQUIREMENTS ("8 posts a month, 1 campaign a month, 2 branding
- * items once"), a CREW (one person per seat) and the phases of a template,
- * and the tasks are generated from them (src/lib/contracts/generate.ts) with
- * their linked post / campaign / article. The seed drives that same path,
- * then renames the generic generated titles ("Content post 3 of 8") to the
- * realistic ones below and puts the tasks in their demo states. Invoices are
- * raised month by month from the contract's billing.
+ *   Delivery — this month a mix of done on time and late, in progress, in
+ *              review (a client approval waiting 9 days, one 3 days, AM
+ *              approvals), overdue (one ~20 days), waiting on the client and
+ *              on us, a rework round, planned days pulled earlier, an open seat.
+ *   Sales    — every pipeline stage, sent quotes, three lost deals with
+ *              reasons, signings spread over the year, one signed this month.
+ *   Money    — monthly invoices from each retainer's start, a draft, a slow
+ *              NGO (two overdue), a past client 60+ days overdue, receipts this
+ *              month, a half-billed one-off, ad spend / freelancer / software costs.
+ *   Team     — Izzad and Bob over 100 %, Hakim under 60 %, days off.
+ *   Clients  — check-ins, renewals (renewing, in talks, at risk, not discussed).
+ *
+ * Delivery is requirement-based: the account manager creates the project
+ * with its DELIVERABLE rows ("8 static images a month, 1 campaign a month"),
+ * a CREW (one person per seat) and the phases of a set, and the tasks are
+ * generated from them (src/lib/contracts/generate.ts) with their linked post
+ * / campaign / article. The seed drives that same path for last month, this
+ * month and the next two (to keep the store small), then renames the generic
+ * generated titles to realistic ones, moves rows onto the person who really
+ * does them, and puts the tasks in their demo states. Invoices are raised
+ * month by month from the project's billing.
  *
  * Usage (from app/):
  *   npm run seed:demo             # refuses if demo-owned data already exists
@@ -25,9 +37,9 @@
  *
  * Only the entities it seeds are wiped on --reset (team, clients, leads,
  * quotations, sprint-tasks, content, invoices, campaigns, services,
- * contracts, works, seo-articles, phase-templates — plus the retired planners
- * folder, if an older seed left one). Onboarding, notifications, audit and
- * uploads are left alone.
+ * contracts, works, seo-articles, project-templates — plus the retired
+ * planners and phase-templates folders, if an older seed left them).
+ * Onboarding, notifications, audit and uploads are left alone.
  */
 import { promises as fs } from "node:fs";
 import path from "node:path";
@@ -44,20 +56,29 @@ import * as invoices from "@/lib/dev-store/invoices";
 import * as campaigns from "@/lib/dev-store/campaigns";
 import * as services from "@/lib/dev-store/services";
 import * as contracts from "@/lib/dev-store/contracts";
+import * as projectTemplates from "@/lib/dev-store/project-templates";
 import * as seo from "@/lib/dev-store/seo-articles";
-import * as phaseTemplates from "@/lib/dev-store/phase-templates";
+import * as agency from "@/lib/dev-store/agency";
 import type { BillingCadence, Contract, ContractStage, ContractStatus, Crew, Requirement } from "@/lib/dev-store/contracts";
-import type { LineType, PlannerPhase } from "@/lib/dev-store/planners";
+import type { PlannerPhase } from "@/lib/dev-store/planners";
+import { DEFAULT_SPLIT, type Approver, type LineType } from "@/lib/planners/vocab";
 import type { Work, WorkPatch, WorkShare } from "@/lib/data/works";
-type HandShare = Omit<WorkShare, "hours"> & { hours?: number };
 import type { ServiceCategory } from "@/lib/dev-store/services";
-import type { ReservedKey, SystemRole, TeamFunction, TeamMember, TeamRole } from "@/lib/dev-store/team";
-import { withHours } from "@/lib/capacity/helpers";
+import type { SetAside, SystemRole, TeamFunction, TeamMember } from "@/lib/dev-store/team";
+import type { TeamCategory } from "@/lib/team/categories";
+import type { ClientStatus } from "@/lib/dev-store/clients";
+import { nearestWorkingDay, withHours } from "@/lib/capacity/helpers";
 import type { LeadSource, LeadStatus } from "@/lib/dev-store/leads";
-import type { Quotation } from "@/lib/dev-store/quotations";
+import type { Quotation, QuotationStatus } from "@/lib/dev-store/quotations";
 import type { ContentPlatform, ContentReviewStatus, ContentStatus } from "@/lib/dev-store/content";
 import type { CampaignPlatform } from "@/lib/dev-store/campaigns";
 import type { InvoiceStatus } from "@/lib/dev-store/invoices";
+import type { RenewalStatus } from "@/lib/contracts/renewal";
+import type { CostKind, ProjectCost } from "@/lib/contracts/costs";
+import type { LostReason } from "@/lib/leads/lost";
+import type { WaitingOnKey } from "@/lib/works/waiting";
+
+type HandShare = Omit<WorkShare, "hours"> & { hours?: number };
 
 // --- .env.local → process.env (tsx doesn't do this) -------------------------
 async function loadEnvLocal() {
@@ -119,6 +140,8 @@ async function loadDataModules() {
     ]);
 }
 
+// --- Dates ------------------------------------------------------------------------
+// Everything is relative to the day the seed runs, so the demo keeps its shape.
 const MS_DAY = 24 * 60 * 60 * 1000;
 const NOW = Date.now();
 /** YYYY-MM-DD, `offset` days from today (negative = past). */
@@ -127,19 +150,38 @@ const ymd = (offset: number) => new Date(NOW + offset * MS_DAY).toISOString().sl
 const iso = (offset: number) => new Date(NOW + offset * MS_DAY).toISOString();
 const TODAY = ymd(0);
 const MONTH = TODAY.slice(0, 7);
-/** YYYY-MM-DD for day `day` of the month `k` months before the current one. */
-function monthDay(k: number, day: number): string {
-    const [y, m] = MONTH.split("-").map(Number);
-    return new Date(Date.UTC(y, m - 1 - k, day)).toISOString().slice(0, 10);
-}
-const LAST_MONTH = monthDay(1, 1).slice(0, 7);
 /** YYYY-MM, `n` months after `ym`. */
 function monthPlus(ym: string, n: number): string {
     const [y, m] = ym.split("-").map(Number);
     return new Date(Date.UTC(y, m - 1 + n, 1)).toISOString().slice(0, 7);
 }
+/** YYYY-MM `k` months from this one (negative = past). */
+const M = (k: number) => monthPlus(MONTH, k);
+const NEXT_MONTH = M(1);
 /** Days from today to a YYYY-MM-DD (negative = past). */
 const offsetOf = (date: string) => Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${TODAY}T00:00:00Z`)) / MS_DAY);
+/** YYYY-MM-DD for `day` of `ym`, clamped to the month. */
+function dayOf(ym: string, day: number): string {
+    const [y, m] = ym.split("-").map(Number);
+    const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    return `${ym}-${String(Math.max(1, Math.min(last, day))).padStart(2, "0")}`;
+}
+const endOf = (ym: string) => dayOf(ym, 31);
+/** The later of two YYYY-MM-DD. */
+const later = (a: string, b: string) => (a > b ? a : b);
+/** The earlier of two YYYY-MM-DD. */
+const earlier = (a: string, b: string) => (a < b ? a : b);
+/** "Nov" for a YYYY-MM. */
+function monShort(ym: string): string {
+    const [y, m] = ym.split("-").map(Number);
+    return new Date(Date.UTC(y, m - 1, 1)).toLocaleString("en-MY", { month: "short", timeZone: "UTC" });
+}
+/** "16 Nov" for the Monday of the week holding a YYYY-MM-DD. */
+function weekOf(date: string): string {
+    const d = new Date(`${date}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
+    return d.toLocaleString("en-MY", { day: "numeric", month: "short", timeZone: "UTC" });
+}
 
 const ROOT = path.join(process.cwd(), ".dev-data");
 const OWNED_DIRS = [
@@ -155,10 +197,10 @@ const OWNED_DIRS = [
     "contracts",
     "works",
     "seo-articles",
-    "phase-templates",
+    "project-templates",
 ];
 /** Folders of retired features: wiped on --reset so stale records do not linger, never seeded. */
-const LEGACY_DIRS = ["planners"];
+const LEGACY_DIRS = ["planners", "phase-templates"];
 
 async function dirHasFiles(dir: string): Promise<boolean> {
     try {
@@ -178,29 +220,129 @@ async function patchJson(dir: string, id: string, patch: Record<string, unknown>
 }
 
 // --- Team -------------------------------------------------------------------
-// SYSTEM roles are permissions (admin / management / user); FUNCTIONS are the
-// hats handed out (account manager, sales, finance), each with hours a week
-// reserved from delivery.
+// SYSTEM roles are permissions (admin / management / user); DUTIES are the
+// pages handed out (delivery, finance). The job role is free text; the
+// category maps a person to task seats. Set-aside rows are the hours a week
+// that leave no task behind; delivery capacity is the 32-hour week minus them.
+// Hours per task type and cost rates are placeholders the owner edits.
 const TEAM: Array<{
     name: string;
-    role: TeamRole;
+    role: string;
+    category: TeamCategory;
     skills: string;
     systemRoles: SystemRole[];
-    functions?: TeamFunction[];
-    reserved?: Partial<Record<ReservedKey, number>>;
-    weeklyHours?: number;
-    hours?: Partial<Record<LineType, number>>;
+    functions: TeamFunction[];
+    setAside: SetAside[];
+    hours: Partial<Record<LineType, number>>;
+    /** Internal hourly cost (MYR) behind project margin. */
+    costRate: number;
+    /** Days off per month, taken off that month's capacity. */
+    daysOff?: Record<string, number>;
 }> = [
-    { name: "Naim", role: "CEO", skills: "strategy, client relations", systemRoles: ["admin", "management"], functions: ["account_manager"], reserved: { management: 12, account_manager: 4 }, weeklyHours: 24, hours: { custom: 1.5, campaign: 2 } },
-    { name: "Yusuf", role: "PM", skills: "delivery, scrum, QA", systemRoles: ["admin", "management"], functions: ["finance", "account_manager"], reserved: { management: 6, finance: 6 }, weeklyHours: 32, hours: { custom: 1.5, website: 3 } },
-    { name: "Aina", role: "Closer", skills: "sales, onboarding", systemRoles: ["user"], functions: ["sales", "account_manager"], reserved: { sales: 15 }, weeklyHours: 32, hours: { custom: 1, post: 0.5, campaign: 1 } },
-    { name: "Farid", role: "Frontend", skills: "Next.js, React, Tailwind", systemRoles: ["user"], weeklyHours: 32, hours: { website: 10, branding: 4 } },
-    { name: "Hafiz", role: "Backend", skills: "Supabase, APIs, DevOps", systemRoles: ["user"], weeklyHours: 32, hours: { website: 12 } },
-    { name: "Mei Ling", role: "UI/UX", skills: "Figma, branding, motion", systemRoles: ["user"], weeklyHours: 32, hours: { post: 2.5, branding: 8, website: 6 } },
-    { name: "Syafiq", role: "Content", skills: "copywriting, social, video", systemRoles: ["user"], weeklyHours: 32, hours: { post: 1.5, seo: 3, campaign: 2, custom: 2 } },
-    { name: "Priya", role: "Ads", skills: "Meta Ads, Google Ads, analytics", systemRoles: ["user"], weeklyHours: 32, hours: { campaign: 8, post: 1 } },
-    { name: "Daniel", role: "SEO", skills: "technical SEO, GMB, content strategy", systemRoles: ["user"], weeklyHours: 32, hours: { seo: 5, post: 1 } },
+    {
+        name: "Naim",
+        role: "Chief Executive Officer",
+        category: "closer",
+        skills: "strategy, sales, client relations",
+        systemRoles: ["admin", "management"],
+        functions: ["delivery"],
+        setAside: [{ label: "Sales", hours: 10 }, { label: "Management", hours: 10 }],
+        hours: { custom: 2, static: 2, video: 5, campaign: 6, seo: 4, website: 8 },
+        costRate: 150,
+    },
+    {
+        name: "Danisy",
+        role: "Chief Technical Officer",
+        category: "dm",
+        skills: "performance marketing, analytics, tracking, martech",
+        systemRoles: ["management"],
+        functions: ["delivery"],
+        setAside: [{ label: "Management", hours: 8 }],
+        hours: { campaign: 6, seo: 4, static: 2, video: 5, custom: 1.5, website: 8 },
+        costRate: 130,
+    },
+    {
+        name: "Izzad",
+        role: "Creative Director",
+        category: "creative",
+        skills: "art direction, brand design, video editing",
+        systemRoles: ["management"],
+        functions: ["delivery"],
+        setAside: [{ label: "Management", hours: 6 }],
+        hours: { static: 2, video: 6, custom: 2, campaign: 6, seo: 4, website: 8 },
+        costRate: 110,
+        daysOff: { [MONTH]: 2 },
+    },
+    {
+        name: "Zafran",
+        role: "Head of Digital Infrastructure",
+        category: "developer",
+        skills: "web development, hosting, payment integrations",
+        systemRoles: ["management"],
+        functions: ["delivery"],
+        setAside: [{ label: "Management", hours: 6 }],
+        hours: { website: 10, custom: 2, static: 2, video: 5, campaign: 6, seo: 4 },
+        costRate: 110,
+    },
+    {
+        name: "Yusuf",
+        role: "Head of Business Operations",
+        category: "closer",
+        skills: "operations, finance, sales, reporting",
+        systemRoles: ["admin", "management"],
+        functions: ["delivery", "finance"],
+        setAside: [
+            { label: "Management", hours: 8 },
+            { label: "Sales", hours: 6 },
+            { label: "Operations", hours: 6 },
+            { label: "Finance review", hours: 4 },
+        ],
+        hours: { custom: 2, static: 2, video: 5, campaign: 6, seo: 4, website: 8 },
+        costRate: 130,
+    },
+    {
+        name: "Hakim",
+        role: "Head of Account Management",
+        category: "am",
+        skills: "account management, community, copywriting, reporting",
+        systemRoles: ["management"],
+        functions: ["delivery"],
+        setAside: [{ label: "Client calls", hours: 6 }, { label: "Management", hours: 4 }],
+        hours: { custom: 2, static: 2, video: 5, campaign: 6, seo: 4, website: 8 },
+        costRate: 100,
+        daysOff: { [M(2)]: 3 },
+    },
+    {
+        name: "Bob",
+        role: "Digital Marketer",
+        category: "dm",
+        skills: "Meta Ads, content, short-form video, SEO",
+        systemRoles: ["user"],
+        functions: ["delivery"],
+        setAside: [],
+        hours: { campaign: 5, seo: 3, static: 1.75, video: 4.5, custom: 1.5, website: 8 },
+        costRate: 45,
+        daysOff: { [NEXT_MONTH]: 1 },
+    },
+    {
+        // Contracts, invoices, payments, quotations, onboarding: finance only, no delivery capacity.
+        name: "Farisha",
+        role: "Admin and Business Support",
+        category: "business_support",
+        skills: "contracts, invoicing, payments, quotations, onboarding",
+        systemRoles: ["user"],
+        functions: ["finance"],
+        setAside: [
+            { label: "Invoicing & payments", hours: 12 },
+            { label: "Contracts & quotations", hours: 8 },
+            { label: "Onboarding", hours: 6 },
+            { label: "Admin", hours: 6 },
+        ],
+        hours: { custom: 1 },
+        costRate: 40,
+    },
 ];
+
 const item = (description: string, unitPriceMyr: number, quantity = 1) => ({
     id: randomUUID(),
     description,
@@ -228,28 +370,36 @@ async function seedInvoice(input: {
     await invoices.updateInvoice(inv.id, {
         items: input.items,
         status: input.status,
-        paidAt: input.status === "paid" ? iso(offsetOf(input.issueDate) + (input.paidAfterDays ?? 7)) : null,
+        paidAt: input.status === "paid" ? iso(Math.min(0, offsetOf(input.issueDate) + (input.paidAfterDays ?? 7))) : null,
     });
-    await patchJson("invoices", inv.id, { createdAt: iso(offsetOf(input.issueDate)) });
+    await patchJson("invoices", inv.id, { createdAt: iso(Math.min(0, offsetOf(input.issueDate))) });
     return inv;
 }
 
 /**
- * Raise the monthly invoices of a retainer contract from its billing, up to
- * the current month: past months paid, this month as given (sent, or still a
- * draft the AM never sent). Later months are raised when they come. Returns
- * how many it raised.
+ * Raise the monthly invoices of a retainer from its billing, up to the
+ * current month: past months paid, this month as given (sent, or a draft
+ * still being prepared). `overrides` changes single months (an NGO's unpaid
+ * months, a payment that landed late). Later months are raised when they
+ * come. Returns how many it raised.
  */
-async function settleMonthInvoices(c: Contract, months: string[], thisMonth: InvoiceStatus): Promise<number> {
+async function settleMonthInvoices(
+    c: Contract,
+    months: string[],
+    thisMonth: InvoiceStatus,
+    overrides: Record<string, { status: InvoiceStatus; paidAfterDays?: number }> = {},
+): Promise<number> {
     let n = 0;
-    for (const month of months) {
+    for (const [i, month] of months.entries()) {
         if (month > MONTH) break;
         const inv = await invoicing.raiseMonthInvoice(c, month);
         if (!inv) continue;
-        const status: InvoiceStatus = month < MONTH ? "paid" : thisMonth;
+        const o = overrides[month];
+        const status: InvoiceStatus = o?.status ?? (month < MONTH ? "paid" : thisMonth);
+        const after = o?.paidAfterDays ?? 5 + (i % 4) * 3;
         await invoices.updateInvoice(inv.id, {
             status,
-            paidAt: status === "paid" ? iso(offsetOf(inv.issueDate) + 7) : null,
+            paidAt: status === "paid" ? iso(Math.min(0, offsetOf(inv.issueDate) + after)) : null,
         });
         await patchJson("invoices", inv.id, { createdAt: iso(Math.min(offsetOf(inv.issueDate), 0)) });
         n += 1;
@@ -257,67 +407,210 @@ async function settleMonthInvoices(c: Contract, months: string[], thisMonth: Inv
     return n;
 }
 
+/** A project cost row; dated no later than today. */
+function cost(label: string, kind: CostKind, amountMyr: number, date: string, addedBy: string): ProjectCost {
+    return { id: randomUUID(), label, kind, amountMyr, date: earlier(date, TODAY), addedBy };
+}
+
 // --- Realistic titles for the generated tasks ------------------------------------
-/** Rotating post titles per client, "Reel: …" / "Carousel: …". */
-const POST_POOLS: Record<string, string[]> = {
-    leanx: [
-        "Reel: Founder story",
-        "Carousel: Product features",
-        "Reel: FPX explainer",
-        "Carousel: Payment myths",
-        "Reel: Merchant onboarding tips",
-        "Carousel: Security & trust",
-        "Reel: Customer testimonial",
+// One pool per deliverable row; the seed rotates through it month by month.
+const T = {
+    kartiniStatic: [
+        "Carousel: 5 signs your eczema needs a specialist",
+        "Static: Sunscreen myths, busted",
+        "Carousel: Acne scars — what actually works",
+        "Static: Cruelty-free skincare, explained",
+        "Carousel: Skin barrier 101",
+        "Static: Adopt, don't shop — Dr Kartini's rescue story",
+        "Carousel: Pigmentation in Malaysian skin",
+        "Static: Consultation FAQ",
+        "Carousel: Ingredients to avoid in pregnancy",
+        "Static: Stray feeding drive this weekend",
+        "Carousel: Hair loss — when to see a dermatologist",
+        "Static: Clinic hours and booking",
+    ],
+    kartiniVideo: [
+        "Reel: A day at the clinic",
+        "TikTok: Dermatologist reacts to viral skincare hacks",
+        "Reel: Why I speak up for animals",
+        "TikTok: The 30-second sunscreen guide",
+        "Reel: Patient Q&A — psoriasis",
+        "TikTok: Skincare on a budget",
+    ],
+    kartiniSeo: [
+        "Eczema treatment in Malaysia: what to expect",
+        "How to choose a dermatologist in Kuala Lumpur",
+        "Cruelty-free skincare you can buy in Malaysia",
+        "Acne scar treatments compared",
+        "Sun protection for a tropical climate",
+        "Hair loss in women: causes and treatment",
+    ],
+    rouangStatic: [
+        "Carousel: Before & after — Bangsar condo",
+        "Static: 3 layout ideas for small kitchens",
+        "Carousel: Project showcase — Shah Alam terrace",
+        "Static: Quartz vs granite worktops",
+        "Carousel: A renovation timeline, step by step",
+        "Static: Client testimonial — Puchong semi-D",
+        "Carousel: Built-in wardrobe ideas",
+        "Static: Book a free site consultation",
+        "Carousel: Budgeting your renovation",
+    ],
+    rouangVideo: [
+        "Reel: Site walkthrough — Mont Kiara unit",
+        "Reel: Time-lapse kitchen install",
+        "TikTok: Renovation mistakes to avoid",
+        "Reel: Handover day",
+        "TikTok: How we plan a renovation",
+    ],
+    baitulCampaign: [
+        "Donation campaign: Wakaf one brick",
+        "Donation campaign: Jumaat infaq drive",
+        "Donation campaign: Surau roof fund",
+        "Donation campaign: Jumaat infaq drive",
+        "Donation campaign: Year-end sadaqah appeal",
+        "Donation campaign: Jumaat infaq drive",
+        "Donation campaign: Wudhu area fund",
+        "Donation campaign: Jumaat infaq drive",
+    ],
+    baitulStatic: [
+        "Poster: Wakaf one brick, RM 50",
+        "Static: Progress update — roof frame up",
+        "Poster: Infaq Jumaat this week",
+        "Static: Thank you, donors",
+        "Poster: Sponsor a prayer mat",
+        "Static: How your donation is used",
+        "Poster: Scan to give — QR donation",
+        "Static: Gotong-royong volunteer call",
+    ],
+    baitulVideo: ["Video: Surau construction progress", "Video: The imam's message to donors", "Video: Gotong-royong highlights", "Video: Where your wakaf goes"],
+    digitalVideo: [
+        "Founder video: Why we started LeanX Digital",
+        "Founder video: What a retainer really costs",
+        "Founder video: How we plan a month of content",
+        "Founder video: Agency or freelancer?",
+        "Founder video: Lessons from our clients this year",
+        "Founder video: Our plans for next year",
+    ],
+    digitalStatic: [
+        "LinkedIn: Client win — Tropicor",
+        "LinkedIn: We are hiring a designer",
+        "LinkedIn: Case study — Zakat for Gen Z",
+        "LinkedIn: What we learned this quarter",
+        "LinkedIn: Behind the scenes of a shoot",
+        "LinkedIn: How we report to clients",
+    ],
+    digitalSeo: [
+        "What a digital marketing retainer costs in Malaysia",
+        "How to brief an agency in one page",
+        "A content calendar template for SMEs",
+        "Meta or Google ads: where to start",
+        "How NGOs can raise donations online",
+        "Short-form video for B2B brands",
+    ],
+    payrightStatic: [
+        "Carousel: How Payright payouts work",
+        "Static: Merchant spotlight",
+        "Carousel: 5 ways to cut payment failures",
+        "Static: New — instant settlement",
+        "Carousel: Payment links vs QR",
+        "Static: Security you can trust",
         "Carousel: Month-end recap",
-        "Reel: Behind the scenes",
-        "Carousel: Fees explained",
-        "Reel: A day with a merchant",
-        "Carousel: Case study — café chain",
-        "Reel: Product update",
-        "Carousel: Cashflow tips for SMEs",
-        "Reel: Team spotlight",
-        "Carousel: Q&A from the inbox",
+        "Static: Fee calculator",
+        "Carousel: E-invoicing checklist",
+        "Static: Customer testimonial",
+        "Carousel: Accept cards in a day",
+        "Static: Q&A from the inbox",
     ],
-    nusa: [
-        "Reel: Class highlights",
-        "Carousel: Beginner's guide to HIIT",
-        "Reel: Trainer tip of the week",
-        "Carousel: Membership perks",
-        "Reel: Member transformation",
-        "Carousel: Stretching routine",
-        "Reel: Studio tour",
-        "Carousel: Meal prep basics",
-    ],
-    harmoni: [
-        "Reel: Clinic tour",
-        "Carousel: Patient FAQ — braces",
-        "Reel: Teeth whitening promo",
-        "Carousel: Kids' first visit",
-        "Reel: Meet the dentist",
-        "Carousel: Invisalign vs braces",
-        "Reel: Before & after",
-        "Carousel: Oral care myths",
-        "Reel: Scaling explained",
-        "Carousel: Dental insurance 101",
-        "Reel: Patient testimonial",
-        "Carousel: Emergency dental care",
-    ],
-};
-const SEO_POOLS: Record<string, string[]> = {
-    leanx: [
-        "How FPX payments work for Malaysian SMEs",
-        "Choosing a payment gateway in 2026",
-        "Reducing failed transactions at checkout",
+    payrightVideo: ["Reel: Merchant story — a bakery in Klang", "Reel: Payright in 30 seconds", "TikTok: Payment myths", "Reel: Behind the dashboard"],
+    payrightSeo: [
+        "How online payments work for Malaysian SMEs",
+        "Payment gateway fees compared",
         "E-invoicing: what merchants must know",
-        "The cashless café playbook",
+        "Reducing failed transactions at checkout",
         "Subscription billing for small businesses",
-        "QR payments vs cards: a merchant's guide",
         "Chargebacks explained",
+        "QR payments vs cards: a merchant's guide",
+        "Cross-border payments 101",
+    ],
+    leanxStatic: [
+        "Carousel: LeanX for online sellers",
+        "Static: Collect payments with one link",
+        "Carousel: FPX explained",
+        "Static: Merchant of the month",
+        "Carousel: Cashflow tips for SMEs",
+        "Static: Next-day payouts",
+        "Carousel: Fraud protection basics",
+        "Static: Integrations we support",
+        "Carousel: Case study — a café chain",
+        "Static: Product update",
+    ],
+    leanxVideo: ["Reel: Founder story", "TikTok: Set up a payment link in 60 seconds", "Reel: Customer testimonial", "Reel: Product update", "TikTok: A day with a merchant"],
+    leanxSeo: [
+        "How FPX payments work for Malaysian SMEs",
+        "Choosing a payment gateway",
+        "The cashless café playbook",
         "Payment security checklist for SMEs",
         "Merchant onboarding checklist",
-        "Cross-border payments 101",
         "Reconciliation made simple",
     ],
+    leanisStatic: [
+        "LinkedIn: Leanis at a glance",
+        "Carousel: Lean operations in 5 steps",
+        "Static: Client success story",
+        "Carousel: Digitalise your SOPs",
+        "Static: Meet the team",
+        "Carousel: A cost-saving checklist",
+        "Static: Webinar invite",
+        "Carousel: Automation quick wins",
+    ],
+    leanisVideo: ["Reel: What Leanis does in 30 seconds", "Reel: Client interview", "Reel: Office tour", "Reel: Founder Q&A"],
+    leanisSeo: [
+        "Lean management for Malaysian SMEs",
+        "How to digitalise your SOPs",
+        "Process automation: where to start",
+        "Cutting operating costs without cutting people",
+    ],
+    zakatTiktok: [
+        "TikTok: Zakat in 30 seconds",
+        "TikTok: Who receives zakat?",
+        "TikTok: Zakat on your first salary",
+        "TikTok: Gen Z asks the ustaz",
+        "TikTok: Zakat vs sedekah",
+        "TikTok: Paying zakat online, step by step",
+        "TikTok: Myth — zakat is only for Ramadan",
+        "TikTok: Where your zakat goes",
+        "TikTok: Zakat on savings, explained",
+        "TikTok: A day in the life of an amil",
+    ],
+    zakatReel: ["Reel: Campus zakat roadshow", "Reel: Asnaf stories", "Reel: Zakat calculator walkthrough", "Reel: Your zakat at work"],
+    zakatStatic: [
+        "Infographic: Zakat calculator basics",
+        "Infographic: The 8 asnaf explained",
+        "Infographic: Zakat on gold and savings",
+        "Infographic: Pay with your e-wallet",
+        "Infographic: Zakat by the numbers",
+        "Infographic: Fitrah vs harta",
+    ],
+    enfrasysStatic: [
+        "LinkedIn: Enfrasys at a glance",
+        "LinkedIn: Cloud migration in 5 steps",
+        "LinkedIn: Security tip of the week",
+        "LinkedIn: Customer story",
+        "LinkedIn: Meet the engineers",
+        "LinkedIn: Modern workplace checklist",
+        "LinkedIn: Event recap",
+        "LinkedIn: Data governance basics",
+    ],
+    enfrasysVideo: ["Video: Explainer — cloud cost control", "Video: Customer interview", "Video: Explainer — zero trust in 60 seconds", "Video: Behind the helpdesk"],
+    tropicorMeta: [
+        "Meta campaign: Festive gift boxes",
+        "Meta campaign: Retargeting — cart abandoners",
+        "Meta campaign: New flavour launch",
+        "Meta campaign: Lookalike prospecting",
+    ],
+    tropicorGoogle: ["Google Ads: Brand search", "Google Ads: Shopping — best sellers", "Google Ads: Performance Max", "Google Ads: Search — gifting terms"],
+    tropicorStatic: ["Ad creative: Festive bundle", "Ad creative: Free delivery offer", "Ad creative: Product close-up", "Ad creative: Customer review", "Ad creative: Limited flavour"],
 };
 
 /** Channel → the platform of the post / campaign record it is done in. */
@@ -326,6 +619,7 @@ function contentPlatform(channel: string): ContentPlatform {
     if (c.includes("tiktok")) return "tiktok";
     if (c.includes("facebook")) return "facebook";
     if (c.includes("linkedin")) return "linkedin";
+    if (c.includes("youtube")) return "youtube";
     if (c.includes("blog")) return "blog";
     return "instagram";
 }
@@ -337,38 +631,87 @@ function campaignPlatform(channel: string): CampaignPlatform {
     return "meta";
 }
 
-/** The phases of a starter template with month ranges filled in (indexes into `months`; negative = from the end). */
-function phasesFromTemplate(templateName: string, months: string[], ranges: Record<string, [number, number]>): PlannerPhase[] {
-    const t = phaseTemplates.STARTER_PHASE_TEMPLATES.find((x) => x.name === templateName);
-    if (!t?.phases) throw new Error(`No starter phase template "${templateName}"`);
+/**
+ * The phase sets the demo projects are laid out with. `work` is the phase the
+ * repeating deliverables (posts, videos, campaigns, articles) sit in.
+ */
+const PHASE_SETS: Record<string, { work: string; phases: Array<{ key: string; name: string; summary: string }> }> = {
+    "Social retainer": {
+        work: "production",
+        phases: [
+            { key: "kickoff", name: "Kickoff", summary: "Onboarding, brand audit, access, strategy sign-off." },
+            { key: "foundation", name: "Foundation", summary: "Brand kit, content pillars and account setup." },
+            { key: "production", name: "Production", summary: "Monthly statics, videos, campaigns and articles." },
+            { key: "review", name: "Review", summary: "Performance review, renewal proposal, next plan." },
+        ],
+    },
+    "Donation drive": {
+        work: "drives",
+        phases: [
+            { key: "kickoff", name: "Kickoff", summary: "Committee briefing, donation channels, tracking." },
+            { key: "appeal", name: "Appeal launch", summary: "Launch posters, the donation link and the first campaign." },
+            { key: "drives", name: "Monthly drives", summary: "Donation campaigns, posters and progress videos." },
+            { key: "review", name: "Review", summary: "Donor report, results and the next appeal." },
+        ],
+    },
+    "Campaign management": {
+        work: "optimise",
+        phases: [
+            { key: "setup", name: "Setup", summary: "Ad accounts, tracking, audiences, first creatives." },
+            { key: "launch", name: "Launch", summary: "First campaigns live, budgets split by channel." },
+            { key: "optimise", name: "Optimise", summary: "Weekly optimisation, fresh creatives, monthly report." },
+            { key: "review", name: "Review", summary: "Results review and the next quarter's plan." },
+        ],
+    },
+    "Website build": {
+        work: "build",
+        phases: [
+            { key: "discovery", name: "Discovery", summary: "Requirements, sitemap, content inventory." },
+            { key: "design", name: "Design", summary: "Wireframes, visual design, client sign-off." },
+            { key: "build", name: "Build", summary: "Development, donation flow, integrations, content entry." },
+            { key: "qa-launch", name: "QA & launch", summary: "Testing, fixes, go-live and handover." },
+        ],
+    },
+};
+
+/** A phase set with month ranges filled in (indexes into `months`; negative = from the end). */
+function phasesFromSet(setName: string, months: string[], ranges: Record<string, [number, number]>): PlannerPhase[] {
+    const set = PHASE_SETS[setName];
+    if (!set) throw new Error(`No phase set "${setName}"`);
     const last = months.length - 1;
     const at = (i: number) => months[Math.max(0, Math.min(last, i < 0 ? last + 1 + i : i))];
-    return t.phases.map((ph) => {
+    return set.phases.map((ph) => {
         const r = ranges[ph.key];
-        return r ? { ...ph, startMonth: at(r[0]), endMonth: at(r[1]) } : { ...ph };
+        return r ? { ...ph, startMonth: at(r[0]), endMonth: at(r[1]) } : { ...ph, startMonth: "", endMonth: "" };
     });
 }
 
 // --- Work states ----------------------------------------------------------------
 type WorkState =
-    | { status: "completed"; doneDaysAgo?: number }
-    | { status: "in_progress"; startedDaysAgo?: number; changes?: string; revisions?: number }
+    /** `lateDays`: finished that many days after the due date (else the day before it). */
+    | { status: "completed"; doneDaysAgo?: number; lateDays?: number }
+    /** `dueDaysAgo`: move the deadline to that many days ago (an old task still open). */
+    | { status: "in_progress"; startedDaysAgo?: number; changes?: string; revisions?: number; waiting?: WaitingOnKey; waitingDays?: number; dueDaysAgo?: number }
     | { status: "pending_approval"; submittedDaysAgo?: number }
-    | { status: "not_started"; overdue?: boolean; moveDays?: number };
+    | { status: "not_started"; overdue?: boolean; moveDays?: number; waiting?: WaitingOnKey; waitingDays?: number; dueDaysAgo?: number };
 
 /**
  * Put a task (and the post / campaign / article it is linked to) in a state.
- * The account manager has sent the request for the task's month.
+ * Tasks are visible to their owners from the moment they exist; no briefing step.
  */
 async function setWorkState(w: Work, s: WorkState) {
     const am = w.accountManager;
     const url = `https://drive.example.com/work/${w.id.slice(0, 8)}`;
-    const monthStart = Math.min(offsetOf(`${w.month}-02`), 0);
     let started: number | null = null;
     const patch: WorkPatch = { status: s.status };
     switch (s.status) {
         case "completed": {
-            const done = s.doneDaysAgo !== undefined ? -s.doneDaysAgo : Math.min(offsetOf(w.dueDate) - 1, -1);
+            const done =
+                s.doneDaysAgo !== undefined
+                    ? -s.doneDaysAgo
+                    : s.lateDays !== undefined
+                      ? Math.min(offsetOf(w.dueDate) + s.lateDays, 0)
+                      : Math.min(offsetOf(w.dueDate) - 1, -1);
             started = done - 5;
             const reviewed = w.approver !== "none";
             patch.startedAt = iso(started);
@@ -413,12 +756,21 @@ async function setWorkState(w: Work, s: WorkState) {
             break;
         }
     }
-    patch.requestedAt = iso(Math.min(monthStart, started === null ? 0 : started - 1));
+    if ((s.status === "in_progress" || s.status === "not_started") && s.dueDaysAgo !== undefined) {
+        patch.dueDate = ymd(-s.dueDaysAgo);
+        patch.defaultDueDate = patch.dueDate;
+    }
+    // Blocked on someone: the owner marked it from the quick edit.
+    if ("waiting" in s && s.waiting) {
+        patch.waitingOn = s.waiting;
+        patch.waitingSince = iso(-(s.waitingDays ?? 3));
+    }
     const next = await works.updateWork(w.id, patch);
     await syncLinked(next, s);
+    return next;
 }
 
-/** Mirror a task's state onto the record it is done in (post / campaign / article). */
+/** Mirror a task's state onto the record it is done in (post / reel / campaign / article). */
 async function syncLinked(w: Work, s: WorkState) {
     if (!w.linked) return;
     if (w.linked.kind === "content") {
@@ -434,7 +786,7 @@ async function syncLinked(w: Work, s: WorkState) {
             visualHeadline: status === "idea" ? "" : w.title,
             postedAt: w.status === "completed" ? w.completedAt : null,
             approvedAt: w.status === "completed" ? w.review.at : null,
-            approvedBy: w.status === "completed" ? "Client" : "",
+            approvedBy: w.status === "completed" ? (w.approver === "client" ? "Client" : w.review.by) : "",
             revisionsUsed: s.status === "in_progress" ? (s.revisions ?? (changes ? 1 : 0)) : 0,
         });
         return;
@@ -454,18 +806,23 @@ async function syncLinked(w: Work, s: WorkState) {
     }
 }
 
-/** Tasks of one contract in one month (optionally one type), earliest due first. */
-function worksOf(all: Work[], contractId: string, month: string, type?: LineType): Work[] {
-    return all
-        .filter((w) => w.contractId === contractId && w.month === month && (!type || w.type === type))
-        .sort((a, b) => a.dueDate.localeCompare(b.dueDate) || a.title.localeCompare(b.title));
+/**
+ * The state a task is in when the demo says nothing special about it: last
+ * month's work done, this month's done when its date has passed and in hand
+ * when it is due in the next few days, later work not started.
+ */
+function defaultState(w: Work): WorkState | null {
+    if (w.month > MONTH) return null;
+    if (w.dueDate < TODAY) return { status: "completed" };
+    if (w.dueDate <= ymd(4)) return { status: "in_progress", startedDaysAgo: 2 };
+    return null;
 }
 
 // --- Shaping the generated tasks ---------------------------------------------------
 /**
  * What the seed changes on a generated task so the demo reads like a real
  * engagement: the title (and the linked record's), the channel, a move to
- * another month for one-off items, the due day, the phase, the people on it.
+ * another month for one-off items, the due date, the phase, the people on it.
  */
 type Shape = {
     title: string;
@@ -473,17 +830,25 @@ type Shape = {
     /** YYYY-MM to move the task to (one-off items land in the first month by default). */
     month?: string;
     dueDay?: number;
+    /** Exact due date (wins over `dueDay`). */
+    dueDate?: string;
     /** Phase key on the contract. */
     phase?: string;
     split?: HandShare[];
-    approver?: Work["approver"];
+    approver?: Approver;
     milestone?: boolean;
     state?: WorkState;
 };
 
 async function shapeWork(c: Contract, w: Work, s: Shape, teamList: TeamMember[]): Promise<Work> {
     const month = s.month ?? w.month;
-    const dueDate = s.dueDay ? workHelpers.dateForDay(month, s.dueDay) : s.month ? workHelpers.dateForDay(month, Number(w.dueDate.slice(8, 10))) : w.dueDate;
+    const dueDate = s.dueDate
+        ? s.dueDate
+        : s.dueDay
+          ? workHelpers.dateForDay(month, s.dueDay)
+          : s.month
+            ? workHelpers.dateForDay(month, Number(w.dueDate.slice(8, 10)))
+            : w.dueDate;
     const channel = s.channel ?? w.channel;
     const phase = s.phase ? c.phases.find((ph) => ph.key === s.phase) : undefined;
     const patch: WorkPatch = {
@@ -500,7 +865,7 @@ async function shapeWork(c: Contract, w: Work, s: Shape, teamList: TeamMember[])
     if (s.split) patch.split = withHours(s.split, teamList, w.type);
     if (s.approver) patch.approver = s.approver;
     if (s.milestone !== undefined) patch.milestone = s.milestone;
-    const next = await works.updateWork(w.id, patch);
+    let next = await works.updateWork(w.id, patch);
     const assignee = workHelpers.primaryMember(next);
     if (next.linked?.kind === "content") {
         await content.updateContentPost(next.linked.id, { title: s.title, platform: contentPlatform(channel), scheduledFor: dueDate, planMonth: month, assignee });
@@ -509,43 +874,72 @@ async function shapeWork(c: Contract, w: Work, s: Shape, teamList: TeamMember[])
     } else if (next.linked?.kind === "seo") {
         await seo.updateSeoArticle(next.linked.id, { title: s.title, targetDate: dueDate, assignee });
     }
-    if (s.state) await setWorkState(next, s.state);
+    if (s.state) next = await setWorkState(next, s.state);
     return next;
 }
 
-/**
- * The generated tasks keyed "<month>:<requirement index>", in the order the
- * generator made them (months × requirements × count), so the seed can tell
- * "the second one-off branding item" from "the monthly custom task" even
- * though both carry generic titles.
- */
-function groupGenerated(c: Contract, months: string[], generated: Work[]): Map<string, Work[]> {
-    const first = months[0];
-    const queue = [...generated];
-    const out = new Map<string, Work[]>();
-    for (const month of months) {
-        c.requirements.forEach((r, ri) => {
-            const n = r.cadence === "monthly" ? r.count : month === first ? r.count : 0;
-            out.set(`${month}:${ri}`, queue.splice(0, n));
-        });
-    }
-    if (queue.length) throw new Error(`${queue.length} generated tasks on ${c.code} did not match its requirements`);
+/** A deliverable row as the seed writes it: the stored row plus how its tasks are dressed. */
+type RowSpec = Requirement & {
+    /** Who holds this row's tasks when it is not the crew member of the type's seat. */
+    who?: string;
+    /** Titles to rotate through, month by month; else the row name with the month or week. */
+    titles?: string[];
+    /** Channels to alternate between (Instagram / TikTok). */
+    channels?: string[];
+    approver?: Approver;
+    /** Fixed day of the month (a strategy call on the 3rd), moved to the nearest working day. */
+    dueDay?: number;
+    /** Phase key; repeating rows default to the set's working phase. */
+    phase?: string;
+};
+
+type ProjectSpec = {
+    name: string;
+    clientName: string;
+    am: string;
+    startDate: string;
+    /** YYYY-MM-DD, "" = open-ended. */
+    endDate: string;
+    status?: ContractStatus;
+    stage?: ContractStage;
+    /** YYYY-MM-DD, null = not signed. */
+    signedAt: string | null;
+    quoteKey?: string;
+    reference?: string;
+    value: number;
+    terms: string;
+    cadence: BillingCadence;
+    amount: number;
+    invoiceDay?: number;
+    /** Phase set (PHASE_SETS) the phases come from, and their month ranges (indexes into the project months; negative = from the end). */
+    template: string;
+    ranges: Record<string, [number, number]>;
+    rows: RowSpec[];
+    crew: Crew;
+    /** Our own company's project: approved by management, no signed copy, no money. */
+    internal?: boolean;
+    /** Project template it started from (Settings → Templates). */
+    templateName?: string;
+    renewalStatus?: RenewalStatus;
+    costs?: ProjectCost[];
+};
+
+/** One generated task: its deliverable row, its number in the month, the month it was generated in. */
+type TaskRef = { ri: number; nth: number; gen: string; w: Work };
+type Seeded = { spec: ProjectSpec; c: Contract; months: string[]; tasks: TaskRef[] };
+
+/** Every month the project runs; open-ended ones to two months ahead. */
+function projectMonths(spec: Pick<ProjectSpec, "startDate" | "endDate">): string[] {
+    const start = spec.startDate.slice(0, 7);
+    const end = spec.endDate ? spec.endDate.slice(0, 7) : later(M(2), start);
+    const out: string[] = [];
+    for (let m = start; m <= end && out.length < 24; m = monthPlus(m, 1)) out.push(m);
     return out;
 }
 
-/** "8 posts/mo, 2 branding items once" — for the printed summary. */
+/** "Instagram post · 8/mo, Brand item · 2 once" — for the printed summary. */
 function requirementsLabel(c: Contract): string {
-    const words: Record<LineType, [string, string]> = {
-        post: ["post", "posts"],
-        campaign: ["campaign", "campaigns"],
-        seo: ["SEO article", "SEO articles"],
-        website: ["website item", "website items"],
-        branding: ["branding item", "branding items"],
-        custom: ["custom task", "custom tasks"],
-    };
-    return c.requirements
-        .map((r) => `${r.count} ${words[r.type][r.count === 1 ? 0 : 1]}${r.cadence === "monthly" ? "/mo" : " once"}`)
-        .join(", ");
+    return contracts.requirementsLabel(c.requirements, ", ");
 }
 
 async function main() {
@@ -600,95 +994,160 @@ async function main() {
         });
     }
 
-    // ---- Phase templates (Social retainer is the default for new contracts) ----
-    for (const t of phaseTemplates.STARTER_PHASE_TEMPLATES) {
-        await phaseTemplates.createPhaseTemplate(t);
+    // ---- Project templates (Starter / Growth / Scale): months + deliverable rows + phase rows ----
+    for (const s of projectTemplates.STARTER_PROJECT_TEMPLATES) {
+        await projectTemplates.createProjectTemplate(s);
     }
+
+    // ---- Agency: the monthly sales target the Sales dashboard measures against ----
+    await agency.updateAgencyProfile({ salesTargetMyr: 40000 });
 
     // ---- Team ---------------------------------------------------------------
     for (const m of TEAM) {
         await team.createTeamMember({
             name: m.name,
             role: m.role,
+            category: m.category,
             email: `${m.name.toLowerCase().replace(/\s+/g, ".")}@nexova.local`,
             skills: m.skills,
             systemRoles: m.systemRoles,
-            functions: m.functions ?? [],
-            weeklyHours: m.weeklyHours,
-            reservedHours: m.reserved ?? {},
+            functions: m.functions,
+            weeklyHours: 32,
+            setAside: m.setAside,
             hoursByType: m.hours,
+            costRateMyr: m.costRate,
+            daysOff: m.daysOff,
         });
     }
     const teamList = await team.listTeamMembers();
 
+    // ---- When each project was signed (the Sales trend reads these) ---------------
+    // Spread over the year so several months have signings; Enfrasys is this month's.
+    const ENFRASYS_START = later(`${MONTH}-01`, ymd(-3));
+    const SIGNED = {
+        leanx: dayOf(M(-11), 22),
+        payright: dayOf(M(-9), 25),
+        kartini: dayOf(M(-6), 28),
+        zakat: dayOf(M(-5), 3),
+        rouang: dayOf(M(-5), 26),
+        digital: dayOf(M(-4), 1),
+        baitul: dayOf(M(-4), 29),
+        leanis: dayOf(M(-3), 27),
+        tropicor: dayOf(M(-2), 29),
+        kembara: dayOf(M(-1), 1),
+        enfrasys: later(`${MONTH}-01`, ymd(-9)),
+        sutera: dayOf(M(-11), 28),
+        paklong: dayOf(M(-7), 24),
+    };
+    const ago = (date: string) => Math.max(0, -offsetOf(date));
+
     // ---- Clients ------------------------------------------------------------
-    const CLIENTS = [
-        { name: "Lean.x Sdn Bhd", status: "active", am: "Aina", pkg: "Growth", quota: 12, retainer: 4500, industry: "Fintech", renews: 18, since: 300 },
-        { name: "Kopi Kita Café", status: "active", am: "Aina", pkg: "Starter", quota: 0, retainer: 0, industry: "F&B", renews: 0, since: 45 },
-        { name: "Harmoni Dental Clinic", status: "active", am: "Yusuf", pkg: "Growth", quota: 8, retainer: 3200, industry: "Healthcare", renews: 40, since: 200 },
-        { name: "Zenith Properties", status: "active", am: "Naim", pkg: "Enterprise", quota: 0, retainer: 0, industry: "Real estate", renews: 0, since: 90 },
-        { name: "Nusa Fitness Studio", status: "active", am: "Aina", pkg: "Starter", quota: 8, retainer: 1800, industry: "Fitness", renews: 9, since: 150 },
-        { name: "Bayu Logistics", status: "paused", am: "Yusuf", pkg: "", quota: 0, retainer: 0, industry: "Logistics", renews: 0, since: 400 },
-        { name: "Sinar Interiors", status: "churned", am: "Naim", pkg: "", quota: 0, retainer: 0, industry: "Interior design", renews: 0, since: 520 },
-    ] as const;
+    // `closer` = the deal owner, who closed the deal; the project carries its own account manager.
+    const CLIENTS: Array<{
+        name: string;
+        status: ClientStatus;
+        closer: string;
+        industry: string;
+        notes: string;
+        /** Days ago the client record was created (when the deal was won). */
+        since: number;
+        /** Days ago of the last check-in; absent = never logged. */
+        checkIn?: number;
+        checkInNote?: string;
+        internal?: boolean;
+    }> = [
+        { name: "Dr Kartini", status: "active", closer: "Naim", industry: "Healthcare (dermatology)", notes: "Growing Dr Kartini's brand as a dermatologist consultant, with advocacy on animal rights.", since: ago(SIGNED.kartini), checkIn: 10, checkInNote: "Renewal call: wants to keep the advocacy series and asked for a 12-month price." },
+        { name: "Rouang", status: "active", closer: "Yusuf", industry: "Interior design & renovation", notes: "Interior design contractor.", since: ago(SIGNED.rouang), checkIn: 36, checkInNote: "Site visit at the Mont Kiara project. Unhappy with lead quality from Meta; reviewing options before renewal." },
+        { name: "Baitul Irfan", status: "active", closer: "Naim", industry: "Non-profit (surau)", notes: "NGO raising donations for a surau; marketing to get donations.", since: ago(SIGNED.baitul), checkIn: 4, checkInNote: "Committee meeting: approved the roof fund appeal. September and October invoices wait on the treasurer's sign-off." },
+        { name: "LeanX Digital", status: "active", closer: "", industry: "Digital marketing agency", notes: "Our own company: growing our own brand.", since: 420, internal: true },
+        { name: "Payright", status: "active", closer: "Yusuf", industry: "Fintech (payments)", notes: "Growing the brand.", since: ago(SIGNED.payright), checkIn: 5, checkInNote: "Monthly review: merchant sign-ups up 18 %, wants more video." },
+        { name: "LeanX", status: "active", closer: "Naim", industry: "Fintech (payments)", notes: "Growing the brand.", since: ago(SIGNED.leanx), checkIn: 3, checkInNote: "Renewal for next year agreed in principle; paperwork next week." },
+        { name: "Leanis Solution Sdn Bhd", status: "active", closer: "Yusuf", industry: "Business solutions", notes: "Growing the brand.", since: ago(SIGNED.leanis), checkIn: 12, checkInNote: "Quarterly review: happy with LinkedIn reach, wants a webinar push." },
+        { name: "Zakat Selangor", status: "active", closer: "Naim", industry: "Religious body (zakat)", notes: "Growing awareness of zakat for Gen Z.", since: ago(SIGNED.zakat), checkIn: 7, checkInNote: "Board update: the TikTok series is landing with students; asked for more campus content." },
+        { name: "Kembara", status: "active", closer: "Yusuf", industry: "Non-profit (donations)", notes: "A one-off website for donations.", since: ago(SIGNED.kembara), checkIn: 2, checkInNote: "Build check-in: payment gateway sandbox approved, launch date holding." },
+        // Signed this month; nobody has logged a check-in yet.
+        { name: "Enfrasys", status: "active", closer: "Naim", industry: "IT services", notes: "Content creation.", since: ago(SIGNED.enfrasys) },
+        { name: "Tropicor", status: "active", closer: "Yusuf", industry: "Consumer goods", notes: "Campaign management.", since: ago(SIGNED.tropicor), checkIn: 6, checkInNote: "Weekly ads call: ROAS 3.1 on Meta; testing new gifting search terms on Google." },
+        // History: a paused retainer and a churned one-off (fictional names).
+        { name: "Sutera Batik Studio", status: "paused", closer: "Yusuf", industry: "Fashion retail", notes: "Past client: social media retainer, paused.", since: ago(SIGNED.sutera), checkIn: 95, checkInNote: "Paused until the next Raya collection is ready." },
+        { name: "Pak Long Kopitiam", status: "churned", closer: "Naim", industry: "Food & beverage", notes: "Past client: website and menu revamp.", since: ago(SIGNED.paklong), checkIn: 70, checkInNote: "Project closed. Final invoice still unpaid; owner not answering." },
+    ];
     for (const c of CLIENTS) {
+        const slug = c.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
         const row = await clients.createClient({
             name: c.name,
             status: c.status,
-            accountManager: c.am,
-            packageName: c.pkg,
-            monthlyContentQuota: c.quota,
-            monthlyRetainerMyr: c.retainer,
+            dealOwner: c.closer,
+            internal: c.internal ?? false,
             contentRevisionLimit: 3,
             industry: c.industry,
+            notes: c.notes,
             contactName: "Demo contact",
-            contactEmail: "contact@example.com",
+            contactEmail: `${slug}@example.com`,
         });
-        if (c.renews) {
-            await clients.updateClient(row.id, { packageRenewsOn: ymd(c.renews) });
-        }
-        await patchJson("clients", row.id, { createdAt: iso(-c.since) });
+        await patchJson("clients", row.id, {
+            createdAt: iso(-c.since),
+            lastCheckInAt: c.checkIn !== undefined ? ymd(-c.checkIn) : "",
+            lastCheckInNote: c.checkInNote ?? "",
+        });
     }
 
     // ---- Leads (pipeline) ------------------------------------------------------
     // "proposal" is a plain pipeline stage: the deal is priced on a quotation
-    // and waiting on the client. Won deals with a contract link to it from the
-    // board; won deals without one offer "Create contract".
+    // and waiting on the client. Won deals are the clients above.
     const LEADS: Array<{
         name: string;
         company: string;
         status: LeadStatus;
         value: number;
         owner: string;
+        /** Last touch (the decision day for won and lost deals). */
         touchedDaysAgo: number;
+        /** When it arrived. */
+        createdDaysAgo: number;
         score: number;
         source: LeadSource;
         interest: string;
         auto?: boolean;
+        lost?: LostReason;
+        lostNote?: string;
     }> = [
-        // Won and under contract.
-        { name: "Amira Hassan", company: "Lean.x Sdn Bhd", status: "won", value: 54000, owner: "Aina", touchedDaysAgo: 40, score: 92, source: "referral", interest: "Social media, Meta ads, SEO" },
-        { name: "Nadia Rahim", company: "Nusa Fitness Studio", status: "won", value: 7500, owner: "Aina", touchedDaysAgo: 38, score: 80, source: "instagram", interest: "Social media management" },
-        // Agreed on a call; the contract exists but the signed copy never came back.
-        { name: "Dr. Lina Mokhtar", company: "Harmoni Dental Clinic", status: "proposal", value: 10800, owner: "Yusuf", touchedDaysAgo: 4, score: 84, source: "website", interest: "GMB + local SEO, Meta ads" },
-        // Quoted, waiting on the client.
-        { name: "Aiman Rashid", company: "Selangor Tutors", status: "proposal", value: 12000, owner: "Aina", touchedDaysAgo: 2, score: 78, source: "referral", interest: "Website, Google Ads" },
-        { name: "Grace Tan", company: "Tan & Co Legal", status: "proposal", value: 25000, owner: "Naim", touchedDaysAgo: 10, score: 70, source: "linkedin", interest: "Website, SEO retainer" },
-        { name: "Farah Aziz", company: "Bloom Florist", status: "qualified", value: 6000, owner: "Aina", touchedDaysAgo: 3, score: 62, source: "instagram", interest: "Social media management" },
-        { name: "Raj Kumar", company: "Kumar Hardware", status: "qualified", value: 18000, owner: "Aina", touchedDaysAgo: 12, score: 55, source: "website", interest: "App development" },
-        { name: "Lim Wei", company: "WeiFit Gym", status: "contacted", value: 4500, owner: "Aina", touchedDaysAgo: 1, score: 48, source: "facebook", interest: "META Ads" },
-        { name: "Nurul Huda", company: "Huda Bakery", status: "new", value: 3000, owner: "", touchedDaysAgo: 0, score: 35, source: "website", interest: "Website" },
-        { name: "Siti Rahmah", company: "Rahmah Travel", status: "new", value: 0, owner: "", touchedDaysAgo: 0, score: 20, source: "facebook", interest: "", auto: true },
-        // Won, no contract recorded yet.
-        { name: "Daniel Wong", company: "Wong Dental", status: "won", value: 9600, owner: "Aina", touchedDaysAgo: 6, score: 85, source: "referral", interest: "GMB + SEO" },
-        { name: "Marcus Lee", company: "LeeTech Solutions", status: "won", value: 30000, owner: "Naim", touchedDaysAgo: 40, score: 90, source: "event", interest: "Business Operation System" },
-        { name: "Hafizah Omar", company: "HZ Boutique", status: "lost", value: 5000, owner: "Naim", touchedDaysAgo: 20, score: 40, source: "instagram", interest: "Website" },
+        // Won: the real clients, decided the day the project was signed.
+        { name: "LeanX contact", company: "LeanX", status: "won", value: 96000, owner: "Naim", touchedDaysAgo: ago(SIGNED.leanx), createdDaysAgo: ago(SIGNED.leanx) + 30, score: 90, source: "referral", interest: "Social media, video, SEO, Meta ads" },
+        { name: "Payright contact", company: "Payright", status: "won", value: 90000, owner: "Yusuf", touchedDaysAgo: ago(SIGNED.payright), createdDaysAgo: ago(SIGNED.payright) + 28, score: 88, source: "linkedin", interest: "Brand growth retainer" },
+        { name: "Dr Kartini", company: "Dr Kartini", status: "won", value: 36000, owner: "Naim", touchedDaysAgo: ago(SIGNED.kartini), createdDaysAgo: ago(SIGNED.kartini) + 21, score: 85, source: "instagram", interest: "Personal brand, short-form video, SEO" },
+        { name: "Zakat Selangor contact", company: "Zakat Selangor", status: "won", value: 120000, owner: "Naim", touchedDaysAgo: ago(SIGNED.zakat), createdDaysAgo: ago(SIGNED.zakat) + 45, score: 92, source: "event", interest: "TikTok and Reels for Gen Z, awareness campaign" },
+        { name: "Rouang contact", company: "Rouang", status: "won", value: 27000, owner: "Yusuf", touchedDaysAgo: ago(SIGNED.rouang), createdDaysAgo: ago(SIGNED.rouang) + 18, score: 74, source: "website", interest: "Social media, Meta lead-gen" },
+        { name: "Baitul Irfan contact", company: "Baitul Irfan", status: "won", value: 15000, owner: "Naim", touchedDaysAgo: ago(SIGNED.baitul), createdDaysAgo: ago(SIGNED.baitul) + 20, score: 70, source: "referral", interest: "Donation campaigns" },
+        { name: "Leanis contact", company: "Leanis Solution Sdn Bhd", status: "won", value: 24000, owner: "Yusuf", touchedDaysAgo: ago(SIGNED.leanis), createdDaysAgo: ago(SIGNED.leanis) + 24, score: 76, source: "linkedin", interest: "LinkedIn, social media, SEO" },
+        { name: "Tropicor contact", company: "Tropicor", status: "won", value: 57000, owner: "Yusuf", touchedDaysAgo: ago(SIGNED.tropicor), createdDaysAgo: ago(SIGNED.tropicor) + 26, score: 86, source: "google", interest: "Meta and Google campaign management" },
+        { name: "Kembara contact", company: "Kembara", status: "won", value: 18000, owner: "Yusuf", touchedDaysAgo: ago(SIGNED.kembara), createdDaysAgo: ago(SIGNED.kembara) + 22, score: 80, source: "referral", interest: "Donation website" },
+        { name: "Enfrasys contact", company: "Enfrasys", status: "won", value: 33000, owner: "Naim", touchedDaysAgo: ago(SIGNED.enfrasys), createdDaysAgo: ago(SIGNED.enfrasys) + 19, score: 84, source: "linkedin", interest: "LinkedIn content, explainer videos" },
+        { name: "Sutera Batik contact", company: "Sutera Batik Studio", status: "won", value: 12500, owner: "Yusuf", touchedDaysAgo: ago(SIGNED.sutera), createdDaysAgo: ago(SIGNED.sutera) + 15, score: 72, source: "instagram", interest: "Social media management" },
+        { name: "Pak Long contact", company: "Pak Long Kopitiam", status: "won", value: 9500, owner: "Naim", touchedDaysAgo: ago(SIGNED.paklong), createdDaysAgo: ago(SIGNED.paklong) + 12, score: 68, source: "facebook", interest: "Website, menu revamp" },
+        // Quoted, waiting on the client (each has a sent quote below).
+        { name: "Rohani Salleh", company: "Rumah Kebajikan Kasih Murni", status: "proposal", value: 18000, owner: "Naim", touchedDaysAgo: 5, createdDaysAgo: 24, score: 78, source: "tiktok", interest: "Fundraising campaigns, video" },
+        { name: "Faizal Hamdan", company: "Kopi Tanah Tinggi", status: "proposal", value: 21000, owner: "Yusuf", touchedDaysAgo: 12, createdDaysAgo: 30, score: 66, source: "cold_outreach", interest: "Social media, TikTok" },
+        // Qualified (a draft quote is being prepared for the tahfiz school).
+        { name: "Hilmi Rahman", company: "Sekolah Tahfiz Al-Hikmah", status: "qualified", value: 14000, owner: "Naim", touchedDaysAgo: 4, createdDaysAgo: 16, score: 64, source: "referral", interest: "Donation website, Meta ads" },
+        { name: "Lim Mei Yee", company: "Klinik Pergigian Senyum", status: "qualified", value: 10800, owner: "Yusuf", touchedDaysAgo: 10, createdDaysAgo: 25, score: 58, source: "website", interest: "Local SEO, Google Business Profile" },
+        // Contacted.
+        { name: "Arif Zain", company: "Klinik Haiwan Sri Hartamas", status: "contacted", value: 9000, owner: "Naim", touchedDaysAgo: 2, createdDaysAgo: 6, score: 52, source: "instagram", interest: "Social media management" },
+        { name: "Tan Ah Seng", company: "Bengkel Kereta Ah Seng", status: "contacted", value: 4500, owner: "Yusuf", touchedDaysAgo: 1, createdDaysAgo: 5, score: 45, source: "facebook", interest: "Meta ads" },
+        // New, nobody on them yet: one is three days old (missed its first touch), one came in today.
+        { name: "Esah Ramli", company: "Kedai Roti Mak Esah", status: "new", value: 3000, owner: "", touchedDaysAgo: 3, createdDaysAgo: 3, score: 35, source: "website", interest: "Website" },
+        { name: "Amir Hakimi", company: "Persatuan Belia Taman Melati", status: "new", value: 0, owner: "", touchedDaysAgo: 0, createdDaysAgo: 0, score: 20, source: "facebook", interest: "", auto: true },
+        // Lost, with the reason.
+        { name: "Nur Ayu Kamal", company: "Butik Nur Ayu", status: "lost", value: 6000, owner: "Yusuf", touchedDaysAgo: 20, createdDaysAgo: 48, score: 40, source: "instagram", interest: "Social media management", lost: "price", lostNote: "Went with a freelancer at half our monthly fee." },
+        { name: "Rizal Jaya", company: "Bengkel Motor Jaya", status: "lost", value: 4500, owner: "Naim", touchedDaysAgo: 35, createdDaysAgo: 60, score: 42, source: "facebook", interest: "Meta ads", lost: "no_response", lostNote: "Three follow-ups over two weeks, no reply." },
+        { name: "Kevin Ong", company: "Hartanah Prima Realty", status: "lost", value: 30000, owner: "Yusuf", touchedDaysAgo: 55, createdDaysAgo: 90, score: 60, source: "linkedin", interest: "Property listings, video, Meta ads", lost: "competitor", lostNote: "Signed with a larger property-marketing agency." },
     ];
     for (const l of LEADS) {
+        const slug = l.company.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
         const row = await leads.createLead({
             name: l.name,
             company: l.company,
-            email: `${l.name.split(" ")[0].toLowerCase().replace(/\./g, "")}@example.com`,
+            email: `${slug}@example.com`,
             source: l.source,
             interestedIn: l.interest,
             estValueMyr: l.value,
@@ -698,29 +1157,32 @@ async function main() {
         });
         await patchJson("leads", row.id, {
             status: l.status,
-            createdAt: iso(-(l.touchedDaysAgo + 14)),
+            createdAt: iso(-l.createdDaysAgo),
             updatedAt: iso(-l.touchedDaysAgo),
+            lostReason: l.lost ?? "",
+            lostNote: l.lostNote ?? "",
         });
     }
 
-    // ---- Quotations (the price behind each contract, plus loose quotes) ----
+    // ---- Quotations (the price behind the recent projects, plus open quotes) ----
     const QUOTES: Array<{
         key: string;
         clientName: string;
         subject: string;
-        status: "sent" | "accepted" | "converted" | "draft";
+        status: QuotationStatus;
         issueDaysAgo: number;
         validDays: number;
         acceptedDaysAgo?: number;
         total: number;
     }> = [
-        { key: "leanx-growth", clientName: "Lean.x Sdn Bhd", subject: "Brand growth engagement — 6 months", status: "accepted", issueDaysAgo: 45, validDays: 14, acceptedDaysAgo: 40, total: 54000 },
-        { key: "nusa-starter", clientName: "Nusa Fitness Studio", subject: "Social starter — 3 months", status: "accepted", issueDaysAgo: 42, validDays: 14, acceptedDaysAgo: 38, total: 7500 },
-        { key: "harmoni-local", clientName: "Harmoni Dental Clinic", subject: "Local growth plan — 3 months", status: "accepted", issueDaysAgo: 10, validDays: 14, acceptedDaysAgo: 4, total: 10800 },
-        { key: "tutors", clientName: "Selangor Tutors", subject: "Tuition centre website + Google Ads setup", status: "sent", issueDaysAgo: 12, validDays: 14, total: 12000 },
-        { key: "tanco", clientName: "Tan & Co Legal", subject: "Website + 6-month SEO retainer", status: "sent", issueDaysAgo: 5, validDays: 14, total: 25000 },
-        { key: "zenith-app", clientName: "Zenith Properties", subject: "Zenith Homes mobile app — build", status: "accepted", issueDaysAgo: 45, validDays: 14, acceptedDaysAgo: 40, total: 45000 },
-        { key: "leanx-web", clientName: "Lean.x Sdn Bhd", subject: "Website v2 — design & build", status: "converted", issueDaysAgo: 60, validDays: 14, acceptedDaysAgo: 55, total: 24000 },
+        { key: "leanis", clientName: "Leanis Solution Sdn Bhd", subject: "Brand growth retainer — 6 months", status: "accepted", issueDaysAgo: ago(SIGNED.leanis) + 9, validDays: 14, acceptedDaysAgo: ago(SIGNED.leanis) + 1, total: 24000 },
+        { key: "tropicor", clientName: "Tropicor", subject: "Campaign management — 6 months, ad budget included", status: "accepted", issueDaysAgo: ago(SIGNED.tropicor) + 10, validDays: 14, acceptedDaysAgo: ago(SIGNED.tropicor) + 2, total: 57000 },
+        { key: "kembara", clientName: "Kembara", subject: "Donation website — design and build", status: "accepted", issueDaysAgo: ago(SIGNED.kembara) + 12, validDays: 14, acceptedDaysAgo: ago(SIGNED.kembara) + 3, total: 18000 },
+        { key: "enfrasys", clientName: "Enfrasys", subject: "Content creation retainer — 6 months", status: "accepted", issueDaysAgo: ago(SIGNED.enfrasys) + 8, validDays: 14, acceptedDaysAgo: ago(SIGNED.enfrasys) + 1, total: 33000 },
+        { key: "kasih-murni", clientName: "Rumah Kebajikan Kasih Murni", subject: "Fundraising campaigns and video — 6 months", status: "sent", issueDaysAgo: 5, validDays: 14, total: 18000 },
+        { key: "kopi", clientName: "Kopi Tanah Tinggi", subject: "Social media and TikTok — 6 months", status: "sent", issueDaysAgo: 12, validDays: 14, total: 21000 },
+        { key: "tahfiz", clientName: "Sekolah Tahfiz Al-Hikmah", subject: "Donation website and Meta ads setup", status: "draft", issueDaysAgo: 1, validDays: 30, total: 14000 },
+        { key: "nur-ayu", clientName: "Butik Nur Ayu", subject: "Social media management — 3 months", status: "declined", issueDaysAgo: 30, validDays: 14, total: 6000 },
     ];
     const quoteByKey: Record<string, Quotation> = {};
     for (const q of QUOTES) {
@@ -738,34 +1200,14 @@ async function main() {
         await patchJson("quotations", row.id, { createdAt: iso(-q.issueDaysAgo) });
     }
 
-    // ---- Contracts: requirements + crew + template phases → generated tasks ----------
-    type ContractSpec = {
-        name: string;
-        clientName: string;
-        am: string;
-        startDate: string;
-        endDate: string;
-        status?: ContractStatus;
-        stage?: ContractStage;
-        /** YYYY-MM-DD, null = not signed. */
-        signedAt: string | null;
-        quoteKey?: string;
-        reference?: string;
-        value: number;
-        terms: string;
-        cadence: BillingCadence;
-        amount: number;
-        invoiceDay?: number;
-        /** Starter template the phases come from, and their month ranges (indexes into the contract months; negative = from the end). */
-        template: string;
-        ranges: Record<string, [number, number]>;
-        requirements: Requirement[];
-        crew: Crew;
-        /** Days ago the account manager created the contract. */
-        createdDaysAgo: number;
-    };
-    async function seedContract(spec: ContractSpec): Promise<{ c: Contract; months: string[]; g: Map<string, Work[]> }> {
-        const months = generate.contractMonths({ startDate: spec.startDate, endDate: spec.endDate });
+    // ---- Projects: deliverable rows + crew + phases → generated tasks ---------------
+    /** Only last month, this month and the next two get tasks, to keep the store small. */
+    const GEN_FROM = M(-1);
+    const GEN_TO = M(2);
+
+    async function seedProject(spec: ProjectSpec): Promise<Seeded> {
+        const months = projectMonths(spec);
+        const genMonths = months.filter((m) => m >= GEN_FROM && m <= GEN_TO);
         const quote = spec.quoteKey ? quoteByKey[spec.quoteKey] : null;
         const c = await contracts.createContract({
             name: spec.name,
@@ -775,290 +1217,506 @@ async function main() {
             endDate: spec.endDate,
             status: spec.status ?? "active",
             stage: spec.stage ?? (spec.signedAt ? "delivering" : "created"),
-            phases: phasesFromTemplate(spec.template, months, spec.ranges),
-            requirements: spec.requirements,
+            phases: phasesFromSet(spec.template, months, spec.ranges),
+            requirements: spec.rows.map(({ type, name, count, per, channel }) => ({ type, name, count, per, channel })),
             crew: spec.crew,
             reference: spec.reference ?? quote?.number ?? "",
             quotationId: quote?.id ?? null,
             valueMyr: spec.value,
             signedAt: spec.signedAt,
-            signedBy: spec.signedAt ? "Client director" : "",
-            fileUrl: spec.signedAt ? "https://drive.example.com/contracts/signed.pdf" : "",
+            signedBy: spec.signedAt ? (spec.internal ? "Management" : "Client director") : "",
+            fileUrl: spec.signedAt && !spec.internal ? "https://drive.example.com/contracts/signed.pdf" : "",
             terms: spec.terms,
             billing: { cadence: spec.cadence, amountMyr: spec.amount, invoiceDay: spec.invoiceDay ?? 2 },
+            renewalStatus: spec.renewalStatus,
+            costs: spec.costs ?? [],
+            templateName: spec.templateName ?? "",
         });
-        const createdAt = iso(-spec.createdDaysAgo);
+        const createdAt = iso(spec.signedAt ? Math.min(-1, offsetOf(spec.signedAt)) : -1);
         await patchJson("contracts", c.id, { createdAt, updatedAt: createdAt });
-        const generated = await generate.generateContractTasks(c, teamList, [], months);
+        // The gate the app enforces: a draft has no tasks until the contract is signed.
+        const generated = contracts.isSigned(c) && genMonths.length ? await generate.generateContractTasks(c, teamList, [], genMonths) : [];
         for (const w of generated) await patchJson("works", w.id, { createdAt, updatedAt: createdAt });
-        return { c, months, g: groupGenerated(c, months, generated) };
+
+        // Generated keys read req:<type>:<month>:<row>:<n>.
+        const tasks: TaskRef[] = generated
+            .map((w) => {
+                const [, , gen, ri, nth] = (w.plannerLineId ?? "").split(":");
+                return { ri: Number(ri), nth: Number(nth), gen, w };
+            })
+            .sort((a, b) => a.gen.localeCompare(b.gen) || a.ri - b.ri || a.nth - b.nth);
+
+        // Dress every task: title, channel, holder, approver, fixed day, phase.
+        const set = PHASE_SETS[spec.template];
+        for (const t of tasks) {
+            const row = spec.rows[t.ri];
+            const perMonth = row.per === "week" ? row.count * 5 : row.count;
+            const idx = Math.max(0, months.indexOf(t.gen)) * perMonth + t.nth - 1;
+            const title = row.titles?.length
+                ? row.titles[idx % row.titles.length]
+                : row.per === "once"
+                  ? row.name
+                  : row.per === "week"
+                    ? `${row.name} · week of ${weekOf(t.w.dueDate)}`
+                    : row.count > 1
+                      ? `${row.name} ${t.nth}/${row.count} · ${monShort(t.gen)}`
+                      : `${row.name} · ${monShort(t.gen)}`;
+            const internalContent = spec.internal && (row.type === "static" || row.type === "video");
+            t.w = await shapeWork(
+                c,
+                t.w,
+                {
+                    title,
+                    channel: row.channels?.length ? row.channels[(t.nth - 1) % row.channels.length] : undefined,
+                    dueDate: row.dueDay ? nearestWorkingDay(workHelpers.dateForDay(t.gen, row.dueDay)) : undefined,
+                    phase: row.phase ?? (row.per === "once" ? undefined : set.work),
+                    split: row.who ? [{ seat: DEFAULT_SPLIT[row.type][0].seat, member: row.who, pct: 100 }] : undefined,
+                    approver: row.approver ?? (internalContent ? "am" : undefined),
+                    milestone: row.per === "once" ? false : undefined,
+                },
+                teamList,
+            );
+        }
+        return { spec, c, months, tasks };
     }
 
-    /** Monthly production (posts, campaign, SEO) retitled from the pools, under the Production phase. */
-    async function shapeProduction(
-        c: Contract,
-        g: Map<string, Work[]>,
-        months: string[],
-        spec: { pool: string; postReq: number; campaignReq?: number; seoReq?: number; campaignTitle?: string; campaignOwner?: string },
-    ) {
-        const postPool = POST_POOLS[spec.pool];
-        const seoPool = SEO_POOLS[spec.pool] ?? [];
-        for (const [m, month] of months.entries()) {
-            const posts = g.get(`${month}:${spec.postReq}`) ?? [];
-            for (const [i, w] of posts.entries()) {
-                const title = postPool[(m * posts.length + i) % postPool.length];
-                await shapeWork(c, w, { title, channel: title.startsWith("Reel") && i % 2 === 1 ? "TikTok" : "Instagram", phase: "production" }, teamList);
+    /** One task's demo state, addressed by the month it was generated in, its row and its number that month. */
+    type Override = { month: string; ri: number; nth: number; state: WorkState; approver?: Approver; dueDate?: string };
+    /** Put every task of a project in its state: the overrides where given, the default rule elsewhere. */
+    async function applyStates(p: Seeded, overrides: Override[]) {
+        for (const o of overrides) {
+            if (!p.tasks.some((t) => t.gen === o.month && t.ri === o.ri && t.nth === o.nth)) {
+                throw new Error(`No task ${o.month} row ${o.ri} #${o.nth} on ${p.c.name}`);
             }
-            if (spec.campaignReq !== undefined) {
-                for (const w of g.get(`${month}:${spec.campaignReq}`) ?? []) {
-                    await shapeWork(
-                        c,
-                        w,
-                        {
-                            title: `${spec.campaignTitle ?? "Lead-gen campaign"} · ${month}`,
-                            phase: "production",
-                            split: spec.campaignOwner ? [{ seat: "dm", member: spec.campaignOwner, pct: 100 }] : undefined,
-                        },
-                        teamList,
-                    );
+        }
+        for (const t of p.tasks) {
+            const o = overrides.find((x) => x.month === t.gen && x.ri === t.ri && x.nth === t.nth);
+            if (o?.approver || o?.dueDate) {
+                const patch: WorkPatch = {};
+                if (o.approver) patch.approver = o.approver;
+                if (o.dueDate) {
+                    patch.dueDate = o.dueDate;
+                    patch.defaultDueDate = o.dueDate;
                 }
+                t.w = await works.updateWork(t.w.id, patch);
             }
-            if (spec.seoReq !== undefined) {
-                const articles = g.get(`${month}:${spec.seoReq}`) ?? [];
-                for (const [i, w] of articles.entries()) {
-                    await shapeWork(c, w, { title: seoPool[(m * articles.length + i) % Math.max(1, seoPool.length)] ?? `SEO article ${i + 1} · ${month}`, phase: "production" }, teamList);
-                }
-            }
+            const s = o ? o.state : defaultState(t.w);
+            if (s) t.w = await setWorkState(t.w, s);
         }
     }
 
-    // Lean.x — the flagship: 6-month brand growth engagement, signed last month, mid-flight.
-    const lxMonths = workHelpers.monthRange(LAST_MONTH, monthPlus(LAST_MONTH, 5));
-    const lx = await seedContract({
-        name: "Lean.x — brand growth engagement",
-        clientName: "Lean.x Sdn Bhd",
-        am: "Aina",
-        startDate: `${LAST_MONTH}-01`,
-        endDate: workHelpers.dateForDay(lxMonths[5], 31),
-        signedAt: `${LAST_MONTH}-01`,
-        quoteKey: "leanx-growth",
-        value: 54000,
-        terms: "Six months: brand audit and guideline refresh, a landing page, 8 posts, one Meta lead-gen campaign and two SEO articles a month, a monthly strategy call. Ad spend billed at cost.",
+    const done: WorkState = { status: "completed" };
+    const retainerRanges = { kickoff: [0, 0], foundation: [0, 1], production: [0, -1], review: [-1, -1] } as Record<string, [number, number]>;
+
+    // Dr Kartini — personal brand of a dermatologist consultant, with an animal-rights thread.
+    // Six months, ends this month; renewal in talks.
+    const kartini = await seedProject({
+        name: "Dr Kartini — brand growth",
+        clientName: "Dr Kartini",
+        am: "Hakim",
+        startDate: `${M(-5)}-01`,
+        endDate: endOf(M(0)),
+        signedAt: SIGNED.kartini,
+        reference: "DRK-BRAND-01",
+        value: 36000,
+        terms: "Six months: 6 statics, 3 Reels/TikToks and 2 SEO articles a month on skin health and animal welfare, weekly community management, a monthly report and strategy call.",
         cadence: "monthly",
-        amount: 9000,
+        amount: 6000,
+        templateName: "Growth",
+        renewalStatus: "in_talks",
         template: "Social retainer",
-        ranges: { kickoff: [0, 0], foundation: [0, 1], production: [0, 5], review: [5, 5] },
-        requirements: [
-            { type: "post", count: 8, cadence: "monthly", channel: "Instagram" }, // 0
-            { type: "campaign", count: 1, cadence: "monthly", channel: "Meta" }, // 1
-            { type: "seo", count: 2, cadence: "monthly", channel: "Blog" }, // 2
-            { type: "custom", count: 1, cadence: "monthly", channel: "Call" }, // 3  Monthly strategy call
-            { type: "branding", count: 2, cadence: "once", channel: "Brand" }, // 4
-            { type: "website", count: 2, cadence: "once", channel: "Website" }, // 5
-            { type: "custom", count: 1, cadence: "once", channel: "Workshop" }, // 6
+        ranges: retainerRanges,
+        rows: [
+            { type: "static", name: "Instagram static", count: 6, per: "month", channel: "Instagram", titles: T.kartiniStatic, who: "Hakim" }, // 0
+            { type: "video", name: "Reel / TikTok", count: 3, per: "month", channel: "Instagram", titles: T.kartiniVideo, channels: ["Instagram", "TikTok"] }, // 1
+            { type: "seo", name: "Blog article", count: 2, per: "month", channel: "Blog", titles: T.kartiniSeo }, // 2
+            { type: "custom", name: "Community management", count: 1, per: "week", channel: "Instagram", approver: "none" }, // 3
+            { type: "custom", name: "Monthly content report", count: 1, per: "month", channel: "Report" }, // 4
+            { type: "custom", name: "Content calendar & captions", count: 1, per: "month", channel: "Planning", dueDay: 26 }, // 5
+            { type: "custom", name: "Monthly strategy call", count: 1, per: "month", channel: "Call", who: "Naim", approver: "none", dueDay: 3 }, // 6
         ],
-        crew: { dm: "Syafiq", creative: "Mei Ling", dev: "Farid", seo: "Daniel", am: "Aina" },
-        createdDaysAgo: Math.max(1, -offsetOf(`${LAST_MONTH}-01`)),
+        crew: { dm: "Danisy", creative: "Izzad", am: "Hakim" },
     });
-    await shapeProduction(lx.c, lx.g, lx.months, { pool: "leanx", postReq: 0, campaignReq: 1, seoReq: 2, campaignOwner: "Priya" });
-    for (const [m, month] of lx.months.entries()) {
-        for (const w of lx.g.get(`${month}:3`) ?? []) {
-            await shapeWork(lx.c, w, { title: "Monthly strategy call", dueDay: 3, phase: m === lx.months.length - 1 ? "review" : "production", approver: "none" }, teamList);
-        }
-    }
-    const [lxKickoff, lxGuide] = lx.g.get(`${lx.months[0]}:4`) ?? [];
-    await shapeWork(lx.c, lxKickoff, { title: "Kickoff: brand audit & strategy sign-off", channel: "Workshop", phase: "kickoff", dueDay: 5, split: [{ seat: "dm", member: "Syafiq", pct: 50 }, { seat: "creative", member: "Mei Ling", pct: 50 }], approver: "client", milestone: true }, teamList);
-    await shapeWork(lx.c, lxGuide, { title: "Brand guideline refresh", phase: "foundation", dueDay: 20, approver: "client", milestone: true }, teamList);
-    const [lxLanding, lxLive] = lx.g.get(`${lx.months[0]}:5`) ?? [];
-    await shapeWork(lx.c, lxLanding, { title: "Landing page build", month: lx.months[1], phase: "foundation", dueDay: 18, approver: "client", milestone: true }, teamList);
-    await shapeWork(lx.c, lxLive, { title: "Website live", month: lx.months[1], phase: "foundation", dueDay: 28, approver: "am", milestone: true }, teamList);
-    const [lxWorkshop] = lx.g.get(`${lx.months[0]}:6`) ?? [];
-    await shapeWork(lx.c, lxWorkshop, { title: "Brand workshop with leadership team", phase: "kickoff", dueDay: 8, split: [{ seat: "am", member: "Aina", pct: 60 }, { seat: "dm", member: "Syafiq", pct: 40 }], approver: "none" }, teamList);
+    await applyStates(kartini, [
+        { month: M(0), ri: 1, nth: 2, state: { status: "pending_approval", submittedDaysAgo: 3 } }, // client approval, 3 days
+        { month: M(0), ri: 2, nth: 1, state: { status: "in_progress", startedDaysAgo: 8, waiting: "client", waitingDays: 6 } }, // waiting for her medical review (now late)
+        { month: M(0), ri: 0, nth: 3, state: { status: "in_progress", startedDaysAgo: 3, waiting: "client", waitingDays: 2 } }, // waiting for clinic photos
+    ]);
 
-    // Nusa — a smaller 3-month social retainer, signed last month, this month under way.
-    const nusaMonths = workHelpers.monthRange(LAST_MONTH, monthPlus(LAST_MONTH, 2));
-    const nusa = await seedContract({
-        name: "Nusa Fitness — social starter",
-        clientName: "Nusa Fitness Studio",
-        am: "Aina",
-        startDate: `${LAST_MONTH}-01`,
-        endDate: workHelpers.dateForDay(nusaMonths[2], 31),
-        signedAt: `${LAST_MONTH}-01`,
-        quoteKey: "nusa-starter",
-        value: 7500,
-        terms: "Three months of reels and carousels (4 a month) after an Instagram profile refresh.",
+    // Rouang — interior design contractor: portfolio content plus a lead-gen campaign. Ends next month, renewal at risk.
+    const rouang = await seedProject({
+        name: "Rouang — portfolio content & leads",
+        clientName: "Rouang",
+        am: "Izzad",
+        startDate: `${M(-4)}-01`,
+        endDate: endOf(M(1)),
+        signedAt: SIGNED.rouang,
+        reference: "RG-SOC-01",
+        value: 27000,
+        terms: "Six months: 6 project statics and 3 site videos a month, one Meta lead-gen campaign for free site consultations, a monthly report and growth review.",
+        cadence: "monthly",
+        amount: 4500,
+        renewalStatus: "at_risk",
+        template: "Social retainer",
+        ranges: retainerRanges,
+        rows: [
+            { type: "static", name: "Project showcase", count: 6, per: "month", channel: "Instagram", titles: T.rouangStatic }, // 0
+            { type: "video", name: "Site video", count: 3, per: "month", channel: "Instagram", titles: T.rouangVideo, channels: ["Instagram", "TikTok"] }, // 1
+            { type: "campaign", name: "Meta lead-gen: free site consultation", count: 1, per: "month", channel: "Meta" }, // 2
+            { type: "custom", name: "Monthly report", count: 1, per: "month", channel: "Report" }, // 3
+            { type: "custom", name: "Monthly growth review", count: 1, per: "month", channel: "Call", who: "Yusuf", approver: "none", dueDay: 4 }, // 4
+        ],
+        crew: { dm: "Danisy", creative: "Izzad", am: "Izzad" },
+    });
+    await applyStates(rouang, [
+        { month: M(-1), ri: 0, nth: 2, state: { status: "completed", lateDays: 3 } },
+        { month: M(0), ri: 0, nth: 1, state: { status: "completed", lateDays: 6 } }, // done late
+        { month: M(0), ri: 0, nth: 2, state: { status: "not_started" } }, // overdue
+        { month: M(0), ri: 1, nth: 1, state: { status: "in_progress", startedDaysAgo: 9, changes: "Use the new Mont Kiara footage and add the logo end card.", revisions: 2 } }, // rework
+    ]);
+
+    // Baitul Irfan — NGO raising donations for a surau: donation campaigns, appeal posters, progress videos.
+    const baitul = await seedProject({
+        name: "Baitul Irfan — surau donation drive",
+        clientName: "Baitul Irfan",
+        am: "Bob",
+        startDate: `${M(-3)}-01`,
+        endDate: endOf(M(2)),
+        signedAt: SIGNED.baitul,
+        reference: "BI-DON-01",
+        value: 15000,
+        terms: "Six months at our NGO rate: two donation campaigns a month on Meta, 6 appeal posters and 2 progress videos a month, a donor update report.",
         cadence: "monthly",
         amount: 2500,
-        template: "Social retainer",
-        ranges: { kickoff: [0, 0], foundation: [0, 0], production: [0, 2], review: [2, 2] },
-        requirements: [
-            { type: "post", count: 4, cadence: "monthly", channel: "Instagram" }, // 0
-            { type: "branding", count: 1, cadence: "once", channel: "Instagram" }, // 1
+        template: "Donation drive",
+        ranges: { kickoff: [0, 0], appeal: [0, 0], drives: [0, -1], review: [-1, -1] },
+        rows: [
+            { type: "campaign", name: "Donation campaign", count: 2, per: "month", channel: "Meta", titles: T.baitulCampaign }, // 0
+            { type: "static", name: "Appeal poster", count: 6, per: "month", channel: "Facebook", titles: T.baitulStatic, channels: ["Facebook", "Instagram"] }, // 1
+            { type: "video", name: "Progress video", count: 2, per: "month", channel: "Facebook", titles: T.baitulVideo }, // 2
+            { type: "custom", name: "Donor update report", count: 1, per: "month", channel: "Report" }, // 3
+            { type: "custom", name: "Monthly strategy call", count: 1, per: "month", channel: "Call", who: "Naim", approver: "none", dueDay: 3 }, // 4
         ],
-        crew: { dm: "Syafiq", creative: "Mei Ling", am: "Aina" },
-        createdDaysAgo: Math.max(1, -offsetOf(`${LAST_MONTH}-01`)),
+        crew: { dm: "Bob", creative: "Bob", am: "Bob" },
     });
-    await shapeProduction(nusa.c, nusa.g, nusa.months, { pool: "nusa", postReq: 0 });
-    const [nusaRefresh] = nusa.g.get(`${nusa.months[0]}:1`) ?? [];
-    await shapeWork(nusa.c, nusaRefresh, { title: "Instagram profile refresh", phase: "foundation", dueDay: 8, approver: "client", milestone: true }, teamList);
+    await applyStates(baitul, [
+        { month: M(0), ri: 1, nth: 3, state: { status: "pending_approval", submittedDaysAgo: 9 } }, // sent early; the committee has sat on it 9 days
+        { month: M(0), ri: 0, nth: 1, state: { status: "not_started" } }, // overdue: the donation link is not ready
+    ]);
 
-    // Harmoni — agreed on a call, contract created but NOT signed; tasks waiting, nothing started.
-    const hdMonths = workHelpers.monthRange(MONTH, monthPlus(MONTH, 2));
-    const hd = await seedContract({
-        name: "Harmoni — local growth plan",
-        clientName: "Harmoni Dental Clinic",
+    // LeanX Digital — our own brand: internal, approved by management, no value, no invoices.
+    // It still takes real hours, so it shows in delivery and capacity.
+    const digital = await seedProject({
+        name: "LeanX Digital — our own brand",
+        clientName: "LeanX Digital",
         am: "Yusuf",
-        startDate: `${MONTH}-01`,
-        endDate: workHelpers.dateForDay(hdMonths[2], 31),
-        signedAt: null, // accepted on a call; the signed copy never came back
-        stage: "created",
-        quoteKey: "harmoni-local",
-        value: 10800,
-        terms: "Three months: 6 posts and one Meta campaign a month for whitening and braces consultations.",
+        startDate: `${M(-4)}-01`,
+        endDate: "",
+        signedAt: SIGNED.digital,
+        reference: "",
+        value: 0,
+        terms: "Our own brand: founder videos and LinkedIn posts from Naim, two blog articles, a case study and a newsletter a month, and a monthly website update.",
         cadence: "monthly",
-        amount: 3600,
-        invoiceDay: 3,
+        amount: 0,
+        internal: true,
         template: "Social retainer",
-        ranges: { kickoff: [0, 0], foundation: [0, 0], production: [0, 2], review: [2, 2] },
-        requirements: [
-            { type: "post", count: 6, cadence: "monthly", channel: "Instagram" }, // 0
-            { type: "campaign", count: 1, cadence: "monthly", channel: "Meta" }, // 1
+        ranges: { production: [0, -1] },
+        rows: [
+            { type: "video", name: "Founder video", count: 4, per: "month", channel: "LinkedIn", titles: T.digitalVideo, channels: ["LinkedIn", "Instagram"] }, // 0
+            { type: "static", name: "LinkedIn post", count: 4, per: "month", channel: "LinkedIn", titles: T.digitalStatic }, // 1
+            { type: "seo", name: "Agency blog article", count: 2, per: "month", channel: "Blog", titles: T.digitalSeo }, // 2
+            { type: "custom", name: "Case study write-up", count: 1, per: "month", channel: "Website" }, // 3
+            { type: "custom", name: "Agency newsletter", count: 1, per: "month", channel: "E-mail", dueDay: 24 }, // 4
+            { type: "website", name: "Website update", count: 1, per: "month", channel: "Website" }, // 5
         ],
-        crew: { dm: "Syafiq", creative: "Mei Ling", am: "Yusuf" },
-        createdDaysAgo: 4,
+        crew: { dm: "Yusuf", creative: "Naim", dev: "Zafran", am: "Yusuf" },
     });
-    await shapeProduction(hd.c, hd.g, hd.months, { pool: "harmoni", postReq: 0, campaignReq: 1, campaignOwner: "Priya" });
+    await applyStates(digital, [
+        { month: M(-1), ri: 2, nth: 1, state: { status: "in_progress", startedDaysAgo: 26, dueDaysAgo: 20 } }, // our own article, ~20 days overdue
+        { month: M(0), ri: 0, nth: 1, state: { status: "completed", lateDays: 2 } },
+        { month: M(0), ri: 1, nth: 2, state: { status: "pending_approval", submittedDaysAgo: 1 } }, // AM approval (Yusuf)
+    ]);
 
-    // Zenith — a fixed-scope app build on milestones, sprint 3 in flight, launch planned.
-    const zenith = await seedContract({
-        name: "Zenith Homes app — build",
-        clientName: "Zenith Properties",
-        am: "Naim",
-        startDate: ymd(-45),
-        endDate: ymd(75),
-        signedAt: ymd(-40),
-        quoteKey: "zenith-app",
-        value: 45000,
-        terms: "Mobile app build in three milestones: discovery + design, build, launch. Brand kit included.",
-        cadence: "milestone",
-        amount: 15000,
-        template: "Website build",
-        ranges: { discovery: [0, 0], design: [0, 1], build: [1, -2], "qa-launch": [-1, -1] },
-        requirements: [
-            { type: "website", count: 5, cadence: "once", channel: "App" }, // 0
-            { type: "branding", count: 1, cadence: "once", channel: "Brand" }, // 1
-            { type: "custom", count: 1, cadence: "once", channel: "Meeting" }, // 2
+    // Payright — brand growth for a payments company; software subscription on the costs.
+    const payrightCosts = projectMonths({ startDate: `${M(-8)}-01`, endDate: endOf(M(0)) }).map((m) =>
+        cost(`Canva Teams + scheduling tool — ${monShort(m)}`, "software", 220, dayOf(m, 3), "Bob"),
+    );
+    const payright = await seedProject({
+        name: "Payright — brand growth",
+        clientName: "Payright",
+        am: "Bob",
+        startDate: `${M(-8)}-01`,
+        endDate: endOf(M(3)),
+        signedAt: SIGNED.payright,
+        reference: "PR-GROW-01",
+        value: 90000,
+        terms: "Twelve months: 8 statics, 2 merchant videos and 2 SEO articles a month, one Meta merchant lead-gen campaign, a landing page update, a monthly report and growth review.",
+        cadence: "monthly",
+        amount: 7500,
+        templateName: "Scale",
+        template: "Social retainer",
+        ranges: retainerRanges,
+        rows: [
+            { type: "static", name: "Instagram static", count: 8, per: "month", channel: "Instagram", titles: T.payrightStatic }, // 0
+            { type: "video", name: "Merchant video", count: 2, per: "month", channel: "Instagram", titles: T.payrightVideo, channels: ["Instagram", "TikTok"], who: "Izzad" }, // 1
+            { type: "seo", name: "Blog article", count: 2, per: "month", channel: "Blog", titles: T.payrightSeo, who: "Danisy" }, // 2
+            { type: "campaign", name: "Meta lead-gen: merchant sign-ups", count: 1, per: "month", channel: "Meta", who: "Danisy" }, // 3
+            { type: "custom", name: "Monthly growth review", count: 1, per: "month", channel: "Call", who: "Yusuf", approver: "none", dueDay: 4 }, // 4
+            { type: "custom", name: "Monthly performance report", count: 1, per: "month", channel: "Report", who: "Yusuf" }, // 5
+            { type: "website", name: "Landing page update", count: 1, per: "month", channel: "Website" }, // 6
         ],
-        crew: { dev: "Farid", creative: "Mei Ling", am: "Naim" },
-        createdDaysAgo: 45,
+        crew: { dm: "Bob", creative: "Bob", dev: "Zafran", am: "Bob" },
+        costs: payrightCosts,
     });
-    const dev100: HandShare[] = [{ seat: "dev", member: "Farid", pct: 100 }];
-    const creative100: HandShare[] = [{ seat: "creative", member: "Mei Ling", pct: 100 }];
-    const [zWire, zAuth, zListings, zPush, zLaunch] = zenith.g.get(`${zenith.months[0]}:0`) ?? [];
-    await shapeWork(zenith.c, zWire, { title: "Discovery & wireframes", phase: "discovery", dueDay: 24, split: [{ seat: "dev", member: "Farid", pct: 50 }, { seat: "creative", member: "Mei Ling", pct: 50 }], approver: "client", milestone: true, state: { status: "completed" } }, teamList);
-    await shapeWork(zenith.c, zAuth, { title: "Auth flow", month: MONTH, phase: "build", dueDay: 6, split: dev100, state: { status: "completed", doneDaysAgo: 3 } }, teamList);
-    await shapeWork(zenith.c, zListings, { title: "Listings screen + map integration", month: MONTH, phase: "build", dueDay: 20, split: dev100, state: { status: "in_progress", startedDaysAgo: 5 } }, teamList);
-    await shapeWork(zenith.c, zPush, { title: "Push notifications API", month: monthPlus(MONTH, 1), phase: "build", dueDay: 10, split: [{ seat: "dev", member: "Hafiz", pct: 100 }] }, teamList);
-    await shapeWork(zenith.c, zLaunch, { title: "App store launch", month: monthPlus(MONTH, 2), phase: "qa-launch", dueDay: 15, split: dev100, approver: "client", milestone: true }, teamList);
-    const [zLogo] = zenith.g.get(`${zenith.months[0]}:1`) ?? [];
-    await shapeWork(zenith.c, zLogo, { title: "Logo & identity — round 2", month: MONTH, phase: "build", dueDay: 12, split: creative100, approver: "client", state: { status: "pending_approval", submittedDaysAgo: 2 } }, teamList);
-    const [zDemo] = zenith.g.get(`${zenith.months[0]}:2`) ?? [];
-    await shapeWork(zenith.c, zDemo, { title: "Stakeholder demo — build review", month: monthPlus(MONTH, 1), phase: "build", dueDay: 24, split: [{ seat: "am", member: "Naim", pct: 100 }], approver: "client" }, teamList);
+    await applyStates(payright, [
+        { month: M(0), ri: 0, nth: 2, state: { status: "completed", lateDays: 4 } }, // done late
+    ]);
 
-    // Kopi Kita — a one-off brand website, delivered and closed last month.
-    const kopi = await seedContract({
-        name: "Kopi Kita — brand website",
-        clientName: "Kopi Kita Café",
-        am: "Aina",
-        startDate: ymd(-40),
-        endDate: ymd(-7), // ended a week ago
-        signedAt: ymd(-41),
-        reference: "KK-WEB-01",
-        value: 8000,
-        terms: "Brand website: wireframes, hi-fi design, build and launch.",
-        cadence: "one_off",
+    // LeanX — brand growth for a payment platform, twelve months from January; renewing.
+    const leanx = await seedProject({
+        name: "LeanX — brand growth",
+        clientName: "LeanX",
+        am: "Bob",
+        startDate: `${M(-10)}-01`,
+        endDate: endOf(M(1)),
+        signedAt: SIGNED.leanx,
+        reference: "LX-GROW-01",
+        value: 96000,
+        terms: "Twelve months: 8 statics, 3 videos and 2 SEO articles a month, one Meta campaign, a website update, a monthly report and strategy call.",
+        cadence: "monthly",
         amount: 8000,
-        status: "completed",
-        stage: "completed",
-        template: "Website build",
-        ranges: { discovery: [0, 0], design: [0, 0], build: [0, -1], "qa-launch": [-1, -1] },
-        requirements: [
-            { type: "branding", count: 1, cadence: "once", channel: "Brand" }, // 0
-            { type: "website", count: 2, cadence: "once", channel: "Website" }, // 1
+        templateName: "Scale",
+        renewalStatus: "renewing",
+        template: "Social retainer",
+        ranges: retainerRanges,
+        rows: [
+            { type: "static", name: "Instagram static", count: 8, per: "month", channel: "Instagram", titles: T.leanxStatic }, // 0
+            { type: "video", name: "Reel / TikTok", count: 3, per: "month", channel: "Instagram", titles: T.leanxVideo, channels: ["Instagram", "TikTok"] }, // 1
+            { type: "seo", name: "Blog article", count: 2, per: "month", channel: "Blog", titles: T.leanxSeo }, // 2
+            { type: "campaign", name: "Meta campaign: merchant acquisition", count: 1, per: "month", channel: "Meta", who: "Danisy" }, // 3
+            { type: "custom", name: "Monthly strategy call", count: 1, per: "month", channel: "Call", who: "Naim", approver: "none", dueDay: 3 }, // 4
+            { type: "custom", name: "Monthly performance report", count: 1, per: "month", channel: "Report", who: "Yusuf" }, // 5
+            { type: "website", name: "Website update", count: 1, per: "month", channel: "Website" }, // 6
         ],
-        crew: { dev: "Farid", creative: "Mei Ling", am: "Aina" },
-        createdDaysAgo: 40,
+        crew: { dm: "Bob", creative: "Bob", dev: "Zafran", am: "Bob" },
     });
-    const done: WorkState = { status: "completed" };
-    const [kDesign] = kopi.g.get(`${kopi.months[0]}:0`) ?? [];
-    await shapeWork(kopi.c, kDesign, { title: "Hi-fi design (Figma)", month: LAST_MONTH, phase: "design", dueDay: 8, split: creative100, approver: "client", state: done }, teamList);
-    const [kBuild, kLaunch] = kopi.g.get(`${kopi.months[0]}:1`) ?? [];
-    await shapeWork(kopi.c, kBuild, { title: "Site build", month: LAST_MONTH, phase: "build", dueDay: 20, split: dev100, state: done }, teamList);
-    await shapeWork(kopi.c, kLaunch, { title: "Launch — site live", month: LAST_MONTH, phase: "qa-launch", dueDay: 26, split: dev100, approver: "client", milestone: true, state: done }, teamList);
+    await applyStates(leanx, [
+        { month: M(0), ri: 6, nth: 1, state: { status: "not_started", moveDays: 5 } }, // date moved by the AM
+    ]);
 
-    // ---- Task states on the retainers ------------------------------------------------
-    const allWorks = await works.listWorks();
-    const monthStates = async (contractId: string, month: string, states: Partial<Record<LineType, WorkState[]>>, rest: WorkState | null) => {
-        for (const w of worksOf(allWorks, contractId, month)) {
-            const queue = states[w.type];
-            const s = queue && queue.length ? queue.shift() : rest;
-            if (s) await setWorkState(w, s);
+    // Leanis Solution — brand growth, six months from September.
+    const leanis = await seedProject({
+        name: "Leanis Solution — brand growth",
+        clientName: "Leanis Solution Sdn Bhd",
+        am: "Bob",
+        startDate: `${M(-2)}-01`,
+        endDate: endOf(M(3)),
+        signedAt: SIGNED.leanis,
+        quoteKey: "leanis",
+        value: 24000,
+        terms: "Six months: 6 statics, 2 videos and an SEO article a month for LinkedIn and Instagram, a monthly report and strategy call.",
+        cadence: "monthly",
+        amount: 4000,
+        templateName: "Starter",
+        template: "Social retainer",
+        ranges: retainerRanges,
+        rows: [
+            { type: "static", name: "LinkedIn / Instagram static", count: 6, per: "month", channel: "LinkedIn", titles: T.leanisStatic, channels: ["LinkedIn", "Instagram"] }, // 0
+            { type: "video", name: "Brand video", count: 2, per: "month", channel: "LinkedIn", titles: T.leanisVideo }, // 1
+            { type: "seo", name: "Blog article", count: 1, per: "month", channel: "Blog", titles: T.leanisSeo }, // 2
+            { type: "custom", name: "Monthly strategy call", count: 1, per: "month", channel: "Call", who: "Yusuf", approver: "none", dueDay: 4 }, // 3
+            { type: "custom", name: "Monthly performance report", count: 1, per: "month", channel: "Report", who: "Yusuf" }, // 4
+        ],
+        crew: { dm: "Bob", creative: "Bob", am: "Bob" },
+    });
+    await applyStates(leanis, [
+        { month: M(0), ri: 0, nth: 3, state: { status: "pending_approval", submittedDaysAgo: 1 } }, // client approval, fresh
+    ]);
+
+    // Zakat Selangor — zakat awareness for Gen Z: video-heavy (a TikTok every week plus Reels),
+    // a TikTok awareness campaign; a freelance videographer on the costs.
+    const zakatCosts = projectMonths({ startDate: `${M(-5)}-01`, endDate: endOf(M(0)) }).map((m) =>
+        cost(`Freelance videographer — ${monShort(m)} shoot days`, "freelancer", 1800, dayOf(m, 6), "Hakim"),
+    );
+    const zakat = await seedProject({
+        name: "Zakat Selangor — Gen Z awareness",
+        clientName: "Zakat Selangor",
+        am: "Hakim",
+        startDate: `${M(-5)}-01`,
+        endDate: endOf(M(6)),
+        signedAt: SIGNED.zakat,
+        reference: "LZS-GENZ-01",
+        value: 120000,
+        terms: "Twelve months: a TikTok every week and 2 Reels a month, 4 infographics, a TikTok awareness campaign and a landing page update a month, weekly community management, a monthly board report. Shoot days by a freelance videographer.",
+        cadence: "monthly",
+        amount: 10000,
+        template: "Social retainer",
+        ranges: retainerRanges,
+        rows: [
+            { type: "video", name: "TikTok video", count: 1, per: "week", channel: "TikTok", titles: T.zakatTiktok }, // 0
+            { type: "video", name: "Instagram Reel", count: 2, per: "month", channel: "Instagram", titles: T.zakatReel }, // 1
+            { type: "static", name: "Infographic", count: 4, per: "month", channel: "Instagram", titles: T.zakatStatic, who: "Izzad" }, // 2
+            { type: "campaign", name: "TikTok awareness campaign · Gen Z", count: 1, per: "month", channel: "TikTok" }, // 3
+            { type: "custom", name: "Community management", count: 1, per: "week", channel: "TikTok", approver: "none" }, // 4
+            { type: "custom", name: "Monthly report to the board", count: 1, per: "month", channel: "Report" }, // 5
+            { type: "custom", name: "Monthly strategy call", count: 1, per: "month", channel: "Call", who: "Naim", approver: "none", dueDay: 3 }, // 6
+            { type: "website", name: "Campaign landing page update", count: 1, per: "month", channel: "Website" }, // 7
+            { type: "custom", name: "Content calendar & captions", count: 1, per: "month", channel: "Planning", dueDay: 26 }, // 8
+        ],
+        crew: { dm: "Danisy", creative: "Bob", dev: "Zafran", am: "Hakim" },
+        costs: zakatCosts,
+    });
+    await applyStates(zakat, [
+        { month: M(0), ri: 0, nth: 3, state: { status: "in_progress", startedDaysAgo: 2, waiting: "internal", waitingDays: 1 } }, // waiting on us: the freelancer's footage
+        { month: M(0), ri: 2, nth: 2, approver: "am", state: { status: "pending_approval", submittedDaysAgo: 2 } }, // AM approval (Hakim)
+    ]);
+
+    // Kembara — a one-off donation website: design done, build under way, launch next month, half billed.
+    const kembara = await seedProject({
+        name: "Kembara — donation website",
+        clientName: "Kembara",
+        am: "Zafran",
+        startDate: `${M(-1)}-01`,
+        endDate: endOf(M(1)),
+        signedAt: SIGNED.kembara,
+        quoteKey: "kembara",
+        value: 18000,
+        terms: "Donation website: discovery, design, build with a payment gateway and donor receipts, QA and launch. 50 % on signing, the balance on launch. Illustrations by a freelancer.",
+        cadence: "one_off",
+        amount: 18000,
+        renewalStatus: "not_renewing",
+        template: "Website build",
+        ranges: { discovery: [0, 0], design: [0, 1], build: [1, 1], "qa-launch": [2, 2] },
+        rows: [{ type: "website", name: "Website build", count: 7, per: "once", channel: "Website" }], // 0
+        crew: { dev: "Zafran", creative: "Izzad", am: "Zafran" },
+        costs: [cost("Freelance illustrator — donation campaign artwork", "freelancer", 2400, dayOf(M(-1), 20), "Zafran")],
+    });
+    {
+        const k = kembara.tasks.map((t) => t.w);
+        if (k.length !== 7) throw new Error(`Kembara: expected 7 website tasks, got ${k.length}`);
+        const dev100: HandShare[] = [{ seat: "dev", member: "Zafran", pct: 100 }];
+        await shapeWork(kembara.c, k[0], { title: "Discovery & sitemap", month: M(-1), dueDay: 8, phase: "discovery", split: dev100, approver: "am", state: done }, teamList);
+        await shapeWork(kembara.c, k[1], { title: "Wireframes & visual design", month: M(-1), dueDay: 27, phase: "design", split: [{ seat: "dev", member: "Zafran", pct: 50 }, { seat: "creative", member: "Izzad", pct: 50 }], approver: "client", milestone: true, state: done }, teamList);
+        await shapeWork(kembara.c, k[2], { title: "Donation flow & payment gateway", month: M(0), dueDay: 19, phase: "build", split: dev100, approver: "am", state: { status: "in_progress", startedDaysAgo: 6 } }, teamList);
+        await shapeWork(kembara.c, k[3], { title: "Campaign pages & CMS", month: M(0), dueDay: 24, phase: "build", split: dev100, approver: "am" }, teamList);
+        await shapeWork(kembara.c, k[4], { title: "Donor receipts & e-mail notifications", month: M(0), dueDay: 26, phase: "build", split: dev100, approver: "am" }, teamList);
+        await shapeWork(kembara.c, k[5], { title: "QA & UAT with the Kembara team", month: M(1), dueDay: 10, phase: "qa-launch", split: dev100, approver: "am" }, teamList);
+        await shapeWork(kembara.c, k[6], { title: "Launch — site live", month: M(1), dueDay: 14, phase: "qa-launch", split: dev100, approver: "client", milestone: true, state: { status: "not_started", moveDays: 3 } }, teamList);
+    }
+
+    // Enfrasys — content creation for an IT services company. Signed this month, started a few days ago.
+    const enfrasys = await seedProject({
+        name: "Enfrasys — content creation",
+        clientName: "Enfrasys",
+        am: "Izzad",
+        startDate: ENFRASYS_START,
+        endDate: endOf(M(5)),
+        signedAt: SIGNED.enfrasys,
+        quoteKey: "enfrasys",
+        value: 33000,
+        terms: "Six months of content: 8 LinkedIn statics and 4 explainer videos a month, a monthly content report. Kickoff workshop with their marketing team.",
+        cadence: "monthly",
+        amount: 5500,
+        invoiceDay: Number(ENFRASYS_START.slice(8, 10)),
+        template: "Social retainer",
+        ranges: retainerRanges,
+        rows: [
+            { type: "static", name: "LinkedIn static", count: 8, per: "month", channel: "LinkedIn", titles: T.enfrasysStatic }, // 0
+            { type: "video", name: "Explainer video", count: 4, per: "month", channel: "LinkedIn", titles: T.enfrasysVideo, channels: ["LinkedIn", "YouTube"] }, // 1
+            { type: "custom", name: "Monthly content report", count: 1, per: "month", channel: "Report" }, // 2
+            { type: "custom", name: "Kickoff workshop", count: 1, per: "once", channel: "Workshop", who: "Naim", approver: "none", phase: "kickoff" }, // 3
+        ],
+        crew: { creative: "Izzad", am: "Izzad" },
+    });
+    await applyStates(enfrasys, [
+        { month: M(0), ri: 3, nth: 1, dueDate: later(ENFRASYS_START, ymd(-2)), state: { status: "completed", doneDaysAgo: Math.min(2, ago(ENFRASYS_START)) } },
+    ]);
+
+    // Tropicor — campaign management: several Meta and Google campaigns a month plus ad statics.
+    // The fee includes a managed ad budget, which lands on the costs as ad spend.
+    const tropicorCosts = projectMonths({ startDate: `${M(-1)}-01`, endDate: endOf(M(0)) }).flatMap((m) => {
+        const current = m === MONTH;
+        return [
+            cost(`Meta ad spend — ${monShort(m)}${current ? " (to date)" : ""}`, "ad_spend", current ? 1150 : 2450, current ? TODAY : endOf(m), "Danisy"),
+            cost(`Google Ads spend — ${monShort(m)}${current ? " (to date)" : ""}`, "ad_spend", current ? 640 : 1480, current ? TODAY : endOf(m), "Danisy"),
+        ];
+    });
+    const tropicor = await seedProject({
+        name: "Tropicor — campaign management",
+        clientName: "Tropicor",
+        am: "Danisy",
+        startDate: `${M(-1)}-01`,
+        endDate: endOf(M(4)),
+        signedAt: SIGNED.tropicor,
+        quoteKey: "tropicor",
+        value: 57000,
+        terms: "Six months of campaign management: two Meta and two Google Ads campaigns a month, 4 ad creatives, a monthly performance report. Fee includes a managed ad budget of RM 4,000 a month.",
+        cadence: "monthly",
+        amount: 9500,
+        template: "Campaign management",
+        ranges: { setup: [0, 0], launch: [0, 1], optimise: [0, -1], review: [-1, -1] },
+        rows: [
+            { type: "campaign", name: "Meta campaign", count: 2, per: "month", channel: "Meta", titles: T.tropicorMeta }, // 0
+            { type: "campaign", name: "Google Ads campaign", count: 2, per: "month", channel: "Google", titles: T.tropicorGoogle }, // 1
+            { type: "static", name: "Ad creative", count: 4, per: "month", channel: "Instagram", titles: T.tropicorStatic, who: "Bob" }, // 2
+            { type: "custom", name: "Monthly performance report", count: 1, per: "month", channel: "Report" }, // 3
+            { type: "custom", name: "Monthly growth review", count: 1, per: "month", channel: "Call", who: "Yusuf", approver: "none", dueDay: 4 }, // 4
+        ],
+        crew: { dm: "Danisy", creative: "Bob", am: "Danisy" },
+        costs: tropicorCosts,
+    });
+    await applyStates(tropicor, []); // nothing special: the default rule alone
+
+    // ---- Planned days: a few owners pulled this month's open tasks earlier than the deadline ----
+    // (what the calendar shows when someone drags a task; the deadline stays where the AM put it).
+    // Every fourth open task, so the pulls spread over the month; always onto a working day.
+    {
+        const fresh = await works.listWorks();
+        const open = fresh
+            .filter((w) => w.status === "not_started" && w.month === MONTH && w.dueDate > ymd(2))
+            .sort((a, b) => a.dueDate.localeCompare(b.dueDate) || a.title.localeCompare(b.title));
+        let planned = 0;
+        for (const [i, w] of open.entries()) {
+            if (planned >= 6) break;
+            if (i % 4 !== 0) continue;
+            const earlierDay = nearestWorkingDay(workHelpers.shiftYmd(w.dueDate, planned % 2 === 0 ? -2 : -3));
+            if (earlierDay < TODAY || earlierDay >= w.dueDate || earlierDay.slice(0, 7) !== MONTH) continue;
+            await patchJson("works", w.id, { plannedDate: earlierDay });
+            planned += 1;
         }
-    };
+    }
 
-    // Lean.x last month: delivered, bar a post the client is still sitting on and an SEO article running late.
-    await monthStates(lx.c.id, LAST_MONTH, {
-        post: [done, done, done, done, done, done, done, { status: "pending_approval", submittedDaysAgo: 6 }],
-        seo: [done, { status: "in_progress", startedDaysAgo: 9 }],
-    }, done);
-    // Lean.x this month: every state on the board.
-    await monthStates(lx.c.id, MONTH, {
-        post: [
-            { status: "completed", doneDaysAgo: 1 },
-            { status: "completed", doneDaysAgo: 1 },
-            { status: "not_started", overdue: true },
-            { status: "pending_approval", submittedDaysAgo: 1 },
-            { status: "pending_approval", submittedDaysAgo: 3 },
-            { status: "in_progress", startedDaysAgo: 2 },
-            { status: "in_progress", startedDaysAgo: 4, changes: "Use the new logo on every creative.", revisions: 3 },
-            { status: "not_started", moveDays: 5 }, // publish moved out by the AM
-        ],
-        campaign: [{ status: "in_progress", startedDaysAgo: 4 }],
-        seo: [{ status: "not_started", overdue: true }, { status: "pending_approval", submittedDaysAgo: 2 }],
-        website: [{ status: "in_progress", startedDaysAgo: 10 }, { status: "not_started", moveDays: 7 }], // landing page running; go-live moved by the AM
-    }, { status: "not_started" });
+    // ---- One open seat: an Enfrasys static this month whose creative share nobody holds yet ----
+    // (Izzad is over his hours; the AM took him off it and has not found anyone).
+    {
+        const fresh = await works.listWorks();
+        const w = fresh
+            .filter((x) => x.contractId === enfrasys.c.id && x.month === MONTH && x.type === "static" && x.status === "not_started" && x.split.some((s) => s.seat === "creative"))
+            .sort((a, b) => a.dueDate.localeCompare(b.dueDate))[0];
+        if (w) await patchJson("works", w.id, { split: w.split.map((s) => (s.seat === "creative" ? { ...s, member: "" } : s)) });
+    }
 
-    // Nusa last month delivered; this month a mix.
-    await monthStates(nusa.c.id, LAST_MONTH, {}, done);
-    await monthStates(nusa.c.id, MONTH, {
-        post: [
-            { status: "completed", doneDaysAgo: 1 },
-            { status: "pending_approval", submittedDaysAgo: 2 },
-            { status: "in_progress", startedDaysAgo: 1 },
-            { status: "not_started" },
-        ],
-    }, { status: "not_started" });
-    // Harmoni: nothing started (contract unsigned) — tasks stay as generated.
-
-    // ---- Sprint tasks ---------------------------------------------------------
+    // ---- Sprint tasks (the team's own to-dos, outside the projects) --------------------
     const SPRINT: Array<{ title: string; pic: string; due: number; doneAt?: number; details?: string }> = [
-        { title: "Send Lean.x monthly report", pic: "Yusuf", due: 1 },
-        { title: "Chase Lean.x overdue invoice", pic: "Aina", due: -2, details: "Website v2 milestone 2 — past due" },
-        { title: "Fix 404 on Kopi Kita old menu URL", pic: "Hafiz", due: 3 },
-        { title: "Harmoni ad creative brief v2", pic: "Priya", due: 5 },
-        { title: "Draft Nusa Fitness next-month content plan", pic: "Syafiq", due: 4 },
-        { title: "Export Zenith logo files for print", pic: "Mei Ling", due: -1 },
-        { title: "Set up Zenith Google Ads account", pic: "", due: 6 },
-        { title: "Weekly standup notes", pic: "Yusuf", due: 0 },
-        // Done — a mix of on-time and late for the performance window.
-        { title: "Update portfolio page with Kopi Kita", pic: "Farid", due: -4, doneAt: -5 },
-        { title: "Renew Harmoni domain", pic: "Hafiz", due: -6, doneAt: -7 },
-        { title: "Publish Lean.x last-month report", pic: "Yusuf", due: -9, doneAt: -10 },
-        { title: "Harmoni landing page copy", pic: "Syafiq", due: -5, doneAt: -3 },
-        { title: "Zenith app auth QA", pic: "Yusuf", due: -3, doneAt: -3 },
-        { title: "Kopi Kita DNS cutover", pic: "Hafiz", due: -12, doneAt: -12 },
-        { title: "Harmoni creative set B export", pic: "Mei Ling", due: -14, doneAt: -11 },
-        { title: "Lean.x product photos retouch", pic: "Mei Ling", due: -8, doneAt: -8 },
+        { title: "Prepare Leanis November invoice", pic: "Farisha", due: 1, details: "Draft is in Finances; check the retainer line before sending." },
+        { title: "Chase Baitul Irfan September and October invoices", pic: "Farisha", due: -2, details: "Treasurer sign-off pending; send a statement of account." },
+        { title: "Draft quotation for Sekolah Tahfiz Al-Hikmah", pic: "Farisha", due: 2, details: "Donation website plus Meta ads setup; Naim has the scope." },
+        { title: "Enfrasys onboarding pack and countersigned contract", pic: "Farisha", due: -6, doneAt: -7 },
+        { title: "Send Kembara deposit receipt", pic: "Farisha", due: -9, doneAt: -9 },
+        { title: "Weekly operations review", pic: "Yusuf", due: 0 },
+        { title: "Close last month's P&L", pic: "Yusuf", due: -5, doneAt: -3 },
+        { title: "Renew Canva and Google Workspace seats", pic: "Yusuf", due: 6 },
+        { title: "Dr Kartini monthly performance report", pic: "Hakim", due: -8, doneAt: -9 },
+        { title: "Zakat Selangor board update deck", pic: "Hakim", due: 3 },
+        { title: "Dr Kartini renewal proposal", pic: "Hakim", due: 4 },
+        { title: "Payright Meta pixel and conversions API audit", pic: "Bob", due: 5 },
+        { title: "Baitul Irfan donation link tracking", pic: "Bob", due: -10, doneAt: -10 },
+        { title: "Export Rouang brand kit for print", pic: "Izzad", due: -4, doneAt: -2 },
+        { title: "Enfrasys LinkedIn banner set", pic: "Izzad", due: -1 },
+        { title: "Kembara staging server and SSL", pic: "Zafran", due: -12, doneAt: -12 },
+        { title: "Tropicor Google Ads conversion tracking", pic: "Danisy", due: 2 },
+        { title: "Rouang renewal call", pic: "Naim", due: 3, details: "Bring the lead-quality numbers and two options." },
+        { title: "Set up Tropicor Looker Studio dashboard", pic: "", due: 7 },
     ];
     for (const t of SPRINT) {
         const row = await sprint.createSprintTask({
@@ -1072,141 +1730,121 @@ async function main() {
         }
     }
 
-    // ---- Campaigns outside the contracts' requirements -----------------------------
-    // (The contracts' campaigns were created with their tasks and follow the task's state.)
+    // ---- Campaigns outside the projects' deliverables -------------------------------
+    // (The projects' campaigns were created with their tasks and follow the task's state.)
     await campaigns.createCampaign({
-        name: "Zenith Homes search",
-        clientName: "Zenith Properties",
-        contractId: zenith.c.id,
+        name: "Tropicor — always-on brand search",
+        clientName: "Tropicor",
+        contractId: tropicor.c.id,
         platform: "google",
-        objective: "leads",
+        objective: "sales",
         startDate: ymd(14),
         endDate: "",
-        monthlyBudgetMyr: 5000,
+        monthlyBudgetMyr: 1500,
         feeModel: "percent",
         percentFee: 15,
     });
-    // Budget and fee model on the contracts' live campaigns, so the ads pages have numbers.
+    // Budget and fee model on the projects' live campaigns, so the ads pages have numbers.
     for (const c of await campaigns.listCampaigns()) {
         if (c.status !== "live" || c.monthlyBudgetMyr) continue;
         await campaigns.updateCampaign(c.id, {
-            objective: "leads",
-            monthlyBudgetMyr: c.clientName === "Lean.x Sdn Bhd" ? 3000 : 900,
+            objective: c.clientName === "Baitul Irfan" ? "awareness" : "leads",
+            monthlyBudgetMyr: c.clientName === "Tropicor" ? 2000 : c.clientName === "Baitul Irfan" ? 500 : 1200,
             feeModel: "flat_plus_percent",
             flatFeeMyr: 800,
             percentFee: 10,
         });
     }
 
-    // ---- Invoices: monthly from the retainers' billing + history + milestones ----
-    const LX = "Lean.x Sdn Bhd";
-    const HD = "Harmoni Dental Clinic";
-    // Lean.x — the previous retainer (before this engagement) paid every month …
-    for (let k = 5; k >= 2; k--) {
-        await seedInvoice({
-            clientName: LX,
-            issueDate: monthDay(k, 2),
-            dueDate: monthDay(k, 16),
-            items: [item(`Previous retainer — ${monthDay(k, 1).slice(0, 7)}`, 4500)],
-            status: "paid",
-            paidAfterDays: 6 + (k % 3) * 4,
-        });
-    }
-    // … the engagement's month 1 paid, this month's invoice sent; website milestone 2 overdue.
-    const lxRaised = await settleMonthInvoices(lx.c, lx.months, "sent");
-    await seedInvoice({
-        clientName: LX,
-        issueDate: ymd(-40),
-        dueDate: ymd(-10),
-        items: [item("Website v2 — milestone 2 (design sign-off)", 8000)],
-        status: "sent", // overdue
+    // ---- History: a paused retainer and a churned one-off (no tasks left to deliver) ----
+    const sutera = await seedProject({
+        name: "Sutera Batik — social retainer",
+        clientName: "Sutera Batik Studio",
+        am: "Bob",
+        startDate: `${M(-10)}-01`,
+        endDate: endOf(M(-6)),
+        signedAt: SIGNED.sutera,
+        reference: "SB-SOC-01",
+        value: 12500,
+        terms: "Five months of social media for the Raya collection. Paused by the client.",
+        cadence: "monthly",
+        amount: 2500,
+        status: "completed",
+        stage: "completed",
+        template: "Social retainer",
+        ranges: retainerRanges,
+        rows: [],
+        crew: { dm: "Bob", creative: "Izzad", am: "Bob" },
     });
+    const paklong = await seedProject({
+        name: "Pak Long Kopitiam — website & menu revamp",
+        clientName: "Pak Long Kopitiam",
+        am: "Zafran",
+        startDate: `${M(-6)}-01`,
+        endDate: endOf(M(-4)),
+        signedAt: SIGNED.paklong,
+        reference: "PLK-WEB-01",
+        value: 9500,
+        terms: "Website with an online menu and a printed menu revamp: 50 % on signing, 50 % on handover.",
+        cadence: "one_off",
+        amount: 9500,
+        status: "completed",
+        stage: "completed",
+        template: "Website build",
+        ranges: { discovery: [0, 0], design: [0, 1], build: [1, -1], "qa-launch": [-1, -1] },
+        rows: [],
+        crew: { dev: "Zafran", creative: "Izzad", am: "Zafran" },
+    });
+
+    // ---- Invoices: monthly from the retainers' billing, the one-offs in parts ------------
+    let raised = 0;
+    raised += await settleMonthInvoices(kartini.c, kartini.months, "sent");
+    raised += await settleMonthInvoices(rouang.c, rouang.months, "sent");
+    // An NGO paying slowly: September and October still out (one 40+ days late, one 10–30).
+    raised += await settleMonthInvoices(baitul.c, baitul.months, "sent", { [M(-2)]: { status: "sent" }, [M(-1)]: { status: "sent" } });
+    // Payright paid this month's invoice within the week: a receipt this month.
+    raised += await settleMonthInvoices(payright.c, payright.months, "paid", { [MONTH]: { status: "paid", paidAfterDays: 5 } });
+    raised += await settleMonthInvoices(leanx.c, leanx.months, "sent");
+    // Leanis: this month's invoice is still a draft Farisha is preparing.
+    raised += await settleMonthInvoices(leanis.c, leanis.months, "draft");
+    // Zakat Selangor paid last month's invoice late, this month: another receipt.
+    raised += await settleMonthInvoices(zakat.c, zakat.months, "sent", { [M(-1)]: { status: "paid", paidAfterDays: Math.max(14, ago(dayOf(M(-1), 2)) - 8) } });
+    raised += await settleMonthInvoices(enfrasys.c, enfrasys.months, "sent");
+    raised += await settleMonthInvoices(tropicor.c, tropicor.months, "sent");
+    raised += await settleMonthInvoices(sutera.c, sutera.months, "paid");
+    // LeanX Digital is internal: no invoices.
+
+    // Kembara — 50 % on signing (paid); the balance is invoiced on launch next month.
     await seedInvoice({
-        clientName: LX,
-        issueDate: ymd(-75),
-        dueDate: ymd(-61),
-        items: [item("Website v2 — milestone 1 (deposit)", 8000)],
+        clientName: "Kembara",
+        contractId: kembara.c.id,
+        issueDate: SIGNED.kembara,
+        dueDate: workHelpers.shiftYmd(SIGNED.kembara, 14),
+        items: [item("Donation website — 50 % on signing", 9000)],
+        status: "paid",
+        paidAfterDays: 6,
+    });
+    // Pak Long Kopitiam (churned) — deposit paid; the handover balance is 60+ days overdue.
+    await seedInvoice({
+        clientName: "Pak Long Kopitiam",
+        contractId: paklong.c.id,
+        issueDate: SIGNED.paklong,
+        dueDate: workHelpers.shiftYmd(SIGNED.paklong, 14),
+        items: [item("Website & menu revamp — 50 % on signing", 4750)],
         status: "paid",
         paidAfterDays: 9,
     });
-
-    // Harmoni — previous retainer paid through last month; the new contract's first invoice stays a draft (unsigned).
-    for (let k = 4; k >= 1; k--) {
-        await seedInvoice({
-            clientName: HD,
-            issueDate: monthDay(k, 3),
-            dueDate: monthDay(k, 17),
-            items: [item(`Previous retainer — ${monthDay(k, 1).slice(0, 7)}`, 3200)],
-            status: "paid",
-            paidAfterDays: 5 + k * 2,
-        });
-    }
-    const hdRaised = await settleMonthInvoices(hd.c, hd.months, "draft");
-
-    // Nusa — old retainer paid for months -5..-2; on the new contract month 1 is
-    // paid, but THIS month's invoice is still a draft nobody sent.
-    for (let k = 5; k >= 2; k--) {
-        await seedInvoice({
-            clientName: "Nusa Fitness Studio",
-            issueDate: monthDay(k, 5),
-            dueDate: monthDay(k, 19),
-            items: [item(`Previous retainer — ${monthDay(k, 1).slice(0, 7)}`, 1800)],
-            status: "paid",
-            paidAfterDays: 12,
-        });
-    }
-    const nusaRaised = await settleMonthInvoices(nusa.c, nusa.months, "draft");
-
-    // Kopi Kita — one-off, paid.
     await seedInvoice({
-        clientName: "Kopi Kita Café",
-        contractId: kopi.c.id,
-        issueDate: ymd(-30),
-        dueDate: ymd(-16),
-        items: [item("Menu landing page", 2500)],
-        status: "paid",
-        paidAfterDays: 12,
-    });
-
-    // Zenith — deposit paid, milestone 1 sent (not yet due).
-    await seedInvoice({
-        clientName: "Zenith Properties",
-        contractId: zenith.c.id,
-        issueDate: ymd(-42),
-        dueDate: ymd(-28),
-        items: [item("Mobile app — deposit (30%)", 13500)],
-        status: "paid",
-        paidAfterDays: 8,
-    });
-    await seedInvoice({
-        clientName: "Zenith Properties",
-        contractId: zenith.c.id,
-        issueDate: ymd(-5),
-        dueDate: ymd(9),
-        items: [item("Mobile app — milestone 1 (discovery + design)", 15000)],
-        status: "sent",
-    });
-
-    // Bayu (paused) and Sinar (churned) — history only.
-    await seedInvoice({
-        clientName: "Bayu Logistics",
-        issueDate: ymd(-120),
-        dueDate: ymd(-106),
-        items: [item("Fleet portal — scoping & design", 6000)],
-        status: "paid",
-        paidAfterDays: 20,
-    });
-    await seedInvoice({
-        clientName: "Sinar Interiors",
-        issueDate: ymd(-340),
-        dueDate: ymd(-326),
-        items: [item("Showroom website", 9500)],
-        status: "paid",
-        paidAfterDays: 10,
+        clientName: "Pak Long Kopitiam",
+        contractId: paklong.c.id,
+        issueDate: ymd(-80),
+        dueDate: ymd(-66),
+        items: [item("Website & menu revamp — 50 % on handover", 4750)],
+        status: "sent", // 66 days late
     });
 
     // ---- Summary ----------------------------------------------------------------------
-    const [contractRows, workRows, postRows, campaignRows, articleRows, invoiceRows, clientRows] = await Promise.all([
+    const [contractRows, workRows, postRows, campaignRows, articleRows, invoiceRows, clientRows, sprintRows] = await Promise.all([
         contracts.listContracts(),
         works.listWorks(),
         content.listContentPosts(),
@@ -1214,6 +1852,7 @@ async function main() {
         seo.listSeoArticles(),
         invoices.listInvoices(),
         clients.listClients(),
+        sprint.listSprintTasks(),
     ]);
     const countBy = <T,>(rows: T[], key: (r: T) => string) => {
         const out: Record<string, number> = {};
@@ -1225,21 +1864,24 @@ async function main() {
     const perContract = contractRows
         .map((c) => {
             const list = workRows.filter((w) => w.contractId === c.id);
-            return `    ${c.code} ${c.name} [${c.stage}${c.signedAt ? "" : ", UNSIGNED"}]: ${list.length} tasks (${countBy(list, (w) => w.status) || "none"}) ← ${requirementsLabel(c)} · crew ${Object.values(c.crew).join(", ")}`;
+            return `    ${c.code} ${c.name} [${c.stage}${c.signedAt ? "" : ", UNSIGNED"}] AM ${c.accountManager}: ${list.length} tasks (${countBy(list, (w) => w.status) || "none"}) ← ${requirementsLabel(c) || "no deliverables"}`;
         })
         .join("\n");
+    const unsigned = contractRows.filter((c) => !c.signedAt).length;
+    const closed = contractRows.filter((c) => c.stage === "completed").length;
+    const overdueInvoices = invoiceRows.filter((i) => i.status === "sent" && i.dueDate < TODAY).length;
 
     console.log(
         [
             "Demo data seeded into .dev-data/:",
             `  ${TEAM.length} team members, ${clientRows.length} clients (${countBy(clientRows, (c) => c.status)}), ${LEADS.length} leads, ${QUOTES.length} quotations, ${SERVICES.length} services`,
-            `  ${contractRows.length} contracts (tasks generated from their requirements; 1 unsigned, 1 completed)`,
+            `  ${contractRows.length} projects (tasks generated from their deliverables for ${GEN_FROM} to ${GEN_TO}; ${unsigned} unsigned, ${closed} closed)`,
             `  ${workRows.length} tasks (${countBy(workRows, (w) => w.status)}) — ${workRows.filter((w) => w.dueDate !== w.defaultDueDate).length} with a date moved by the AM, ${workRows.filter((w) => w.status !== "completed" && w.dueDate && w.dueDate < TODAY).length} overdue`,
             perContract,
-            `  ${postRows.length} content posts, ${campaignRows.length} campaigns, ${articleRows.length} SEO articles (from the contracts), ${invoiceRows.length} invoices (${countBy(invoiceRows, (i) => i.status)}; ${lxRaised + nusaRaised + hdRaised} raised monthly from the retainers' billing)`,
-            "  16 sprint tasks (8 done)",
+            `  ${postRows.length} content posts, ${campaignRows.length} campaigns, ${articleRows.length} SEO articles (from the projects), ${invoiceRows.length} invoices (${countBy(invoiceRows, (i) => i.status)}; ${raised} raised monthly from the retainers' billing; ${overdueInvoices} overdue)`,
+            `  ${sprintRows.length} sprint tasks (${sprintRows.filter((t) => t.status === "done").length} done)`,
             "",
-            "Open http://localhost:3001/management to see the Management tabs.",
+            "Open http://localhost:3001/dashboard to see the Dashboard tabs.",
         ].join("\n"),
     );
 }

@@ -1,0 +1,52 @@
+{
+  "id": "2057095d-2c89-468c-9274-921b97ecd625",
+  "contractId": "767be1f1-c1f8-4d74-84db-0b4537e896a4",
+  "clientName": "Dr Kartini",
+  "accountManager": "Hakim",
+  "plannerLineId": "req:static:2026-10:0:2",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Static: Sunscreen myths, busted",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-08",
+  "defaultDueDate": "2026-10-08",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Hakim",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "916ef102-b68a-4f64-ba7a-66b361ecf5e7"
+  },
+  "startedAt": "2026-10-02T06:27:03.731Z",
+  "submittedAt": "2026-10-06T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/2057095d",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Hakim)",
+    "at": "2026-10-07T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-07T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-05-28T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.378Z"
+}

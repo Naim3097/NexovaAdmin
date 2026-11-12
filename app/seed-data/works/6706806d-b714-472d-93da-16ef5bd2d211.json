@@ -1,0 +1,52 @@
+{
+  "id": "6706806d-b714-472d-93da-16ef5bd2d211",
+  "contractId": "8dc8c820-cc95-428e-9a8f-6630adbd3fc9",
+  "clientName": "LeanX",
+  "accountManager": "Bob",
+  "plannerLineId": "req:seo:2026-11:2:1",
+  "addendumVersion": 0,
+  "type": "seo",
+  "title": "The cashless café playbook",
+  "channel": "Blog",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-10",
+  "defaultDueDate": "2026-11-10",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 3
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "seo",
+    "id": "70d44fd1-c330-42d1-ad88-469e65cd5996"
+  },
+  "startedAt": "2026-11-04T06:27:03.731Z",
+  "submittedAt": "2026-11-08T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/6706806d",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Bob",
+    "at": "2026-11-09T06:27:03.731Z"
+  },
+  "completedAt": "2026-11-09T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2025-12-22T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.359Z"
+}

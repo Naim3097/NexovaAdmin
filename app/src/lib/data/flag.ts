@@ -34,7 +34,7 @@ export const ENTITY_NAMES = [
     "contracts",
     "works",
     "planners",
-    "phaseTemplates",
+    "projectTemplates",
 ] as const;
 
 export type EntityName = (typeof ENTITY_NAMES)[number];

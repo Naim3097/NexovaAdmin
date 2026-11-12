@@ -1,0 +1,52 @@
+{
+  "id": "b2b9b61d-9960-4a58-aa90-5a0c2dc7fbe0",
+  "contractId": "cc412500-078b-465c-b702-e2d6ab336cd0",
+  "clientName": "Payright",
+  "accountManager": "Bob",
+  "plannerLineId": "req:static:2026-10:0:6",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Static: Merchant spotlight",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-21",
+  "defaultDueDate": "2026-10-21",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 1.75
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "5763c54d-89b1-4a1f-9b5b-01b28ca6b9d3"
+  },
+  "startedAt": "2026-10-15T06:27:03.731Z",
+  "submittedAt": "2026-10-19T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/b2b9b61d",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Bob)",
+    "at": "2026-10-20T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-20T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-02-25T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.152Z"
+}

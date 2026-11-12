@@ -1,0 +1,49 @@
+{
+  "id": "f5edf628-a1cd-4046-a13b-f8042146fc8c",
+  "contractId": "767be1f1-c1f8-4d74-84db-0b4537e896a4",
+  "clientName": "Dr Kartini",
+  "accountManager": "Hakim",
+  "plannerLineId": "req:custom:2026-10:4:1",
+  "addendumVersion": 0,
+  "type": "custom",
+  "title": "Monthly content report · Oct",
+  "channel": "Report",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-15",
+  "defaultDueDate": "2026-10-15",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "am",
+      "member": "Hakim",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": null,
+  "startedAt": "2026-10-09T06:27:03.731Z",
+  "submittedAt": "2026-10-13T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/f5edf628",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Hakim",
+    "at": "2026-10-14T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-14T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-05-28T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.395Z"
+}

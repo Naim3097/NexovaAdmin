@@ -1,0 +1,52 @@
+{
+  "id": "f43426b3-837c-4612-8ea6-bb8a2dcdc666",
+  "contractId": "649c59c0-6455-4332-a82e-30eda362c9c0",
+  "clientName": "LeanX Digital",
+  "accountManager": "Yusuf",
+  "plannerLineId": "req:video:2026-10:0:4",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "Founder video: Agency or freelancer?",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-22",
+  "defaultDueDate": "2026-10-22",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Naim",
+      "pct": 100,
+      "hours": 5
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "e1c653fc-49a1-4136-96c9-bd4e75c30bfe"
+  },
+  "startedAt": "2026-10-16T06:27:03.731Z",
+  "submittedAt": "2026-10-20T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/f43426b3",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Yusuf",
+    "at": "2026-10-21T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-21T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-07-01T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.921Z"
+}

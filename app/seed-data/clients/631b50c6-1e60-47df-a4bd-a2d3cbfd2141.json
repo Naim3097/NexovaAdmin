@@ -1,0 +1,21 @@
+{
+  "id": "631b50c6-1e60-47df-a4bd-a2d3cbfd2141",
+  "name": "Tropicor",
+  "status": "active",
+  "dealOwner": "Yusuf",
+  "contactName": "Demo contact",
+  "contactEmail": "tropicor@example.com",
+  "contactPhone": "",
+  "billingAddress": "",
+  "website": "",
+  "industry": "Consumer goods",
+  "notes": "Campaign management.",
+  "contentRevisionLimit": 3,
+  "portalToken": "",
+  "userId": null,
+  "internal": false,
+  "lastCheckInAt": "2026-11-06",
+  "lastCheckInNote": "Weekly ads call: ROAS 3.1 on Meta; testing new gifting search terms on Google.",
+  "createdAt": "2026-09-29T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.197Z"
+}

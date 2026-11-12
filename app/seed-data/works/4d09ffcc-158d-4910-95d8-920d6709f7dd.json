@@ -1,0 +1,52 @@
+{
+  "id": "4d09ffcc-158d-4910-95d8-920d6709f7dd",
+  "contractId": "0e0938d5-dcab-4d66-ab19-02e5220e078c",
+  "clientName": "Zakat Selangor",
+  "accountManager": "Hakim",
+  "plannerLineId": "req:static:2026-11:2:1",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Infographic: Zakat on gold and savings",
+  "channel": "Instagram",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-05",
+  "defaultDueDate": "2026-11-05",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Izzad",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "9514dd10-c5d2-40b4-919c-ded043842e5a"
+  },
+  "startedAt": "2026-10-30T06:27:03.731Z",
+  "submittedAt": "2026-11-03T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/4d09ffcc",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Hakim)",
+    "at": "2026-11-04T06:27:03.731Z"
+  },
+  "completedAt": "2026-11-04T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-06-03T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.776Z"
+}

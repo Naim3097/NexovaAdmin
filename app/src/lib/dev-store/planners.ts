@@ -13,91 +13,17 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { devDataRoot } from "@/lib/dev-store/root";
 import { randomUUID } from "node:crypto";
-import type { TeamRole } from "@/lib/dev-store/team";
 
 const ROOT = devDataRoot();
 const DIR = path.join(ROOT, "planners");
 
 // ---------------------------------------------------------------------------
-// Vocabulary shared with works (tasks)
+// Vocabulary (task types, seats, approvers, default split) lives in
+// @/lib/planners/vocab so client components can import it without this
+// module's file-system store. Re-exported here for every existing import.
 // ---------------------------------------------------------------------------
-
-/** What one planner line / task is. */
-export const LINE_TYPES = ["post", "campaign", "seo", "website", "branding", "custom"] as const;
-export type LineType = (typeof LINE_TYPES)[number];
-export const LINE_TYPE_LABEL: Record<LineType, string> = {
-    post: "Content post",
-    campaign: "Campaign",
-    seo: "SEO article",
-    website: "Website item",
-    branding: "Branding item",
-    custom: "Other task",
-};
-export const LINE_TYPE_SHORT: Record<LineType, string> = {
-    post: "Post",
-    campaign: "Campaign",
-    seo: "SEO",
-    website: "Website",
-    branding: "Branding",
-    custom: "Other",
-};
-export function isLineType(v: string): v is LineType {
-    return (LINE_TYPES as readonly string[]).includes(v);
-}
-
-/** Who holds a share of a task. Resolved to a team member at acceptance. */
-export const SEATS = ["dm", "creative", "dev", "seo", "am"] as const;
-export type Seat = (typeof SEATS)[number];
-export const SEAT_LABEL: Record<Seat, string> = {
-    dm: "Digital marketer",
-    creative: "Creative",
-    dev: "Developer",
-    seo: "SEO specialist",
-    am: "Account manager",
-};
-export const SEAT_SHORT: Record<Seat, string> = { dm: "DM", creative: "Creative", dev: "Dev", seo: "SEO", am: "AM" };
-/** Team roles that can hold each seat, in order of preference. */
-export const SEAT_ROLES: Record<Seat, TeamRole[]> = {
-    dm: ["Content", "Ads"],
-    creative: ["UI/UX", "Content"],
-    dev: ["Frontend", "Backend"],
-    seo: ["SEO", "Content"],
-    am: ["PM", "CEO"],
-};
-export function isSeat(v: string): v is Seat {
-    return (SEATS as readonly string[]).includes(v);
-}
-
-export type SplitShare = { seat: Seat; pct: number };
-
-/** Responsibility split the consultant starts from for each type. */
-export const DEFAULT_SPLIT: Record<LineType, SplitShare[]> = {
-    post: [
-        { seat: "dm", pct: 50 },
-        { seat: "creative", pct: 50 },
-    ],
-    campaign: [{ seat: "dm", pct: 100 }],
-    seo: [
-        { seat: "seo", pct: 50 },
-        { seat: "dm", pct: 50 },
-    ],
-    website: [{ seat: "dev", pct: 100 }],
-    branding: [{ seat: "creative", pct: 100 }],
-    custom: [{ seat: "am", pct: 100 }],
-};
-
-/** Who signs a task off. "client" goes through the account manager (portal). */
-export const APPROVERS = ["none", "am", "client"] as const;
-export type Approver = (typeof APPROVERS)[number];
-/** Who signs a task off. */
-export const APPROVER_LABEL: Record<Approver, string> = {
-    none: "None",
-    am: "Account manager",
-    client: "Client",
-};
-export function isApprover(v: string): v is Approver {
-    return (APPROVERS as readonly string[]).includes(v);
-}
+export * from "@/lib/planners/vocab";
+import { DEFAULT_SPLIT, defaultApprover, isApprover, toLineType, type Approver, type LineType, type SplitShare } from "@/lib/planners/vocab";
 
 // ---------------------------------------------------------------------------
 // Planner shape
@@ -265,7 +191,7 @@ export function emptyPayment(): PlannerPayment {
 }
 
 export function normalizeLine(raw: Partial<PlannerLine> & { id: string }): PlannerLine {
-    const type = raw.type && isLineType(raw.type) ? raw.type : "post";
+    const type = toLineType(raw.type, raw.title ?? "");
     return {
         id: raw.id,
         type,
@@ -339,7 +265,7 @@ export function newLine(input: NewLineInput): PlannerLine {
         month: input.month,
         phaseKey: input.phaseKey ?? "",
         split: input.split ?? DEFAULT_SPLIT[input.type],
-        approver: input.approver ?? (input.type === "post" || input.type === "branding" ? "client" : "am"),
+        approver: input.approver ?? defaultApprover(input.type),
         milestone: input.milestone ?? false,
         dueDay: input.dueDay ?? 15,
         note: input.note ?? "",

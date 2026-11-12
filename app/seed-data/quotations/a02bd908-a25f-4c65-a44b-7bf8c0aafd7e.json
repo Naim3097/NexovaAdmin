@@ -1,0 +1,31 @@
+{
+  "id": "a02bd908-a25f-4c65-a44b-7bf8c0aafd7e",
+  "number": "QUO-2026-0003",
+  "clientName": "Kembara",
+  "status": "accepted",
+  "issueDate": "2026-09-19",
+  "validUntil": "2026-10-03",
+  "items": [
+    {
+      "id": "aa27ddc8-2d80-4582-a082-463b80e2311f",
+      "description": "Donation website — design and build",
+      "details": "",
+      "quantity": 1,
+      "unitPriceMyr": 18000
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "subject": "Donation website — design and build",
+  "scopeIncludes": "",
+  "exclusions": "",
+  "terms": "",
+  "showAcceptance": true,
+  "convertedInvoiceId": null,
+  "createdAt": "2026-09-19T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.235Z",
+  "acceptedAt": "2026-09-28T06:27:03.731Z"
+}

@@ -2,6 +2,7 @@
 
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
+import { getActingMember } from "@/lib/auth";
 import {
     SERVICE_CATEGORIES,
     createService,
@@ -9,6 +10,7 @@ import {
     updateService,
     type ServiceCategory,
 } from "@/lib/data/services";
+import { isAdmin } from "@/lib/roles";
 
 function asCategory(v: FormDataEntryValue | null): ServiceCategory {
     const s = String(v ?? "");
@@ -55,9 +57,11 @@ export async function updateServiceAction(formData: FormData) {
     revalidateTag("services", "max");
 }
 
+/** Admins only; everyone else retires a service by unticking Active. */
 export async function deleteServiceAction(formData: FormData) {
     const id = String(formData.get("id") ?? "");
     if (!id) return;
+    if (!isAdmin(await getActingMember())) return;
     await deleteService(id);
     revalidatePath("/settings/services");
     revalidateTag("services", "max");

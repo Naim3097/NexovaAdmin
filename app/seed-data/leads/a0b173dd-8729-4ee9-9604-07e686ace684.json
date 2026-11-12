@@ -1,0 +1,22 @@
+{
+  "id": "a0b173dd-8729-4ee9-9604-07e686ace684",
+  "name": "Kevin Ong",
+  "company": "Hartanah Prima Realty",
+  "email": "hartanah-prima-realty@example.com",
+  "phone": "",
+  "source": "linkedin",
+  "sourceCampaignId": null,
+  "interestedIn": "Property listings, video, Meta ads",
+  "estValueMyr": 30000,
+  "status": "lost",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Yusuf",
+  "score": 60,
+  "autoIntake": false,
+  "lostReason": "competitor",
+  "lostNote": "Signed with a larger property-marketing agency.",
+  "createdAt": "2026-08-14T06:27:03.731Z",
+  "updatedAt": "2026-09-18T06:27:03.731Z"
+}

@@ -1,0 +1,49 @@
+{
+  "id": "0ae323a2-3d9c-4d7d-a939-ccac890be139",
+  "contractId": "8dc8c820-cc95-428e-9a8f-6630adbd3fc9",
+  "clientName": "LeanX",
+  "accountManager": "Bob",
+  "plannerLineId": "req:website:2026-11:6:1",
+  "addendumVersion": 0,
+  "type": "website",
+  "title": "Website update · Nov",
+  "channel": "Website",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-17",
+  "defaultDueDate": "2026-11-12",
+  "plannedDate": "",
+  "adjustedBy": "Bob",
+  "adjustedAt": "2026-11-10T06:27:03.731Z",
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dev",
+      "member": "Zafran",
+      "pct": 100,
+      "hours": 10
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": null,
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2025-12-22T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.363Z"
+}

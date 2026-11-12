@@ -40,11 +40,13 @@ import {
     deleteContentPost,
 } from "@/lib/data/content";
 import { listClients, createClient } from "@/lib/data/clients";
+import { clientContentQuota } from "@/lib/clients/quota";
 import {
     listContracts,
     getContractById,
     CONTRACT_STAGE_LABEL,
     CONTRACT_STATUSES,
+    requirementLabel,
     type Contract,
 } from "@/lib/data/contracts";
 import {
@@ -57,7 +59,7 @@ import {
     type WorkPatch,
     type WorkShare,
 } from "@/lib/data/works";
-import { LINE_TYPE_LABEL, SEATS } from "@/lib/data/planners";
+import { SEATS } from "@/lib/data/planners";
 import {
     awaitsApprovalFrom,
     involves,
@@ -75,7 +77,8 @@ import {
     updateInvoice,
     computeTotals,
 } from "@/lib/data/invoices";
-import { listTeamMembers, createTeamMember, TEAM_ROLES } from "@/lib/data/team";
+import { listTeamMembers, createTeamMember } from "@/lib/data/team";
+import { TEAM_CATEGORIES, categoryFromRole, defaultFunctionsFor } from "@/lib/team/categories";
 import { withHours } from "@/lib/capacity/helpers";
 import { syncTaskForPost } from "@/lib/works/sync";
 import {
@@ -316,19 +319,13 @@ export const contentGeneratePlan: AgentTool<
 > = {
     name: "content.generatePlan",
     description:
-        "Generate a client's monthly content plan (N placeholder content items) from their retainer quota. Idempotent per (client, month): does nothing if a plan already exists. Omit `quota` to use the client's configured monthlyContentQuota.",
+        "Generate a client's monthly content plan (N placeholder content items). Idempotent per (client, month): does nothing if a plan already exists. Omit `quota` to use the content a month the client's active projects promise (their 'post' deliverables).",
     inputSchema: generatePlanInput,
     outputSchema: generatePlanResult,
     invoke: async (input) => {
         let quota = input.quota;
         if (quota === undefined) {
-            const clients = await listClients();
-            const c = clients.find(
-                (x) =>
-                    x.name.trim().toLowerCase() ===
-                    input.clientName.trim().toLowerCase(),
-            );
-            quota = c?.monthlyContentQuota ?? 0;
+            quota = clientContentQuota(input.clientName, await listContracts());
         }
         return generateMonthlyPlan({
             clientName: input.clientName,
@@ -484,8 +481,8 @@ export const contentCreateRequest: AgentTool<
 // ---------------------------------------------------------------------------
 // Scrum-master READ tools (standup, overdue tracking, board summary)
 //
-// Delivery work is Client → Contract → Works (tasks). Each work sits under one
-// contract in one month and one contract phase, carries a due date, a status
+// Delivery work is Client → Project → Works (tasks). Each work sits under one
+// project in one month and one project phase, carries a due date, a status
 // (not_started → in_progress → pending_approval → completed) and a %
 // responsibility split across team members. `content_posts` carry their own
 // `scheduledFor` due date + review state. These read tools flatten those into
@@ -509,7 +506,7 @@ async function canonicalMemberName(name: string): Promise<string> {
     return team.find((m) => m.name.trim().toLowerCase() === key)?.name ?? name.trim();
 }
 
-/** Works grouped by contract id (one listWorks() call feeds every contract). */
+/** Works grouped by project id (one listWorks() call feeds every project). */
 function groupByContract(works: Work[]): Map<string, Work[]> {
     const out = new Map<string, Work[]>();
     for (const w of works) {
@@ -539,7 +536,7 @@ const contractSummary = z.object({
     status: z.string(),
     stage: z.string(),
     stageLabel: z.string(),
-    /** What the contract needs, as the account manager entered it: "8 content posts / month · 1 campaign / month · 2 branding items once". "" = none recorded. Tasks are generated from these. */
+    /** What the project delivers, as the account manager entered it: "Awareness post on Instagram · 4/wk (Instagram) · Campaign · 1/mo (Meta) · Branding · 2 once". "" = none recorded. Tasks are generated from these. */
     requirements: z.string(),
     /** Default person per seat (dm / creative / dev / seo / am) that generated tasks are assigned from. Seats nobody holds are absent. */
     crew: z.record(z.string(), z.string()),
@@ -550,15 +547,9 @@ const contractSummary = z.object({
     nextDueTitle: z.string().nullable(),
 });
 
-/** "8 content posts / month · 1 campaign / month · 2 branding items once". */
+/** "Awareness post on Instagram · 4/wk (Instagram) · Campaign · 1/mo (Meta) · Branding · 2 once". */
 function requirementsLabel(c: Pick<Contract, "requirements">): string {
-    return c.requirements
-        .map((r) => {
-            const label = LINE_TYPE_LABEL[r.type];
-            const noun = r.count === 1 ? label : `${label}s`;
-            return `${r.count} ${noun.toLowerCase()}${r.cadence === "monthly" ? " / month" : " once"}${r.channel ? ` (${r.channel})` : ""}`;
-        })
-        .join(" · ");
+    return c.requirements.map((r) => `${requirementLabel(r)}${r.channel ? ` (${r.channel})` : ""}`).join(" · ");
 }
 
 function toContractSummary(
@@ -638,7 +629,7 @@ const teamMemberSummary = z.object({
     name: z.string(),
     role: z.string(),
     active: z.boolean(),
-    /** Open (not completed) contract tasks this person holds a share of or must approve. */
+    /** Open (not completed) project tasks this person holds a share of or must approve. */
     openTasks: z.number(),
     /** Of those, how many are past their due date. */
     overdueTasks: z.number(),
@@ -655,7 +646,7 @@ export const teamList: AgentTool<
 > = {
     name: "team.list",
     description:
-        "List team members with their current workload: open contract tasks they hold a share of (or must approve), how many of those are overdue, and how many await their approval. Use to see who owns what before reassigning or chasing work. activeOnly defaults true.",
+        "List team members with their current workload: open project tasks they hold a share of (or must approve), how many of those are overdue, and how many await their approval. Use to see who owns what before reassigning or chasing work. activeOnly defaults true.",
     inputSchema: teamListInput,
     outputSchema: teamListResult,
     invoke: async (input) => {
@@ -684,7 +675,7 @@ export const teamList: AgentTool<
 const contractsListInput = z.object({
     status: z.enum(CONTRACT_STATUSES).optional(),
     clientName: z.string().optional(),
-    /** Team member name: only contracts with an open task that person holds a share of (or must approve). */
+    /** Team member name: only projects with an open task that person holds a share of (or must approve). */
     assignee: z.string().optional(),
 });
 const contractsListResult = z.object({
@@ -697,7 +688,7 @@ export const contractsList: AgentTool<
 > = {
     name: "contracts.list",
     description:
-        "List contracts (the signed job with a client — every task lives under one) with lifecycle stage, status, the requirements its tasks are generated from, its crew, tasks done/total, overdue count and the next due task. Optional filters: status (draft/active/completed/cancelled), clientName, assignee (only contracts with an open task that person holds a share of or must approve).",
+        "List projects (the signed job with a client — every task lives under one) with lifecycle stage, status, the requirements its tasks are generated from, its crew, tasks done/total, overdue count and the next due task. Optional filters: status (draft/active/completed/cancelled), clientName, assignee (only projects with an open task that person holds a share of or must approve).",
     inputSchema: contractsListInput,
     outputSchema: contractsListResult,
     invoke: async (input) => {
@@ -756,7 +747,7 @@ export const tasksList: AgentTool<
 > = {
     name: "tasks.list",
     description:
-        "Flatten in-flight work into a single list for a daily standup: every open contract task (not completed) with its contract code, client, phase, due date, status, the people holding a share, whether it awaits approval and whether it is overdue (ordered by due date, overdue first). Optional filters: assignee, clientName, status (pass 'completed' to see finished work). The `id` is the workId for tasks.setStatus / tasks.setSplit.",
+        "Flatten in-flight work into a single list for a daily standup: every open project task (not completed) with its project code, client, phase, due date, status, the people holding a share, whether it awaits approval and whether it is overdue (ordered by due date, overdue first). Optional filters: assignee, clientName, status (pass 'completed' to see finished work). The `id` is the workId for tasks.setStatus / tasks.setSplit.",
     inputSchema: tasksListInput,
     outputSchema: tasksListResult,
     invoke: async (input) => {
@@ -891,7 +882,7 @@ export const boardSummary: AgentTool<
 > = {
     name: "board.summary",
     description:
-        "Sprint/board summary in one call: contract counts by status and by lifecycle stage, task counts by status, content counts by review status, total open tasks, tasks awaiting approval, and overdue counts (tasks, content, invoices). Use for the daily standup header and the weekly sprint summary.",
+        "Sprint/board summary in one call: project counts by status and by lifecycle stage, task counts by status, content counts by review status, total open tasks, tasks awaiting approval, and overdue counts (tasks, content, invoices). Use for the daily standup header and the weekly sprint summary.",
     inputSchema: boardSummaryInput,
     outputSchema: boardSummaryResult,
     invoke: async () => {
@@ -955,7 +946,7 @@ const contractGetResult = contractSummary.extend({
     valueMyr: z.number(),
     /** YYYY-MM-DD the client signed; null = not signed yet. */
     signedAt: z.string().nullable(),
-    /** Every task under the contract, by month and phase. */
+    /** Every task under the project, by month and phase. */
     tasks: z.array(taskDetail),
 });
 
@@ -965,12 +956,12 @@ export const contractGet: AgentTool<
 > = {
     name: "contract.get",
     description:
-        "Full detail for one contract: its terms (dates, value, signed date, lifecycle stage), the requirements and crew its tasks are generated from, plus every task under it — month, phase, due date, status, who holds which share, who approves. Use this to find the workId before calling tasks.setStatus / tasks.setSplit. Get contractId from contracts.list.",
+        "Full detail for one project: its terms (dates, value, signed date, lifecycle stage), the requirements and crew its tasks are generated from, plus every task under it — month, phase, due date, status, who holds which share, who approves. Use this to find the workId before calling tasks.setStatus / tasks.setSplit. Get contractId from contracts.list.",
     inputSchema: contractGetInput,
     outputSchema: contractGetResult,
     invoke: async (input) => {
         const c = await getContractById(input.contractId);
-        if (!c) throw new Error(`Contract ${input.contractId} not found`);
+        if (!c) throw new Error(`Project ${input.contractId} not found`);
         const today = todayISO();
         const works = (await listWorks()).filter((w) => w.contractId === c.id);
         return {
@@ -995,7 +986,7 @@ export const contractGet: AgentTool<
 // allowed — the dispatcher surfaces that as a 500 with the message, so the
 // agent learns what went wrong. The task's new state is returned so the agent
 // can confirm it in one round-trip. There is deliberately no create or delete
-// here: tasks are generated from the contract's requirements (or added by hand
+// here: tasks are generated from the project's requirements (or added by hand
 // in the app) and are never removed through the agent API.
 // ---------------------------------------------------------------------------
 
@@ -1111,7 +1102,7 @@ export const tasksSetStatus: AgentTool<
 > = {
     name: "tasks.setStatus",
     description:
-        "Move a contract task along its lifecycle. not_started → in_progress starts it (stamps startedAt); → pending_approval submits it (stamps submittedAt; completes outright when its approver is 'none'); pending_approval → completed approves it on the approver's behalf (stamps completedAt + review); pending_approval → in_progress sends it back for changes (pass note); not_started/in_progress → completed marks it done directly; anything → not_started reopens it and clears its timestamps. Get workId from tasks.list / contract.get. Throws if the move is not allowed; same status is a no-op.",
+        "Move a project task along its lifecycle. not_started → in_progress starts it (stamps startedAt); → pending_approval submits it (stamps submittedAt; completes outright when its approver is 'none'); pending_approval → completed approves it on the approver's behalf (stamps completedAt + review); pending_approval → in_progress sends it back for changes (pass note); not_started/in_progress → completed marks it done directly; anything → not_started reopens it and clears its timestamps. Get workId from tasks.list / contract.get. Throws if the move is not allowed; same status is a no-op.",
     inputSchema: tasksSetStatusInput,
     outputSchema: taskStateResult,
     invoke: async (input) => {
@@ -1156,7 +1147,7 @@ export const tasksSetSplit: AgentTool<
 > = {
     name: "tasks.setSplit",
     description:
-        "Set who is responsible for a contract task and by how much: the full responsibility split as [{seat, member, pct}] (seats: dm/creative/dev/seo/am; member is a team member name or '' for an unfilled seat; pct values must total 100). Replaces the existing split — use this to assign or reassign work. Get the current split from contract.get / tasks.list.",
+        "Set who is responsible for a project task and by how much: the full responsibility split as [{seat, member, pct}] (seats: dm/creative/dev/seo/am; member is a team member name or '' for an unfilled seat; pct values must total 100). Replaces the existing split — use this to assign or reassign work. Get the current split from contract.get / tasks.list.",
     inputSchema: tasksSetSplitInput,
     outputSchema: taskStateResult,
     invoke: async (input) => {
@@ -1199,7 +1190,10 @@ const clientSummary = z.object({
     contactName: z.string(),
     contactEmail: z.string(),
     industry: z.string(),
-    monthlyContentQuota: z.number(),
+    /** Who closed the deal; projects carry their own account manager. */
+    dealOwner: z.string(),
+    /** Content items a month promised by the client's active projects. */
+    contentQuota: z.number(),
 });
 const clientsListResult = z.object({ clients: z.array(clientSummary) });
 
@@ -1209,12 +1203,12 @@ export const clientsList: AgentTool<
 > = {
     name: "clients.list",
     description:
-        "List the agency's clients (optionally filter by status: prospect/active/paused/churned). Use to see who exists (every contract belongs to a client), or to answer 'who are our clients'.",
+        "List the agency's clients (optionally filter by status: prospect/active/paused/churned). Use to see who exists (every project belongs to a client), or to answer 'who are our clients'.",
     inputSchema: clientsListInput,
     outputSchema: clientsListResult,
     invoke: async (input) => {
-        let clients = await listClients();
-        if (input.status) clients = clients.filter((c) => c.status === input.status);
+        const [all, contracts] = await Promise.all([listClients(), listContracts()]);
+        const clients = input.status ? all.filter((c) => c.status === input.status) : all;
         return {
             clients: clients.map((c) => ({
                 id: c.id,
@@ -1223,7 +1217,8 @@ export const clientsList: AgentTool<
                 contactName: c.contactName,
                 contactEmail: c.contactEmail,
                 industry: c.industry,
-                monthlyContentQuota: c.monthlyContentQuota,
+                dealOwner: c.dealOwner,
+                contentQuota: clientContentQuota(c.name, contracts),
             })),
         };
     },
@@ -1252,7 +1247,7 @@ export const clientsCreate: AgentTool<
 > = {
     name: "clients.create",
     description:
-        "Create a new client record (defaults to status 'prospect'). Use before a contract is drawn up so it can attach to a real client (contracts themselves are created in the app, not by the agent). Name must be unique.",
+        "Create a new client record (defaults to status 'prospect'). Use before a project is set up so it can attach to a real client (projects themselves are created in the app, not by the agent). Name must be unique.",
     inputSchema: clientsCreateInput,
     outputSchema: clientCreateResult,
     invoke: async (input) => {
@@ -1551,7 +1546,10 @@ export const quotationsCreate: AgentTool<
 
 const teamCreateInput = z.object({
     name: z.string().min(1),
-    role: z.enum(TEAM_ROLES).optional(),
+    /** Job role people read ("Chief Executive Officer"): free text. */
+    role: z.string().trim().max(80).optional(),
+    /** Job category the app maps to task seats; derived from the role when left out. */
+    category: z.enum(TEAM_CATEGORIES).optional(),
     email: z.string().optional(),
     phone: z.string().optional(),
     /** Free-text skills (comma-separated), used by assignment suggestions. */
@@ -1570,13 +1568,15 @@ export const teamCreate: AgentTool<
 > = {
     name: "team.create",
     description:
-        "Add a new team member (starts active). role is one of CEO/Closer/Frontend/Backend/UI/UX/Content/Ads/SEO/PM/Other (defaults to Other). Use to onboard staff so contract tasks can be assigned to them via tasks.setSplit. This only creates the member record; it does not create a login account.",
+        "Add a new team member (starts active). role is the free-text job role (e.g. Digital Marketer, Graphic Designer). category is the job category the app matches to task seats: closer, dm (campaigns, SEO), creative (statics, videos), developer (website), am (account management, other work) or business_support (finance duty, no delivery); left out, it is guessed from the role. Duties start from the category (business_support: finance; others: delivery). Use to onboard staff so project tasks can be assigned to them via tasks.setSplit. This only creates the member record; it does not create a login account.",
     inputSchema: teamCreateInput,
     outputSchema: teamCreateResult,
     invoke: async (input) => {
         const m = await createTeamMember({
             name: input.name,
             role: input.role,
+            category: input.category,
+            functions: defaultFunctionsFor(input.category ?? categoryFromRole(input.role ?? "")),
             email: input.email,
             phone: input.phone,
             skills: input.skills,
@@ -1592,7 +1592,7 @@ export const teamCreate: AgentTool<
 // scrum-master key ([read, write, outbound]) does NOT carry that scope, so the
 // API refuses these calls with "requires human approval". They exist so a
 // human-operated admin key (or a future approval flow) can perform deletions
-// through the same audited path — never silently from the agent. Contracts
+// through the same audited path — never silently from the agent. Projects
 // and their tasks are never deleted through the agent API at all.
 // ---------------------------------------------------------------------------
 

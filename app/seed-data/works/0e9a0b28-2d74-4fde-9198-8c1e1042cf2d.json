@@ -1,0 +1,49 @@
+{
+  "id": "0e9a0b28-2d74-4fde-9198-8c1e1042cf2d",
+  "contractId": "ee0609d4-3179-4475-8f59-8d96c5c3edb4",
+  "clientName": "Rouang",
+  "accountManager": "Izzad",
+  "plannerLineId": "req:custom:2026-10:4:1",
+  "addendumVersion": 0,
+  "type": "custom",
+  "title": "Monthly growth review · Oct",
+  "channel": "Call",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-01",
+  "defaultDueDate": "2026-10-01",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "am",
+      "member": "Yusuf",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "none",
+  "milestone": false,
+  "linked": null,
+  "startedAt": "2026-09-25T06:27:03.731Z",
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": "2026-09-30T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-06-26T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.544Z"
+}

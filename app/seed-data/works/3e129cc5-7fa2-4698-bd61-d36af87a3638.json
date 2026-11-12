@@ -1,0 +1,52 @@
+{
+  "id": "3e129cc5-7fa2-4698-bd61-d36af87a3638",
+  "contractId": "6d1e4aab-758f-42fd-9862-f8590788625b",
+  "clientName": "Tropicor",
+  "accountManager": "Danisy",
+  "plannerLineId": "req:campaign:2027-01:1:2",
+  "addendumVersion": 0,
+  "type": "campaign",
+  "title": "Google Ads: Search — gifting terms",
+  "channel": "Google",
+  "month": "2027-01",
+  "phaseKey": "optimise",
+  "phaseName": "Optimise",
+  "dueDate": "2027-01-21",
+  "defaultDueDate": "2027-01-21",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Danisy",
+      "pct": 100,
+      "hours": 6
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "campaign",
+    "id": "70494317-1eb5-4f88-925f-3341bb222046"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-09-29T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.075Z"
+}

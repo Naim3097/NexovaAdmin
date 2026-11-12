@@ -35,7 +35,7 @@ import { SelectNav } from "@/components/select-nav";
 import { cn } from "@/lib/utils";
 import { FilterRow } from "@/app/(admin)/works/filter-bar";
 import { ActingAs, DueLabel, STATUS_DOT, SplitLabel, TaskStatusBadge, WorkCard } from "@/app/(admin)/works/ui";
-import { NewButton, NewSection } from "@/components/new-button";
+import { NewSection } from "@/components/new-button";
 
 export const dynamic = "force-dynamic";
 
@@ -86,8 +86,7 @@ export default async function CustomTasksPage({ searchParams }: { searchParams: 
         as: as || undefined,
     };
     const href = (f: typeof filter, extra: Record<string, string | undefined> = {}) => `/custom-tasks${filterQuery(f, { ...keep, ...extra })}`;
-    // This page as is, with the add form open (`?new=1#new`).
-    const newHref = `${href(filter, { new: "1" })}#new`;
+    // The folded add form opens on `?new=1`.
     const openNew = one(sp, "new") === "1";
 
     const phases = [...new Set(works.map((w) => w.phaseName).filter(Boolean))].sort();
@@ -106,7 +105,7 @@ export default async function CustomTasksPage({ searchParams }: { searchParams: 
             : [...groupByMonth(filtered).entries()].map(([m, list]) => ({ key: m || "none", label: m ? monthLabel(m) : "No month", works: byDue(list) }));
 
     const activeContracts = contracts.filter((c) => c.status === "active");
-    // Phase suggestions for the add form: every phase on an active contract, plus any name already used here.
+    // Phase suggestions for the add form: every phase on an active project, plus any name already used here.
     const phaseOptions = [
         ...new Set([...activeContracts.flatMap((c) => c.phases.map((ph) => ph.name)), ...works.map((w) => w.phaseName)].filter(Boolean)),
     ].sort();
@@ -125,13 +124,13 @@ export default async function CustomTasksPage({ searchParams }: { searchParams: 
             <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
                 <div>
                     <h1 className="text-2xl font-semibold md:text-3xl">Other tasks</h1>
-                    <p className="text-sm text-muted-foreground">One-off work under a contract: workshops, strategy calls, audits, sprints.</p>
+                    <p className="text-sm text-muted-foreground">One-off work under a project: workshops, strategy calls, audits, sprints.</p>
+                    <p className="text-xs text-muted-foreground">Items come from project tasks. The account manager adds them on the project.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                     <Link href={`/works${filterQuery({ type: "custom" }, { as: as || undefined })}`} className="text-sm font-medium underline">
                         All tasks
                     </Link>
-                    <NewButton href={newHref}>+ New task</NewButton>
                 </div>
             </div>
 
@@ -147,10 +146,10 @@ export default async function CustomTasksPage({ searchParams }: { searchParams: 
                     <p className="text-xs text-muted-foreground">A one-off outside the plan: a workshop, a call, an audit, a sprint.</p>
                     <div className="grid gap-4 md:grid-cols-3">
                         <div className="space-y-1.5 md:col-span-2">
-                            <Label className="text-sm">Contract</Label>
+                            <Label className="text-sm">Project</Label>
                             <Select name="contractId" required>
                                 <SelectTrigger className="h-10 w-full">
-                                    <SelectValue placeholder={activeContracts.length ? "Pick a contract" : "No active contracts"} />
+                                    <SelectValue placeholder={activeContracts.length ? "Pick a project" : "No active projects"} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {activeContracts.map((c) => (
@@ -264,9 +263,9 @@ export default async function CustomTasksPage({ searchParams }: { searchParams: 
                         </>
                     ) : (
                         <>
-                            No other tasks yet. They come from the extra lines of an accepted proposal, or{" "}
-                            <Link href={newHref} className="underline">
-                                add one
+                            No other tasks yet. They come from the extra lines of a project; the account manager adds them on the{" "}
+                            <Link href={`/projects${asQ}`} className="underline">
+                                project
                             </Link>
                             .
                         </>
@@ -319,7 +318,7 @@ export default async function CustomTasksPage({ searchParams }: { searchParams: 
                                                 <thead>
                                                     <tr className="text-left text-xs text-muted-foreground">
                                                         <th className="py-1 pr-3 font-medium">Task</th>
-                                                        <th className="py-1 pr-3 font-medium">Client · contract</th>
+                                                        <th className="py-1 pr-3 font-medium">Client · project</th>
                                                         <th className="py-1 pr-3 font-medium">{group === "phase" ? "Month" : "Phase"}</th>
                                                         <th className="py-1 pr-3 font-medium">Owners</th>
                                                         <th className="py-1 pr-3 font-medium">Due</th>
@@ -346,11 +345,11 @@ export default async function CustomTasksPage({ searchParams }: { searchParams: 
                                                                 <td className="py-2 pr-3 text-xs">
                                                                     <div>{w.clientName || "No client"}</div>
                                                                     {c ? (
-                                                                        <Link href={`/contracts/${c.id}#works`} className="text-muted-foreground hover:underline">
+                                                                        <Link href={`/projects/${c.id}#works`} className="text-muted-foreground hover:underline">
                                                                             {c.code} · {c.name}
                                                                         </Link>
                                                                     ) : (
-                                                                        <span className="text-muted-foreground">No contract</span>
+                                                                        <span className="text-muted-foreground">No project</span>
                                                                     )}
                                                                 </td>
                                                                 <td className="whitespace-nowrap py-2 pr-3 text-xs text-muted-foreground">

@@ -2,26 +2,34 @@ import Link from "next/link";
 import {
     Building2,
     Boxes,
-    Milestone,
+    LayoutTemplate,
     UserCog,
     SlidersHorizontal,
 } from "lucide-react";
+import { getActingMember } from "@/lib/auth";
 import { listClients } from "@/lib/data/clients";
 import { listServices } from "@/lib/data/services";
 import { listTeamMembers } from "@/lib/data/team";
 import { getAgencyProfile } from "@/lib/data/agency";
-import { listPhaseTemplates } from "@/lib/data/phase-templates";
+import { listProjectTemplates } from "@/lib/data/project-templates";
+import { isManager } from "@/lib/roles";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Settings index: the lists everyone draws on. Everyone may open Clients,
+ * Services, Templates and Team; the Agency profile is management's.
+ */
 export default async function SettingsPage() {
-    const [clients, services, team, agency, phaseTemplates] = await Promise.all([
+    const [me, clients, services, team, agency, projectTemplates] = await Promise.all([
+        getActingMember(),
         listClients(),
         listServices(),
         listTeamMembers(),
         getAgencyProfile(),
-        listPhaseTemplates(),
+        listProjectTemplates(),
     ]);
+    const manager = isManager(me);
 
     const agencyConfigured =
         agency.updatedAt > new Date(0).toISOString();
@@ -103,29 +111,33 @@ export default async function SettingsPage() {
             icon: Boxes,
         },
         {
-            href: "/settings/phases",
-            label: "Phase templates",
-            count: `${phaseTemplates.length} template${phaseTemplates.length === 1 ? "" : "s"}`,
+            href: "/settings/templates",
+            label: "Templates",
+            count: `${projectTemplates.length} template${projectTemplates.length === 1 ? "" : "s"}`,
             description:
-                "Reusable phase sets for quotes and contracts (Website build, Social retainer…).",
-            icon: Milestone,
+                "Saved starts for a project: months, deliverables, phases. New project offers Custom or one of these.",
+            icon: LayoutTemplate,
         },
         {
             href: "/team",
             label: "Team",
             count: `${team.filter((m) => m.active).length} active`,
             description:
-                "Members, jobs and contact; feeds the owner dropdowns across the app.",
+                "Members, jobs, duties and hours; feeds the owner dropdowns across the app.",
             icon: UserCog,
         },
-        {
-            href: "/settings/agency",
-            label: "Agency profile",
-            count: agencyConfigured ? "set up" : "not set",
-            description:
-                "Legal name, SST no., contact, address, bank details and invoice footer, used on invoices and reports.",
-            icon: SlidersHorizontal,
-        },
+        ...(manager
+            ? [
+                  {
+                      href: "/settings/agency",
+                      label: "Agency profile",
+                      count: agencyConfigured ? "set up" : "not set",
+                      description:
+                          "Legal name, SST no., contact, address, bank details and invoice footer, used on invoices and reports. Management only.",
+                      icon: SlidersHorizontal,
+                  },
+              ]
+            : []),
     ];
 
     return (

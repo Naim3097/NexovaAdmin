@@ -14,6 +14,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import type { Database, LeadRow } from "@/lib/supabase/types";
 import { isSupabaseEnabled } from "@/lib/data/flag";
 import * as devLeads from "@/lib/dev-store/leads";
+import { normalizeLostReason } from "@/lib/leads/lost";
 
 // Re-export the public API surface (types + constants) so consumers only
 // need to import from "@/lib/data/leads".
@@ -50,6 +51,8 @@ function rowToLead(row: LeadRow): Lead {
         assignedTo: row.assigned_to,
         score: row.score,
         autoIntake: row.auto_intake ?? false,
+        lostReason: normalizeLostReason(row.lost_reason),
+        lostNote: row.lost_note ?? "",
         createdAt: row.created_at,
         updatedAt: row.updated_at,
     };
@@ -73,6 +76,8 @@ function leadToInsert(lead: Lead): LeadInsert {
         assigned_to: lead.assignedTo,
         score: lead.score,
         auto_intake: lead.autoIntake,
+        lost_reason: lead.lostReason,
+        lost_note: lead.lostNote,
         created_at: lead.createdAt,
         updated_at: lead.updatedAt,
     };
@@ -97,6 +102,8 @@ function patchToUpdate(patch: UpdateLeadPatch): LeadUpdate {
     if (patch.assignedTo !== undefined) out.assigned_to = patch.assignedTo;
     if (patch.score !== undefined) out.score = patch.score;
     if (patch.autoIntake !== undefined) out.auto_intake = patch.autoIntake;
+    if (patch.lostReason !== undefined) out.lost_reason = patch.lostReason;
+    if (patch.lostNote !== undefined) out.lost_note = patch.lostNote;
     if (patch.updatedAt !== undefined) out.updated_at = patch.updatedAt;
     // updated_at is also auto-bumped by the trigger; setting it here is harmless.
     return out;
@@ -127,6 +134,8 @@ export async function createLead(input: CreateLeadInput): Promise<Lead> {
         assignedTo: input.assignedTo ?? "",
         score: input.score ?? 0,
         autoIntake: input.autoIntake ?? false,
+        lostReason: "",
+        lostNote: "",
         createdAt: now,
         updatedAt: now,
     };

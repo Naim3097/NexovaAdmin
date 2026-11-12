@@ -1,0 +1,21 @@
+{
+  "id": "3a223219-5bfb-4553-997c-e6f35e1757b5",
+  "name": "Payright",
+  "status": "active",
+  "dealOwner": "Yusuf",
+  "contactName": "Demo contact",
+  "contactEmail": "payright@example.com",
+  "contactPhone": "",
+  "billingAddress": "",
+  "website": "",
+  "industry": "Fintech (payments)",
+  "notes": "Growing the brand.",
+  "contentRevisionLimit": 3,
+  "portalToken": "",
+  "userId": null,
+  "internal": false,
+  "lastCheckInAt": "2026-11-07",
+  "lastCheckInNote": "Monthly review: merchant sign-ups up 18 %, wants more video.",
+  "createdAt": "2026-02-25T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.190Z"
+}

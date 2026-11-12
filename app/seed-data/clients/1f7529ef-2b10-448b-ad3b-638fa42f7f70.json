@@ -1,0 +1,21 @@
+{
+  "id": "1f7529ef-2b10-448b-ad3b-638fa42f7f70",
+  "name": "Enfrasys",
+  "status": "active",
+  "dealOwner": "Naim",
+  "contactName": "Demo contact",
+  "contactEmail": "enfrasys@example.com",
+  "contactPhone": "",
+  "billingAddress": "",
+  "website": "",
+  "industry": "IT services",
+  "notes": "Content creation.",
+  "contentRevisionLimit": 3,
+  "portalToken": "",
+  "userId": null,
+  "internal": false,
+  "lastCheckInAt": "",
+  "lastCheckInNote": "",
+  "createdAt": "2026-11-03T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.196Z"
+}

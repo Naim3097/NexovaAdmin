@@ -1,0 +1,52 @@
+{
+  "id": "1144df43-520e-425e-9f23-bcc23213abae",
+  "contractId": "cc412500-078b-465c-b702-e2d6ab336cd0",
+  "clientName": "Payright",
+  "accountManager": "Bob",
+  "plannerLineId": "req:seo:2026-10:2:2",
+  "addendumVersion": 0,
+  "type": "seo",
+  "title": "Cross-border payments 101",
+  "channel": "Blog",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-21",
+  "defaultDueDate": "2026-10-21",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Danisy",
+      "pct": 100,
+      "hours": 4
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "seo",
+    "id": "ebba48b9-0bd9-4d17-983b-9e293180efcf"
+  },
+  "startedAt": "2026-10-15T06:27:03.731Z",
+  "submittedAt": "2026-10-19T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/1144df43",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Bob",
+    "at": "2026-10-20T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-20T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-02-25T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.159Z"
+}

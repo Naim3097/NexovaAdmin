@@ -1,0 +1,52 @@
+{
+  "id": "deec27d9-a053-4fef-8aff-31f2925edf7b",
+  "contractId": "0e0938d5-dcab-4d66-ab19-02e5220e078c",
+  "clientName": "Zakat Selangor",
+  "accountManager": "Hakim",
+  "plannerLineId": "req:video:2026-11:0:2",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "TikTok: Myth — zakat is only for Ramadan",
+  "channel": "TikTok",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-11",
+  "defaultDueDate": "2026-11-11",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 4.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "d4fd4b8e-ddfe-454f-b3b5-a37279c1a58c"
+  },
+  "startedAt": "2026-11-05T06:27:03.731Z",
+  "submittedAt": "2026-11-09T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/deec27d9",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Hakim)",
+    "at": "2026-11-10T06:27:03.731Z"
+  },
+  "completedAt": "2026-11-10T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-06-03T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.772Z"
+}

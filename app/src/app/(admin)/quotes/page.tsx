@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getActingMember, requireTeamAccess } from "@/lib/auth";
-import { hasFunction } from "@/lib/roles";
-import { seesFinance } from "@/lib/scope";
+import { homeFor, seesFinance } from "@/lib/roles";
 import {
     QUOTATION_STATUSES,
     computeTotals,
@@ -33,9 +32,9 @@ const STATUS_VARIANT: Record<
 
 export default async function QuotationsPage({ searchParams }: { searchParams: Promise<{ as?: string; new?: string }> }) {
     await requireTeamAccess();
-    // Money pages: managers, finance and account managers.
+    // Finances: management and the finance duty.
     const member = await getActingMember();
-    if (!seesFinance(member) && !hasFunction(member, "account_manager")) redirect("/home");
+    if (!seesFinance(member)) redirect(homeFor(member));
     const sp = await searchParams;
     const quotes = await listQuotations();
     const newHref = newFormHref("/quotes", { as: sp.as });

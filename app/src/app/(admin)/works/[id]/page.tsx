@@ -1,11 +1,10 @@
 import { Fragment } from "react";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getActingMember, getCurrentTeamMember, requireTeamAccess } from "@/lib/auth";
-import { getWorkById, listWorks } from "@/lib/data/works";
+import { getWorkById } from "@/lib/data/works";
 import { getContractById } from "@/lib/data/contracts";
 import { listTeamMembers } from "@/lib/data/team";
-import { canOpenContract, seesEverything, visibleWorks } from "@/lib/scope";
 import { APPROVERS, APPROVER_LABEL, SEATS, SEAT_LABEL } from "@/lib/data/planners";
 import { HOUR_STEP, fmtHours, shareHours, taskHours } from "@/lib/capacity/helpers";
 import { isAdjusted, monthLabel, pendingFrom, splitTotal, todayKey } from "@/lib/works/helpers";
@@ -13,7 +12,6 @@ import {
     completeWorkAction,
     deleteWorkAction,
     reopenWorkAction,
-    requestWorkAction,
     reviewWorkAction,
     setDueAction,
     setSplitAction,
@@ -76,11 +74,7 @@ export default async function WorkDetailPage({
     const asField = as ? <input type="hidden" name="as" value={as} /> : null;
     const asQ = as ? `?as=${encodeURIComponent(as)}` : "";
 
-    // A user opens only a task they hold a share of or must approve, or one on a contract they are on.
-    if (!seesEverything(member) && visibleWorks(member, [w]).length === 0) {
-        const onMyContract = contract ? canOpenContract(member, contract, await listWorks()) : false;
-        if (!onMyContract) redirect(`/works${asQ}`);
-    }
+    // Every team member may open every task; My tasks is the personal slice.
     const isAm = !actor || actor === w.accountManager;
     const mine = Boolean(actor) && w.split.some((s) => s.member === actor);
     const open = w.status !== "completed";
@@ -128,8 +122,8 @@ export default async function WorkDetailPage({
                 <p className="text-sm text-muted-foreground">
                     {w.clientName}
                     {" · "}
-                    <Link href={`/contracts/${w.contractId}#works`} className="underline">
-                        {contract ? `${contract.code} · ${contract.name}` : "contract"}
+                    <Link href={`/projects/${w.contractId}#works`} className="underline">
+                        {contract ? `${contract.code} · ${contract.name}` : "project"}
                     </Link>
                     {" · "}
                     {monthLabel(w.month)}
@@ -238,18 +232,7 @@ export default async function WorkDetailPage({
                             <SaveButton label="Save split" />
                         </div>
                     </form>
-                    {open ? (
-                        <form action={requestWorkAction} className="mt-4 flex flex-wrap items-center gap-2 border-t pt-3">
-                            <input type="hidden" name="id" value={w.id} />
-                            {asField}
-                            <PendingButton size="sm" variant={w.requestedAt ? "outline" : "default"} pendingLabel="Sending…">
-                                {w.requestedAt ? "Send the request again" : "Request · notify everyone on it"}
-                            </PendingButton>
-                            {w.requestedAt ? <span className="text-xs text-muted-foreground">requested {stamp(w.requestedAt)}</span> : null}
-                        </form>
-                    ) : w.requestedAt ? (
-                        <p className="mt-4 border-t pt-3 text-xs text-muted-foreground">requested {stamp(w.requestedAt)}</p>
-                    ) : null}
+                    <p className="mt-3 text-[11px] text-muted-foreground">Everyone named here sees the task under My tasks as soon as it is saved.</p>
                 </section>
 
                 {/* When */}
@@ -448,7 +431,7 @@ export default async function WorkDetailPage({
                         <Link href={`${LINKED_PATH[w.linked.kind]}/${w.linked.id}`} className="font-medium underline">
                             {LINKED_LABEL[w.linked.kind]}
                         </Link>
-                        <span className="text-muted-foreground"> — this task tracks it under the contract; drafting, review and publishing happen there.</span>
+                        <span className="text-muted-foreground"> — this task tracks it under the project; drafting, review and publishing happen there.</span>
                     </p>
                 ) : (
                     <p className="mt-1 text-sm text-muted-foreground">This task is the work item itself.</p>

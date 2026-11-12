@@ -1,0 +1,52 @@
+{
+  "id": "f7906e35-c0c5-4c8a-b99f-2db73ef485cc",
+  "contractId": "01149f98-ad2c-41a5-a4f9-10b85c31d526",
+  "clientName": "Leanis Solution Sdn Bhd",
+  "accountManager": "Bob",
+  "plannerLineId": "req:video:2027-01:1:1",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "Reel: What Leanis does in 30 seconds",
+  "channel": "LinkedIn",
+  "month": "2027-01",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2027-01-07",
+  "defaultDueDate": "2027-01-07",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 4.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "8f51252d-2e6b-4c8b-8498-86b8f0a2874e"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-08-27T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.502Z"
+}

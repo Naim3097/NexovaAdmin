@@ -1,0 +1,52 @@
+{
+  "id": "0aefa248-445a-499a-96cf-9ed5c48984cf",
+  "contractId": "cc412500-078b-465c-b702-e2d6ab336cd0",
+  "clientName": "Payright",
+  "accountManager": "Bob",
+  "plannerLineId": "req:video:2026-10:1:1",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "TikTok: Payment myths",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-08",
+  "defaultDueDate": "2026-10-08",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Izzad",
+      "pct": 100,
+      "hours": 6
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "45691135-789c-4a39-89b3-0e1f104f1085"
+  },
+  "startedAt": "2026-10-02T06:27:03.731Z",
+  "submittedAt": "2026-10-06T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/0aefa248",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Bob)",
+    "at": "2026-10-07T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-07T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-02-25T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.156Z"
+}

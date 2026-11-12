@@ -1,0 +1,52 @@
+{
+  "id": "6a7651a8-abda-4b49-bfb3-5fc32bbdaf7e",
+  "contractId": "d574b50b-00f3-4986-863a-ce22efad7c2e",
+  "clientName": "Enfrasys",
+  "accountManager": "Izzad",
+  "plannerLineId": "req:static:2026-11:0:2",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "LinkedIn: Cloud migration in 5 steps",
+  "channel": "LinkedIn",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-12",
+  "defaultDueDate": "2026-11-12",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "in_progress",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Izzad",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "d45c2dbb-09f4-4160-b7a3-9e59714968af"
+  },
+  "startedAt": "2026-11-10T06:27:03.731Z",
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-11-03T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.936Z"
+}

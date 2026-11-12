@@ -1,0 +1,34 @@
+{
+  "id": "05e49fc0-0391-4487-89d7-1d61fa4adc18",
+  "name": "Bob",
+  "role": "Digital Marketer",
+  "category": "dm",
+  "email": "bob@nexova.local",
+  "phone": "",
+  "skills": "Meta Ads, content, short-form video, SEO",
+  "active": true,
+  "userId": null,
+  "accessLevel": "standard",
+  "systemRoles": [
+    "user"
+  ],
+  "functions": [
+    "delivery"
+  ],
+  "weeklyHours": 32,
+  "setAside": [],
+  "hoursByType": {
+    "campaign": 5,
+    "seo": 3,
+    "static": 1.75,
+    "video": 4.5,
+    "custom": 1.5,
+    "website": 8
+  },
+  "costRateMyr": 45,
+  "daysOff": {
+    "2026-12": 1
+  },
+  "createdAt": "2026-11-12T06:27:04.172Z",
+  "updatedAt": "2026-11-12T06:27:04.172Z"
+}

@@ -1,0 +1,52 @@
+{
+  "id": "fee92d0b-15af-449a-91b5-90d81f531987",
+  "contractId": "d574b50b-00f3-4986-863a-ce22efad7c2e",
+  "clientName": "Enfrasys",
+  "accountManager": "Izzad",
+  "plannerLineId": "req:static:2026-11:0:3",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "LinkedIn: Security tip of the week",
+  "channel": "LinkedIn",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-17",
+  "defaultDueDate": "2026-11-17",
+  "plannedDate": "2026-11-12",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "850a9e9c-44ec-4226-84dd-6e9b843a3eb2"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-11-03T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.893Z"
+}

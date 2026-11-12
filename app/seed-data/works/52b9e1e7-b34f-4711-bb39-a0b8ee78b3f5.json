@@ -1,0 +1,52 @@
+{
+  "id": "52b9e1e7-b34f-4711-bb39-a0b8ee78b3f5",
+  "contractId": "6d1e4aab-758f-42fd-9862-f8590788625b",
+  "clientName": "Tropicor",
+  "accountManager": "Danisy",
+  "plannerLineId": "req:static:2026-10:2:4",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Ad creative: Customer review",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "optimise",
+  "phaseName": "Optimise",
+  "dueDate": "2026-10-22",
+  "defaultDueDate": "2026-10-22",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 1.75
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "8ca60dbb-0b1e-40f0-894c-35b7c0943ddc"
+  },
+  "startedAt": "2026-10-16T06:27:03.731Z",
+  "submittedAt": "2026-10-20T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/52b9e1e7",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Danisy)",
+    "at": "2026-10-21T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-21T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-09-29T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.090Z"
+}

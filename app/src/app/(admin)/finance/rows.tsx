@@ -35,7 +35,7 @@ export function InvoiceRows({ rows, mode, empty }: { rows: InvoiceRow[]; mode: I
                                 </Link>
                                 <span className="text-sm">{r.clientName}</span>
                                 {r.contractId ? (
-                                    <Link href={`/contracts/${r.contractId}`} className="text-xs text-muted-foreground underline">
+                                    <Link href={`/projects/${r.contractId}`} className="text-xs text-muted-foreground underline">
                                         {r.contractCode}
                                     </Link>
                                 ) : (

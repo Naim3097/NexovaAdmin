@@ -1,5 +1,5 @@
 /**
- * "This month across my accounts" — planned hours on my contracts by person,
+ * "This month across my accounts" — planned hours on my projects by person,
  * so the account manager sees who is carrying their clients' work.
  */
 import Link from "next/link";

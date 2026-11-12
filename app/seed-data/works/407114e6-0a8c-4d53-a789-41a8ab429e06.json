@@ -1,0 +1,52 @@
+{
+  "id": "407114e6-0a8c-4d53-a789-41a8ab429e06",
+  "contractId": "cc412500-078b-465c-b702-e2d6ab336cd0",
+  "clientName": "Payright",
+  "accountManager": "Bob",
+  "plannerLineId": "req:campaign:2027-01:3:1",
+  "addendumVersion": 0,
+  "type": "campaign",
+  "title": "Meta lead-gen: merchant sign-ups · Jan",
+  "channel": "Meta",
+  "month": "2027-01",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2027-01-14",
+  "defaultDueDate": "2027-01-14",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Danisy",
+      "pct": 100,
+      "hours": 6
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "campaign",
+    "id": "3fb9753f-9aea-449b-beaf-53fe78cc4891"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-02-25T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.142Z"
+}

@@ -1,0 +1,16 @@
+{
+  "id": "52e47da8-958a-44d5-87de-d99c10d478e8",
+  "at": "2026-11-11T06:55:56.525Z",
+  "entity": "contract",
+  "entityId": "221fa9f3-83c9-45c7-bf16-4f78392973c6",
+  "kind": "status",
+  "summary": "Stage: created → signed · signed 2026-11-11 · 21 tasks generated · 6 posts/mo · 1 campaign/mo",
+  "actor": "dev@nexova.local",
+  "changes": [
+    {
+      "field": "stage",
+      "before": "created",
+      "after": "signed"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "id": "d1163c95-6acf-4b51-bfd3-6165a1de3e43",
+  "contractId": "0e0938d5-dcab-4d66-ab19-02e5220e078c",
+  "clientName": "Zakat Selangor",
+  "accountManager": "Hakim",
+  "plannerLineId": "req:custom:2026-11:4:4",
+  "addendumVersion": 0,
+  "type": "custom",
+  "title": "Community management · week of 23 Nov",
+  "channel": "TikTok",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-25",
+  "defaultDueDate": "2026-11-25",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "am",
+      "member": "Hakim",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "none",
+  "milestone": false,
+  "linked": null,
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-06-03T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.706Z"
+}

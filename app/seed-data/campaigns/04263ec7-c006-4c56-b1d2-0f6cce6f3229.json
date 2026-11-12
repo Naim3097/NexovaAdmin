@@ -1,0 +1,21 @@
+{
+  "id": "04263ec7-c006-4c56-b1d2-0f6cce6f3229",
+  "name": "Meta lead-gen: free site consultation · Nov",
+  "clientName": "Rouang",
+  "contractId": "ee0609d4-3179-4475-8f59-8d96c5c3edb4",
+  "platform": "meta",
+  "objective": "leads",
+  "status": "live",
+  "startDate": "2026-11-12",
+  "endDate": "",
+  "monthlyBudgetMyr": 1200,
+  "feeModel": "flat_plus_percent",
+  "flatFeeMyr": 800,
+  "percentFee": 10,
+  "externalId": "",
+  "landingUrl": "",
+  "notes": "",
+  "metrics": [],
+  "createdAt": "2026-11-12T06:27:04.451Z",
+  "updatedAt": "2026-11-12T06:27:06.251Z"
+}

@@ -1,0 +1,102 @@
+{
+  "id": "be8d2563-6668-4eca-8ae3-f93933ff08cb",
+  "code": "CON-2026-0003",
+  "name": "Baitul Irfan — surau donation drive",
+  "clientName": "Baitul Irfan",
+  "accountManager": "Bob",
+  "status": "active",
+  "phases": [
+    {
+      "key": "kickoff",
+      "name": "Kickoff",
+      "summary": "Committee briefing, donation channels, tracking.",
+      "startMonth": "2026-08",
+      "endMonth": "2026-08"
+    },
+    {
+      "key": "appeal",
+      "name": "Appeal launch",
+      "summary": "Launch posters, the donation link and the first campaign.",
+      "startMonth": "2026-08",
+      "endMonth": "2026-08"
+    },
+    {
+      "key": "drives",
+      "name": "Monthly drives",
+      "summary": "Donation campaigns, posters and progress videos.",
+      "startMonth": "2026-08",
+      "endMonth": "2027-01"
+    },
+    {
+      "key": "review",
+      "name": "Review",
+      "summary": "Donor report, results and the next appeal.",
+      "startMonth": "2027-01",
+      "endMonth": "2027-01"
+    }
+  ],
+  "requirements": [
+    {
+      "type": "campaign",
+      "name": "Donation campaign",
+      "count": 2,
+      "per": "month",
+      "channel": "Meta"
+    },
+    {
+      "type": "static",
+      "name": "Appeal poster",
+      "count": 6,
+      "per": "month",
+      "channel": "Facebook"
+    },
+    {
+      "type": "video",
+      "name": "Progress video",
+      "count": 2,
+      "per": "month",
+      "channel": "Facebook"
+    },
+    {
+      "type": "custom",
+      "name": "Donor update report",
+      "count": 1,
+      "per": "month",
+      "channel": "Report"
+    },
+    {
+      "type": "custom",
+      "name": "Monthly strategy call",
+      "count": 1,
+      "per": "month",
+      "channel": "Call"
+    }
+  ],
+  "crew": {
+    "dm": "Bob",
+    "creative": "Bob",
+    "am": "Bob"
+  },
+  "handover": null,
+  "templateName": "",
+  "stage": "delivering",
+  "startDate": "2026-08-01",
+  "endDate": "2027-01-31",
+  "reference": "BI-DON-01",
+  "quotationId": null,
+  "valueMyr": 15000,
+  "signedAt": "2026-07-29",
+  "signedBy": "Client director",
+  "fileUrl": "https://drive.example.com/contracts/signed.pdf",
+  "terms": "Six months at our NGO rate: two donation campaigns a month on Meta, 6 appeal posters and 2 progress videos a month, a donor update report.",
+  "billing": {
+    "cadence": "monthly",
+    "amountMyr": 2500,
+    "invoiceDay": 2
+  },
+  "notes": "",
+  "renewalStatus": "",
+  "costs": [],
+  "createdAt": "2026-07-29T06:27:03.731Z",
+  "updatedAt": "2026-07-29T06:27:03.731Z"
+}

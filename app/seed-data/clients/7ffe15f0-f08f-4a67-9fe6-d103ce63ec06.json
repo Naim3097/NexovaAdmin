@@ -1,0 +1,21 @@
+{
+  "id": "7ffe15f0-f08f-4a67-9fe6-d103ce63ec06",
+  "name": "Sutera Batik Studio",
+  "status": "paused",
+  "dealOwner": "Yusuf",
+  "contactName": "Demo contact",
+  "contactEmail": "sutera-batik-studio@example.com",
+  "contactPhone": "",
+  "billingAddress": "",
+  "website": "",
+  "industry": "Fashion retail",
+  "notes": "Past client: social media retainer, paused.",
+  "contentRevisionLimit": 3,
+  "portalToken": "",
+  "userId": null,
+  "internal": false,
+  "lastCheckInAt": "2026-08-09",
+  "lastCheckInNote": "Paused until the next Raya collection is ready.",
+  "createdAt": "2025-12-28T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.198Z"
+}

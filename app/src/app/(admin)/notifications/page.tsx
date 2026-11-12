@@ -19,9 +19,9 @@ const KIND_LABEL: Record<NotificationKind, string> = {
     lead_won: "Lead won",
     lead_lost: "Lead lost",
     deliverable_approved: "Task approved",
-    work_requested: "Task briefed",
     approval_requested: "Sign-off needed",
     work_approved: "Task approved",
+    work_changes_requested: "Changes needed",
     invoice_issued: "Invoice issued",
     invoice_paid: "Invoice paid",
     invoice_overdue: "Invoice overdue",
@@ -48,9 +48,9 @@ const KIND_TONE: Record<
     lead_won: "default",
     lead_lost: "secondary",
     deliverable_approved: "default",
-    work_requested: "secondary",
     approval_requested: "default",
     work_approved: "default",
+    work_changes_requested: "destructive",
     invoice_issued: "secondary",
     invoice_paid: "default",
     invoice_overdue: "destructive",
@@ -68,6 +68,14 @@ const KIND_TONE: Record<
     renewal_due: "default",
     system: "outline",
 };
+
+/** Old records may carry a kind no longer written (e.g. the retired `work_requested`): shown by name, in the plain tone. */
+function labelOf(kind: string): string {
+    return (KIND_LABEL as Record<string, string | undefined>)[kind] ?? kind.replace(/_/g, " ");
+}
+function toneOf(kind: string): (typeof KIND_TONE)[NotificationKind] {
+    return (KIND_TONE as Record<string, (typeof KIND_TONE)[NotificationKind] | undefined>)[kind] ?? "outline";
+}
 
 export default async function NotificationsPage() {
     const all = await listNotifications();
@@ -151,8 +159,8 @@ function Section({
                         >
                             <div className="min-w-0 flex-1">
                                 <div className="flex flex-wrap items-baseline gap-2">
-                                    <Badge variant={KIND_TONE[n.kind]}>
-                                        {KIND_LABEL[n.kind]}
+                                    <Badge variant={toneOf(n.kind)}>
+                                        {labelOf(n.kind)}
                                     </Badge>
                                     {n.link ? (
                                         <Link

@@ -1,0 +1,22 @@
+{
+  "id": "cbbc6822-a481-4179-b011-dc0c81c8f138",
+  "name": "Amir Hakimi",
+  "company": "Persatuan Belia Taman Melati",
+  "email": "persatuan-belia-taman-melati@example.com",
+  "phone": "",
+  "source": "facebook",
+  "sourceCampaignId": null,
+  "interestedIn": "",
+  "estValueMyr": 0,
+  "status": "new",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "",
+  "score": 20,
+  "autoIntake": true,
+  "lostReason": "",
+  "lostNote": "",
+  "createdAt": "2026-11-12T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:03.731Z"
+}

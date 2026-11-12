@@ -23,7 +23,7 @@ import { listContracts } from "@/lib/data/contracts";
 import { listWorks } from "@/lib/data/works";
 import { getActingMember } from "@/lib/auth";
 import { assignedContractIds, seesEverything, visibleContracts } from "@/lib/scope";
-import { NewButton, NewSection, newFormHref } from "@/components/new-button";
+import { NewSection } from "@/components/new-button";
 
 export const dynamic = "force-dynamic";
 
@@ -54,7 +54,7 @@ export default async function ContentPage({
         listWorks(),
         getActingMember(sp.as),
     ]);
-    // A user sees the posts of the contracts they are on: linked by contract, else by the contract's client name.
+    // A user sees the posts of the projects they are on: linked by project, else by the project's client name.
     const contracts = visibleContracts(member, allContracts, works);
     const myContractIds = assignedContractIds(member, allContracts, works);
     const myClientNames = new Set(contracts.map((c) => norm(c.clientName)));
@@ -76,7 +76,6 @@ export default async function ContentPage({
     });
 
     const today = new Date().toISOString().slice(0, 10);
-    const newHref = newFormHref("/content", { status: sp.status, client: sp.client, as: sp.as });
 
     return (
         <div className="space-y-6">
@@ -86,6 +85,7 @@ export default async function ContentPage({
                     <p className="text-sm text-muted-foreground">
                         Plan, draft and schedule; publishing integrations are on hold.
                     </p>
+                    <p className="text-xs text-muted-foreground">Items come from project tasks. The account manager adds them on the project.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                     <Link
@@ -100,7 +100,6 @@ export default async function ContentPage({
                     >
                         Open calendar
                     </Link>
-                    <NewButton href={newHref}>+ New post</NewButton>
                 </div>
             </div>
 
@@ -121,7 +120,7 @@ export default async function ContentPage({
                             <Input name="clientName" list="clients-datalist" required placeholder="Lean.x" />
                         </div>
                         <div className="space-y-1.5">
-                            <Label className="text-sm">Contract (optional)</Label>
+                            <Label className="text-sm">Project (optional)</Label>
                             <Select name="contractId" defaultValue={"none"}>
                                 <SelectTrigger className="h-10">
                                     <SelectValue />

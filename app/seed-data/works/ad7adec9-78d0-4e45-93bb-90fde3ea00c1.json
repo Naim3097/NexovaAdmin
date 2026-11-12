@@ -1,0 +1,52 @@
+{
+  "id": "ad7adec9-78d0-4e45-93bb-90fde3ea00c1",
+  "contractId": "0e0938d5-dcab-4d66-ab19-02e5220e078c",
+  "clientName": "Zakat Selangor",
+  "accountManager": "Hakim",
+  "plannerLineId": "req:video:2026-10:0:4",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "TikTok: Gen Z asks the ustaz",
+  "channel": "TikTok",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-28",
+  "defaultDueDate": "2026-10-28",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 4.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "522c7ab3-d996-4928-8ec7-a18eea220e21"
+  },
+  "startedAt": "2026-10-22T06:27:03.731Z",
+  "submittedAt": "2026-10-26T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/ad7adec9",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Hakim)",
+    "at": "2026-10-27T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-27T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-06-03T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.757Z"
+}

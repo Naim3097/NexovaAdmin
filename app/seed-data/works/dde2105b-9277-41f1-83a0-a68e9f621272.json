@@ -1,0 +1,49 @@
+{
+  "id": "dde2105b-9277-41f1-83a0-a68e9f621272",
+  "contractId": "0e0938d5-dcab-4d66-ab19-02e5220e078c",
+  "clientName": "Zakat Selangor",
+  "accountManager": "Hakim",
+  "plannerLineId": "req:custom:2026-10:8:1",
+  "addendumVersion": 0,
+  "type": "custom",
+  "title": "Content calendar & captions · Oct",
+  "channel": "Planning",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-26",
+  "defaultDueDate": "2026-10-26",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "am",
+      "member": "Hakim",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": null,
+  "startedAt": "2026-10-20T06:27:03.731Z",
+  "submittedAt": "2026-10-24T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/dde2105b",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Hakim",
+    "at": "2026-10-25T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-25T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-06-03T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.770Z"
+}

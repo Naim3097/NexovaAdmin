@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { requireAdminAccess } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { getActingMember } from "@/lib/auth";
+import { isManager } from "@/lib/roles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,8 +19,9 @@ import {
 
 export const dynamic = "force-dynamic";
 
+/** Management only: the agency's own details, used on every quote and invoice. */
 export default async function AgencyProfilePage() {
-    await requireAdminAccess();
+    if (!isManager(await getActingMember())) redirect("/settings");
     const p = await getAgencyProfile();
     const lastSaved =
         p.updatedAt && p.updatedAt > new Date(0).toISOString()
@@ -205,6 +208,25 @@ export default async function AgencyProfilePage() {
                                 defaultValue={p.bankAccountNo}
                             />
                         </div>
+                    </div>
+                </section>
+
+                <section className="space-y-4">
+                    <h2 className="text-sm font-medium">Sales target</h2>
+                    <div className="space-y-1.5 sm:max-w-xs">
+                        <Label htmlFor="salesTargetMyr">Monthly target (MYR won)</Label>
+                        <Input
+                            id="salesTargetMyr"
+                            name="salesTargetMyr"
+                            type="number"
+                            min={0}
+                            step={500}
+                            defaultValue={p.salesTargetMyr || ""}
+                            placeholder="40000"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            The Sales dashboard measures projects signed each month against this. Leave empty for none.
+                        </p>
                     </div>
                 </section>
 

@@ -1,9 +1,10 @@
 /**
- * Contract helpers — pure functions shared by the contract pages, the client
- * pages and the Management tabs. No I/O.
+ * Project helpers — pure functions shared by the project pages, the client
+ * pages and the Management tabs. No I/O. (The code keeps the word "contract"
+ * for the project record; people read "project".)
  *
- * Client → Contract → Work. A client "has a job" when it has an active
- * contract; the work (tasks, content, campaigns) hangs off the contract via
+ * Client → Project → Work. A client "has a job" when it has an active
+ * project; the work (tasks, content, campaigns) hangs off the project via
  * `contractId`, and invoices bill it.
  */
 import type { Contract } from "@/lib/data/contracts";
@@ -29,7 +30,7 @@ export function isActiveContract(c: Contract): boolean {
     return c.status === "active";
 }
 
-/** Active contract whose end date has passed. */
+/** Active project whose end date has passed. */
 export function hasEnded(c: Contract, today: string): boolean {
     return c.status === "active" && Boolean(c.endDate) && c.endDate < today;
 }
@@ -48,10 +49,10 @@ export function hasTerms(c: Contract): boolean {
     return Boolean(c.reference || c.valueMyr || c.fileUrl);
 }
 
-/** YYYY-MM list from the contract's start month to its end (or this month). */
+/** YYYY-MM list from the project's start month to its end (or this month). */
 export function monthsInSpan(c: Contract, today: string): string[] {
     const start = (c.startDate || today).slice(0, 7);
-    // Never run past this month for open-ended contracts, but do include
+    // Never run past this month for open-ended projects, but do include
     // future months for a fixed-term one so the invoice plan is visible.
     const end = c.endDate ? c.endDate.slice(0, 7) : today.slice(0, 7);
     const [sy, sm] = start.split("-").map(Number);
@@ -131,11 +132,11 @@ export function setupChecklist(c: Contract, invoices: Invoice[], today: string):
         const linked = invoicesFor(c, invoices);
         checks.push({
             key: "invoice",
-            label: c.billing.cadence === "one_off" ? "Invoice raised" : "Milestone invoices",
+            label: "Invoice raised",
             ok: linked.length > 0,
             detail: linked.length
                 ? linked.map((i) => `${i.number} · ${i.status}`).join(" · ")
-                : "No invoice linked to this contract yet",
+                : "No invoice linked to this project yet",
             urgent: linked.length === 0 && c.status === "active",
         });
     }
@@ -154,11 +155,11 @@ export function gapLabel(g: SetupCheck): string {
 }
 
 // ---------------------------------------------------------------------------
-// Work under a contract
+// Work under a project
 // ---------------------------------------------------------------------------
 
 export type ContractWorks = {
-    /** The contract's tasks. */
+    /** The project's tasks. */
     works: Work[];
     content: ContentPost[];
     campaigns: Campaign[];
@@ -219,9 +220,9 @@ export type JobStatus = {
     state: JobState;
     label: string;
     tone: "good" | "warn" | "bad" | "neutral";
-    /** Active contracts for this client. */
+    /** Active projects for this client. */
     active: Contract[];
-    /** All non-cancelled contracts for this client. */
+    /** All non-cancelled projects for this client. */
     all: Contract[];
 };
 
@@ -232,12 +233,12 @@ export function clientJobStatus(clientName: string, contracts: Contract[], today
     const base = { active, all };
     if (active.length === 0) {
         if (all.some((c) => c.status === "draft")) {
-            return { ...base, state: "draft", label: "Draft contract", tone: "warn" };
+            return { ...base, state: "draft", label: "Draft project", tone: "warn" };
         }
-        return { ...base, state: "none", label: "No contract", tone: "bad" };
+        return { ...base, state: "none", label: "No project", tone: "bad" };
     }
     if (active.some((c) => hasEnded(c, today))) {
-        return { ...base, state: "ended", label: "Contract ended", tone: "bad" };
+        return { ...base, state: "ended", label: "Project ended", tone: "bad" };
     }
     if (active.some((c) => !c.signedAt)) {
         return { ...base, state: "unsigned", label: "Contract unsigned", tone: "bad" };
@@ -251,7 +252,7 @@ export function clientJobStatus(clientName: string, contracts: Contract[], today
     return {
         ...base,
         state: "active",
-        label: active.length === 1 ? "Active contract" : `${active.length} active contracts`,
+        label: active.length === 1 ? "Active project" : `${active.length} active projects`,
         tone: "good",
     };
 }

@@ -1,0 +1,22 @@
+{
+  "id": "5fa6393e-6d19-44e9-9051-173a83a85b56",
+  "name": "Dr Kartini",
+  "company": "Dr Kartini",
+  "email": "dr-kartini@example.com",
+  "phone": "",
+  "source": "instagram",
+  "sourceCampaignId": null,
+  "interestedIn": "Personal brand, short-form video, SEO",
+  "estValueMyr": 36000,
+  "status": "won",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Naim",
+  "score": 85,
+  "autoIntake": false,
+  "lostReason": "",
+  "lostNote": "",
+  "createdAt": "2026-05-07T06:27:03.731Z",
+  "updatedAt": "2026-05-28T06:27:03.731Z"
+}

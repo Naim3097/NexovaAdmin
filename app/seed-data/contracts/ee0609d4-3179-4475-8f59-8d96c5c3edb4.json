@@ -1,0 +1,102 @@
+{
+  "id": "ee0609d4-3179-4475-8f59-8d96c5c3edb4",
+  "code": "CON-2026-0002",
+  "name": "Rouang — portfolio content & leads",
+  "clientName": "Rouang",
+  "accountManager": "Izzad",
+  "status": "active",
+  "phases": [
+    {
+      "key": "kickoff",
+      "name": "Kickoff",
+      "summary": "Onboarding, brand audit, access, strategy sign-off.",
+      "startMonth": "2026-07",
+      "endMonth": "2026-07"
+    },
+    {
+      "key": "foundation",
+      "name": "Foundation",
+      "summary": "Brand kit, content pillars and account setup.",
+      "startMonth": "2026-07",
+      "endMonth": "2026-08"
+    },
+    {
+      "key": "production",
+      "name": "Production",
+      "summary": "Monthly statics, videos, campaigns and articles.",
+      "startMonth": "2026-07",
+      "endMonth": "2026-12"
+    },
+    {
+      "key": "review",
+      "name": "Review",
+      "summary": "Performance review, renewal proposal, next plan.",
+      "startMonth": "2026-12",
+      "endMonth": "2026-12"
+    }
+  ],
+  "requirements": [
+    {
+      "type": "static",
+      "name": "Project showcase",
+      "count": 6,
+      "per": "month",
+      "channel": "Instagram"
+    },
+    {
+      "type": "video",
+      "name": "Site video",
+      "count": 3,
+      "per": "month",
+      "channel": "Instagram"
+    },
+    {
+      "type": "campaign",
+      "name": "Meta lead-gen: free site consultation",
+      "count": 1,
+      "per": "month",
+      "channel": "Meta"
+    },
+    {
+      "type": "custom",
+      "name": "Monthly report",
+      "count": 1,
+      "per": "month",
+      "channel": "Report"
+    },
+    {
+      "type": "custom",
+      "name": "Monthly growth review",
+      "count": 1,
+      "per": "month",
+      "channel": "Call"
+    }
+  ],
+  "crew": {
+    "dm": "Danisy",
+    "creative": "Izzad",
+    "am": "Izzad"
+  },
+  "handover": null,
+  "templateName": "",
+  "stage": "delivering",
+  "startDate": "2026-07-01",
+  "endDate": "2026-12-31",
+  "reference": "RG-SOC-01",
+  "quotationId": null,
+  "valueMyr": 27000,
+  "signedAt": "2026-06-26",
+  "signedBy": "Client director",
+  "fileUrl": "https://drive.example.com/contracts/signed.pdf",
+  "terms": "Six months: 6 project statics and 3 site videos a month, one Meta lead-gen campaign for free site consultations, a monthly report and growth review.",
+  "billing": {
+    "cadence": "monthly",
+    "amountMyr": 4500,
+    "invoiceDay": 2
+  },
+  "notes": "",
+  "renewalStatus": "at_risk",
+  "costs": [],
+  "createdAt": "2026-06-26T06:27:03.731Z",
+  "updatedAt": "2026-06-26T06:27:03.731Z"
+}

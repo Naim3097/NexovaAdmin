@@ -1,0 +1,52 @@
+{
+  "id": "7e8b8528-ec3c-4693-ad86-c583db7fb856",
+  "contractId": "6d1e4aab-758f-42fd-9862-f8590788625b",
+  "clientName": "Tropicor",
+  "accountManager": "Danisy",
+  "plannerLineId": "req:campaign:2026-12:1:2",
+  "addendumVersion": 0,
+  "type": "campaign",
+  "title": "Google Ads: Shopping — best sellers",
+  "channel": "Google",
+  "month": "2026-12",
+  "phaseKey": "optimise",
+  "phaseName": "Optimise",
+  "dueDate": "2026-12-21",
+  "defaultDueDate": "2026-12-21",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Danisy",
+      "pct": 100,
+      "hours": 6
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "campaign",
+    "id": "da725d7c-33f0-4c78-9229-215285ba9daf"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-09-29T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.065Z"
+}

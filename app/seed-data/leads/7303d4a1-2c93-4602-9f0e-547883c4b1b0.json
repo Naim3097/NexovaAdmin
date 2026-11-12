@@ -1,0 +1,22 @@
+{
+  "id": "7303d4a1-2c93-4602-9f0e-547883c4b1b0",
+  "name": "Pak Long contact",
+  "company": "Pak Long Kopitiam",
+  "email": "pak-long-kopitiam@example.com",
+  "phone": "",
+  "source": "facebook",
+  "sourceCampaignId": null,
+  "interestedIn": "Website, menu revamp",
+  "estValueMyr": 9500,
+  "status": "won",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Naim",
+  "score": 68,
+  "autoIntake": false,
+  "lostReason": "",
+  "lostNote": "",
+  "createdAt": "2026-04-12T06:27:03.731Z",
+  "updatedAt": "2026-04-24T06:27:03.731Z"
+}

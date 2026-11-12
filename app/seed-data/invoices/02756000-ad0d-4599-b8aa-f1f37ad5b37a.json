@@ -1,0 +1,31 @@
+{
+  "id": "02756000-ad0d-4599-b8aa-f1f37ad5b37a",
+  "number": "INV-2026-0035",
+  "clientName": "LeanX",
+  "contractId": "8dc8c820-cc95-428e-9a8f-6630adbd3fc9",
+  "status": "sent",
+  "issueDate": "2026-11-02",
+  "dueDate": "2026-11-16",
+  "items": [
+    {
+      "id": "49806e43-eda5-4bca-972f-5e90de01db74",
+      "description": "LeanX — brand growth — 2026-11",
+      "details": "CON-2026-0006",
+      "quantity": 1,
+      "unitPriceMyr": 8000
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "createdAt": "2026-11-02T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.548Z",
+  "paidAt": null,
+  "paymentProvider": null,
+  "paymentLink": null,
+  "paymentExternalId": null,
+  "paymentMeta": {},
+  "paymentLinkCreatedAt": null
+}

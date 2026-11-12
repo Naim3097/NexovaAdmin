@@ -1,0 +1,52 @@
+{
+  "id": "94bf0b8b-71c6-439c-b4f6-8ff290fd55d5",
+  "contractId": "ee0609d4-3179-4475-8f59-8d96c5c3edb4",
+  "clientName": "Rouang",
+  "accountManager": "Izzad",
+  "plannerLineId": "req:video:2026-10:1:1",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "TikTok: How we plan a renovation",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-08",
+  "defaultDueDate": "2026-10-08",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Izzad",
+      "pct": 100,
+      "hours": 6
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "a1a5c054-f68f-4125-b050-9e7a1f31e92e"
+  },
+  "startedAt": "2026-10-02T06:27:03.731Z",
+  "submittedAt": "2026-10-06T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/94bf0b8b",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Izzad)",
+    "at": "2026-10-07T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-07T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-06-26T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.539Z"
+}

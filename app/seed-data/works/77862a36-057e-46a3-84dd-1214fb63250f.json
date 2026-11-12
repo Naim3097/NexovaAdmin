@@ -1,0 +1,52 @@
+{
+  "id": "77862a36-057e-46a3-84dd-1214fb63250f",
+  "contractId": "01149f98-ad2c-41a5-a4f9-10b85c31d526",
+  "clientName": "Leanis Solution Sdn Bhd",
+  "accountManager": "Bob",
+  "plannerLineId": "req:seo:2026-10:2:1",
+  "addendumVersion": 0,
+  "type": "seo",
+  "title": "How to digitalise your SOPs",
+  "channel": "Blog",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-15",
+  "defaultDueDate": "2026-10-15",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 3
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "seo",
+    "id": "8f2606b0-fdf9-4599-bba6-4e4ffff1b2b2"
+  },
+  "startedAt": "2026-10-09T06:27:03.731Z",
+  "submittedAt": "2026-10-13T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/77862a36",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Bob",
+    "at": "2026-10-14T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-14T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-08-27T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.516Z"
+}

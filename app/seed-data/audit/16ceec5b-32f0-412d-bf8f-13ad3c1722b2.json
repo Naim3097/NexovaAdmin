@@ -1,0 +1,16 @@
+{
+  "id": "16ceec5b-32f0-412d-bf8f-13ad3c1722b2",
+  "at": "2026-11-11T07:43:17.256Z",
+  "entity": "work",
+  "entityId": "c68b5ad0-3766-4ef4-8047-c76c367c1043",
+  "kind": "status",
+  "summary": "Reel: Behind the scenes at Nexova: not started → in progress",
+  "actor": "Team",
+  "changes": [
+    {
+      "field": "status",
+      "before": "not_started",
+      "after": "in_progress"
+    }
+  ]
+}

@@ -15,14 +15,19 @@ import { randomUUID } from "node:crypto";
 const ROOT = devDataRoot();
 const NOTIF_DIR = path.join(ROOT, "notifications");
 
+/**
+ * The kinds written today. Records on disk may carry a kind no longer in the
+ * list (the retired `work_requested` briefing, for one); readers tolerate an
+ * unknown kind rather than dropping the record.
+ */
 export const NOTIFICATION_KINDS = [
     "lead_new",
     "lead_won",
     "lead_lost",
     "deliverable_approved",
-    "work_requested",
     "approval_requested",
     "work_approved",
+    "work_changes_requested",
     "invoice_issued",
     "invoice_paid",
     "invoice_overdue",

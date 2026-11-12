@@ -1,5 +1,5 @@
 /**
- * Activity tab: the unified timeline across leads, contracts, tasks,
+ * Activity tab: the unified timeline across leads, projects, tasks,
  * invoices, content and campaigns, grouped by day, with the entity and
  * range filters as dropdowns. Derived from existing records — no separate
  * log. Server component — no state.
@@ -23,7 +23,7 @@ export const FEED_LIMIT = 500;
 
 export const ENTITY_LABEL: Record<ActivityEntity, string> = {
     lead: "Leads",
-    contract: "Contracts",
+    contract: "Projects",
     task: "Tasks",
     invoice: "Invoices",
     content: "Content",

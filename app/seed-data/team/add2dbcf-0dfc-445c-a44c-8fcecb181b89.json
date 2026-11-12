@@ -1,0 +1,42 @@
+{
+  "id": "add2dbcf-0dfc-445c-a44c-8fcecb181b89",
+  "name": "Naim",
+  "role": "Chief Executive Officer",
+  "category": "closer",
+  "email": "naim@nexova.local",
+  "phone": "",
+  "skills": "strategy, sales, client relations",
+  "active": true,
+  "userId": null,
+  "accessLevel": "admin",
+  "systemRoles": [
+    "admin",
+    "management"
+  ],
+  "functions": [
+    "delivery"
+  ],
+  "weeklyHours": 32,
+  "setAside": [
+    {
+      "label": "Sales",
+      "hours": 10
+    },
+    {
+      "label": "Management",
+      "hours": 10
+    }
+  ],
+  "hoursByType": {
+    "custom": 2,
+    "static": 2,
+    "video": 5,
+    "campaign": 6,
+    "seo": 4,
+    "website": 8
+  },
+  "costRateMyr": 150,
+  "daysOff": {},
+  "createdAt": "2026-11-12T06:27:04.167Z",
+  "updatedAt": "2026-11-12T06:27:04.167Z"
+}

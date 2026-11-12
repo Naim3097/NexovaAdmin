@@ -1,0 +1,39 @@
+{
+  "id": "203f1323-af42-4e84-a2da-6c613ee67a71",
+  "name": "Izzad",
+  "role": "Creative Director",
+  "category": "creative",
+  "email": "izzad@nexova.local",
+  "phone": "",
+  "skills": "art direction, brand design, video editing",
+  "active": true,
+  "userId": null,
+  "accessLevel": "standard",
+  "systemRoles": [
+    "management"
+  ],
+  "functions": [
+    "delivery"
+  ],
+  "weeklyHours": 32,
+  "setAside": [
+    {
+      "label": "Management",
+      "hours": 6
+    }
+  ],
+  "hoursByType": {
+    "static": 2,
+    "video": 6,
+    "custom": 2,
+    "campaign": 6,
+    "seo": 4,
+    "website": 8
+  },
+  "costRateMyr": 110,
+  "daysOff": {
+    "2026-11": 2
+  },
+  "createdAt": "2026-11-12T06:27:04.169Z",
+  "updatedAt": "2026-11-12T06:27:04.169Z"
+}

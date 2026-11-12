@@ -1,0 +1,52 @@
+{
+  "id": "fdded55f-405e-48b0-b4a3-2bb93c1e1253",
+  "contractId": "8dc8c820-cc95-428e-9a8f-6630adbd3fc9",
+  "clientName": "LeanX",
+  "accountManager": "Bob",
+  "plannerLineId": "req:campaign:2026-10:3:1",
+  "addendumVersion": 0,
+  "type": "campaign",
+  "title": "Meta campaign: merchant acquisition · Oct",
+  "channel": "Meta",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-15",
+  "defaultDueDate": "2026-10-15",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Danisy",
+      "pct": 100,
+      "hours": 6
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "campaign",
+    "id": "c39645e3-1896-4932-bd2f-18e48a40f3a9"
+  },
+  "startedAt": "2026-10-09T06:27:03.731Z",
+  "submittedAt": "2026-10-13T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/fdded55f",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Bob",
+    "at": "2026-10-14T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-14T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2025-12-22T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.349Z"
+}

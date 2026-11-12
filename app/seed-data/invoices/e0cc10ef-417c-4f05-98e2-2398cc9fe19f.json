@@ -1,0 +1,31 @@
+{
+  "id": "e0cc10ef-417c-4f05-98e2-2398cc9fe19f",
+  "number": "INV-2026-0053",
+  "clientName": "Kembara",
+  "contractId": "6b92fdc7-9df3-4571-a844-5bacb941cee6",
+  "status": "paid",
+  "issueDate": "2026-10-01",
+  "dueDate": "2026-10-15",
+  "items": [
+    {
+      "id": "eb154312-0833-4b6e-96ef-d2ee895f0e2d",
+      "description": "Donation website — 50 % on signing",
+      "details": "",
+      "quantity": 1,
+      "unitPriceMyr": 9000
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "createdAt": "2026-10-01T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.795Z",
+  "paidAt": "2026-10-07T06:27:03.731Z",
+  "paymentProvider": null,
+  "paymentLink": null,
+  "paymentExternalId": null,
+  "paymentMeta": {},
+  "paymentLinkCreatedAt": null
+}

@@ -1,0 +1,31 @@
+{
+  "id": "be0d0848-211c-4949-9637-1d8909a7d427",
+  "number": "INV-2026-0009",
+  "clientName": "Rouang",
+  "contractId": "ee0609d4-3179-4475-8f59-8d96c5c3edb4",
+  "status": "paid",
+  "issueDate": "2026-09-02",
+  "dueDate": "2026-09-16",
+  "items": [
+    {
+      "id": "f898cdc9-7f54-4477-a66d-ea38a39462db",
+      "description": "Rouang — portfolio content & leads — 2026-09",
+      "details": "CON-2026-0002",
+      "quantity": 1,
+      "unitPriceMyr": 4500
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "createdAt": "2026-09-02T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.311Z",
+  "paidAt": "2026-09-13T06:27:03.731Z",
+  "paymentProvider": null,
+  "paymentLink": null,
+  "paymentExternalId": null,
+  "paymentMeta": {},
+  "paymentLinkCreatedAt": null
+}

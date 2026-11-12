@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getActingMember, requireTeamAccess } from "@/lib/auth";
-import { hasFunction } from "@/lib/roles";
-import { seesFinance } from "@/lib/scope";
+import { canSee, homeFor } from "@/lib/roles";
 import { listClients } from "@/lib/data/clients";
 import { listContentPosts } from "@/lib/data/content";
 import { listContracts } from "@/lib/data/contracts";
@@ -53,9 +52,9 @@ export default async function WeeklyUpdatesPage({
     searchParams: Promise<{ client?: string }>;
 }) {
     await requireTeamAccess();
-    // Reports: managers, finance and account managers.
+    // Reports: management and the delivery or finance duty.
     const member = await getActingMember();
-    if (!seesFinance(member) && !hasFunction(member, "account_manager")) redirect("/home");
+    if (!canSee(member, "/reports")) redirect(homeFor(member));
     const { client: clientParam } = await searchParams;
     const [clients, posts, works, contracts, invoices] = await Promise.all([
         listClients(),

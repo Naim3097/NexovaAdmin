@@ -1,0 +1,16 @@
+{
+  "id": "14a173bc-f6cc-4c28-8eeb-c677f9519d43",
+  "at": "2026-11-11T07:20:17.716Z",
+  "entity": "work",
+  "entityId": "feb23493-a591-411b-a33a-1797712a1200",
+  "kind": "update",
+  "summary": "Reel: Studio tour: planned for 2026-11-17 (due 2026-11-18)",
+  "actor": "Syafiq",
+  "changes": [
+    {
+      "field": "plannedDate",
+      "before": "2026-11-18",
+      "after": "2026-11-17"
+    }
+  ]
+}

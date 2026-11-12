@@ -1,0 +1,52 @@
+{
+  "id": "0709f785-a296-40f9-b738-f6056eec8450",
+  "contractId": "649c59c0-6455-4332-a82e-30eda362c9c0",
+  "clientName": "LeanX Digital",
+  "accountManager": "Yusuf",
+  "plannerLineId": "req:video:2026-10:0:1",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "Founder video: Why we started LeanX Digital",
+  "channel": "LinkedIn",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-06",
+  "defaultDueDate": "2026-10-06",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Naim",
+      "pct": 100,
+      "hours": 5
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "0621fad3-e7c4-4f38-bc2a-b1bbae35bed6"
+  },
+  "startedAt": "2026-09-30T06:27:03.731Z",
+  "submittedAt": "2026-10-04T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/0709f785",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Yusuf",
+    "at": "2026-10-05T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-05T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-07-01T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.917Z"
+}

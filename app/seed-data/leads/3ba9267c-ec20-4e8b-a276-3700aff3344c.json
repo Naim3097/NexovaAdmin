@@ -1,0 +1,22 @@
+{
+  "id": "3ba9267c-ec20-4e8b-a276-3700aff3344c",
+  "name": "Arif Zain",
+  "company": "Klinik Haiwan Sri Hartamas",
+  "email": "klinik-haiwan-sri-hartamas@example.com",
+  "phone": "",
+  "source": "instagram",
+  "sourceCampaignId": null,
+  "interestedIn": "Social media management",
+  "estValueMyr": 9000,
+  "status": "contacted",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Naim",
+  "score": 52,
+  "autoIntake": false,
+  "lostReason": "",
+  "lostNote": "",
+  "createdAt": "2026-11-06T06:27:03.731Z",
+  "updatedAt": "2026-11-10T06:27:03.731Z"
+}

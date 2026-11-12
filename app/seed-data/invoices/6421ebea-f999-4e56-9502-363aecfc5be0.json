@@ -1,0 +1,31 @@
+{
+  "id": "6421ebea-f999-4e56-9502-363aecfc5be0",
+  "number": "INV-2026-0014",
+  "clientName": "Baitul Irfan",
+  "contractId": "be8d2563-6668-4eca-8ae3-f93933ff08cb",
+  "status": "sent",
+  "issueDate": "2026-10-02",
+  "dueDate": "2026-10-16",
+  "items": [
+    {
+      "id": "5058bf79-1e4e-40a3-9db9-f02ea348fd89",
+      "description": "Baitul Irfan — surau donation drive — 2026-10",
+      "details": "CON-2026-0003",
+      "quantity": 1,
+      "unitPriceMyr": 2500
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "createdAt": "2026-10-02T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.344Z",
+  "paidAt": null,
+  "paymentProvider": null,
+  "paymentLink": null,
+  "paymentExternalId": null,
+  "paymentMeta": {},
+  "paymentLinkCreatedAt": null
+}

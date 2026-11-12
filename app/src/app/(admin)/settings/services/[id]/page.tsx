@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getActingMember } from "@/lib/auth";
 import { SERVICE_CATEGORIES, getServiceById } from "@/lib/data/services";
+import { isAdmin } from "@/lib/roles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,8 +27,10 @@ export default async function ServiceDetailPage({
     params: Promise<{ id: string }>;
 }) {
     const { id } = await params;
-    const s = await getServiceById(id);
+    const [s, me] = await Promise.all([getServiceById(id), getActingMember()]);
     if (!s) notFound();
+    // Everyone edits; only admins delete.
+    const admin = isAdmin(me);
 
     return (
         <div className="space-y-6">
@@ -111,25 +115,29 @@ export default async function ServiceDetailPage({
                 </div>
             </form>
 
-            <form
-                action={deleteServiceAction}
-                className="rounded-lg border border-destructive/40 bg-destructive/5 p-4"
-            >
-                <input type="hidden" name="id" value={s.id} />
-                <div className="flex items-center justify-between gap-4">
-                    <div>
-                        <p className="text-sm font-medium text-destructive">
-                            Delete service
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                            Removes this service only.
-                        </p>
+            {admin ? (
+                <form
+                    action={deleteServiceAction}
+                    className="rounded-lg border border-destructive/40 bg-destructive/5 p-4"
+                >
+                    <input type="hidden" name="id" value={s.id} />
+                    <div className="flex items-center justify-between gap-4">
+                        <div>
+                            <p className="text-sm font-medium text-destructive">
+                                Delete service
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                                Removes this service only.
+                            </p>
+                        </div>
+                        <Button type="submit" variant="destructive">
+                            Delete
+                        </Button>
                     </div>
-                    <Button type="submit" variant="destructive">
-                        Delete
-                    </Button>
-                </div>
-            </form>
+                </form>
+            ) : (
+                <p className="text-xs text-muted-foreground">Only admins delete a service; untick Active to retire it instead.</p>
+            )}
         </div>
     );
 }

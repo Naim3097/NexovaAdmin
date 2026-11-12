@@ -1,0 +1,102 @@
+{
+  "id": "01149f98-ad2c-41a5-a4f9-10b85c31d526",
+  "code": "CON-2026-0007",
+  "name": "Leanis Solution — brand growth",
+  "clientName": "Leanis Solution Sdn Bhd",
+  "accountManager": "Bob",
+  "status": "active",
+  "phases": [
+    {
+      "key": "kickoff",
+      "name": "Kickoff",
+      "summary": "Onboarding, brand audit, access, strategy sign-off.",
+      "startMonth": "2026-09",
+      "endMonth": "2026-09"
+    },
+    {
+      "key": "foundation",
+      "name": "Foundation",
+      "summary": "Brand kit, content pillars and account setup.",
+      "startMonth": "2026-09",
+      "endMonth": "2026-10"
+    },
+    {
+      "key": "production",
+      "name": "Production",
+      "summary": "Monthly statics, videos, campaigns and articles.",
+      "startMonth": "2026-09",
+      "endMonth": "2027-02"
+    },
+    {
+      "key": "review",
+      "name": "Review",
+      "summary": "Performance review, renewal proposal, next plan.",
+      "startMonth": "2027-02",
+      "endMonth": "2027-02"
+    }
+  ],
+  "requirements": [
+    {
+      "type": "static",
+      "name": "LinkedIn / Instagram static",
+      "count": 6,
+      "per": "month",
+      "channel": "LinkedIn"
+    },
+    {
+      "type": "video",
+      "name": "Brand video",
+      "count": 2,
+      "per": "month",
+      "channel": "LinkedIn"
+    },
+    {
+      "type": "seo",
+      "name": "Blog article",
+      "count": 1,
+      "per": "month",
+      "channel": "Blog"
+    },
+    {
+      "type": "custom",
+      "name": "Monthly strategy call",
+      "count": 1,
+      "per": "month",
+      "channel": "Call"
+    },
+    {
+      "type": "custom",
+      "name": "Monthly performance report",
+      "count": 1,
+      "per": "month",
+      "channel": "Report"
+    }
+  ],
+  "crew": {
+    "dm": "Bob",
+    "creative": "Bob",
+    "am": "Bob"
+  },
+  "handover": null,
+  "templateName": "Starter",
+  "stage": "delivering",
+  "startDate": "2026-09-01",
+  "endDate": "2027-02-28",
+  "reference": "QUO-2026-0001",
+  "quotationId": "c86b1d5f-88c3-47d8-9c09-094604a55df9",
+  "valueMyr": 24000,
+  "signedAt": "2026-08-27",
+  "signedBy": "Client director",
+  "fileUrl": "https://drive.example.com/contracts/signed.pdf",
+  "terms": "Six months: 6 statics, 2 videos and an SEO article a month for LinkedIn and Instagram, a monthly report and strategy call.",
+  "billing": {
+    "cadence": "monthly",
+    "amountMyr": 4000,
+    "invoiceDay": 2
+  },
+  "notes": "",
+  "renewalStatus": "",
+  "costs": [],
+  "createdAt": "2026-08-27T06:27:03.731Z",
+  "updatedAt": "2026-08-27T06:27:03.731Z"
+}

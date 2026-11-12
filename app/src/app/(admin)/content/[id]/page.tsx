@@ -10,6 +10,7 @@ import {
 } from "@/lib/data/content";
 import { listClients } from "@/lib/data/clients";
 import { listContracts } from "@/lib/data/contracts";
+import { clientContentQuota } from "@/lib/clients/quota";
 import { listTeamMembers } from "@/lib/data/team";
 import { listWorks } from "@/lib/data/works";
 import { TASK_STATUS_LABEL } from "@/lib/works/helpers";
@@ -51,7 +52,7 @@ export default async function ContentDetailPage({
         listContracts(),
         listWorks(),
     ]);
-    // The contract task this post is the work for, if it came from a planner line.
+    // The project task this post is the work for, if it came from a planner line.
     const task = works.find((w) => w.linked?.kind === "content" && w.linked.id === post.id);
     const contractOptions = contracts.filter(
         (c) => c.id === post.contractId || (c.clientName === post.clientName && (c.status === "active" || c.status === "draft")),
@@ -61,7 +62,9 @@ export default async function ContentDetailPage({
             c.name.trim().toLowerCase() === post.clientName.trim().toLowerCase(),
     );
     const revisionLimit = client?.contentRevisionLimit ?? 3;
-    // Per-visual quota context for the Type/Visuals control (exclude this post).
+    // Per-visual quota context for the Type/Visuals control (exclude this
+    // post). The quota is the content a month the client's active projects promise.
+    const quota = clientContentQuota(post.clientName, contracts);
     const quotaMonth =
         post.planMonth || new Date().toISOString().slice(0, 7);
     const usedByOthers = visualsUsed(
@@ -99,7 +102,7 @@ export default async function ContentDetailPage({
                 </p>
                 {task ? (
                     <p className="mt-1 text-xs text-muted-foreground">
-                        Contract task:{" "}
+                        Project task:{" "}
                         <Link href={`/works/${task.id}`} className="underline">
                             {task.title}
                         </Link>
@@ -168,7 +171,7 @@ export default async function ContentDetailPage({
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <Label className="text-sm">Contract (optional)</Label>
+                        <Label className="text-sm">Project (optional)</Label>
                         <Select name="contractId" defaultValue={post.contractId ?? "none"}>
                             <SelectTrigger className="h-10">
                                 <SelectValue />
@@ -202,7 +205,7 @@ export default async function ContentDetailPage({
                         types={CONTENT_TYPES}
                         defaultType={post.type}
                         defaultVisualCount={post.visualCount}
-                        quota={client?.monthlyContentQuota ?? 0}
+                        quota={quota}
                         usedByOthers={usedByOthers}
                     />
                     <div className="space-y-1.5">

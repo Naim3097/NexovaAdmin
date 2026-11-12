@@ -1,0 +1,49 @@
+{
+  "id": "d1cb223c-6b19-4f6e-9b11-f9e7092050c5",
+  "contractId": "767be1f1-c1f8-4d74-84db-0b4537e896a4",
+  "clientName": "Dr Kartini",
+  "accountManager": "Hakim",
+  "plannerLineId": "req:custom:2026-10:3:2",
+  "addendumVersion": 0,
+  "type": "custom",
+  "title": "Community management · week of 12 Oct",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-14",
+  "defaultDueDate": "2026-10-14",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "am",
+      "member": "Hakim",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "none",
+  "milestone": false,
+  "linked": null,
+  "startedAt": "2026-10-08T06:27:03.731Z",
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": "2026-10-13T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-05-28T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.393Z"
+}

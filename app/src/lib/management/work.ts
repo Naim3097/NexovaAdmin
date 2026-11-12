@@ -2,9 +2,9 @@
  * Management metrics — WORK view: what we promised each client, and the
  * concrete list of things each team member has on their plate.
  *
- * "Promised" = the contracts a client is on (and the tasks planned under
- * them), package terms (retainer, content quota), live campaigns, and
- * accepted quotations. "Work list" = open contract tasks (by share, plus
+ * "Promised" = the projects a client is on (and the tasks planned under
+ * them), what those projects bill and owe a month (retainer, content items),
+ * live campaigns, and accepted quotations. "Work list" = open project tasks (by share, plus
  * approvals waiting on the account manager), open sprint tasks and open
  * content items, per person, sorted by due date. Pure functions, no I/O.
  */
@@ -17,8 +17,10 @@ import type { Quotation } from "@/lib/data/quotations";
 import { computeTotals as quoteTotals } from "@/lib/data/quotations";
 import type { Contract } from "@/lib/data/contracts";
 import type { Work } from "@/lib/data/works";
-import { SEAT_LABEL, SEAT_ROLES } from "@/lib/data/planners";
+import { SEAT_LABEL, SEAT_CATEGORIES } from "@/lib/data/planners";
 import { awaitsApprovalFrom, isOpen, isOverdue, monthLabel } from "@/lib/works/helpers";
+import { clientMonthlyMyr } from "@/lib/clients/revenue";
+import { clientContentQuota } from "@/lib/clients/quota";
 import { shareHours, taskHours } from "@/lib/capacity/helpers";
 import { roundHours } from "@/lib/dev-store/team";
 import {
@@ -36,7 +38,7 @@ export type WorkItem = {
     kind: WorkKind;
     title: string;
     clientName: string;
-    /** Contract (or phase / month) the item belongs to; "" for internal work. */
+    /** Project (or phase / month) the item belongs to; "" for internal work. */
     contractName: string;
     /** YYYY-MM-DD or "" when undated. */
     due: string;
@@ -105,10 +107,12 @@ export type ClientContract = {
     id: string;
     name: string;
     status: string;
-    accountManager: string;
+    /** Who closed the deal; each project below carries its own AM. */
+    dealOwner: string;
     contracts: ContractScope[];
-    packageName: string;
+    /** Monthly billing across the active projects. */
     retainerMyr: number;
+    /** Content a month promised by the active projects. */
     contentQuota: number;
     revisionLimit: number;
     contentPlanned: number;
@@ -116,10 +120,10 @@ export type ClientContract = {
     contentApproved: number;
     campaigns: CampaignScope[];
     quotes: QuoteScope[];
-    /** Tasks planned under the client's active contracts, and how many are done. */
+    /** Tasks planned under the client's active projects, and how many are done. */
     promisedTasks: number;
     deliveredTasks: number;
-    /** Milestone tasks under active contracts, and how many are done. */
+    /** Milestone tasks under active projects, and how many are done. */
     milestonesTotal: number;
     milestonesDone: number;
     /** Open tasks + open content. */
@@ -180,7 +184,7 @@ export function buildWorkSnapshot(
     const { team, clients, contracts: allContracts, works, sprintTasks, content, campaigns, quotations } = input;
     const month = today.slice(0, 7);
     const activeTeam = team.filter((m) => m.active);
-    const roleByName = new Map(activeTeam.map((m) => [m.name, m.role as string]));
+    const roleByName = new Map(activeTeam.map((m) => [m.name, m.category as string]));
     const contractById = new Map(allContracts.map((c) => [c.id, c]));
     const openWorks = works.filter(isOpen);
     const openContent = content.filter(isOpenContent);
@@ -199,7 +203,7 @@ export function buildWorkSnapshot(
         byPerson.set(who, arr);
     };
 
-    // Contract tasks: everyone with a share holds their share; the account
+    // Project tasks: everyone with a share holds their share; the account
     // manager holds approvals. A task nobody is on goes to the unassigned list.
     for (const w of openWorks) {
         const contract = contractById.get(w.contractId);
@@ -227,7 +231,7 @@ export function buildWorkSnapshot(
             const approving = awaitsApprovalFrom(w, holder);
             const shares = w.split.filter((s) => s.member === holder && s.pct > 0);
             const memberRole = roleByName.get(holder);
-            const outOfRole = Boolean(memberRole) && shares.some((s) => !(SEAT_ROLES[s.seat] as readonly string[]).includes(memberRole!));
+            const outOfRole = Boolean(memberRole) && shares.some((s) => !(SEAT_CATEGORIES[s.seat] as readonly string[]).includes(memberRole!));
             const seatLabels = shares.map((s) => SEAT_LABEL[s.seat]);
             const pct = shares.reduce((s, x) => s + x.pct, 0);
             const hours = shareHours(w, holder);
@@ -319,7 +323,7 @@ export function buildWorkSnapshot(
         .sort((a, b) => b.hours - a.hours || b.items.length - a.items.length || a.name.localeCompare(b.name));
     sortItems(unassigned);
 
-    // ---- Contract scope per client
+    // ---- Project scope per client
     const rows: ClientContract[] = clients
         .filter((c) => c.status !== "prospect")
         .map((c) => {
@@ -369,7 +373,7 @@ export function buildWorkSnapshot(
                         overdue: open.filter((w) => isOverdue(w, today)).length,
                         content: content.filter((p) => p.contractId === x.id).length,
                         campaigns: campaigns.filter((p) => p.contractId === x.id).length,
-                        href: `/contracts/${x.id}`,
+                        href: `/projects/${x.id}`,
                     };
                 });
             const activeIds = new Set(contractScopes.filter((x) => x.status === "active").map((x) => x.id));
@@ -382,11 +386,10 @@ export function buildWorkSnapshot(
                 id: c.id,
                 name: c.name,
                 status: c.status,
-                accountManager: c.accountManager,
+                dealOwner: c.dealOwner,
                 contracts: contractScopes,
-                packageName: c.packageName,
-                retainerMyr: c.monthlyRetainerMyr || 0,
-                contentQuota: c.monthlyContentQuota || 0,
+                retainerMyr: clientMonthlyMyr(c.name, allContracts),
+                contentQuota: clientContentQuota(c.name, allContracts),
                 revisionLimit: c.contentRevisionLimit || 0,
                 contentPlanned: monthContent.length,
                 contentPosted: monthContent.filter((x) => x.status === "posted").length,

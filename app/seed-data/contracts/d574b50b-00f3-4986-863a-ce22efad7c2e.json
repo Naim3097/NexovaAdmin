@@ -1,0 +1,94 @@
+{
+  "id": "d574b50b-00f3-4986-863a-ce22efad7c2e",
+  "code": "CON-2026-0010",
+  "name": "Enfrasys — content creation",
+  "clientName": "Enfrasys",
+  "accountManager": "Izzad",
+  "status": "active",
+  "phases": [
+    {
+      "key": "kickoff",
+      "name": "Kickoff",
+      "summary": "Onboarding, brand audit, access, strategy sign-off.",
+      "startMonth": "2026-11",
+      "endMonth": "2026-11"
+    },
+    {
+      "key": "foundation",
+      "name": "Foundation",
+      "summary": "Brand kit, content pillars and account setup.",
+      "startMonth": "2026-11",
+      "endMonth": "2026-12"
+    },
+    {
+      "key": "production",
+      "name": "Production",
+      "summary": "Monthly statics, videos, campaigns and articles.",
+      "startMonth": "2026-11",
+      "endMonth": "2027-04"
+    },
+    {
+      "key": "review",
+      "name": "Review",
+      "summary": "Performance review, renewal proposal, next plan.",
+      "startMonth": "2027-04",
+      "endMonth": "2027-04"
+    }
+  ],
+  "requirements": [
+    {
+      "type": "static",
+      "name": "LinkedIn static",
+      "count": 8,
+      "per": "month",
+      "channel": "LinkedIn"
+    },
+    {
+      "type": "video",
+      "name": "Explainer video",
+      "count": 4,
+      "per": "month",
+      "channel": "LinkedIn"
+    },
+    {
+      "type": "custom",
+      "name": "Monthly content report",
+      "count": 1,
+      "per": "month",
+      "channel": "Report"
+    },
+    {
+      "type": "custom",
+      "name": "Kickoff workshop",
+      "count": 1,
+      "per": "once",
+      "channel": "Workshop"
+    }
+  ],
+  "crew": {
+    "creative": "Izzad",
+    "am": "Izzad"
+  },
+  "handover": null,
+  "templateName": "",
+  "stage": "delivering",
+  "startDate": "2026-11-09",
+  "endDate": "2027-04-30",
+  "reference": "QUO-2026-0004",
+  "quotationId": "332f958b-0283-4505-93ad-dc9ea3735f69",
+  "valueMyr": 33000,
+  "signedAt": "2026-11-03",
+  "signedBy": "Client director",
+  "fileUrl": "https://drive.example.com/contracts/signed.pdf",
+  "terms": "Six months of content: 8 LinkedIn statics and 4 explainer videos a month, a monthly content report. Kickoff workshop with their marketing team.",
+  "billing": {
+    "cadence": "monthly",
+    "amountMyr": 5500,
+    "invoiceDay": 9
+  },
+  "notes": "",
+  "renewalStatus": "",
+  "costs": [],
+  "createdAt": "2026-11-03T06:27:03.731Z",
+  "updatedAt": "2026-11-03T06:27:03.731Z"
+}

@@ -1,0 +1,52 @@
+{
+  "id": "cdf0ddc4-47ef-4ac1-8816-adf7a8b6b947",
+  "contractId": "6d1e4aab-758f-42fd-9862-f8590788625b",
+  "clientName": "Tropicor",
+  "accountManager": "Danisy",
+  "plannerLineId": "req:static:2026-10:2:3",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Ad creative: Product close-up",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "optimise",
+  "phaseName": "Optimise",
+  "dueDate": "2026-10-19",
+  "defaultDueDate": "2026-10-19",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 1.75
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "70d8df15-88b3-48f9-a97b-5503096f07eb"
+  },
+  "startedAt": "2026-10-13T06:27:03.731Z",
+  "submittedAt": "2026-10-17T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/cdf0ddc4",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Danisy)",
+    "at": "2026-10-18T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-18T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-09-29T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.089Z"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "70494317-1eb5-4f88-925f-3341bb222046",
+  "name": "Google Ads: Search — gifting terms",
+  "clientName": "Tropicor",
+  "contractId": "6d1e4aab-758f-42fd-9862-f8590788625b",
+  "platform": "google",
+  "objective": "leads",
+  "status": "planning",
+  "startDate": "2027-01-21",
+  "endDate": "",
+  "monthlyBudgetMyr": 0,
+  "feeModel": "none",
+  "flatFeeMyr": 0,
+  "percentFee": 0,
+  "externalId": "",
+  "landingUrl": "",
+  "notes": "",
+  "metrics": [],
+  "createdAt": "2026-11-12T06:27:06.011Z",
+  "updatedAt": "2026-11-12T06:27:06.076Z"
+}

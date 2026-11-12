@@ -1,0 +1,52 @@
+{
+  "id": "a5dc8128-de64-47c5-80d2-ee9b4ea0f688",
+  "contractId": "649c59c0-6455-4332-a82e-30eda362c9c0",
+  "clientName": "LeanX Digital",
+  "accountManager": "Yusuf",
+  "plannerLineId": "req:video:2026-10:0:2",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "Founder video: What a retainer really costs",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-12",
+  "defaultDueDate": "2026-10-12",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Naim",
+      "pct": 100,
+      "hours": 5
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "5e2047dc-fa7a-4386-ba5c-bf939c011aa7"
+  },
+  "startedAt": "2026-10-06T06:27:03.731Z",
+  "submittedAt": "2026-10-10T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/a5dc8128",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Yusuf",
+    "at": "2026-10-11T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-11T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-07-01T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.918Z"
+}

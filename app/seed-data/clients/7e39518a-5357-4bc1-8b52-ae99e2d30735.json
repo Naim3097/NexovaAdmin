@@ -1,0 +1,21 @@
+{
+  "id": "7e39518a-5357-4bc1-8b52-ae99e2d30735",
+  "name": "Leanis Solution Sdn Bhd",
+  "status": "active",
+  "dealOwner": "Yusuf",
+  "contactName": "Demo contact",
+  "contactEmail": "leanis-solution-sdn-bhd@example.com",
+  "contactPhone": "",
+  "billingAddress": "",
+  "website": "",
+  "industry": "Business solutions",
+  "notes": "Growing the brand.",
+  "contentRevisionLimit": 3,
+  "portalToken": "",
+  "userId": null,
+  "internal": false,
+  "lastCheckInAt": "2026-10-31",
+  "lastCheckInNote": "Quarterly review: happy with LinkedIn reach, wants a webinar push.",
+  "createdAt": "2026-08-27T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.192Z"
+}

@@ -1,7 +1,7 @@
 /**
- * The Dashboard tab row: one small text link per tab the member may see,
- * the open one bold. Tabs are the filter; no tab means everything.
- * Server component — the active tab comes from the URL.
+ * The Dashboard tab row: one small text link per tab, the open one bold.
+ * Tabs are the filter; the row starts at Delivery, which is also where a
+ * plain /dashboard opens. Server component — the active tab comes from the URL.
  */
 import Link from "next/link";
 import { DASHBOARD_TAB_LABEL, type DashboardTab } from "@/lib/roles";

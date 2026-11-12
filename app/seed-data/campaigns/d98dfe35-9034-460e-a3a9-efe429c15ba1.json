@@ -1,0 +1,21 @@
+{
+  "id": "d98dfe35-9034-460e-a3a9-efe429c15ba1",
+  "name": "Donation campaign: Wudhu area fund",
+  "clientName": "Baitul Irfan",
+  "contractId": "be8d2563-6668-4eca-8ae3-f93933ff08cb",
+  "platform": "meta",
+  "objective": "leads",
+  "status": "planning",
+  "startDate": "2026-11-10",
+  "endDate": "",
+  "monthlyBudgetMyr": 0,
+  "feeModel": "none",
+  "flatFeeMyr": 0,
+  "percentFee": 0,
+  "externalId": "",
+  "landingUrl": "",
+  "notes": "",
+  "metrics": [],
+  "createdAt": "2026-11-12T06:27:04.578Z",
+  "updatedAt": "2026-11-12T06:27:04.743Z"
+}

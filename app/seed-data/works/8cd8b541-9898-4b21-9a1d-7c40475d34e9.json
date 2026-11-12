@@ -1,0 +1,49 @@
+{
+  "id": "8cd8b541-9898-4b21-9a1d-7c40475d34e9",
+  "contractId": "6b92fdc7-9df3-4571-a844-5bacb941cee6",
+  "clientName": "Kembara",
+  "accountManager": "Zafran",
+  "plannerLineId": "req:website:2026-10:0:7",
+  "addendumVersion": 0,
+  "type": "website",
+  "title": "Launch — site live",
+  "channel": "Website",
+  "month": "2026-12",
+  "phaseKey": "qa-launch",
+  "phaseName": "QA & launch",
+  "dueDate": "2026-12-17",
+  "defaultDueDate": "2026-12-14",
+  "plannedDate": "",
+  "adjustedBy": "Zafran",
+  "adjustedAt": "2026-11-10T06:27:03.731Z",
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dev",
+      "member": "Zafran",
+      "pct": 100,
+      "hours": 10
+    }
+  ],
+  "approver": "client",
+  "milestone": true,
+  "linked": null,
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-10-01T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.805Z"
+}

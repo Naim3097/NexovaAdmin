@@ -1,0 +1,52 @@
+{
+  "id": "c561452b-2782-48c5-b117-9df5095b8c9d",
+  "contractId": "767be1f1-c1f8-4d74-84db-0b4537e896a4",
+  "clientName": "Dr Kartini",
+  "accountManager": "Hakim",
+  "plannerLineId": "req:video:2026-10:1:2",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "TikTok: Dermatologist reacts to viral skincare hacks",
+  "channel": "TikTok",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-15",
+  "defaultDueDate": "2026-10-15",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Izzad",
+      "pct": 100,
+      "hours": 6
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "15ef2dd2-f7f8-458b-b658-d6276c525ca8"
+  },
+  "startedAt": "2026-10-09T06:27:03.731Z",
+  "submittedAt": "2026-10-13T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/c561452b",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Hakim)",
+    "at": "2026-10-14T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-14T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-05-28T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.387Z"
+}

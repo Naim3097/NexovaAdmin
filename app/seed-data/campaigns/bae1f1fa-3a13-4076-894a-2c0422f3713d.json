@@ -1,0 +1,21 @@
+{
+  "id": "bae1f1fa-3a13-4076-894a-2c0422f3713d",
+  "name": "Donation campaign: Jumaat infaq drive",
+  "clientName": "Baitul Irfan",
+  "contractId": "be8d2563-6668-4eca-8ae3-f93933ff08cb",
+  "platform": "meta",
+  "objective": "leads",
+  "status": "planning",
+  "startDate": "2026-12-21",
+  "endDate": "",
+  "monthlyBudgetMyr": 0,
+  "feeModel": "none",
+  "flatFeeMyr": 0,
+  "percentFee": 0,
+  "externalId": "",
+  "landingUrl": "",
+  "notes": "",
+  "metrics": [],
+  "createdAt": "2026-11-12T06:27:04.611Z",
+  "updatedAt": "2026-11-12T06:27:04.704Z"
+}

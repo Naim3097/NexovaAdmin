@@ -1,0 +1,52 @@
+{
+  "id": "549aedd6-7471-4968-9bd9-2d23eb90b2cb",
+  "contractId": "ee0609d4-3179-4475-8f59-8d96c5c3edb4",
+  "clientName": "Rouang",
+  "accountManager": "Izzad",
+  "plannerLineId": "req:static:2026-11:0:1",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Carousel: Built-in wardrobe ideas",
+  "channel": "Instagram",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-04",
+  "defaultDueDate": "2026-11-04",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Izzad",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "5d2eccfd-7381-410d-b90c-ed339c961e41"
+  },
+  "startedAt": "2026-11-05T06:27:03.731Z",
+  "submittedAt": "2026-11-09T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/549aedd6",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Izzad)",
+    "at": "2026-11-10T06:27:03.731Z"
+  },
+  "completedAt": "2026-11-10T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-06-26T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.545Z"
+}

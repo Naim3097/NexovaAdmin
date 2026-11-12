@@ -1,0 +1,49 @@
+{
+  "id": "6ae6ef9e-1c0e-49b9-b571-f7f956b2db81",
+  "contractId": "6d1e4aab-758f-42fd-9862-f8590788625b",
+  "clientName": "Tropicor",
+  "accountManager": "Danisy",
+  "plannerLineId": "req:custom:2026-11:4:1",
+  "addendumVersion": 0,
+  "type": "custom",
+  "title": "Monthly growth review · Nov",
+  "channel": "Call",
+  "month": "2026-11",
+  "phaseKey": "optimise",
+  "phaseName": "Optimise",
+  "dueDate": "2026-11-04",
+  "defaultDueDate": "2026-11-04",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "am",
+      "member": "Yusuf",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "none",
+  "milestone": false,
+  "linked": null,
+  "startedAt": "2026-10-29T06:27:03.731Z",
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": "2026-11-03T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-09-29T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.098Z"
+}

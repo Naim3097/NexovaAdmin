@@ -1,0 +1,16 @@
+{
+  "id": "94fe1754-7916-4612-add1-dd5802c0c36a",
+  "at": "2026-11-11T07:18:21.357Z",
+  "entity": "work",
+  "entityId": "265c7003-2d47-42fa-815a-b14ae61803d3",
+  "kind": "update",
+  "summary": "Reel: Behind the scenes at Nexova: Syafiq 1.5h → 2h",
+  "actor": "Syafiq",
+  "changes": [
+    {
+      "field": "hours:Syafiq",
+      "before": "1.5",
+      "after": "2"
+    }
+  ]
+}

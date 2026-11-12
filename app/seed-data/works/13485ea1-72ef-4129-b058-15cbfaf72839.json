@@ -1,0 +1,52 @@
+{
+  "id": "13485ea1-72ef-4129-b058-15cbfaf72839",
+  "contractId": "6d1e4aab-758f-42fd-9862-f8590788625b",
+  "clientName": "Tropicor",
+  "accountManager": "Danisy",
+  "plannerLineId": "req:static:2026-11:2:3",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Ad creative: Free delivery offer",
+  "channel": "Instagram",
+  "month": "2026-11",
+  "phaseKey": "optimise",
+  "phaseName": "Optimise",
+  "dueDate": "2026-11-18",
+  "defaultDueDate": "2026-11-18",
+  "plannedDate": "2026-11-16",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 1.75
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "c934dc40-d68b-4fe6-85c5-df3c6ebbfa7c"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-09-29T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.058Z"
+}

@@ -1,0 +1,52 @@
+{
+  "id": "dec465c3-5e57-421b-ac64-1fdca5c7c4df",
+  "contractId": "6d1e4aab-758f-42fd-9862-f8590788625b",
+  "clientName": "Tropicor",
+  "accountManager": "Danisy",
+  "plannerLineId": "req:static:2026-12:2:3",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Ad creative: Festive bundle",
+  "channel": "Instagram",
+  "month": "2026-12",
+  "phaseKey": "optimise",
+  "phaseName": "Optimise",
+  "dueDate": "2026-12-17",
+  "defaultDueDate": "2026-12-17",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 1.75
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "2a30dae8-a35f-463b-a78e-9ccc18f59e54"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-09-29T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.068Z"
+}

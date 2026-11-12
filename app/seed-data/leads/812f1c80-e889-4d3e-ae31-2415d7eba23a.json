@@ -1,0 +1,22 @@
+{
+  "id": "812f1c80-e889-4d3e-ae31-2415d7eba23a",
+  "name": "Kembara contact",
+  "company": "Kembara",
+  "email": "kembara@example.com",
+  "phone": "",
+  "source": "referral",
+  "sourceCampaignId": null,
+  "interestedIn": "Donation website",
+  "estValueMyr": 18000,
+  "status": "won",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Yusuf",
+  "score": 80,
+  "autoIntake": false,
+  "lostReason": "",
+  "lostNote": "",
+  "createdAt": "2026-09-09T06:27:03.731Z",
+  "updatedAt": "2026-10-01T06:27:03.731Z"
+}

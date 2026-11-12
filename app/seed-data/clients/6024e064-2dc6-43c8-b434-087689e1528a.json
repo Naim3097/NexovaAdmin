@@ -1,0 +1,21 @@
+{
+  "id": "6024e064-2dc6-43c8-b434-087689e1528a",
+  "name": "LeanX",
+  "status": "active",
+  "dealOwner": "Naim",
+  "contactName": "Demo contact",
+  "contactEmail": "leanx@example.com",
+  "contactPhone": "",
+  "billingAddress": "",
+  "website": "",
+  "industry": "Fintech (payments)",
+  "notes": "Growing the brand.",
+  "contentRevisionLimit": 3,
+  "portalToken": "",
+  "userId": null,
+  "internal": false,
+  "lastCheckInAt": "2026-11-09",
+  "lastCheckInNote": "Renewal for next year agreed in principle; paperwork next week.",
+  "createdAt": "2025-12-22T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.191Z"
+}

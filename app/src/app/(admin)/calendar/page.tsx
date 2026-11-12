@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { getAccessLevel, getActingMember, getCurrentTeamMember, requireTeamAccess } from "@/lib/auth";
-import { listWorks } from "@/lib/data/works";
+import { listWorks, type Work } from "@/lib/data/works";
 import { listContracts } from "@/lib/data/contracts";
 import { listInvoices } from "@/lib/data/invoices";
-import { listTeamMembers } from "@/lib/data/team";
+import { deliveryWeeklyHours, listTeamMembers } from "@/lib/data/team";
 import { seesFinance, visibleContracts, visibleWorks } from "@/lib/scope";
-import { WORK_DAY_LABEL } from "@/lib/capacity/helpers";
+import { WORK_DAYS, WORK_DAY_LABEL, findMember, fmtHours } from "@/lib/capacity/helpers";
 import { monthLabel, todayKey } from "@/lib/works/helpers";
+import { actorOf } from "@/lib/works/actor";
 import { applyFilter, filterQuery, parseFilter, withDefaultMember } from "@/lib/works/filter";
 import { invoiceItems, parseMonth, shiftMonth, taskItems, ymOf } from "@/lib/works/calendar";
 import { CalendarGrid } from "./grid";
@@ -43,7 +44,10 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
     const ym = ymOf(year, month);
     // The acting member: the linked login wins; otherwise the `?as=` pick (DEV_AUTH_BYPASS), else the acting-as cookie.
     const as = linked ? "" : one(sp, "as");
+    const asParam = as || undefined;
     const me = member?.name ?? as;
+    /** Who is looking, for the grid: decides which chips drag and what the quick edit offers. */
+    const actor = actorOf(member);
     const names = team.filter((m) => m.active).map((m) => m.name);
     const ams = [...new Set(contracts.map((c) => c.accountManager).filter(Boolean))].sort();
     const clients = [...new Set(works.map((w) => w.clientName).filter(Boolean))].sort();
@@ -55,6 +59,11 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
     const accountScope = Boolean(filter.client || filter.am);
 
     const items = taskItems(filtered, today, filter.member);
+    /** The tasks behind the chips, by id — the only ones the grid lets you edit. */
+    const tasks: Record<string, Work> = Object.fromEntries(filtered.map((w) => [w.id, w]));
+    // One person's scope shows each working day's hours against what they have available.
+    const scopeMember = filter.member ? findMember(team, filter.member) : undefined;
+    const perDay = scopeMember ? deliveryWeeklyHours(scopeMember) / WORK_DAYS.length : undefined;
     if (accountScope && withInvoices) {
         const contractIds = new Set(
             contracts
@@ -69,7 +78,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
         );
     }
 
-    const keep: Record<string, string | undefined> = { m: ym, as: as || undefined };
+    const keep: Record<string, string | undefined> = { m: ym, as: asParam };
     const monthHref = (m: string) => `/calendar${filterQuery(filter, { ...keep, m })}`;
     const scopeLabel =
         [
@@ -86,10 +95,11 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
                 <div>
                     <h1 className="text-2xl font-semibold md:text-3xl">Calendar</h1>
                     <p className="text-sm text-muted-foreground">
-                        {monthLabel(ym)} · {scopeLabel}. Tasks on their due date
-                        {filter.member ? " and what they are waiting on" : ""}
-                        {accountScope && withInvoices ? ", plus invoice and payment dates" : ""}. Fri–Sun are off days ({WORK_DAY_LABEL} is the working
-                        week); tasks due then still show, as off-day work.
+                        {monthLabel(ym)} · {scopeLabel}. Tasks sit on their planned day, with the deadline shown when it differs
+                        {filter.member ? ", plus what they are waiting on" : ""}
+                        {accountScope && withInvoices ? ", plus invoice and payment dates" : ""}. Drag a task to replan it (up to its deadline); click it for the
+                        quick edit.{perDay !== undefined ? ` Each working day shows the hours planned against ${fmtHours(perDay)} available.` : ""} Fri–Sun and Kuala Lumpur public
+                        holidays are off days ({WORK_DAY_LABEL} is the working week); tasks planned then still show, as off-day work.
                     </p>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
@@ -108,7 +118,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
             {/* No Month dropdown here: Prev / Today / Next pick the month shown. */}
             <FilterRow basePath="/calendar" filter={filter} me={me} members={names} months={[]} phases={phases} clients={clients} ams={ams} keep={keep} />
 
-            <CalendarGrid year={year} month={month} items={items} today={today} />
+            <CalendarGrid year={year} month={month} items={items} today={today} actor={actor} asParam={asParam} tasks={tasks} perDay={perDay} />
         </div>
     );
 }

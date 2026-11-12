@@ -104,7 +104,7 @@ export default async function PortalHomePage({
     const waitingCount =
         waitingTasks.length + waitingPosts.length + pendingForms.length;
 
-    // Live contracts only — completed and cancelled ones are history, not a
+    // Live projects only — completed and cancelled ones are history, not a
     // home-screen card.
     const liveContracts = myContracts
         .filter((c) => c.status === "active" || c.status === "draft")
@@ -222,7 +222,7 @@ export default async function PortalHomePage({
 
             {liveContracts.length > 0 ? (
                 <section className="space-y-3">
-                    <h2 className="text-sm font-medium">Your contracts</h2>
+                    <h2 className="text-sm font-medium">Your projects</h2>
                     {liveContracts.map(
                         ({ contract: c, progress: p, phases, nowPhase, next }) => (
                             <Card key={c.id}>

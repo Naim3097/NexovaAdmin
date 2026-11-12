@@ -13,7 +13,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { devDataRoot } from "@/lib/dev-store/root";
 import { randomUUID } from "node:crypto";
-import { isLineType, isSeat, normalizePhases, type LineType, type PlannerPhase, type Seat } from "@/lib/dev-store/planners";
+import { normalizePhases, toSeat, type PlannerPhase, type Seat } from "@/lib/dev-store/planners";
 
 const ROOT = devDataRoot();
 const DIR = path.join(ROOT, "contracts");
@@ -22,37 +22,30 @@ const DIR = path.join(ROOT, "contracts");
 export type ContractPhase = PlannerPhase;
 
 /**
- * What the account manager said the contract needs, entered when the contract
- * is created: "3 content posts a month, 1 campaign a month, 1 website build".
- * Tasks are generated from these; the AM edits the tasks afterwards.
+ * What the account manager said the project needs, entered when it is
+ * created: free deliverable rows ("Awareness post on Instagram · 4/wk",
+ * "Website · once"). Tasks are generated from these; the AM edits the tasks
+ * afterwards. The shape lives in @/lib/contracts/requirements (pure,
+ * client-safe, for the row editor) and is re-exported here.
  */
-export const REQUIREMENT_CADENCES = ["monthly", "once"] as const;
-export type RequirementCadence = (typeof REQUIREMENT_CADENCES)[number];
-export type Requirement = {
-    type: LineType;
-    /** Tasks per month (monthly) or in total (once). */
-    count: number;
-    cadence: RequirementCadence;
-    /** Channel hint for generated tasks ("Instagram", "Meta", "Blog"); "" = default per type. */
-    channel: string;
-};
-
-export function normalizeRequirements(raw: unknown): Requirement[] {
-    if (!Array.isArray(raw)) return [];
-    const out: Requirement[] = [];
-    for (const r of raw as Array<Partial<Requirement>>) {
-        if (!r || !r.type || !isLineType(r.type)) continue;
-        const count = Math.max(0, Math.round(Number(r.count) || 0));
-        if (count <= 0) continue;
-        out.push({
-            type: r.type,
-            count,
-            cadence: r.cadence === "once" ? "once" : "monthly",
-            channel: String(r.channel ?? ""),
-        });
-    }
-    return out;
-}
+export {
+    DEFAULT_CHANNEL,
+    PER_LABEL,
+    PER_SHORT,
+    REQUIREMENT_PERS,
+    normalizeRequirement,
+    normalizeRequirements,
+    requirementLabel,
+    requirementName,
+    requirementsLabel,
+    tasksPerMonth,
+} from "@/lib/contracts/requirements";
+export type { Requirement, RequirementPer } from "@/lib/contracts/requirements";
+import { normalizeRequirements, type Requirement } from "@/lib/contracts/requirements";
+import { normalizeRenewalStatus, type RenewalStatus } from "@/lib/contracts/renewal";
+export type { RenewalStatus } from "@/lib/contracts/renewal";
+import { normalizeCosts, type ProjectCost } from "@/lib/contracts/costs";
+export type { ProjectCost } from "@/lib/contracts/costs";
 
 /** Default person per seat for this contract; generated tasks are assigned from it. */
 export type Crew = Partial<Record<Seat, string>>;
@@ -82,7 +75,9 @@ export function normalizeCrew(raw: unknown): Crew {
     const out: Crew = {};
     if (!raw || typeof raw !== "object") return out;
     for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
-        if (isSeat(k) && typeof v === "string" && v.trim()) out[k] = v.trim();
+        // The old SEO seat is the digital marketer's now; keep a named DM if both exist.
+        const seat = toSeat(k);
+        if (seat && typeof v === "string" && v.trim() && !(k === "seo" && out[seat])) out[seat] = v.trim();
     }
     return out;
 }
@@ -90,28 +85,53 @@ export function normalizeCrew(raw: unknown): Crew {
 export const CONTRACT_STATUSES = ["draft", "active", "completed", "cancelled"] as const;
 export type ContractStatus = (typeof CONTRACT_STATUSES)[number];
 
-export const BILLING_CADENCES = ["monthly", "milestone", "one_off"] as const;
+/** Monthly retainer, or billed once (a one-off build). Older "milestone" billing reads as one-off. */
+export const BILLING_CADENCES = ["monthly", "one_off"] as const;
 export type BillingCadence = (typeof BILLING_CADENCES)[number];
+export function normalizeCadence(v: unknown): BillingCadence {
+    return v === "monthly" ? "monthly" : "one_off";
+}
 
 /**
- * Lifecycle after the deal is closed in the pipeline:
- * created → signed → onboarding → official → delivering → completed.
- * Existing clients skip onboarding (signed → official).
+ * A project's lifecycle, shown as Draft → Signed → Running → Closed.
+ * "Signed" is the gate: the contract is done, so tasks and crew appear.
+ * On an internal project (the client is our own company) the same step is
+ * management approving the brief, labelled "Approved".
+ * Stored keys stay as they were (created / signed / delivering / completed);
+ * the old "onboarding" and "official" steps fold into signed and delivering.
  */
-export const CONTRACT_STAGES = ["created", "signed", "onboarding", "official", "delivering", "completed"] as const;
+export const CONTRACT_STAGES = ["created", "signed", "delivering", "completed"] as const;
 export type ContractStage = (typeof CONTRACT_STAGES)[number];
 export const CONTRACT_STAGE_LABEL: Record<ContractStage, string> = {
     created: "Draft",
     signed: "Signed",
-    onboarding: "Onboarding",
-    official: "Active",
     delivering: "Running",
     completed: "Closed",
 };
 
+const LEGACY_STAGE: Record<string, ContractStage> = { onboarding: "signed", official: "delivering" };
+
+/** A stored stage, including the two retired ones, as one of today's. */
+export function normalizeStage(raw: string | undefined, signedAt: string | null | undefined): ContractStage {
+    if (raw && (CONTRACT_STAGES as readonly string[]).includes(raw)) return raw as ContractStage;
+    if (raw && LEGACY_STAGE[raw]) return LEGACY_STAGE[raw];
+    return signedAt ? "signed" : "created";
+}
+
+/** The stage chip text; "Signed" reads "Approved" on an internal project. */
+export function stageLabel(stage: ContractStage, internal = false): string {
+    if (internal && stage === "signed") return "Approved";
+    return CONTRACT_STAGE_LABEL[stage];
+}
+
+/** True once the contract is signed (or the internal brief approved): tasks may exist. */
+export function isSigned(c: Pick<Contract, "stage">): boolean {
+    return CONTRACT_STAGES.indexOf(c.stage) >= CONTRACT_STAGES.indexOf("signed");
+}
+
 export type ContractBilling = {
     cadence: BillingCadence;
-    /** Per month (monthly) or per milestone / one-off (MYR). */
+    /** Per month (monthly) or the one-off amount (MYR). */
     amountMyr: number;
     /** Day of month the monthly invoice goes out (1–28). */
     invoiceDay: number;
@@ -139,6 +159,8 @@ export type Contract = {
     crew: Crew;
     /** Pending account-manager transfer, null when none. */
     handover: Handover | null;
+    /** Project template it started from (Settings → Templates); "" when custom. For reporting only. */
+    templateName: string;
     /** Where the contract is in its lifecycle. */
     stage: ContractStage;
     startDate: string; // YYYY-MM-DD
@@ -159,6 +181,10 @@ export type Contract = {
     terms: string;
     billing: ContractBilling;
     notes: string;
+    /** Where renewal stands as the project nears its end; "" = not discussed. */
+    renewalStatus: RenewalStatus;
+    /** Costs other than people's time (ad spend, freelancers, software); margin subtracts them. */
+    costs: ProjectCost[];
     createdAt: string;
     updatedAt: string;
 };
@@ -181,7 +207,8 @@ export function normalizeContract(raw: Partial<Contract> & { id: string }): Cont
         requirements: normalizeRequirements(raw.requirements),
         crew: normalizeCrew(raw.crew),
         handover: normalizeHandover(raw.handover),
-        stage: raw.stage ?? (raw.signedAt ? "signed" : "created"),
+        templateName: raw.templateName ?? "",
+        stage: normalizeStage(raw.stage, raw.signedAt),
         startDate: raw.startDate ?? "",
         endDate: raw.endDate ?? "",
         reference: raw.reference ?? "",
@@ -191,8 +218,10 @@ export function normalizeContract(raw: Partial<Contract> & { id: string }): Cont
         signedBy: raw.signedBy ?? "",
         fileUrl: raw.fileUrl ?? "",
         terms: raw.terms ?? "",
-        billing: { ...emptyBilling(), ...(raw.billing ?? {}) },
+        billing: { ...emptyBilling(), ...(raw.billing ?? {}), cadence: normalizeCadence(raw.billing?.cadence ?? "monthly") },
         notes: raw.notes ?? "",
+        renewalStatus: normalizeRenewalStatus(raw.renewalStatus),
+        costs: normalizeCosts(raw.costs),
         createdAt: raw.createdAt ?? now,
         updatedAt: raw.updatedAt ?? now,
     };
@@ -254,6 +283,9 @@ export type CreateContractInput = {
     terms?: string;
     billing?: Partial<ContractBilling>;
     notes?: string;
+    templateName?: string;
+    renewalStatus?: RenewalStatus;
+    costs?: ProjectCost[];
 };
 
 export function buildContract(input: CreateContractInput, code: string): Contract {
@@ -269,7 +301,8 @@ export function buildContract(input: CreateContractInput, code: string): Contrac
         requirements: normalizeRequirements(input.requirements),
         crew: normalizeCrew(input.crew),
         handover: null,
-        stage: input.stage ?? (input.signedAt ? "signed" : "created"),
+        templateName: input.templateName ?? "",
+        stage: normalizeStage(input.stage, input.signedAt),
         startDate: input.startDate ?? now.slice(0, 10),
         endDate: input.endDate ?? "",
         reference: input.reference ?? "",
@@ -279,8 +312,10 @@ export function buildContract(input: CreateContractInput, code: string): Contrac
         signedBy: input.signedBy ?? "",
         fileUrl: input.fileUrl ?? "",
         terms: input.terms ?? "",
-        billing: { ...emptyBilling(), ...(input.billing ?? {}) },
+        billing: { ...emptyBilling(), ...(input.billing ?? {}), cadence: normalizeCadence(input.billing?.cadence ?? "monthly") },
         notes: input.notes ?? "",
+        renewalStatus: normalizeRenewalStatus(input.renewalStatus),
+        costs: normalizeCosts(input.costs),
         createdAt: now,
         updatedAt: now,
     };

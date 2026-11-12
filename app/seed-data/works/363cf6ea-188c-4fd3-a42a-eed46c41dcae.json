@@ -1,0 +1,49 @@
+{
+  "id": "363cf6ea-188c-4fd3-a42a-eed46c41dcae",
+  "contractId": "6d1e4aab-758f-42fd-9862-f8590788625b",
+  "clientName": "Tropicor",
+  "accountManager": "Danisy",
+  "plannerLineId": "req:custom:2026-12:3:1",
+  "addendumVersion": 0,
+  "type": "custom",
+  "title": "Monthly performance report · Dec",
+  "channel": "Report",
+  "month": "2026-12",
+  "phaseKey": "optimise",
+  "phaseName": "Optimise",
+  "dueDate": "2026-12-16",
+  "defaultDueDate": "2026-12-16",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "am",
+      "member": "Danisy",
+      "pct": 100,
+      "hours": 1.5
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": null,
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-09-29T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.070Z"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "4f970f30-e516-408f-b70d-220d660e568b",
+  "name": "Rouang contact",
+  "company": "Rouang",
+  "email": "rouang@example.com",
+  "phone": "",
+  "source": "website",
+  "sourceCampaignId": null,
+  "interestedIn": "Social media, Meta lead-gen",
+  "estValueMyr": 27000,
+  "status": "won",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Yusuf",
+  "score": 74,
+  "autoIntake": false,
+  "lostReason": "",
+  "lostNote": "",
+  "createdAt": "2026-06-08T06:27:03.731Z",
+  "updatedAt": "2026-06-26T06:27:03.731Z"
+}

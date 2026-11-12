@@ -1,11 +1,11 @@
 /**
- * Work (task) helpers — pure functions shared by the task pages, the contract
+ * Work (task) helpers — pure functions shared by the task pages, the project
  * board, the calendar and the Management tabs. No I/O.
  */
 import type { Contract } from "@/lib/data/contracts";
 import type { TaskStatus, Work, WorkShare } from "@/lib/data/works";
 import type { TeamMember } from "@/lib/data/team";
-import { SEAT_LABEL, SEAT_ROLES, SEAT_SHORT, type LineType, type Seat, type SplitShare } from "@/lib/data/planners";
+import { SEAT_CATEGORIES, SEAT_LABEL, SEAT_SHORT, type LineType, type Seat, type SplitShare } from "@/lib/planners/vocab";
 import { withHours } from "@/lib/capacity/helpers";
 
 export const TASK_STATUS_LABEL: Record<TaskStatus, string> = {
@@ -75,10 +75,9 @@ export function monthRange(from: string, to: string): string[] {
 export function resolveSeat(seat: Seat, contract: Pick<Contract, "accountManager">, team: TeamMember[], type?: LineType): string {
     if (seat === "am" && contract.accountManager) return contract.accountManager;
     const active = team.filter((m) => m.active);
-    // Digital marketer: Ads people run campaigns, Content people run everything else.
-    const roles = seat === "dm" && type === "campaign" ? ["Ads", "Content"] : SEAT_ROLES[seat];
-    for (const role of roles) {
-        const hit = active.find((m) => m.role === role);
+    void type;
+    for (const category of SEAT_CATEGORIES[seat]) {
+        const hit = active.find((m) => m.category === category);
         if (hit) return hit.name;
     }
     return "";
@@ -152,6 +151,11 @@ export function isOverdue(w: Work, today: string): boolean {
     return isOpen(w) && Boolean(w.dueDate) && w.dueDate < today;
 }
 
+/** The day the owner plans to do it: their own pick, else the deadline. */
+export function plannedDay(w: Pick<Work, "dueDate" | "plannedDate">): string {
+    return w.plannedDate || w.dueDate;
+}
+
 export function isAdjusted(w: Work): boolean {
     return Boolean(w.defaultDueDate) && w.dueDate !== w.defaultDueDate;
 }
@@ -180,7 +184,7 @@ export function groupByMonth(list: Work[]): Map<string, Work[]> {
 /** Label used for tasks that sit in no phase. */
 export const NO_PHASE = "No phase";
 
-/** Distinct phase names in the list, in `order` first (contract phases), then any others, then "No phase" last. */
+/** Distinct phase names in the list, in `order` first (project phases), then any others, then "No phase" last. */
 export function phasesOf(list: Work[], order: string[] = []): string[] {
     const seen = new Set(list.map((w) => w.phaseName || NO_PHASE));
     const out = order.filter((name) => seen.has(name));
@@ -210,7 +214,7 @@ export function nextDue(list: Work[]): Work | undefined {
 
 /**
  * Apply a new due date to one task and, optionally, move every later open
- * task in the same contract and month by the same number of days. Returns
+ * task in the same project and month by the same number of days. Returns
  * the patches to write, keyed by work id.
  */
 export function applyDueDate(

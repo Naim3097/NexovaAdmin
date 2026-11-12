@@ -1,0 +1,21 @@
+{
+  "id": "95be0c0d-1cfc-4f4d-b19e-8816d7ecf21a",
+  "name": "Rouang",
+  "status": "active",
+  "dealOwner": "Yusuf",
+  "contactName": "Demo contact",
+  "contactEmail": "rouang@example.com",
+  "contactPhone": "",
+  "billingAddress": "",
+  "website": "",
+  "industry": "Interior design & renovation",
+  "notes": "Interior design contractor.",
+  "contentRevisionLimit": 3,
+  "portalToken": "",
+  "userId": null,
+  "internal": false,
+  "lastCheckInAt": "2026-10-07",
+  "lastCheckInNote": "Site visit at the Mont Kiara project. Unhappy with lead quality from Meta; reviewing options before renewal.",
+  "createdAt": "2026-06-26T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.186Z"
+}

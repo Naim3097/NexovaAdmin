@@ -1,0 +1,52 @@
+{
+  "id": "3abf9785-b30f-452b-b5a3-fc956b74bf98",
+  "contractId": "649c59c0-6455-4332-a82e-30eda362c9c0",
+  "clientName": "LeanX Digital",
+  "accountManager": "Yusuf",
+  "plannerLineId": "req:static:2026-11:1:2",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "LinkedIn: How we report to clients",
+  "channel": "LinkedIn",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-12",
+  "defaultDueDate": "2026-11-12",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "pending_approval",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Naim",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "f454221d-cd7c-4b08-8606-21d222d48f69"
+  },
+  "startedAt": "2026-11-07T06:27:03.731Z",
+  "submittedAt": "2026-11-11T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/3abf9785",
+    "note": "Ready for review."
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-07-01T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.935Z"
+}

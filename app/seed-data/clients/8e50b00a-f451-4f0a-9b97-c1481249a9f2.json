@@ -1,0 +1,21 @@
+{
+  "id": "8e50b00a-f451-4f0a-9b97-c1481249a9f2",
+  "name": "LeanX Digital",
+  "status": "active",
+  "dealOwner": "",
+  "contactName": "Demo contact",
+  "contactEmail": "leanx-digital@example.com",
+  "contactPhone": "",
+  "billingAddress": "",
+  "website": "",
+  "industry": "Digital marketing agency",
+  "notes": "Our own company: growing our own brand.",
+  "contentRevisionLimit": 3,
+  "portalToken": "",
+  "userId": null,
+  "internal": true,
+  "lastCheckInAt": "",
+  "lastCheckInNote": "",
+  "createdAt": "2025-09-18T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.189Z"
+}

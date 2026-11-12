@@ -61,6 +61,7 @@ function rowToProfile(row: AgencyProfileRow): AgencyProfile {
         logos: Array.isArray(row.logos) ? row.logos : [],
         defaultQuoteTerms: row.default_quote_terms ?? "",
         defaultQuoteAcceptance: row.default_quote_acceptance ?? true,
+        salesTargetMyr: Number(row.sales_target_myr ?? 0),
         updatedAt: row.updated_at,
     };
 }
@@ -89,6 +90,7 @@ function profileToUpsert(p: AgencyProfile): AgencyInsert {
         logos: p.logos,
         default_quote_terms: p.defaultQuoteTerms,
         default_quote_acceptance: p.defaultQuoteAcceptance,
+        sales_target_myr: p.salesTargetMyr,
         updated_at: p.updatedAt,
     };
 }

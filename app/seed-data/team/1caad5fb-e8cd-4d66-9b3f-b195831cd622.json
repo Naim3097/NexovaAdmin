@@ -1,0 +1,44 @@
+{
+  "id": "1caad5fb-e8cd-4d66-9b3f-b195831cd622",
+  "name": "Farisha",
+  "role": "Admin and Business Support",
+  "category": "business_support",
+  "email": "farisha@nexova.local",
+  "phone": "",
+  "skills": "contracts, invoicing, payments, quotations, onboarding",
+  "active": true,
+  "userId": null,
+  "accessLevel": "standard",
+  "systemRoles": [
+    "user"
+  ],
+  "functions": [
+    "finance"
+  ],
+  "weeklyHours": 32,
+  "setAside": [
+    {
+      "label": "Invoicing & payments",
+      "hours": 12
+    },
+    {
+      "label": "Contracts & quotations",
+      "hours": 8
+    },
+    {
+      "label": "Onboarding",
+      "hours": 6
+    },
+    {
+      "label": "Admin",
+      "hours": 6
+    }
+  ],
+  "hoursByType": {
+    "custom": 1
+  },
+  "costRateMyr": 40,
+  "daysOff": {},
+  "createdAt": "2026-11-12T06:27:04.173Z",
+  "updatedAt": "2026-11-12T06:27:04.173Z"
+}

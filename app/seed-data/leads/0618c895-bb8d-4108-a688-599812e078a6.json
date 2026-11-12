@@ -1,0 +1,22 @@
+{
+  "id": "0618c895-bb8d-4108-a688-599812e078a6",
+  "name": "Payright contact",
+  "company": "Payright",
+  "email": "payright@example.com",
+  "phone": "",
+  "source": "linkedin",
+  "sourceCampaignId": null,
+  "interestedIn": "Brand growth retainer",
+  "estValueMyr": 90000,
+  "status": "won",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Yusuf",
+  "score": 88,
+  "autoIntake": false,
+  "lostReason": "",
+  "lostNote": "",
+  "createdAt": "2026-01-28T06:27:03.731Z",
+  "updatedAt": "2026-02-25T06:27:03.731Z"
+}

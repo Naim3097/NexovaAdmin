@@ -1,0 +1,52 @@
+{
+  "id": "2a97b99b-5261-4306-bbf6-8c7e27bed89a",
+  "contractId": "ee0609d4-3179-4475-8f59-8d96c5c3edb4",
+  "clientName": "Rouang",
+  "accountManager": "Izzad",
+  "plannerLineId": "req:video:2026-11:1:1",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "TikTok: Renovation mistakes to avoid",
+  "channel": "Instagram",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-05",
+  "defaultDueDate": "2026-11-05",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "in_progress",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Izzad",
+      "pct": 100,
+      "hours": 6
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "f052aa39-8cb3-4454-98f5-ba8824fa05ac"
+  },
+  "startedAt": "2026-11-03T06:27:03.731Z",
+  "submittedAt": "2026-11-10T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/2a97b99b",
+    "note": "Draft 1"
+  },
+  "review": {
+    "decision": "changes",
+    "note": "Use the new Mont Kiara footage and add the logo end card.",
+    "by": "Izzad",
+    "at": "2026-11-11T06:27:03.731Z"
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-06-26T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.549Z"
+}

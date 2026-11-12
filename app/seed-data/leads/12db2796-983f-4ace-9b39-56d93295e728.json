@@ -1,0 +1,22 @@
+{
+  "id": "12db2796-983f-4ace-9b39-56d93295e728",
+  "name": "Sutera Batik contact",
+  "company": "Sutera Batik Studio",
+  "email": "sutera-batik-studio@example.com",
+  "phone": "",
+  "source": "instagram",
+  "sourceCampaignId": null,
+  "interestedIn": "Social media management",
+  "estValueMyr": 12500,
+  "status": "won",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Yusuf",
+  "score": 72,
+  "autoIntake": false,
+  "lostReason": "",
+  "lostNote": "",
+  "createdAt": "2025-12-13T06:27:03.731Z",
+  "updatedAt": "2025-12-28T06:27:03.731Z"
+}

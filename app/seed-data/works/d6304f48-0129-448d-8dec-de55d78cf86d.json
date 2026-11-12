@@ -1,0 +1,52 @@
+{
+  "id": "d6304f48-0129-448d-8dec-de55d78cf86d",
+  "contractId": "767be1f1-c1f8-4d74-84db-0b4537e896a4",
+  "clientName": "Dr Kartini",
+  "accountManager": "Hakim",
+  "plannerLineId": "req:static:2026-10:0:3",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Carousel: Acne scars — what actually works",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-13",
+  "defaultDueDate": "2026-10-13",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Hakim",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "6ca917dd-1838-4383-9413-6a68888d807b"
+  },
+  "startedAt": "2026-10-07T06:27:03.731Z",
+  "submittedAt": "2026-10-11T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/d6304f48",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Hakim)",
+    "at": "2026-10-12T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-12T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-05-28T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.380Z"
+}

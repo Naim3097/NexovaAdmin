@@ -1,0 +1,21 @@
+{
+  "id": "fad63e6c-3ccc-4f54-a2b4-a62cad72d3ce",
+  "name": "Zakat Selangor",
+  "status": "active",
+  "dealOwner": "Naim",
+  "contactName": "Demo contact",
+  "contactEmail": "zakat-selangor@example.com",
+  "contactPhone": "",
+  "billingAddress": "",
+  "website": "",
+  "industry": "Religious body (zakat)",
+  "notes": "Growing awareness of zakat for Gen Z.",
+  "contentRevisionLimit": 3,
+  "portalToken": "",
+  "userId": null,
+  "internal": false,
+  "lastCheckInAt": "2026-11-05",
+  "lastCheckInNote": "Board update: the TikTok series is landing with students; asked for more campus content.",
+  "createdAt": "2026-06-03T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.194Z"
+}

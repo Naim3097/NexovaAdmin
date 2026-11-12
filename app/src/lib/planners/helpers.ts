@@ -7,6 +7,7 @@ import type { CreateWorkInput } from "@/lib/data/works";
 import type { TeamMember } from "@/lib/data/team";
 import type { Quotation } from "@/lib/data/quotations";
 import { computeTotals } from "@/lib/data/quotations";
+import { LINE_TYPE_WORDS } from "@/lib/planners/vocab";
 import {
     LINE_TYPES,
     type LineType,
@@ -52,14 +53,7 @@ export function countsByType(lines: PlannerLine[]): Record<LineType, number> {
 /** "12 posts · 2 campaigns · 4 SEO articles" (only the types present). */
 export function countsLabel(lines: PlannerLine[]): string {
     const c = countsByType(lines);
-    const words: Record<LineType, [string, string]> = {
-        post: ["post", "posts"],
-        campaign: ["campaign", "campaigns"],
-        seo: ["SEO article", "SEO articles"],
-        website: ["website item", "website items"],
-        branding: ["branding item", "branding items"],
-        custom: ["other task", "other tasks"],
-    };
+    const words = LINE_TYPE_WORDS;
     return LINE_TYPES.filter((t) => c[t] > 0)
         .map((t) => `${c[t]} ${words[t][c[t] === 1 ? 0 : 1]}`)
         .join(" · ");

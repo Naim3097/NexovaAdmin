@@ -28,9 +28,9 @@ const EMOJI: Partial<Record<NotificationKind, string>> = {
     invoice_paid: "✅",
     invoice_overdue: "⚠️",
     deliverable_approved: "👍",
-    work_requested: "📨",
     approval_requested: "🙋",
     work_approved: "✅",
+    work_changes_requested: "↩️",
     stage_advanced: "➡️",
     quote_sent: "📄",
     quote_accepted: "🤝",
@@ -56,10 +56,11 @@ const TELEGRAM_KINDS = new Set<NotificationKind>([
     "renewal_due",
     "handover_requested",
     "handover_accepted",
-    // Work chain hand-offs — each one is someone's cue to act.
-    "work_requested",
+    // Work chain hand-offs — each one is someone's cue to act. (Tasks are no
+    // longer "briefed": they are visible to their owners as soon as they exist.)
     "approval_requested",
     "work_approved",
+    "work_changes_requested",
 ]);
 
 export function renderTelegramFromNotify(args: {

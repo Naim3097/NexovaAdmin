@@ -1,0 +1,22 @@
+{
+  "id": "f823a341-3b54-44fa-8811-2b232c56176f",
+  "name": "Tropicor contact",
+  "company": "Tropicor",
+  "email": "tropicor@example.com",
+  "phone": "",
+  "source": "google",
+  "sourceCampaignId": null,
+  "interestedIn": "Meta and Google campaign management",
+  "estValueMyr": 57000,
+  "status": "won",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Yusuf",
+  "score": 86,
+  "autoIntake": false,
+  "lostReason": "",
+  "lostNote": "",
+  "createdAt": "2026-09-03T06:27:03.731Z",
+  "updatedAt": "2026-09-29T06:27:03.731Z"
+}

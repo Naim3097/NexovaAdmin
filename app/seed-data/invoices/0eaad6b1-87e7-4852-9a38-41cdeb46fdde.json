@@ -1,0 +1,31 @@
+{
+  "id": "0eaad6b1-87e7-4852-9a38-41cdeb46fdde",
+  "number": "INV-2026-0055",
+  "clientName": "Pak Long Kopitiam",
+  "contractId": "56cf8b2b-eaa9-4bfd-b084-d758504af65e",
+  "status": "sent",
+  "issueDate": "2026-08-24",
+  "dueDate": "2026-09-07",
+  "items": [
+    {
+      "id": "541cc8f7-bb90-49e0-86c7-bbcb5aea56e3",
+      "description": "Website & menu revamp — 50 % on handover",
+      "details": "",
+      "quantity": 1,
+      "unitPriceMyr": 4750
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "createdAt": "2026-08-24T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.810Z",
+  "paidAt": null,
+  "paymentProvider": null,
+  "paymentLink": null,
+  "paymentExternalId": null,
+  "paymentMeta": {},
+  "paymentLinkCreatedAt": null
+}

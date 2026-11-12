@@ -1,0 +1,52 @@
+{
+  "id": "9f6f1241-6c3f-413a-ad0f-2db2c8978cf4",
+  "contractId": "649c59c0-6455-4332-a82e-30eda362c9c0",
+  "clientName": "LeanX Digital",
+  "accountManager": "Yusuf",
+  "plannerLineId": "req:static:2026-11:1:1",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "LinkedIn: Behind the scenes of a shoot",
+  "channel": "LinkedIn",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-05",
+  "defaultDueDate": "2026-11-05",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Naim",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "4ad399ff-8fe1-4a59-b063-5b5a6abcae7c"
+  },
+  "startedAt": "2026-10-30T06:27:03.731Z",
+  "submittedAt": "2026-11-03T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/9f6f1241",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Yusuf",
+    "at": "2026-11-04T06:27:03.731Z"
+  },
+  "completedAt": "2026-11-04T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-07-01T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.933Z"
+}

@@ -1,0 +1,52 @@
+{
+  "id": "330c4a8f-75e6-4987-910e-b622849c318a",
+  "contractId": "649c59c0-6455-4332-a82e-30eda362c9c0",
+  "clientName": "LeanX Digital",
+  "accountManager": "Yusuf",
+  "plannerLineId": "req:static:2026-10:1:4",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "LinkedIn: What we learned this quarter",
+  "channel": "LinkedIn",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-22",
+  "defaultDueDate": "2026-10-22",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Naim",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "494a0aca-c515-437d-877f-9744d5183b5a"
+  },
+  "startedAt": "2026-10-16T06:27:03.731Z",
+  "submittedAt": "2026-10-20T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/330c4a8f",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Yusuf",
+    "at": "2026-10-21T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-21T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-07-01T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.926Z"
+}

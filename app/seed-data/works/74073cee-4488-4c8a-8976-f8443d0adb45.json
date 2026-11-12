@@ -1,0 +1,52 @@
+{
+  "id": "74073cee-4488-4c8a-8976-f8443d0adb45",
+  "contractId": "8dc8c820-cc95-428e-9a8f-6630adbd3fc9",
+  "clientName": "LeanX",
+  "accountManager": "Bob",
+  "plannerLineId": "req:static:2026-10:0:4",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Static: Next-day payouts",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-14",
+  "defaultDueDate": "2026-10-14",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 1.75
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "6fea55a7-f1b6-450c-93c9-d79e6c6d0b4e"
+  },
+  "startedAt": "2026-10-08T06:27:03.731Z",
+  "submittedAt": "2026-10-12T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/74073cee",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Bob)",
+    "at": "2026-10-13T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-13T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2025-12-22T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.339Z"
+}

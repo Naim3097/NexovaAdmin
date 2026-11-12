@@ -6,6 +6,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { devDataRoot } from "@/lib/dev-store/root";
 import { randomUUID } from "node:crypto";
+import { normalizeLostReason, type LostReason } from "@/lib/leads/lost";
 
 const ROOT = devDataRoot();
 const LEADS_DIR = path.join(ROOT, "leads");
@@ -58,6 +59,9 @@ export type Lead = {
      * public website API) — shown as a "New" remark in the UI until any
      * human action on the lead clears it. Manual leads are always false. */
     autoIntake: boolean;
+    /** Why the deal was lost (LOST_REASONS) and a note; "" until recorded. */
+    lostReason: LostReason;
+    lostNote: string;
     createdAt: string;
     updatedAt: string;
 };
@@ -103,6 +107,8 @@ export async function createLead(input: {
         assignedTo: input.assignedTo ?? "",
         score: input.score ?? 0,
         autoIntake: input.autoIntake ?? false,
+        lostReason: "",
+        lostNote: "",
         createdAt: now,
         updatedAt: now,
     };
@@ -123,6 +129,8 @@ export async function listLeads(): Promise<Lead[]> {
         if (parsed.assignedTo === undefined) parsed.assignedTo = "";
         if (parsed.score === undefined) parsed.score = 0;
         if (parsed.autoIntake === undefined) parsed.autoIntake = false;
+        parsed.lostReason = normalizeLostReason(parsed.lostReason);
+        if (parsed.lostNote === undefined) parsed.lostNote = "";
         out.push(parsed);
     }
     return out.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -136,6 +144,8 @@ export async function getLeadById(id: string): Promise<Lead | null> {
         if (parsed.assignedTo === undefined) parsed.assignedTo = "";
         if (parsed.score === undefined) parsed.score = 0;
         if (parsed.autoIntake === undefined) parsed.autoIntake = false;
+        parsed.lostReason = normalizeLostReason(parsed.lostReason);
+        if (parsed.lostNote === undefined) parsed.lostNote = "";
         return parsed;
     } catch {
         return null;

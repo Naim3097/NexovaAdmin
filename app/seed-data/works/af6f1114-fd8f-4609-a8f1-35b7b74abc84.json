@@ -1,0 +1,52 @@
+{
+  "id": "af6f1114-fd8f-4609-a8f1-35b7b74abc84",
+  "contractId": "be8d2563-6668-4eca-8ae3-f93933ff08cb",
+  "clientName": "Baitul Irfan",
+  "accountManager": "Bob",
+  "plannerLineId": "req:static:2026-12:1:2",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Static: Progress update — roof frame up",
+  "channel": "Instagram",
+  "month": "2026-12",
+  "phaseKey": "drives",
+  "phaseName": "Monthly drives",
+  "dueDate": "2026-12-09",
+  "defaultDueDate": "2026-12-09",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 1.75
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "09808acd-79eb-42ae-a9e5-0f325b7c3602"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-07-29T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.706Z"
+}

@@ -1,0 +1,31 @@
+{
+  "id": "18d8c78e-87f5-4d98-8787-b9aabd49eb12",
+  "number": "QUO-2026-0002",
+  "clientName": "Tropicor",
+  "status": "accepted",
+  "issueDate": "2026-09-19",
+  "validUntil": "2026-10-03",
+  "items": [
+    {
+      "id": "bf98e361-116b-4594-b6b0-f374c11857d0",
+      "description": "Campaign management — 6 months, ad budget included",
+      "details": "",
+      "quantity": 1,
+      "unitPriceMyr": 57000
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "subject": "Campaign management — 6 months, ad budget included",
+  "scopeIncludes": "",
+  "exclusions": "",
+  "terms": "",
+  "showAcceptance": true,
+  "convertedInvoiceId": null,
+  "createdAt": "2026-09-19T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.232Z",
+  "acceptedAt": "2026-09-27T06:27:03.731Z"
+}

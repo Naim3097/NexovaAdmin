@@ -1,0 +1,21 @@
+{
+  "id": "a491a641-7825-41dd-aefc-cf745b78e9a7",
+  "name": "Meta lead-gen: merchant sign-ups · Dec",
+  "clientName": "Payright",
+  "contractId": "cc412500-078b-465c-b702-e2d6ab336cd0",
+  "platform": "meta",
+  "objective": "leads",
+  "status": "planning",
+  "startDate": "2026-12-16",
+  "endDate": "",
+  "monthlyBudgetMyr": 0,
+  "feeModel": "none",
+  "flatFeeMyr": 0,
+  "percentFee": 0,
+  "externalId": "",
+  "landingUrl": "",
+  "notes": "",
+  "metrics": [],
+  "createdAt": "2026-11-12T06:27:05.017Z",
+  "updatedAt": "2026-11-12T06:27:05.125Z"
+}

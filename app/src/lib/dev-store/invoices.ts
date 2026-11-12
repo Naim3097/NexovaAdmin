@@ -37,7 +37,7 @@ export type Invoice = {
     /** Human-readable, e.g. "INV-2026-0001". Generated at creation. */
     number: string;
     clientName: string;
-    /** Contract this invoice bills (monthly retainer / milestone). null = standalone. */
+    /** Contract this invoice bills (monthly retainer or one-off). null = standalone. */
     contractId: string | null;
     status: InvoiceStatus;
     issueDate: string; // YYYY-MM-DD
@@ -71,19 +71,9 @@ function fileFor(id: string) {
     return path.join(INVOICES_DIR, `${id}.json`);
 }
 
-export function computeTotals(invoice: Pick<Invoice, "items" | "taxRatePct">): {
-    subtotal: number;
-    tax: number;
-    total: number;
-} {
-    const subtotal = invoice.items.reduce(
-        (sum, it) => sum + (it.quantity || 0) * (it.unitPriceMyr || 0),
-        0,
-    );
-    const tax = +(subtotal * ((invoice.taxRatePct || 0) / 100)).toFixed(2);
-    const total = +(subtotal + tax).toFixed(2);
-    return { subtotal: +subtotal.toFixed(2), tax, total };
-}
+// The totals maths lives in @/lib/invoices/totals (pure, client-safe); re-exported here.
+import { computeTotals } from "@/lib/invoices/totals";
+export { computeTotals };
 
 async function nextInvoiceNumber(): Promise<string> {
     const all = await listInvoices();

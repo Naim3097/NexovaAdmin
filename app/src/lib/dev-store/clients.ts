@@ -27,8 +27,8 @@ export type Client = {
     id: string;
     name: string;
     status: ClientStatus;
-    /** Team member name who owns this account (single point of contact). */
-    accountManager: string;
+    /** Team member who closed the deal. Projects have their own account manager. */
+    dealOwner: string;
     contactName: string;
     contactEmail: string;
     contactPhone: string;
@@ -37,41 +37,56 @@ export type Client = {
     website: string;
     industry: string;
     notes: string;
-    /** Capped feedback cycles per content item (Axtra default: 3). */
+    /**
+     * Capped feedback cycles per content item (default 3). A client rule about
+     * how they review, not what they bought: what they bought (deliverables,
+     * billing, term) lives on their projects.
+     */
     contentRevisionLimit: number;
-    /** Content items the retainer covers per month (0 = no plan). */
-    monthlyContentQuota: number;
     /** Client-level portal link token; '' until generated. */
     portalToken: string;
     /** Linked Supabase auth user for the client's portal login; null until invited. */
     userId: string | null;
-    /** MYR per content item beyond monthly_content_quota (0 = free / disabled). */
-    extraContentPrice: number;
-    /** MYR per revision beyond content_revision_limit. */
-    extraRevisionPrice: number;
-    /** Fixed monthly retainer fee (charged in full regardless of usage). */
-    monthlyRetainerMyr: number;
-    /** Package label, e.g. "Growth". */
-    packageName: string;
-    /** Package renewal date (YYYY-MM-DD). "" = not tracked. */
-    packageRenewsOn: string;
+    /**
+     * Our own company. Its projects are internal: no contract to sign (management
+     * approves the brief instead), no money, out of sales, finance and client
+     * reporting, but still in delivery, capacity and everyone's tasks.
+     */
+    internal: boolean;
+    /** Last time we spoke to the client (YYYY-MM-DD, "" = never logged) and what was said. */
+    lastCheckInAt: string;
+    lastCheckInNote: string;
     createdAt: string;
     updatedAt: string;
 };
 
-/** Backfill fields added after early dev rows were written. */
-function normalizeClient(c: Client): Client {
+/**
+ * Backfill fields added after early dev rows were written, and drop the
+ * package fields older rows still carry (monthly retainer, content quota,
+ * package name / renewal, extra prices): projects and templates hold that now.
+ */
+function normalizeClient(raw: Client): Client {
+    const c = raw as Client & { accountManager?: string };
     return {
-        ...c,
+        id: c.id,
+        name: c.name,
+        status: c.status ?? "prospect",
+        dealOwner: c.dealOwner ?? c.accountManager ?? "",
+        contactName: c.contactName ?? "",
+        contactEmail: c.contactEmail ?? "",
+        contactPhone: c.contactPhone ?? "",
         billingAddress: c.billingAddress ?? "",
+        website: c.website ?? "",
+        industry: c.industry ?? "",
+        notes: c.notes ?? "",
         contentRevisionLimit: c.contentRevisionLimit ?? 3,
-        monthlyContentQuota: c.monthlyContentQuota ?? 0,
         portalToken: c.portalToken ?? "",
         userId: c.userId ?? null,
-        extraContentPrice: c.extraContentPrice ?? 0,
-        extraRevisionPrice: c.extraRevisionPrice ?? 0,
-        monthlyRetainerMyr: c.monthlyRetainerMyr ?? 0,
-        packageName: c.packageName ?? "",
+        internal: c.internal ?? false,
+        lastCheckInAt: c.lastCheckInAt ?? "",
+        lastCheckInNote: c.lastCheckInNote ?? "",
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
     };
 }
 
@@ -94,14 +109,12 @@ export async function createClient(input: {
     industry?: string;
     notes?: string;
     contentRevisionLimit?: number;
-    monthlyContentQuota?: number;
     portalToken?: string;
     userId?: string | null;
-    extraContentPrice?: number;
-    extraRevisionPrice?: number;
-    monthlyRetainerMyr?: number;
-    packageName?: string;
-    accountManager?: string;
+    dealOwner?: string;
+    internal?: boolean;
+    lastCheckInAt?: string;
+    lastCheckInNote?: string;
 }): Promise<Client> {
     await ensureDir();
     const now = new Date().toISOString();
@@ -109,7 +122,7 @@ export async function createClient(input: {
         id: randomUUID(),
         name: input.name,
         status: input.status ?? "prospect",
-        accountManager: input.accountManager ?? "",
+        dealOwner: input.dealOwner ?? "",
         contactName: input.contactName ?? "",
         contactEmail: input.contactEmail ?? "",
         contactPhone: input.contactPhone ?? "",
@@ -118,14 +131,11 @@ export async function createClient(input: {
         industry: input.industry ?? "",
         notes: input.notes ?? "",
         contentRevisionLimit: input.contentRevisionLimit ?? 3,
-        monthlyContentQuota: input.monthlyContentQuota ?? 0,
         portalToken: input.portalToken ?? "",
         userId: input.userId ?? null,
-        extraContentPrice: input.extraContentPrice ?? 0,
-        extraRevisionPrice: input.extraRevisionPrice ?? 0,
-        monthlyRetainerMyr: input.monthlyRetainerMyr ?? 0,
-        packageName: input.packageName ?? "",
-        packageRenewsOn: "",
+        internal: input.internal ?? false,
+        lastCheckInAt: input.lastCheckInAt ?? "",
+        lastCheckInNote: input.lastCheckInNote ?? "",
         createdAt: now,
         updatedAt: now,
     };

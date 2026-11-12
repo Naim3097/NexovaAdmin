@@ -1,6 +1,6 @@
 /**
  * Daily cron — ping the PIC 1 day before a sprint task's deadline, and the
- * people on a contract task the day before it is due, on the day, and the
+ * people on a project task the day before it is due, on the day, and the
  * first day it is overdue.
  *
  * Vercel Cron calls this once a day (see app/vercel.json). It finds open sprint
@@ -17,7 +17,6 @@ import { env } from "@/lib/env";
 import { listTasksDueOn, updateSprintTask } from "@/lib/data/sprint-tasks";
 import { listWorks } from "@/lib/data/works";
 import { isOpen } from "@/lib/works/helpers";
-import { listClients } from "@/lib/data/clients";
 import {
     computeTotals,
     listInvoices,
@@ -61,7 +60,7 @@ async function run(req: NextRequest) {
         pinged++;
     }
 
-    // 2) Contract tasks. Single-day conditions (== tomorrow, == today, and
+    // 2) Project tasks. Single-day conditions (== tomorrow, == today, and
     //    == yesterday for the first overdue day) so the daily cron naturally
     //    fires each once — no dedup state on the task.
     const works = await listWorks();
@@ -89,30 +88,10 @@ async function run(req: NextRequest) {
         pinged++;
     }
 
-    // 3) Client package renewals — heads-up at 30 days, 7 days, and on the day.
-    const clients = await listClients();
-    for (const c of clients) {
-        if (c.status !== "active" || !c.packageRenewsOn) continue;
-        const label =
-            c.packageRenewsOn === day(30)
-                ? "in 30 days"
-                : c.packageRenewsOn === day(7)
-                  ? "in 7 days"
-                  : c.packageRenewsOn === today
-                    ? "TODAY"
-                    : null;
-        if (!label) continue;
-        await notify({
-            kind: "renewal_due",
-            title: `Renewal ${label}: ${c.name}`,
-            body: `${c.packageName || "Package"} renews ${c.packageRenewsOn}${c.accountManager ? ` · AM: ${c.accountManager}` : ""}`,
-            link: `/settings/clients/${c.id}`,
-        });
-        pinged++;
-    }
-
-    // 4) Invoices past due — flip sent → overdue (once; the status change is the
+    // 3) Invoices past due — flip sent → overdue (once; the status change is the
     //    dedup) and ping Telegram so the collection ladder (SOP 5) starts.
+    //    (Renewals are driven by project end dates on the dashboard and
+    //    management pages; the client record carries no renewal date.)
     const invoices = await listInvoices();
     for (const inv of invoices) {
         if (inv.status !== "sent" || !inv.dueDate || inv.dueDate >= today) continue;

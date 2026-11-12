@@ -1,0 +1,31 @@
+{
+  "id": "c205229e-4289-438f-8fb2-957c124fc949",
+  "number": "INV-2026-0051",
+  "clientName": "Sutera Batik Studio",
+  "contractId": "2ba992ba-e7ac-41f3-a325-24a95d30aec9",
+  "status": "paid",
+  "issueDate": "2026-04-02",
+  "dueDate": "2026-04-16",
+  "items": [
+    {
+      "id": "b21aff39-6e0e-486c-8e23-9d97bb8ec937",
+      "description": "Sutera Batik — social retainer — 2026-04",
+      "details": "CON-2026-0012",
+      "quantity": 1,
+      "unitPriceMyr": 2500
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "createdAt": "2026-04-02T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.771Z",
+  "paidAt": "2026-04-16T06:27:03.731Z",
+  "paymentProvider": null,
+  "paymentLink": null,
+  "paymentExternalId": null,
+  "paymentMeta": {},
+  "paymentLinkCreatedAt": null
+}

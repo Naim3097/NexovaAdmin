@@ -3,7 +3,7 @@
  *
  * Pure functions over the entities the app already stores — no I/O, nothing
  * new persisted. The pages are thin loaders; everything here is derived per
- * request from team members, clients, contracts and their tasks (works),
+ * request from team members, clients, projects and their tasks (works),
  * sprint tasks, content posts and invoices.
  *
  * Load model — HOURS, PER MONTH (see `@/lib/capacity/helpers`). Every task
@@ -36,7 +36,9 @@ import type { SprintTask } from "@/lib/data/sprint-tasks";
 import type { ContentPost } from "@/lib/data/content";
 import type { Invoice } from "@/lib/data/invoices";
 import type { Work } from "@/lib/data/works";
-import { SEAT_LABEL, SEAT_ROLES, type Seat } from "@/lib/data/planners";
+import { SEAT_CATEGORIES, SEAT_LABEL, canHoldSeat as categoryHoldsSeat, type Seat } from "@/lib/data/planners";
+import { CATEGORY_SHORT, isTeamCategory } from "@/lib/team/categories";
+import { clientContentQuota } from "@/lib/clients/quota";
 import { fmtHours, loadFor, shareHours } from "@/lib/capacity/helpers";
 import { roundHours } from "@/lib/dev-store/team";
 import { awaitsApprovalFrom, isOpen, isOverdue, members, monthLabel, nextDue } from "@/lib/works/helpers";
@@ -172,21 +174,21 @@ export type MemberLoad = {
     offDayHours: number;
     /** Tasks due in the month that this person holds a share of. */
     monthTasks: number;
-    /** Open contract tasks this person holds a share of, or must approve (any month). */
+    /** Open project tasks this person holds a share of, or must approve (any month). */
     openTasks: number;
     /** Of those, the ones waiting on this person's approval. */
     awaitingApproval: number;
     openSprintTasks: number;
     openContent: number;
-    /** Open contract tasks past their due date. */
+    /** Open project tasks past their due date. */
     overdueTasks: number;
-    /** Overdue contract tasks + sprint tasks + content items. */
+    /** Overdue project tasks + sprint tasks + content items. */
     overdue: number;
     /** Open task shares and content items this person holds outside their role. */
     outOfRole: number;
     /** Distinct clients this person is currently working for. */
     clients: string[];
-    /** Distinct contracts with a task on this person. */
+    /** Distinct projects with a task on this person. */
     contracts: number;
     /** plannedHours / availableHours × 100. */
     pct: number;
@@ -296,7 +298,7 @@ export type ContractProgress = {
     currentPhase: string;
     /** The earliest open task. */
     next: NextTask | null;
-    /** Active contracts count toward load; draft / completed / cancelled do not. */
+    /** Active projects count toward load; draft / completed / cancelled do not. */
     isActive: boolean;
     health: Health;
     note: string;
@@ -305,11 +307,11 @@ export type ContractProgress = {
 
 export type ClientProgress = {
     name: string;
-    /** False when the name only appears on contracts/content, not in Clients. */
+    /** False when the name only appears on projects/content, not in Clients. */
     registered: boolean;
     status: string;
-    accountManager: string;
-    packageName: string;
+    /** Who closed the deal (the client's person); each project carries its own AM. */
+    dealOwner: string;
     contracts: ContractProgress[];
     /** Distinct team members with work for this client right now. */
     people: string[];
@@ -317,6 +319,7 @@ export type ClientProgress = {
     openItems: number;
     contentPlanned: number;
     contentPosted: number;
+    /** Content a month promised by the active projects. */
     contentQuota: number;
     awaitingClient: number;
     overdueInvoices: number;
@@ -459,8 +462,8 @@ export function holdersOf(w: Work): string[] {
     return [...out];
 }
 
-function canHoldSeat(role: string, seat: Seat): boolean {
-    return (SEAT_ROLES[seat] as readonly string[]).includes(role);
+function canHoldSeat(category: string, seat: Seat): boolean {
+    return isTeamCategory(category) && categoryHoldsSeat(category, seat);
 }
 
 /** Days a submitted task has sat with its approver. */
@@ -473,7 +476,7 @@ function toNextTask(w: Work): NextTask {
     return { id: w.id, title: w.title, phaseName: w.phaseName, dueDate: w.dueDate, status: w.status, href: `/works/${w.id}` };
 }
 
-/** Progress and health of one contract, from its tasks. */
+/** Progress and health of one project, from its tasks. */
 export function summarizeContract(c: Contract, works: Work[], today: string): ContractProgress {
     const mine = works.filter((w) => w.contractId === c.id);
     const open = mine.filter(isOpen);
@@ -542,7 +545,7 @@ export function summarizeContract(c: Contract, works: Work[], today: string): Co
         isActive,
         health,
         note,
-        href: `/contracts/${c.id}`,
+        href: `/projects/${c.id}`,
     };
 }
 
@@ -595,7 +598,8 @@ export function buildManagementSnapshot(
 
     const activeTeam = team.filter((m) => m.active);
     const activeNames = new Set(activeTeam.map((m) => m.name));
-    const roleByName = new Map(activeTeam.map((m) => [m.name, m.role as string]));
+    // Seats are held by job category; the label people read is the category's short name.
+    const roleByName = new Map(activeTeam.map((m) => [m.name, m.category as string]));
     const contractById = new Map(contracts.map((c) => [c.id, c]));
     const activeContracts = contracts.filter((c) => c.status === "active");
     const openWorks = works.filter(isOpen);
@@ -613,7 +617,7 @@ export function buildManagementSnapshot(
         return a;
     };
 
-    // ---- Contract tasks: everyone holding a share carries their hours on
+    // ---- Project tasks: everyone holding a share carries their hours on
     //      it; the account manager carries anything waiting for their
     //      approval (the client approves through them) — as a count, not hours.
     let overdueTasks = 0;
@@ -656,7 +660,7 @@ export function buildManagementSnapshot(
                     memberRole,
                     taskTitle: w.title,
                     seat: SEAT_LABEL[s.seat],
-                    seatRoles: [...SEAT_ROLES[s.seat]],
+                    seatRoles: SEAT_CATEGORIES[s.seat].map((c) => CATEGORY_SHORT[c]),
                     contractId: w.contractId,
                     contractName: contract?.name ?? w.clientName,
                     clientName: w.clientName,
@@ -820,10 +824,10 @@ export function buildManagementSnapshot(
         for (const s of w.split) {
             if (s.pct <= 0) continue;
             const held = s.member ? roleByName.get(s.member) : undefined;
-            bump(held ?? SEAT_ROLES[s.seat][0], !s.member);
+            bump(held ?? SEAT_CATEGORIES[s.seat][0], !s.member);
         }
     }
-    const roleNames = new Set<string>([...activeTeam.map((m) => m.role), ...demand.keys()]);
+    const roleNames = new Set<string>([...activeTeam.map((m) => m.category as string), ...demand.keys()]);
     const roles: RoleLoad[] = [...roleNames]
         .map((role) => {
             const inRole = members_.filter((m) => m.role === role);
@@ -853,7 +857,7 @@ export function buildManagementSnapshot(
                 a.role.localeCompare(b.role),
         );
 
-    // ---- Clients: contract progress rolled up per account
+    // ---- Clients: project progress rolled up per account
     const contractSummaries = contracts
         .filter((c) => c.status !== "cancelled")
         .map((c) => summarizeContract(c, works, today));
@@ -915,7 +919,7 @@ export function buildManagementSnapshot(
         let note = "";
         if (status === "active" && !hasActiveWork) {
             health = "amber";
-            note = activeMine.length ? `Active contract with no open tasks · ${activeMine[0].note}` : "Active account with no work in progress";
+            note = activeMine.length ? `Active project with no open tasks · ${activeMine[0].note}` : "Active account with no work in progress";
         } else if (!hasActiveWork && mine.length > 0) {
             health = worstHealth(mine.map((c) => c.health));
             note = mine[0].note;
@@ -931,14 +935,13 @@ export function buildManagementSnapshot(
             name,
             registered: Boolean(meta),
             status,
-            accountManager: meta?.accountManager ?? "",
-            packageName: meta?.packageName ?? "",
+            dealOwner: meta?.dealOwner ?? "",
             contracts: mine,
             people: [...people].sort(),
             openItems,
             contentPlanned: monthContent.length,
             contentPosted,
-            contentQuota: meta?.monthlyContentQuota ?? 0,
+            contentQuota: clientContentQuota(name, contracts),
             awaitingClient,
             overdueInvoices,
             hasActiveWork,
@@ -1005,7 +1008,7 @@ export function buildManagementSnapshot(
                 severity: "amber",
                 kind: "contract_done",
                 title: `${c.name} · every task is done`,
-                detail: `${c.clientName} · ${CONTRACT_STAGE_LABEL[c.stage]} · plan the next month or complete the contract`,
+                detail: `${c.clientName} · ${CONTRACT_STAGE_LABEL[c.stage]} · plan the next month or complete the project`,
                 href: c.href,
             });
         }
@@ -1094,10 +1097,8 @@ export function buildManagementSnapshot(
                 kind: "client_idle",
                 title: `${c.name} has no work in progress`,
                 detail: c.contracts.some((x) => x.isActive)
-                    ? "Active contract with no open tasks · plan the next month"
-                    : c.packageName
-                      ? `${c.packageName} package · check what they are owed this month`
-                      : "Active account · confirm scope or next deliverable",
+                    ? "Active project with no open tasks · plan the next month"
+                    : "Active account with no project · set one up or confirm the next deliverable",
                 href: "/settings/clients",
             });
         }

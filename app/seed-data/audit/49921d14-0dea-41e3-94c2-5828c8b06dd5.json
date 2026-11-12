@@ -1,0 +1,16 @@
+{
+  "id": "49921d14-0dea-41e3-94c2-5828c8b06dd5",
+  "at": "2026-11-11T09:10:33.756Z",
+  "entity": "work",
+  "entityId": "b6d5ded9-9cb2-4a16-9049-ff14f3bbfc33",
+  "kind": "status",
+  "summary": "Reel: Behind the scenes at Nexova: pending approval → in progress",
+  "actor": "Team",
+  "changes": [
+    {
+      "field": "status",
+      "before": "pending_approval",
+      "after": "in_progress"
+    }
+  ]
+}

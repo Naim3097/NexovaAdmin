@@ -1,0 +1,68 @@
+{
+  "id": "0c978b6f-72f7-4d2c-b999-35c45225e0a6",
+  "name": "Growth",
+  "description": "Content and search together, with a site to land on.",
+  "months": 3,
+  "requirements": [
+    {
+      "type": "static",
+      "name": "Awareness static on Instagram",
+      "count": 3,
+      "per": "week",
+      "channel": "Instagram"
+    },
+    {
+      "type": "video",
+      "name": "Awareness reel",
+      "count": 1,
+      "per": "week",
+      "channel": "Instagram"
+    },
+    {
+      "type": "seo",
+      "name": "Blog article",
+      "count": 2,
+      "per": "month",
+      "channel": "Blog"
+    },
+    {
+      "type": "website",
+      "name": "Website",
+      "count": 1,
+      "per": "once",
+      "channel": "Website"
+    }
+  ],
+  "phases": [
+    {
+      "key": "kickoff",
+      "name": "Kickoff",
+      "summary": "Onboarding, brand audit, access, strategy sign-off.",
+      "fromMonth": 1,
+      "months": 1
+    },
+    {
+      "key": "foundation",
+      "name": "Foundation",
+      "summary": "The website and account setup.",
+      "fromMonth": 1,
+      "months": 1
+    },
+    {
+      "key": "production",
+      "name": "Production",
+      "summary": "Weekly posts and monthly articles.",
+      "fromMonth": 1,
+      "months": 3
+    },
+    {
+      "key": "review",
+      "name": "Review",
+      "summary": "Performance review, renewal proposal, next plan.",
+      "fromMonth": 3,
+      "months": 1
+    }
+  ],
+  "createdAt": "2026-11-12T06:27:04.165Z",
+  "updatedAt": "2026-11-12T06:27:04.165Z"
+}

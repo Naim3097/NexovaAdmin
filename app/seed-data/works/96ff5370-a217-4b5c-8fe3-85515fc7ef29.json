@@ -1,0 +1,52 @@
+{
+  "id": "96ff5370-a217-4b5c-8fe3-85515fc7ef29",
+  "contractId": "cc412500-078b-465c-b702-e2d6ab336cd0",
+  "clientName": "Payright",
+  "accountManager": "Bob",
+  "plannerLineId": "req:static:2026-10:0:1",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Carousel: E-invoicing checklist",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-01",
+  "defaultDueDate": "2026-10-01",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 1.75
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "6e738d91-7087-4afd-aa83-1e843bd86004"
+  },
+  "startedAt": "2026-09-25T06:27:03.731Z",
+  "submittedAt": "2026-09-29T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/96ff5370",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Bob)",
+    "at": "2026-09-30T06:27:03.731Z"
+  },
+  "completedAt": "2026-09-30T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-02-25T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.146Z"
+}

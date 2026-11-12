@@ -1,0 +1,22 @@
+{
+  "id": "7d850225-2ceb-4045-83ce-436a1adc260e",
+  "name": "Hilmi Rahman",
+  "company": "Sekolah Tahfiz Al-Hikmah",
+  "email": "sekolah-tahfiz-al-hikmah@example.com",
+  "phone": "",
+  "source": "referral",
+  "sourceCampaignId": null,
+  "interestedIn": "Donation website, Meta ads",
+  "estValueMyr": 14000,
+  "status": "qualified",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Naim",
+  "score": 64,
+  "autoIntake": false,
+  "lostReason": "",
+  "lostNote": "",
+  "createdAt": "2026-10-27T06:27:03.731Z",
+  "updatedAt": "2026-11-08T06:27:03.731Z"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "055f2ff4-4068-40e4-b6aa-e523cc6baeab",
+  "name": "Leanis contact",
+  "company": "Leanis Solution Sdn Bhd",
+  "email": "leanis-solution-sdn-bhd@example.com",
+  "phone": "",
+  "source": "linkedin",
+  "sourceCampaignId": null,
+  "interestedIn": "LinkedIn, social media, SEO",
+  "estValueMyr": 24000,
+  "status": "won",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Yusuf",
+  "score": 76,
+  "autoIntake": false,
+  "lostReason": "",
+  "lostNote": "",
+  "createdAt": "2026-08-03T06:27:03.731Z",
+  "updatedAt": "2026-08-27T06:27:03.731Z"
+}

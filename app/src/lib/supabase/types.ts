@@ -71,6 +71,8 @@ export type AgencyProfileRow = {
     logos: BrandLogoRow[];
     default_quote_terms: string;
     default_quote_acceptance: boolean;
+    /** Monthly sales target (MYR won); 0 = none. Added in migration 0041. */
+    sales_target_myr: number;
     updated_at: string;
 };
 
@@ -91,7 +93,8 @@ export type ClientRow = {
     id: string;
     name: string;
     status: string;
-    account_manager: string;
+    /** Who closed the deal. Renamed from account_manager in migration 0039. */
+    deal_owner: string;
     contact_name: string;
     contact_email: string;
     contact_phone: string;
@@ -99,15 +102,15 @@ export type ClientRow = {
     website: string;
     industry: string;
     notes: string;
+    /** How many feedback rounds the client gets per content item (a client rule). */
     content_revision_limit: number;
-    monthly_content_quota: number;
     portal_token: string;
     user_id: string | null;
-    extra_content_price: number;
-    extra_revision_price: number;
-    monthly_retainer_myr: number;
-    package_name: string;
-    package_renews_on: string | null;
+    /** Our own company; its projects are internal. Added in migration 0035. */
+    internal: boolean;
+    /** Last check-in with the client (date) and what was said. Added in migration 0041. */
+    last_check_in_at: string | null;
+    last_check_in_note: string;
     created_at: string;
     updated_at: string;
 };
@@ -115,18 +118,23 @@ export type ClientRow = {
 export type TeamMemberRow = {
     id: string;
     name: string;
+    /** Job role, free text. */
     role: string;
+    /** Job category (closer | dm | creative | developer | am | business_support). Added in migration 0042. */
+    category: string;
     access_level: string;
     /** text[] — SystemRole[] (see lib/dev-store/team.ts). */
     system_roles: string[];
     /** text[] — TeamFunction[]. */
     functions: string[];
     weekly_hours: number;
-    /** JSONB — Partial<Record<ReservedKey, number>>. */
-    reserved_hours: Record<string, unknown>;
+    /** JSONB — SetAside[] ({ label, hours } rows). Replaced reserved_hours in migration 0039. */
+    set_aside: unknown[];
     /** JSONB — Partial<Record<LineType, number>>. */
     hours_by_type: Record<string, unknown>;
     cost_rate_myr: number;
+    /** JSONB — Record<YYYY-MM, days off>. Added in migration 0041. */
+    days_off: Record<string, unknown>;
     email: string;
     phone: string;
     skills: string;
@@ -155,6 +163,9 @@ export type LeadRow = {
     /** True for leads inserted by automation (Meta webhook, public API);
      * cleared on the first human action. Added in migration 0026. */
     auto_intake: boolean;
+    /** Why the deal was lost and a note; "" until recorded. Added in migration 0041. */
+    lost_reason: string;
+    lost_note: string;
     created_at: string;
     updated_at: string;
 };
@@ -405,13 +416,15 @@ export type ReportInsightsRow = {
     generated_at: string;
 };
 
-export type PhaseTemplateRow = {
+export type ProjectTemplateRow = {
     id: string;
     name: string;
     description: string;
-    /** JSONB — PlannerPhase[] (see lib/dev-store/planners.ts). */
+    months: number;
+    /** JSONB — Requirement[] (see lib/contracts/requirements.ts). */
+    requirements: unknown[];
+    /** JSONB — TemplatePhase[] (see lib/contracts/phases.ts). Added in migration 0038. */
     phases: unknown[];
-    is_default: boolean;
     created_at: string;
     updated_at: string;
 };
@@ -431,6 +444,8 @@ export type ContractRow = {
     crew: Record<string, unknown>;
     /** JSONB — pending account-manager handover {to, by, at, note}, null when none. */
     handover: Record<string, unknown> | null;
+    /** Name of the project template it started from; "" when custom. Added in migration 0037. */
+    template_name: string;
     stage: string;
     start_date: string | null;
     end_date: string | null;
@@ -444,6 +459,10 @@ export type ContractRow = {
     /** JSONB — see lib/dev-store/contracts.ts (ContractBilling). */
     billing: Record<string, unknown>;
     notes: string;
+    /** Renewal standing ("" | in_talks | renewing | at_risk | not_renewing | renewed). Added in migration 0041. */
+    renewal_status: string;
+    /** JSONB — ProjectCost[] ({ id, label, kind, amountMyr, date, addedBy }). Added in migration 0042. */
+    costs: unknown[];
     created_at: string;
     updated_at: string;
 };
@@ -463,6 +482,8 @@ export type WorkRow = {
     phase_name: string;
     due_date: string | null;
     default_due_date: string | null;
+    /** The owner's planned day, never after due_date. Added in migration 0036. */
+    planned_date: string | null;
     adjusted_by: string;
     adjusted_at: string | null;
     status: string;
@@ -472,13 +493,15 @@ export type WorkRow = {
     milestone: boolean;
     /** JSONB — see lib/dev-store/works.ts (LinkedItem | null). */
     linked: Record<string, unknown> | null;
-    requested_at: string | null;
     started_at: string | null;
     submitted_at: string | null;
     submission: Record<string, unknown>;
     review: Record<string, unknown>;
     completed_at: string | null;
     notes: string;
+    /** Who the task waits on ("client" | "internal" | "") and since when. Added in migration 0041. */
+    waiting_on: string;
+    waiting_since: string | null;
     created_at: string;
     updated_at: string;
 };
@@ -532,7 +555,7 @@ export type Database = {
             onboarding_submissions: Tbl<OnboardingSubmissionRow>;
             invoices: Tbl<InvoiceRow>;
             invoice_items: Tbl<InvoiceItemRow>;
-            phase_templates: Tbl<PhaseTemplateRow>;
+            project_templates: Tbl<ProjectTemplateRow>;
             quotations: Tbl<QuotationRow>;
             quotation_items: Tbl<QuotationItemRow>;
             campaigns: Tbl<CampaignRow>;

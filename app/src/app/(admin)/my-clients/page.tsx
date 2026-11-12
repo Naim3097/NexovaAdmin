@@ -1,32 +1,32 @@
 /**
- * My accounts — the account manager's home. The contracts they own, what is
- * waiting on them (approvals, oldest first), each contract's health with the
- * one next move, and who carries their clients' work this month.
+ * My accounts — the account manager's home. The projects they manage
+ * (`myContracts`) and those projects' clients only: what is waiting on them
+ * (approvals, oldest first), each project's health with the one next move,
+ * a pending account-manager transfer, and who carries their clients' work
+ * this month.
  *
  * Who "I" am: the linked login, else the `?as=` pick (DEV_AUTH_BYPASS), else
- * the acting-as cookie. Strictly the contracts I am the account manager of;
- * "Also on" lists the ones someone else manages where I hold a task. Only
- * when nobody is picked (dev bypass) does the page show every active
- * contract, with a note.
+ * the acting-as cookie. Only when nobody is picked (dev bypass) does the page
+ * show every active project, with a note. Tasks I hold on other people's
+ * projects are on My tasks, not here.
  */
 import Link from "next/link";
 import { getActingMember, getCurrentTeamMember, requireTeamAccess } from "@/lib/auth";
-import { listContracts, type Contract } from "@/lib/data/contracts";
+import { listContracts } from "@/lib/data/contracts";
 import { listInvoices } from "@/lib/data/invoices";
 import { listTeamMembers } from "@/lib/data/team";
 import { listWorks } from "@/lib/data/works";
 import { findMember, hoursByMonthAndMember } from "@/lib/capacity/helpers";
-import { isAccountManagerOf } from "@/lib/scope";
+import { myContracts } from "@/lib/scope";
 import { filterQuery } from "@/lib/works/filter";
 import { todayKey } from "@/lib/works/helpers";
 import { ActingAs } from "@/app/(admin)/works/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { AlsoOn } from "./also-on";
 import { ApprovalsQueue } from "./approvals-queue";
 import { ContractCard } from "./contract-card";
 import { MonthLoad, type LoadRow } from "./month-load";
-import { alsoOnGroups, deriveCard, sortByRisk, sortPending, totalsOf } from "./derive";
+import { deriveCard, sortByRisk, sortPending, totalsOf } from "./derive";
 
 export const dynamic = "force-dynamic";
 
@@ -58,24 +58,21 @@ export default async function MyClientsPage({ searchParams }: { searchParams: Pr
     const asField = asParam ? <input type="hidden" name="as" value={asParam} /> : null;
     const asQ = asParam ? `?as=${encodeURIComponent(asParam)}` : "";
 
-    // ---- Mine: strictly the live contracts I am the account manager of. Only when
-    // nobody is picked (dev bypass) does the page fall back to every active contract.
-    const owned = member ? contracts.filter((c) => isAccountManagerOf(member, c) && (c.status === "active" || c.status === "draft")) : [];
+    // ---- Mine: the live projects I am the account manager of, and nothing else. Only when
+    // nobody is picked (dev bypass) does the page fall back to every active project.
     const fallback = !member;
-    const mine: Contract[] = fallback ? contracts.filter((c) => c.status === "active") : owned;
+    const mine = myContracts(member, contracts).filter((c) => (fallback ? c.status === "active" : c.status === "active" || c.status === "draft"));
     const byId = new Map(mine.map((c) => [c.id, c]));
 
     const cards = sortByRisk(mine.map((c) => deriveCard(c, works, invoices, today, asParam)));
-    /** My contracts with a handover pending: the role is leaving once the colleague accepts. */
+    /** My projects with a handover pending: the role is leaving once the colleague accepts. */
     const handingOver = mine.flatMap((c) => (c.handover ? [{ c, h: c.handover }] : []));
+    // The tasks on my projects — the only tasks this page counts.
     const myWorks = cards.flatMap((k) => k.works);
     const totals = totalsOf(cards, invoices, today);
     const pending = sortPending(myWorks.filter((w) => w.status === "pending_approval"));
 
-    // ---- Also on: contracts someone else manages where I hold a task share.
-    const alsoOn = alsoOnGroups(me, contracts, works);
-
-    // ---- This month by person: planned hours on my contracts.
+    // ---- This month by person: planned hours on my projects.
     const hours = hoursByMonthAndMember(myWorks).get(thisMonth) ?? new Map<string, number>();
     const loadRows: LoadRow[] = [...hours.entries()]
         .map(([name, h]) => {
@@ -91,7 +88,7 @@ export default async function MyClientsPage({ searchParams }: { searchParams: Pr
         .sort((a, b) => b.hours - a.hours || a.name.localeCompare(b.name));
 
     const kpis = [
-        { label: "Contracts", value: String(totals.contracts), hint: fallback ? "every active contract" : "active + draft", href: "#contracts", tone: "neutral" },
+        { label: "Projects", value: String(totals.contracts), hint: fallback ? "every active project" : "active + draft", href: "#contracts", tone: "neutral" },
         {
             label: "Tasks this month",
             value: `${totals.month.done}/${totals.month.total}`,
@@ -129,18 +126,18 @@ export default async function MyClientsPage({ searchParams }: { searchParams: Pr
                     <h1 className="text-2xl font-semibold md:text-3xl">My accounts{me ? ` · ${me}` : ""}</h1>
                     <p className="text-sm text-muted-foreground">
                         {fallback
-                            ? "Pick who you are to see your own accounts — showing every active contract."
-                            : "The contracts you manage: what waits on you, where each one stands, and the one next move."}
+                            ? "Pick who you are to see your own accounts — showing every active project."
+                            : "The projects you manage: what waits on you, where each one stands, and the one next move."}
                     </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 text-sm font-medium">
                     {me ? (
-                        <Link href={`/works${filterQuery({ member: me }, { as: asParam })}`} className="underline">
+                        <Link href={`/my-work${asQ}`} className="underline">
                             My tasks
                         </Link>
                     ) : null}
-                    <Link href="/contracts" className="underline">
-                        All contracts
+                    <Link href={`/projects${asQ}`} className="underline">
+                        All projects
                     </Link>
                 </div>
             </div>
@@ -177,7 +174,7 @@ export default async function MyClientsPage({ searchParams }: { searchParams: Pr
             <section id="contracts" className="scroll-mt-4 space-y-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                     <h2 className="text-sm font-medium">
-                        Contracts <span className="tabular-nums text-muted-foreground">· {cards.length}</span>
+                        Projects <span className="tabular-nums text-muted-foreground">· {cards.length}</span>
                     </h2>
                     <p className="text-xs text-muted-foreground">Most at risk first: overdue, then stale approvals, then the nearest due date.</p>
                 </div>
@@ -187,39 +184,43 @@ export default async function MyClientsPage({ searchParams }: { searchParams: Pr
                         {handingOver.map(({ c, h }, i) => (
                             <span key={c.id}>
                                 {i > 0 ? " · " : ""}
-                                <Link href={`/contracts/${c.id}${filterQuery({}, { tab: "setup", as: asParam })}#account-manager`} className="underline">
+                                <Link href={`/projects/${c.id}${filterQuery({}, { tab: "setup", as: asParam })}#account-manager`} className="underline">
                                     {c.name}
                                 </Link>{" "}
                                 → {h.to} since <span className="tabular-nums">{h.at.slice(0, 10)}</span>
                             </span>
                         ))}
-                        . Nothing moves until they accept; withdraw on the contract&apos;s Setup tab.
+                        . Nothing moves until they accept; withdraw on the project&apos;s Setup tab.
                     </p>
                 ) : null}
                 {cards.length === 0 ? (
                     <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
                         {fallback ? (
                             <>
-                                No active contract on the books.{" "}
-                                <Link href="/contracts/new" className="underline">
+                                No active project on the books.{" "}
+                                <Link href="/projects/new" className="underline">
                                     Create one
                                 </Link>{" "}
                                 or accept a quote.
                             </>
                         ) : (
-                            "No contracts assigned to you yet."
+                            <>
+                                You are not the account manager of any live project. Your own tasks are on{" "}
+                                <Link href={`/my-work${asQ}`} className="underline">
+                                    My tasks
+                                </Link>
+                                .
+                            </>
                         )}
                     </div>
                 ) : (
                     <ul className="space-y-3">
                         {cards.map((k) => (
-                            <ContractCard key={k.c.id} card={k} today={today} asQ={asQ} asField={asField} />
+                            <ContractCard key={k.c.id} card={k} today={today} asQ={asQ} />
                         ))}
                     </ul>
                 )}
             </section>
-
-            {member ? <AlsoOn groups={alsoOn} me={me} today={today} asQ={asQ} asParam={asParam} /> : null}
 
             <MonthLoad month={thisMonth} rows={loadRows} />
         </div>

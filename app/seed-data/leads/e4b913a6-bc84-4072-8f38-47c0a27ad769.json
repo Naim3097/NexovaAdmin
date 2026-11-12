@@ -1,0 +1,22 @@
+{
+  "id": "e4b913a6-bc84-4072-8f38-47c0a27ad769",
+  "name": "Baitul Irfan contact",
+  "company": "Baitul Irfan",
+  "email": "baitul-irfan@example.com",
+  "phone": "",
+  "source": "referral",
+  "sourceCampaignId": null,
+  "interestedIn": "Donation campaigns",
+  "estValueMyr": 15000,
+  "status": "won",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Naim",
+  "score": 70,
+  "autoIntake": false,
+  "lostReason": "",
+  "lostNote": "",
+  "createdAt": "2026-07-09T06:27:03.731Z",
+  "updatedAt": "2026-07-29T06:27:03.731Z"
+}

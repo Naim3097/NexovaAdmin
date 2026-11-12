@@ -1,0 +1,21 @@
+{
+  "id": "456c90ee-a542-4ad4-8aaa-42aa39e040af",
+  "name": "Tropicor — always-on brand search",
+  "clientName": "Tropicor",
+  "contractId": "6d1e4aab-758f-42fd-9862-f8590788625b",
+  "platform": "google",
+  "objective": "sales",
+  "status": "planning",
+  "startDate": "2026-11-26",
+  "endDate": "",
+  "monthlyBudgetMyr": 1500,
+  "feeModel": "percent",
+  "flatFeeMyr": 0,
+  "percentFee": 15,
+  "externalId": "",
+  "landingUrl": "",
+  "notes": "",
+  "metrics": [],
+  "createdAt": "2026-11-12T06:27:06.244Z",
+  "updatedAt": "2026-11-12T06:27:06.244Z"
+}

@@ -1,0 +1,52 @@
+{
+  "id": "1b9d3c0d-3fbf-4a3c-9432-bd81d7761f45",
+  "contractId": "8dc8c820-cc95-428e-9a8f-6630adbd3fc9",
+  "clientName": "LeanX",
+  "accountManager": "Bob",
+  "plannerLineId": "req:video:2026-10:1:3",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "TikTok: A day with a merchant",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-22",
+  "defaultDueDate": "2026-10-22",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 4.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "c8f8e954-46bf-422c-9e0c-cae775f7fc39"
+  },
+  "startedAt": "2026-10-16T06:27:03.731Z",
+  "submittedAt": "2026-10-20T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/1b9d3c0d",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Bob)",
+    "at": "2026-10-21T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-21T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2025-12-22T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.346Z"
+}

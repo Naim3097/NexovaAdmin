@@ -1,0 +1,47 @@
+{
+  "id": "ee74e5af-8dbf-4b69-b4f2-ba5771179212",
+  "name": "Starter",
+  "description": "Keep a brand active: statics every week and a video every week.",
+  "months": 3,
+  "requirements": [
+    {
+      "type": "static",
+      "name": "Instagram static",
+      "count": 3,
+      "per": "week",
+      "channel": "Instagram"
+    },
+    {
+      "type": "video",
+      "name": "Instagram reel",
+      "count": 1,
+      "per": "week",
+      "channel": "Instagram"
+    }
+  ],
+  "phases": [
+    {
+      "key": "kickoff",
+      "name": "Kickoff",
+      "summary": "Onboarding, access, strategy sign-off.",
+      "fromMonth": 1,
+      "months": 1
+    },
+    {
+      "key": "production",
+      "name": "Production",
+      "summary": "The weekly posts.",
+      "fromMonth": 1,
+      "months": 3
+    },
+    {
+      "key": "review",
+      "name": "Review",
+      "summary": "Performance review and the next plan.",
+      "fromMonth": 3,
+      "months": 1
+    }
+  ],
+  "createdAt": "2026-11-12T06:27:04.164Z",
+  "updatedAt": "2026-11-12T06:27:04.164Z"
+}

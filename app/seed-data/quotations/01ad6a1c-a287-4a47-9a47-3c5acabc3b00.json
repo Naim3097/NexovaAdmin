@@ -1,0 +1,31 @@
+{
+  "id": "01ad6a1c-a287-4a47-9a47-3c5acabc3b00",
+  "number": "QUO-2026-0008",
+  "clientName": "Butik Nur Ayu",
+  "status": "declined",
+  "issueDate": "2026-10-13",
+  "validUntil": "2026-10-27",
+  "items": [
+    {
+      "id": "91208eca-a8bc-4259-b553-3c327de5533a",
+      "description": "Social media management — 3 months",
+      "details": "",
+      "quantity": 1,
+      "unitPriceMyr": 6000
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "subject": "Social media management — 3 months",
+  "scopeIncludes": "",
+  "exclusions": "",
+  "terms": "",
+  "showAcceptance": true,
+  "convertedInvoiceId": null,
+  "createdAt": "2026-10-13T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.247Z",
+  "acceptedAt": null
+}

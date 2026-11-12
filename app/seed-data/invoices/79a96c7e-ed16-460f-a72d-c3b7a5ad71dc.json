@@ -1,0 +1,31 @@
+{
+  "id": "79a96c7e-ed16-460f-a72d-c3b7a5ad71dc",
+  "number": "INV-2026-0036",
+  "clientName": "Leanis Solution Sdn Bhd",
+  "contractId": "01149f98-ad2c-41a5-a4f9-10b85c31d526",
+  "status": "paid",
+  "issueDate": "2026-09-02",
+  "dueDate": "2026-09-16",
+  "items": [
+    {
+      "id": "59a89c15-defa-4c19-9fad-fb2112b6f7b2",
+      "description": "Leanis Solution — brand growth — 2026-09",
+      "details": "CON-2026-0007",
+      "quantity": 1,
+      "unitPriceMyr": 4000
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "createdAt": "2026-09-02T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.560Z",
+  "paidAt": "2026-09-07T06:27:03.731Z",
+  "paymentProvider": null,
+  "paymentLink": null,
+  "paymentExternalId": null,
+  "paymentMeta": {},
+  "paymentLinkCreatedAt": null
+}

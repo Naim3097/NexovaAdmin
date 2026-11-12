@@ -1,8 +1,8 @@
 /**
  * The "+ New <thing>" pill every list page puts top-right in its header, as on
- * /contracts: a link dressed as the primary button. Most pages point it at
+ * /projects: a link dressed as the primary button. Most pages point it at
  * their own folded creation form (`newFormHref` → `?new=1#new`, which opens the
- * NewSection below and scrolls to it); /contracts points it at /contracts/new.
+ * NewSection below and scrolls to it); /projects points it at /projects/new.
  */
 import Link from "next/link";
 import type { ReactNode } from "react";

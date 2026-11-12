@@ -23,7 +23,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { createSeoArticleAction } from "@/lib/seo-articles/actions";
-import { NewButton, NewSection, newFormHref } from "@/components/new-button";
+import { NewSection } from "@/components/new-button";
 
 export const dynamic = "force-dynamic";
 
@@ -60,14 +60,13 @@ export default async function SeoPage({ searchParams }: { searchParams: Promise<
         listWorks(),
         getActingMember(sp.as),
     ]);
-    // Articles carry only a client name: a user sees those of the clients whose contracts they are on.
+    // Articles carry only a client name: a user sees those of the clients whose projects they are on.
     const myClientNames = new Set(visibleContracts(member, contracts, works).map((c) => norm(c.clientName)));
     const articles = seesEverything(member) ? allArticles : allArticles.filter((a) => myClientNames.has(norm(a.clientName)));
     const clients = visibleClients(member, allClients, contracts, works);
     const grouped = new Map<SeoStage, typeof articles>();
     for (const s of SEO_STAGES) grouped.set(s, []);
     for (const a of articles) grouped.get(a.stage)?.push(a);
-    const newHref = newFormHref("/seo", { as: sp.as });
 
     return (
         <div className="space-y-6">
@@ -79,8 +78,8 @@ export default async function SeoPage({ searchParams }: { searchParams: Promise<
                     <p className="text-sm text-muted-foreground">
                         Brief → outline → draft → review → published, kept apart from the social calendar.
                     </p>
+                    <p className="text-xs text-muted-foreground">Items come from project tasks. The account manager adds them on the project.</p>
                 </div>
-                <NewButton href={newHref}>+ New article</NewButton>
             </div>
 
             {/* Add form, folded until the button above opens it */}

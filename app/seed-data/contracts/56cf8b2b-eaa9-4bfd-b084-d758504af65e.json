@@ -1,0 +1,66 @@
+{
+  "id": "56cf8b2b-eaa9-4bfd-b084-d758504af65e",
+  "code": "CON-2026-0013",
+  "name": "Pak Long Kopitiam — website & menu revamp",
+  "clientName": "Pak Long Kopitiam",
+  "accountManager": "Zafran",
+  "status": "completed",
+  "phases": [
+    {
+      "key": "discovery",
+      "name": "Discovery",
+      "summary": "Requirements, sitemap, content inventory.",
+      "startMonth": "2026-05",
+      "endMonth": "2026-05"
+    },
+    {
+      "key": "design",
+      "name": "Design",
+      "summary": "Wireframes, visual design, client sign-off.",
+      "startMonth": "2026-05",
+      "endMonth": "2026-06"
+    },
+    {
+      "key": "build",
+      "name": "Build",
+      "summary": "Development, donation flow, integrations, content entry.",
+      "startMonth": "2026-06",
+      "endMonth": "2026-07"
+    },
+    {
+      "key": "qa-launch",
+      "name": "QA & launch",
+      "summary": "Testing, fixes, go-live and handover.",
+      "startMonth": "2026-07",
+      "endMonth": "2026-07"
+    }
+  ],
+  "requirements": [],
+  "crew": {
+    "dev": "Zafran",
+    "creative": "Izzad",
+    "am": "Zafran"
+  },
+  "handover": null,
+  "templateName": "",
+  "stage": "completed",
+  "startDate": "2026-05-01",
+  "endDate": "2026-07-31",
+  "reference": "PLK-WEB-01",
+  "quotationId": null,
+  "valueMyr": 9500,
+  "signedAt": "2026-04-24",
+  "signedBy": "Client director",
+  "fileUrl": "https://drive.example.com/contracts/signed.pdf",
+  "terms": "Website with an online menu and a printed menu revamp: 50 % on signing, 50 % on handover.",
+  "billing": {
+    "cadence": "one_off",
+    "amountMyr": 9500,
+    "invoiceDay": 2
+  },
+  "notes": "",
+  "renewalStatus": "",
+  "costs": [],
+  "createdAt": "2026-04-24T06:27:03.731Z",
+  "updatedAt": "2026-04-24T06:27:03.731Z"
+}

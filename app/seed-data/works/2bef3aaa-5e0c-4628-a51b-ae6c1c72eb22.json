@@ -1,0 +1,52 @@
+{
+  "id": "2bef3aaa-5e0c-4628-a51b-ae6c1c72eb22",
+  "contractId": "ee0609d4-3179-4475-8f59-8d96c5c3edb4",
+  "clientName": "Rouang",
+  "accountManager": "Izzad",
+  "plannerLineId": "req:static:2026-10:0:2",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Static: 3 layout ideas for small kitchens",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-08",
+  "defaultDueDate": "2026-10-08",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Izzad",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "26456a20-de2a-4bfa-beea-3e74d3e229d9"
+  },
+  "startedAt": "2026-10-06T06:27:03.731Z",
+  "submittedAt": "2026-10-10T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/2bef3aaa",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Izzad)",
+    "at": "2026-10-11T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-11T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-06-26T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.532Z"
+}

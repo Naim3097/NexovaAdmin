@@ -13,7 +13,8 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { devDataRoot } from "@/lib/dev-store/root";
 import { randomUUID } from "node:crypto";
-import { DEFAULT_SPLIT, isApprover, isLineType, type Approver, type LineType, type Seat } from "@/lib/dev-store/planners";
+import { DEFAULT_SPLIT, isApprover, toLineType, toSeat, type Approver, type LineType, type Seat } from "@/lib/dev-store/planners";
+import { normalizeWaitingOn, type WaitingOn } from "@/lib/works/waiting";
 
 const ROOT = devDataRoot();
 const DIR = path.join(ROOT, "works");
@@ -53,10 +54,15 @@ export type Work = {
     month: string;
     phaseKey: string;
     phaseName: string;
-    /** YYYY-MM-DD the account manager set (starts equal to the planner date). */
+    /** YYYY-MM-DD the account manager set (starts equal to the planner date). The deadline. */
     dueDate: string;
     /** YYYY-MM-DD from the planner. */
     defaultDueDate: string;
+    /**
+     * YYYY-MM-DD the owner plans to do it, never after the deadline.
+     * "" = on the deadline. The calendar shows the task on this day.
+     */
+    plannedDate: string;
     /** Who last moved the date off the planner. "" = as planned. */
     adjustedBy: string;
     adjustedAt: string | null;
@@ -65,21 +71,23 @@ export type Work = {
     approver: Approver;
     milestone: boolean;
     linked: LinkedItem | null;
-    /** When the account manager sent the request to the people on it. */
-    requestedAt: string | null;
     startedAt: string | null;
     submittedAt: string | null;
     submission: { url: string; note: string };
     review: { decision: "approved" | "changes" | null; note: string; by: string; at: string | null };
     completedAt: string | null;
     notes: string;
+    /** Who the task waits on ("" = nobody), set from the quick edit; clears when the task moves on. */
+    waitingOn: WaitingOn;
+    /** ISO when it started waiting; null when not waiting. */
+    waitingSince: string | null;
     createdAt: string;
     updatedAt: string;
 };
 
 export function normalizeWork(raw: Partial<Work> & { id: string }): Work {
     const now = new Date().toISOString();
-    const type = raw.type && isLineType(raw.type) ? raw.type : "post";
+    const type = toLineType(raw.type, raw.title ?? "");
     return {
         id: raw.id,
         contractId: raw.contractId ?? "",
@@ -95,11 +103,12 @@ export function normalizeWork(raw: Partial<Work> & { id: string }): Work {
         phaseName: raw.phaseName ?? "",
         dueDate: raw.dueDate ?? "",
         defaultDueDate: raw.defaultDueDate ?? raw.dueDate ?? "",
+        plannedDate: raw.plannedDate ?? "",
         adjustedBy: raw.adjustedBy ?? "",
         adjustedAt: raw.adjustedAt ?? null,
         status: raw.status && isTaskStatus(raw.status) ? raw.status : "not_started",
         split: (raw.split ?? DEFAULT_SPLIT[type].map((s) => ({ ...s, member: "" }))).map((s) => ({
-            seat: s.seat,
+            seat: toSeat(s.seat) ?? "am",
             member: s.member ?? "",
             pct: Number(s.pct) || 0,
             hours: Math.max(0, Math.round((Number((s as Partial<WorkShare>).hours) || 0) * 4) / 4),
@@ -107,13 +116,14 @@ export function normalizeWork(raw: Partial<Work> & { id: string }): Work {
         approver: raw.approver && isApprover(raw.approver) ? raw.approver : "am",
         milestone: raw.milestone ?? false,
         linked: raw.linked ?? null,
-        requestedAt: raw.requestedAt ?? null,
         startedAt: raw.startedAt ?? null,
         submittedAt: raw.submittedAt ?? null,
         submission: { url: "", note: "", ...(raw.submission ?? {}) },
         review: { decision: null, note: "", by: "", at: null, ...(raw.review ?? {}) },
         completedAt: raw.completedAt ?? null,
         notes: raw.notes ?? "",
+        waitingOn: normalizeWaitingOn(raw.waitingOn),
+        waitingSince: normalizeWaitingOn(raw.waitingOn) ? (raw.waitingSince ?? null) : null,
         createdAt: raw.createdAt ?? now,
         updatedAt: raw.updatedAt ?? now,
     };

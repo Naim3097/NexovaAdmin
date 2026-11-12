@@ -27,7 +27,7 @@ import { getActingMember } from "@/lib/auth";
 import { assignedContractIds, seesEverything, visibleContracts } from "@/lib/scope";
 import { fmtMyr, fmtMyrShort } from "@/lib/format";
 import { SelectNav } from "@/components/select-nav";
-import { NewButton, NewSection, newFormHref } from "@/components/new-button";
+import { NewSection } from "@/components/new-button";
 
 export const dynamic = "force-dynamic";
 
@@ -56,7 +56,7 @@ export default async function CampaignsPage({
         listWorks(),
         getActingMember(as),
     ]);
-    // A user sees the campaigns of the contracts they are on: linked by contract, else by the contract's client name.
+    // A user sees the campaigns of the projects they are on: linked by project, else by the project's client name.
     const contracts = visibleContracts(member, allContracts, works);
     const myContractIds = assignedContractIds(member, allContracts, works);
     const myClientNames = new Set(contracts.map((c) => norm(c.clientName)));
@@ -83,7 +83,6 @@ export default async function CampaignsPage({
     );
     const crmAttributed = leads.filter((l) => l.sourceCampaignId).length;
     const today = new Date().toISOString().slice(0, 10);
-    const newHref = newFormHref("/campaigns", { client: clientFilter, as });
 
     return (
         <div className="space-y-6">
@@ -93,12 +92,12 @@ export default async function CampaignsPage({
                     <p className="text-sm text-muted-foreground">
                         Entered by hand until the Meta, Google and TikTok APIs unfreeze.
                     </p>
+                    <p className="text-xs text-muted-foreground">Items come from project tasks. The account manager adds them on the project.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                     <Link href="/campaigns/clients" className="text-sm font-medium underline">
                         By client
                     </Link>
-                    <NewButton href={newHref}>+ New campaign</NewButton>
                 </div>
             </div>
 
@@ -125,7 +124,7 @@ export default async function CampaignsPage({
                             />
                         </div>
                         <div className="space-y-1.5">
-                            <Label className="text-sm">Contract (optional)</Label>
+                            <Label className="text-sm">Project (optional)</Label>
                             <Select name="contractId" defaultValue={"none"}>
                                 <SelectTrigger className="h-10">
                                     <SelectValue />

@@ -1,0 +1,52 @@
+{
+  "id": "06dcb633-f90c-4291-9c9c-15b1ecbf2eeb",
+  "contractId": "6d1e4aab-758f-42fd-9862-f8590788625b",
+  "clientName": "Tropicor",
+  "accountManager": "Danisy",
+  "plannerLineId": "req:campaign:2027-01:0:1",
+  "addendumVersion": 0,
+  "type": "campaign",
+  "title": "Meta campaign: New flavour launch",
+  "channel": "Meta",
+  "month": "2027-01",
+  "phaseKey": "optimise",
+  "phaseName": "Optimise",
+  "dueDate": "2027-01-07",
+  "defaultDueDate": "2027-01-07",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Danisy",
+      "pct": 100,
+      "hours": 6
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "campaign",
+    "id": "ea966256-909f-4dc3-a8f8-7dd61d6d4bdf"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-09-29T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.072Z"
+}

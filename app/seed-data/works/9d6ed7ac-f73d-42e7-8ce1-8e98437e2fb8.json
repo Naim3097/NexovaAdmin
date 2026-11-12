@@ -1,0 +1,52 @@
+{
+  "id": "9d6ed7ac-f73d-42e7-8ce1-8e98437e2fb8",
+  "contractId": "0e0938d5-dcab-4d66-ab19-02e5220e078c",
+  "clientName": "Zakat Selangor",
+  "accountManager": "Hakim",
+  "plannerLineId": "req:video:2026-10:0:1",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "TikTok: Zakat in 30 seconds",
+  "channel": "TikTok",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-07",
+  "defaultDueDate": "2026-10-07",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 4.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "88a34e84-d3f5-4f64-9715-0f9a082c0d3b"
+  },
+  "startedAt": "2026-10-01T06:27:03.731Z",
+  "submittedAt": "2026-10-05T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/9d6ed7ac",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Hakim)",
+    "at": "2026-10-06T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-06T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-06-03T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.754Z"
+}

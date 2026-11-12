@@ -1,0 +1,43 @@
+{
+  "id": "b227cb61-1f30-499b-b00c-f1a6f3c84240",
+  "name": "Hakim",
+  "role": "Head of Account Management",
+  "category": "am",
+  "email": "hakim@nexova.local",
+  "phone": "",
+  "skills": "account management, community, copywriting, reporting",
+  "active": true,
+  "userId": null,
+  "accessLevel": "standard",
+  "systemRoles": [
+    "management"
+  ],
+  "functions": [
+    "delivery"
+  ],
+  "weeklyHours": 32,
+  "setAside": [
+    {
+      "label": "Client calls",
+      "hours": 6
+    },
+    {
+      "label": "Management",
+      "hours": 4
+    }
+  ],
+  "hoursByType": {
+    "custom": 2,
+    "static": 2,
+    "video": 5,
+    "campaign": 6,
+    "seo": 4,
+    "website": 8
+  },
+  "costRateMyr": 100,
+  "daysOff": {
+    "2027-01": 3
+  },
+  "createdAt": "2026-11-12T06:27:04.172Z",
+  "updatedAt": "2026-11-12T06:27:04.172Z"
+}

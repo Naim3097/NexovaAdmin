@@ -1,0 +1,135 @@
+{
+  "id": "6d1e4aab-758f-42fd-9862-f8590788625b",
+  "code": "CON-2026-0011",
+  "name": "Tropicor — campaign management",
+  "clientName": "Tropicor",
+  "accountManager": "Danisy",
+  "status": "active",
+  "phases": [
+    {
+      "key": "setup",
+      "name": "Setup",
+      "summary": "Ad accounts, tracking, audiences, first creatives.",
+      "startMonth": "2026-10",
+      "endMonth": "2026-10"
+    },
+    {
+      "key": "launch",
+      "name": "Launch",
+      "summary": "First campaigns live, budgets split by channel.",
+      "startMonth": "2026-10",
+      "endMonth": "2026-11"
+    },
+    {
+      "key": "optimise",
+      "name": "Optimise",
+      "summary": "Weekly optimisation, fresh creatives, monthly report.",
+      "startMonth": "2026-10",
+      "endMonth": "2027-03"
+    },
+    {
+      "key": "review",
+      "name": "Review",
+      "summary": "Results review and the next quarter's plan.",
+      "startMonth": "2027-03",
+      "endMonth": "2027-03"
+    }
+  ],
+  "requirements": [
+    {
+      "type": "campaign",
+      "name": "Meta campaign",
+      "count": 2,
+      "per": "month",
+      "channel": "Meta"
+    },
+    {
+      "type": "campaign",
+      "name": "Google Ads campaign",
+      "count": 2,
+      "per": "month",
+      "channel": "Google"
+    },
+    {
+      "type": "static",
+      "name": "Ad creative",
+      "count": 4,
+      "per": "month",
+      "channel": "Instagram"
+    },
+    {
+      "type": "custom",
+      "name": "Monthly performance report",
+      "count": 1,
+      "per": "month",
+      "channel": "Report"
+    },
+    {
+      "type": "custom",
+      "name": "Monthly growth review",
+      "count": 1,
+      "per": "month",
+      "channel": "Call"
+    }
+  ],
+  "crew": {
+    "dm": "Danisy",
+    "creative": "Bob",
+    "am": "Danisy"
+  },
+  "handover": null,
+  "templateName": "",
+  "stage": "delivering",
+  "startDate": "2026-10-01",
+  "endDate": "2027-03-31",
+  "reference": "QUO-2026-0002",
+  "quotationId": "18d8c78e-87f5-4d98-8787-b9aabd49eb12",
+  "valueMyr": 57000,
+  "signedAt": "2026-09-29",
+  "signedBy": "Client director",
+  "fileUrl": "https://drive.example.com/contracts/signed.pdf",
+  "terms": "Six months of campaign management: two Meta and two Google Ads campaigns a month, 4 ad creatives, a monthly performance report. Fee includes a managed ad budget of RM 4,000 a month.",
+  "billing": {
+    "cadence": "monthly",
+    "amountMyr": 9500,
+    "invoiceDay": 2
+  },
+  "notes": "",
+  "renewalStatus": "",
+  "costs": [
+    {
+      "id": "abd39f09-ebeb-42a5-b63a-45c7f1144441",
+      "label": "Meta ad spend — Nov (to date)",
+      "kind": "ad_spend",
+      "amountMyr": 1150,
+      "date": "2026-11-12",
+      "addedBy": "Danisy"
+    },
+    {
+      "id": "a1026a18-75a8-4f2d-9e9a-9dcb5a6c9a35",
+      "label": "Google Ads spend — Nov (to date)",
+      "kind": "ad_spend",
+      "amountMyr": 640,
+      "date": "2026-11-12",
+      "addedBy": "Danisy"
+    },
+    {
+      "id": "4d100bef-9de8-4e24-9c36-6bb70d229e59",
+      "label": "Meta ad spend — Oct",
+      "kind": "ad_spend",
+      "amountMyr": 2450,
+      "date": "2026-10-31",
+      "addedBy": "Danisy"
+    },
+    {
+      "id": "1b852b8f-1b56-419b-9f5c-7cc55ed5a43f",
+      "label": "Google Ads spend — Oct",
+      "kind": "ad_spend",
+      "amountMyr": 1480,
+      "date": "2026-10-31",
+      "addedBy": "Danisy"
+    }
+  ],
+  "createdAt": "2026-09-29T06:27:03.731Z",
+  "updatedAt": "2026-09-29T06:27:03.731Z"
+}

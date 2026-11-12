@@ -1,0 +1,12 @@
+{
+  "id": "109d8630-be19-4827-baf8-171c3aaf445b",
+  "name": "Google Ads",
+  "category": "ads",
+  "unit": "month",
+  "defaultPrice": 1500,
+  "description": "",
+  "details": "",
+  "active": true,
+  "createdAt": "2026-11-12T06:27:04.160Z",
+  "updatedAt": "2026-11-12T06:27:04.160Z"
+}

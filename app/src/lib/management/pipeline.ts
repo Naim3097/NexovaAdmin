@@ -3,9 +3,11 @@
  * the clients we already have.
  *
  * New business comes from leads (proposal / qualified) and quotations out
- * for decision. Retention comes from active clients: package renewals,
- * delivery health, items waiting on us, under-delivered content, overdue
- * invoices. Pure functions, no I/O.
+ * for decision. Retention comes from active clients: projects coming to their
+ * end date, delivery health, items waiting on us, under-delivered content,
+ * overdue invoices. Money and content promised come from the client's
+ * projects (`@/lib/clients/revenue`, `@/lib/clients/quota`). Pure functions,
+ * no I/O.
  */
 import type { Lead } from "@/lib/data/leads";
 import type { Quotation } from "@/lib/data/quotations";
@@ -18,6 +20,8 @@ import type { Invoice } from "@/lib/data/invoices";
 import type { Campaign } from "@/lib/data/campaigns";
 import { computeTotals as invoiceTotals } from "@/lib/data/invoices";
 import { isOpen } from "@/lib/works/helpers";
+import { activeContractsFor, clientMonthlyMyr } from "@/lib/clients/revenue";
+import { clientContentQuota } from "@/lib/clients/quota";
 import {
     daysSince,
     daysUntil,
@@ -70,9 +74,12 @@ export type EarlyLeadRow = {
 export type RetentionRow = {
     id: string;
     name: string;
-    packageName: string;
     mrr: number;
-    accountManager: string;
+    /** Who closed the deal (the client's person; projects have their own AM). */
+    dealOwner: string;
+    /** Names of the client's active projects. */
+    projects: string[];
+    /** Nearest end date among the active projects (YYYY-MM-DD); "" when all are open-ended. */
     renewsOn: string;
     renewsInDays: number | null;
     activeContracts: number;
@@ -92,7 +99,7 @@ export type WinBackRow = {
     id: string;
     name: string;
     status: string;
-    accountManager: string;
+    dealOwner: string;
     lastContract: string;
     lastContractAt: string;
     lastInvoiceAt: string;
@@ -136,8 +143,11 @@ export type PipelineInput = {
     campaigns: Campaign[];
 };
 
-/** Monthly recurring revenue for a client: retainer + live campaign flat fees. */
-export function clientMrr(client: Client, campaigns: Campaign[]): number {
+/**
+ * Monthly recurring revenue for a client: the monthly billing of their active
+ * projects + live campaign flat fees.
+ */
+export function clientMrr(client: Client, contracts: Contract[], campaigns: Campaign[]): number {
     const fees = campaigns
         .filter((c) => c.clientName === client.name && c.status === "live")
         .reduce(
@@ -145,7 +155,21 @@ export function clientMrr(client: Client, campaigns: Campaign[]): number {
                 s + (c.feeModel === "flat" || c.feeModel === "flat_plus_percent" ? c.flatFeeMyr : 0),
             0,
         );
-    return (client.monthlyRetainerMyr || 0) + fees;
+    return clientMonthlyMyr(client.name, contracts) + fees;
+}
+
+/**
+ * When the client's engagement next comes up for renewal: the nearest end
+ * date among their active projects (a passed date = overdue), "" when every
+ * active project is open-ended.
+ */
+export function nextProjectEnd(clientName: string, contracts: Contract[]): string {
+    return (
+        activeContractsFor(clientName, contracts)
+            .map((c) => c.endDate)
+            .filter(Boolean)
+            .sort()[0] ?? ""
+    );
 }
 
 export function buildPipelineSnapshot(
@@ -259,7 +283,7 @@ export function buildPipelineSnapshot(
                 id: c.id,
                 name: c.name,
                 status: c.status,
-                accountManager: c.accountManager,
+                dealOwner: c.dealOwner,
                 lastContract: last?.name ?? "",
                 lastContractAt: last ? last.updatedAt.slice(0, 10) : "",
                 lastInvoiceAt: lastInvoice?.issueDate ?? "",
@@ -283,7 +307,9 @@ export function buildPipelineSnapshot(
         const overdueInvoices = clientInvoices.filter(
             (i) => i.status === "overdue" || (i.status === "sent" && i.dueDate < today),
         ).length;
-        const renewsInDays = c.packageRenewsOn ? daysUntil(c.packageRenewsOn, today) : null;
+        const renewsOn = nextProjectEnd(c.name, contracts);
+        const renewsInDays = renewsOn ? daysUntil(renewsOn, today) : null;
+        const contentQuota = clientContentQuota(c.name, contracts);
         const hasWork = openWorks.length > 0 || openContent.length > 0;
 
         const reasons: string[] = [];
@@ -291,17 +317,17 @@ export function buildPipelineSnapshot(
         if (renewsInDays !== null && renewsInDays <= RENEWAL_URGENT_DAYS) {
             reasons.push(
                 renewsInDays < 0
-                    ? `Renewal passed ${-renewsInDays}d ago`
-                    : `Renews in ${renewsInDays}d`,
+                    ? `Project ended ${-renewsInDays}d ago — renew or close`
+                    : `Project ends in ${renewsInDays}d`,
             );
         } else if (renewsInDays !== null && renewsInDays <= RENEWAL_WINDOW_DAYS) {
-            reasons.push(`Renews in ${renewsInDays}d`);
+            reasons.push(`Project ends in ${renewsInDays}d`);
         }
         const red = active.filter((x) => x.health === "red");
-        if (red.length) reasons.push(`${red.length} contract${red.length === 1 ? "" : "s"} at risk`);
+        if (red.length) reasons.push(`${red.length} project${red.length === 1 ? "" : "s"} at risk`);
         if (awaitingUs > 0) reasons.push(`${awaitingUs} revision${awaitingUs === 1 ? "" : "s"} waiting on us`);
-        if (c.monthlyContentQuota > 0 && monthContent.length < c.monthlyContentQuota) {
-            reasons.push(`${c.monthlyContentQuota - monthContent.length} of ${c.monthlyContentQuota} content not planned`);
+        if (contentQuota > 0 && monthContent.length < contentQuota) {
+            reasons.push(`${contentQuota - monthContent.length} of ${contentQuota} content not planned`);
         }
         if (overdueInvoices > 0) reasons.push(`${overdueInvoices} overdue invoice${overdueInvoices === 1 ? "" : "s"}`);
         if (!hasWork) {
@@ -312,7 +338,7 @@ export function buildPipelineSnapshot(
         if (health !== "red" && renewsInDays !== null && renewsInDays <= RENEWAL_URGENT_DAYS && reasons.length >= 2) {
             health = "red";
         }
-        // Health inherited from a contract that is merely "to watch" (task
+        // Health inherited from a project that is merely "to watch" (task
         // due soon, approval waiting) — say why, so an amber row never reads
         // as "healthy".
         if (health !== "green" && reasons.length === 0) {
@@ -323,10 +349,10 @@ export function buildPipelineSnapshot(
         retention.push({
             id: c.id,
             name: c.name,
-            packageName: c.packageName,
-            mrr: clientMrr(c, campaigns),
-            accountManager: c.accountManager,
-            renewsOn: c.packageRenewsOn,
+            mrr: clientMrr(c, contracts, campaigns),
+            dealOwner: c.dealOwner,
+            projects: active.map((x) => x.name),
+            renewsOn,
             renewsInDays,
             activeContracts: active.length,
             openTasks: openWorks.length,
@@ -334,7 +360,7 @@ export function buildPipelineSnapshot(
             awaitingClient,
             contentPosted,
             contentPlanned: monthContent.length,
-            contentQuota: c.monthlyContentQuota,
+            contentQuota,
             overdueInvoices,
             health,
             reasons,

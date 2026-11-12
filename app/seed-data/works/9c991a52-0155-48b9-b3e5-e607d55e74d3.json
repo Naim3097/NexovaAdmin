@@ -1,0 +1,52 @@
+{
+  "id": "9c991a52-0155-48b9-b3e5-e607d55e74d3",
+  "contractId": "8dc8c820-cc95-428e-9a8f-6630adbd3fc9",
+  "clientName": "LeanX",
+  "accountManager": "Bob",
+  "plannerLineId": "req:video:2026-11:1:1",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "Reel: Founder story",
+  "channel": "Instagram",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-05",
+  "defaultDueDate": "2026-11-05",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 4.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "e1af0306-6cfb-403b-a70e-25d0b85a5282"
+  },
+  "startedAt": "2026-10-30T06:27:03.731Z",
+  "submittedAt": "2026-11-03T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/9c991a52",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Bob)",
+    "at": "2026-11-04T06:27:03.731Z"
+  },
+  "completedAt": "2026-11-04T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2025-12-22T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.357Z"
+}

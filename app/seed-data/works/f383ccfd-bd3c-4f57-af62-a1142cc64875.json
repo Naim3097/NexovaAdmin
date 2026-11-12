@@ -1,0 +1,49 @@
+{
+  "id": "f383ccfd-bd3c-4f57-af62-a1142cc64875",
+  "contractId": "649c59c0-6455-4332-a82e-30eda362c9c0",
+  "clientName": "LeanX Digital",
+  "accountManager": "Yusuf",
+  "plannerLineId": "req:custom:2026-10:4:1",
+  "addendumVersion": 0,
+  "type": "custom",
+  "title": "Agency newsletter · Oct",
+  "channel": "E-mail",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-22",
+  "defaultDueDate": "2026-10-22",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "am",
+      "member": "Yusuf",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": null,
+  "startedAt": "2026-10-16T06:27:03.731Z",
+  "submittedAt": "2026-10-20T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/f383ccfd",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Yusuf",
+    "at": "2026-10-21T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-21T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-07-01T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.930Z"
+}

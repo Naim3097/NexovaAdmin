@@ -1,0 +1,52 @@
+{
+  "id": "23409dda-c7a4-4f89-ba89-644c99bb0b22",
+  "contractId": "be8d2563-6668-4eca-8ae3-f93933ff08cb",
+  "clientName": "Baitul Irfan",
+  "accountManager": "Bob",
+  "plannerLineId": "req:video:2026-10:2:2",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "Video: The imam's message to donors",
+  "channel": "Facebook",
+  "month": "2026-10",
+  "phaseKey": "drives",
+  "phaseName": "Monthly drives",
+  "dueDate": "2026-10-21",
+  "defaultDueDate": "2026-10-21",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 4.5
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "059e24ea-2b27-4198-a9d4-bb595eb65cd3"
+  },
+  "startedAt": "2026-10-15T06:27:03.731Z",
+  "submittedAt": "2026-10-19T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/23409dda",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Bob)",
+    "at": "2026-10-20T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-20T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-07-29T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.740Z"
+}

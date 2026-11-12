@@ -1,0 +1,180 @@
+{
+  "id": "0e0938d5-dcab-4d66-ab19-02e5220e078c",
+  "code": "CON-2026-0008",
+  "name": "Zakat Selangor — Gen Z awareness",
+  "clientName": "Zakat Selangor",
+  "accountManager": "Hakim",
+  "status": "active",
+  "phases": [
+    {
+      "key": "kickoff",
+      "name": "Kickoff",
+      "summary": "Onboarding, brand audit, access, strategy sign-off.",
+      "startMonth": "2026-06",
+      "endMonth": "2026-06"
+    },
+    {
+      "key": "foundation",
+      "name": "Foundation",
+      "summary": "Brand kit, content pillars and account setup.",
+      "startMonth": "2026-06",
+      "endMonth": "2026-07"
+    },
+    {
+      "key": "production",
+      "name": "Production",
+      "summary": "Monthly statics, videos, campaigns and articles.",
+      "startMonth": "2026-06",
+      "endMonth": "2027-05"
+    },
+    {
+      "key": "review",
+      "name": "Review",
+      "summary": "Performance review, renewal proposal, next plan.",
+      "startMonth": "2027-05",
+      "endMonth": "2027-05"
+    }
+  ],
+  "requirements": [
+    {
+      "type": "video",
+      "name": "TikTok video",
+      "count": 1,
+      "per": "week",
+      "channel": "TikTok"
+    },
+    {
+      "type": "video",
+      "name": "Instagram Reel",
+      "count": 2,
+      "per": "month",
+      "channel": "Instagram"
+    },
+    {
+      "type": "static",
+      "name": "Infographic",
+      "count": 4,
+      "per": "month",
+      "channel": "Instagram"
+    },
+    {
+      "type": "campaign",
+      "name": "TikTok awareness campaign · Gen Z",
+      "count": 1,
+      "per": "month",
+      "channel": "TikTok"
+    },
+    {
+      "type": "custom",
+      "name": "Community management",
+      "count": 1,
+      "per": "week",
+      "channel": "TikTok"
+    },
+    {
+      "type": "custom",
+      "name": "Monthly report to the board",
+      "count": 1,
+      "per": "month",
+      "channel": "Report"
+    },
+    {
+      "type": "custom",
+      "name": "Monthly strategy call",
+      "count": 1,
+      "per": "month",
+      "channel": "Call"
+    },
+    {
+      "type": "website",
+      "name": "Campaign landing page update",
+      "count": 1,
+      "per": "month",
+      "channel": "Website"
+    },
+    {
+      "type": "custom",
+      "name": "Content calendar & captions",
+      "count": 1,
+      "per": "month",
+      "channel": "Planning"
+    }
+  ],
+  "crew": {
+    "dm": "Danisy",
+    "creative": "Bob",
+    "dev": "Zafran",
+    "am": "Hakim"
+  },
+  "handover": null,
+  "templateName": "",
+  "stage": "delivering",
+  "startDate": "2026-06-01",
+  "endDate": "2027-05-31",
+  "reference": "LZS-GENZ-01",
+  "quotationId": null,
+  "valueMyr": 120000,
+  "signedAt": "2026-06-03",
+  "signedBy": "Client director",
+  "fileUrl": "https://drive.example.com/contracts/signed.pdf",
+  "terms": "Twelve months: a TikTok every week and 2 Reels a month, 4 infographics, a TikTok awareness campaign and a landing page update a month, weekly community management, a monthly board report. Shoot days by a freelance videographer.",
+  "billing": {
+    "cadence": "monthly",
+    "amountMyr": 10000,
+    "invoiceDay": 2
+  },
+  "notes": "",
+  "renewalStatus": "",
+  "costs": [
+    {
+      "id": "cf6f5776-2166-4dd4-bd2c-4d90f16015f6",
+      "label": "Freelance videographer — Nov shoot days",
+      "kind": "freelancer",
+      "amountMyr": 1800,
+      "date": "2026-11-06",
+      "addedBy": "Hakim"
+    },
+    {
+      "id": "a529d077-b2bf-4f8f-bae9-e102eef41171",
+      "label": "Freelance videographer — Oct shoot days",
+      "kind": "freelancer",
+      "amountMyr": 1800,
+      "date": "2026-10-06",
+      "addedBy": "Hakim"
+    },
+    {
+      "id": "2d2c79d5-5731-4d3c-b303-0e73075ee525",
+      "label": "Freelance videographer — Sept shoot days",
+      "kind": "freelancer",
+      "amountMyr": 1800,
+      "date": "2026-09-06",
+      "addedBy": "Hakim"
+    },
+    {
+      "id": "b36311b5-368c-4be3-b827-162ecc3948a4",
+      "label": "Freelance videographer — Aug shoot days",
+      "kind": "freelancer",
+      "amountMyr": 1800,
+      "date": "2026-08-06",
+      "addedBy": "Hakim"
+    },
+    {
+      "id": "a6db0383-6ee1-4783-af4a-e269defee5fe",
+      "label": "Freelance videographer — Jul shoot days",
+      "kind": "freelancer",
+      "amountMyr": 1800,
+      "date": "2026-07-06",
+      "addedBy": "Hakim"
+    },
+    {
+      "id": "ef50ad36-ebba-45f4-9323-3b57adcfc89c",
+      "label": "Freelance videographer — Jun shoot days",
+      "kind": "freelancer",
+      "amountMyr": 1800,
+      "date": "2026-06-06",
+      "addedBy": "Hakim"
+    }
+  ],
+  "createdAt": "2026-06-03T06:27:03.731Z",
+  "updatedAt": "2026-06-03T06:27:03.731Z"
+}

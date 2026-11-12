@@ -1,6 +1,6 @@
 /**
- * The task list the Tasks and My tasks pages share: one table per contract
- * under its client (or one flat table with a "Client · contract" column),
+ * The task list the Tasks and My tasks pages share: one table per project
+ * under its client (or one flat table with a "Client · project" column),
  * optional sections above that (phases, urgency buckets), the one-line
  * summary and the empty state. Server components; task links keep the acting
  * member through `asQ`.
@@ -10,6 +10,7 @@ import type { ReactNode } from "react";
 import type { Contract } from "@/lib/data/contracts";
 import type { Work } from "@/lib/data/works";
 import { NO_PHASE, byStatus, groupByPhase, isAdjusted, isOverdue, monthLabel, pendingFrom } from "@/lib/works/helpers";
+import { waitingLabel } from "@/lib/works/waiting";
 import { cn } from "@/lib/utils";
 import { DueLabel, SplitLabel, TaskStatusBadge, TypeBadge } from "./ui";
 
@@ -25,7 +26,7 @@ export function byDue(list: Work[]): Work[] {
 export type ContractGroup = { key: string; contract: Contract | null; works: Work[] };
 export type ClientGroup = { client: string; contracts: ContractGroup[] };
 
-/** Client → contract → tasks by due date. Tasks whose contract is gone sit under "No contract". */
+/** Client → project → tasks by due date. Tasks whose project is gone sit under "No project". */
 export function groupByClient(list: Work[], contracts: Contract[]): ClientGroup[] {
     const byId = new Map(contracts.map((c) => [c.id, c]));
     const clients = new Map<string, Map<string, ContractGroup>>();
@@ -49,7 +50,7 @@ export function groupByClient(list: Work[], contracts: Contract[]): ClientGroup[
 }
 
 /**
- * Phase names of the contracts these tasks belong to, in contract order,
+ * Phase names of the projects these tasks belong to, in project order,
  * de-duplicated — the order the phase grouping and the Phase dropdown follow.
  */
 export function phaseOrderOf(list: Work[], contracts: Contract[]): string[] {
@@ -68,7 +69,7 @@ export type TaskSection = {
     titleClassName?: string;
 };
 
-/** The list split by phase, in the contracts' phase order, "No phase" last. */
+/** The list split by phase, in the projects' phase order, "No phase" last. */
 export function phaseSections(list: Work[], contracts: Contract[]): TaskSection[] {
     return [...groupByPhase(list, phaseOrderOf(list, contracts)).entries()].map(([phase, works]) => ({
         key: phase,
@@ -88,7 +89,7 @@ type TableProps = {
     asQ: string;
     /** Hidden when the list is already grouped by phase. */
     showPhase?: boolean;
-    /** A "Client · contract" column, for flat lists not nested under their contract. */
+    /** A "Client · project" column, for flat lists not nested under their project. */
     showContract?: boolean;
     contractById?: Map<string, Contract>;
     actions?: RowActionsRenderer;
@@ -112,7 +113,7 @@ export function WorkTable({
                 <thead>
                     <tr className="text-left text-xs text-muted-foreground">
                         <th className="py-1 pr-3 font-medium">Task</th>
-                        {showContract ? <th className="py-1 pr-3 font-medium">Client · contract</th> : null}
+                        {showContract ? <th className="py-1 pr-3 font-medium">Client · project</th> : null}
                         <th className="py-1 pr-3 font-medium">Type</th>
                         <th className="py-1 pr-3 font-medium">Channel</th>
                         <th className="py-1 pr-3 font-medium">Month</th>
@@ -148,11 +149,11 @@ export function WorkTable({
                                         {w.clientName || "No client"}
                                         {" · "}
                                         {contract ? (
-                                            <Link href={`/contracts/${contract.id}#works`} className="hover:underline" title={contract.name}>
+                                            <Link href={`/projects/${contract.id}#works`} className="hover:underline" title={contract.name}>
                                                 {contract.code}
                                             </Link>
                                         ) : (
-                                            "No contract"
+                                            "No project"
                                         )}
                                     </td>
                                 ) : null}
@@ -171,7 +172,15 @@ export function WorkTable({
                                 <td className="py-2 pr-3">
                                     <TaskStatusBadge status={w.status} />
                                 </td>
-                                <td className={actions ? "py-2 pr-3 text-xs text-muted-foreground" : "py-2 text-xs text-muted-foreground"}>{pendingFrom(w) || "—"}</td>
+                                <td className={actions ? "py-2 pr-3 text-xs text-muted-foreground" : "py-2 text-xs text-muted-foreground"}>
+                                    {w.waitingOn && w.status !== "completed" ? (
+                                        <span className={cn("font-medium", w.waitingOn === "client" ? "text-amber-700 dark:text-amber-400" : "text-foreground")} title={w.waitingSince ? `Blocked since ${w.waitingSince.slice(0, 10)}` : undefined}>
+                                            {waitingLabel(w, today)}
+                                        </span>
+                                    ) : (
+                                        pendingFrom(w) || "—"
+                                    )}
+                                </td>
                                 {actions ? <td className="py-2">{actions(w)}</td> : null}
                             </tr>
                         );
@@ -182,7 +191,7 @@ export function WorkTable({
     );
 }
 
-/** The client → contract → task table the list view renders. */
+/** The client → project → task table the list view renders. */
 export function ClientGroups({ groups, today, asQ, showPhase = true, actions }: TableProps & { groups: ClientGroup[] }) {
     return (
         <ul className="divide-y">
@@ -195,13 +204,13 @@ export function ClientGroups({ groups, today, asQ, showPhase = true, actions }: 
                                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
                                     {cg.contract ? (
                                         <>
-                                            <Link href={`/contracts/${cg.contract.id}#works`} className="font-medium hover:underline">
+                                            <Link href={`/projects/${cg.contract.id}#works`} className="font-medium hover:underline">
                                                 {cg.contract.code} · {cg.contract.name}
                                             </Link>
                                             <span className="text-xs text-muted-foreground">AM {cg.contract.accountManager || "—"}</span>
                                         </>
                                     ) : (
-                                        <span className="font-medium text-muted-foreground">No contract</span>
+                                        <span className="font-medium text-muted-foreground">No project</span>
                                     )}
                                     <span className="text-xs text-muted-foreground">· {countLabel(cg.works.length, "task")}</span>
                                 </div>
@@ -216,9 +225,9 @@ export function ClientGroups({ groups, today, asQ, showPhase = true, actions }: 
 }
 
 /**
- * The list view: client → contract tables, optionally under section headers
+ * The list view: client → project tables, optionally under section headers
  * (phases, urgency buckets), or — `flat` — one table per section with a
- * "Client · contract" column instead of the nesting.
+ * "Client · project" column instead of the nesting.
  */
 export function TaskList({
     works,

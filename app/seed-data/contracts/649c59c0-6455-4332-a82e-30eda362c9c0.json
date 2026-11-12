@@ -1,0 +1,110 @@
+{
+  "id": "649c59c0-6455-4332-a82e-30eda362c9c0",
+  "code": "CON-2026-0004",
+  "name": "LeanX Digital — our own brand",
+  "clientName": "LeanX Digital",
+  "accountManager": "Yusuf",
+  "status": "active",
+  "phases": [
+    {
+      "key": "kickoff",
+      "name": "Kickoff",
+      "summary": "Onboarding, brand audit, access, strategy sign-off.",
+      "startMonth": "",
+      "endMonth": ""
+    },
+    {
+      "key": "foundation",
+      "name": "Foundation",
+      "summary": "Brand kit, content pillars and account setup.",
+      "startMonth": "",
+      "endMonth": ""
+    },
+    {
+      "key": "production",
+      "name": "Production",
+      "summary": "Monthly statics, videos, campaigns and articles.",
+      "startMonth": "2026-07",
+      "endMonth": "2027-01"
+    },
+    {
+      "key": "review",
+      "name": "Review",
+      "summary": "Performance review, renewal proposal, next plan.",
+      "startMonth": "",
+      "endMonth": ""
+    }
+  ],
+  "requirements": [
+    {
+      "type": "video",
+      "name": "Founder video",
+      "count": 4,
+      "per": "month",
+      "channel": "LinkedIn"
+    },
+    {
+      "type": "static",
+      "name": "LinkedIn post",
+      "count": 4,
+      "per": "month",
+      "channel": "LinkedIn"
+    },
+    {
+      "type": "seo",
+      "name": "Agency blog article",
+      "count": 2,
+      "per": "month",
+      "channel": "Blog"
+    },
+    {
+      "type": "custom",
+      "name": "Case study write-up",
+      "count": 1,
+      "per": "month",
+      "channel": "Website"
+    },
+    {
+      "type": "custom",
+      "name": "Agency newsletter",
+      "count": 1,
+      "per": "month",
+      "channel": "E-mail"
+    },
+    {
+      "type": "website",
+      "name": "Website update",
+      "count": 1,
+      "per": "month",
+      "channel": "Website"
+    }
+  ],
+  "crew": {
+    "dm": "Yusuf",
+    "creative": "Naim",
+    "dev": "Zafran",
+    "am": "Yusuf"
+  },
+  "handover": null,
+  "templateName": "",
+  "stage": "delivering",
+  "startDate": "2026-07-01",
+  "endDate": "",
+  "reference": "",
+  "quotationId": null,
+  "valueMyr": 0,
+  "signedAt": "2026-07-01",
+  "signedBy": "Management",
+  "fileUrl": "",
+  "terms": "Our own brand: founder videos and LinkedIn posts from Naim, two blog articles, a case study and a newsletter a month, and a monthly website update.",
+  "billing": {
+    "cadence": "monthly",
+    "amountMyr": 0,
+    "invoiceDay": 2
+  },
+  "notes": "",
+  "renewalStatus": "",
+  "costs": [],
+  "createdAt": "2026-07-01T06:27:03.731Z",
+  "updatedAt": "2026-07-01T06:27:03.731Z"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "acb742c1-069a-498d-9db8-0606f688e35d",
+  "name": "Esah Ramli",
+  "company": "Kedai Roti Mak Esah",
+  "email": "kedai-roti-mak-esah@example.com",
+  "phone": "",
+  "source": "website",
+  "sourceCampaignId": null,
+  "interestedIn": "Website",
+  "estValueMyr": 3000,
+  "status": "new",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "",
+  "score": 35,
+  "autoIntake": false,
+  "lostReason": "",
+  "lostNote": "",
+  "createdAt": "2026-11-09T06:27:03.731Z",
+  "updatedAt": "2026-11-09T06:27:03.731Z"
+}

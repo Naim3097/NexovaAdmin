@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { portalHref, resolveActingClient } from "@/lib/portal/resolve-client";
 import { listContentPosts, visualsUsed } from "@/lib/data/content";
+import { listContracts } from "@/lib/data/contracts";
+import { clientContentQuota } from "@/lib/clients/quota";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ContentCard } from "@/components/content-card";
 import { RequestContentForm } from "./request-content-form";
@@ -61,11 +63,14 @@ export default async function PortalContentPage({
 
     const { client } = acting;
     const monthParam = sp.month;
-    const mine = (await listContentPosts()).filter(
+    const [posts, contracts] = await Promise.all([listContentPosts(), listContracts()]);
+    const mine = posts.filter(
         (p) =>
             p.clientName.trim().toLowerCase() ===
             client.name.trim().toLowerCase(),
     );
+    // Content a month the client's active projects promise.
+    const quota = clientContentQuota(client.name, contracts);
 
     const months = Array.from(
         new Set(
@@ -106,7 +111,7 @@ export default async function PortalContentPage({
                         ? `${awaitingCount} item(s) waiting for your review.`
                         : "Review, approve, or request content."}
                 </p>
-                {client.monthlyContentQuota > 0 ? (
+                {quota > 0 ? (
                     <div className="mt-3 max-w-sm space-y-1">
                         <div className="flex items-baseline justify-between text-xs">
                             <span className="text-muted-foreground">
@@ -114,26 +119,25 @@ export default async function PortalContentPage({
                             </span>
                             <span
                                 className={
-                                    usedThisMonth > client.monthlyContentQuota
+                                    usedThisMonth > quota
                                         ? "font-medium text-destructive"
                                         : "text-muted-foreground"
                                 }
                             >
-                                {usedThisMonth}/{client.monthlyContentQuota} used
+                                {usedThisMonth}/{quota} used
                             </span>
                         </div>
                         <div className="h-1.5 overflow-hidden rounded-full bg-muted">
                             <div
                                 className={`h-full rounded-full ${
-                                    usedThisMonth > client.monthlyContentQuota
+                                    usedThisMonth > quota
                                         ? "bg-destructive"
-                                        : usedThisMonth >=
-                                            client.monthlyContentQuota
+                                        : usedThisMonth >= quota
                                           ? "bg-amber-400"
                                           : "bg-primary"
                                 }`}
                                 style={{
-                                    width: `${Math.min(100, (usedThisMonth / client.monthlyContentQuota) * 100)}%`,
+                                    width: `${Math.min(100, (usedThisMonth / quota) * 100)}%`,
                                 }}
                             />
                         </div>
@@ -146,11 +150,7 @@ export default async function PortalContentPage({
                     <CardTitle className="text-base">Request content</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <RequestContentForm
-                        quota={client.monthlyContentQuota}
-                        used={usedThisMonth}
-                        extraPrice={client.extraContentPrice}
-                    />
+                    <RequestContentForm quota={quota} used={usedThisMonth} />
                 </CardContent>
             </Card>
 
@@ -180,7 +180,6 @@ export default async function PortalContentPage({
                             post={post}
                             clientReview
                             revisionLimit={client.contentRevisionLimit}
-                            extraRevisionPrice={client.extraRevisionPrice}
                             statusLabel={STATUS_LABEL[post.reviewStatus]}
                             statusVariant={
                                 STATUS_VARIANT[post.reviewStatus] ?? "outline"

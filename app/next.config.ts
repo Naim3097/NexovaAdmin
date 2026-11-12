@@ -10,6 +10,15 @@ import type { NextConfig } from "next";
  */
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // The container is called a project now (it used to be the contract).
+  // Old links, bookmarks and notifications keep working.
+  async redirects() {
+    return [
+      { source: "/contracts", destination: "/projects", permanent: false },
+      { source: "/contracts/:path*", destination: "/projects/:path*", permanent: false },
+      { source: "/management/contracts", destination: "/management/projects", permanent: false },
+    ];
+  },
   // The shared mock-up runs on the JSON dev store: ship the `seed-data`
   // snapshot with every route so it can be copied to /tmp on first use
   // (see src/lib/dev-store/root.ts). Harmless when the folder is absent.

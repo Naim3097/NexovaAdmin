@@ -1,0 +1,83 @@
+{
+  "id": "6b92fdc7-9df3-4571-a844-5bacb941cee6",
+  "code": "CON-2026-0009",
+  "name": "Kembara — donation website",
+  "clientName": "Kembara",
+  "accountManager": "Zafran",
+  "status": "active",
+  "phases": [
+    {
+      "key": "discovery",
+      "name": "Discovery",
+      "summary": "Requirements, sitemap, content inventory.",
+      "startMonth": "2026-10",
+      "endMonth": "2026-10"
+    },
+    {
+      "key": "design",
+      "name": "Design",
+      "summary": "Wireframes, visual design, client sign-off.",
+      "startMonth": "2026-10",
+      "endMonth": "2026-11"
+    },
+    {
+      "key": "build",
+      "name": "Build",
+      "summary": "Development, donation flow, integrations, content entry.",
+      "startMonth": "2026-11",
+      "endMonth": "2026-11"
+    },
+    {
+      "key": "qa-launch",
+      "name": "QA & launch",
+      "summary": "Testing, fixes, go-live and handover.",
+      "startMonth": "2026-12",
+      "endMonth": "2026-12"
+    }
+  ],
+  "requirements": [
+    {
+      "type": "website",
+      "name": "Website build",
+      "count": 7,
+      "per": "once",
+      "channel": "Website"
+    }
+  ],
+  "crew": {
+    "dev": "Zafran",
+    "creative": "Izzad",
+    "am": "Zafran"
+  },
+  "handover": null,
+  "templateName": "",
+  "stage": "delivering",
+  "startDate": "2026-10-01",
+  "endDate": "2026-12-31",
+  "reference": "QUO-2026-0003",
+  "quotationId": "a02bd908-a25f-4c65-a44b-7bf8c0aafd7e",
+  "valueMyr": 18000,
+  "signedAt": "2026-10-01",
+  "signedBy": "Client director",
+  "fileUrl": "https://drive.example.com/contracts/signed.pdf",
+  "terms": "Donation website: discovery, design, build with a payment gateway and donor receipts, QA and launch. 50 % on signing, the balance on launch. Illustrations by a freelancer.",
+  "billing": {
+    "cadence": "one_off",
+    "amountMyr": 18000,
+    "invoiceDay": 2
+  },
+  "notes": "",
+  "renewalStatus": "not_renewing",
+  "costs": [
+    {
+      "id": "329142c1-37ac-477c-ae25-3c5e91b25bb4",
+      "label": "Freelance illustrator — donation campaign artwork",
+      "kind": "freelancer",
+      "amountMyr": 2400,
+      "date": "2026-10-20",
+      "addedBy": "Zafran"
+    }
+  ],
+  "createdAt": "2026-10-01T06:27:03.731Z",
+  "updatedAt": "2026-10-01T06:27:03.731Z"
+}

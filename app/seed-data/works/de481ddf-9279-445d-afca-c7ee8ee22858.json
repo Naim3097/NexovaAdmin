@@ -1,0 +1,52 @@
+{
+  "id": "de481ddf-9279-445d-afca-c7ee8ee22858",
+  "contractId": "8dc8c820-cc95-428e-9a8f-6630adbd3fc9",
+  "clientName": "LeanX",
+  "accountManager": "Bob",
+  "plannerLineId": "req:static:2026-11:0:2",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Static: Collect payments with one link",
+  "channel": "Instagram",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-05",
+  "defaultDueDate": "2026-11-05",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 1.75
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "4f2912e3-8e7e-4534-87ba-41b72e0126df"
+  },
+  "startedAt": "2026-10-30T06:27:03.731Z",
+  "submittedAt": "2026-11-03T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/de481ddf",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Bob)",
+    "at": "2026-11-04T06:27:03.731Z"
+  },
+  "completedAt": "2026-11-04T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2025-12-22T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.354Z"
+}

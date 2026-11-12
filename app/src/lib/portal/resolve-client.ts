@@ -72,7 +72,7 @@ export function contractsOf(
     return contracts.filter((c) => norm(c.clientName) === want);
 }
 
-/** Tasks under the client's contracts that wait on the client, oldest submission first. */
+/** Tasks under the client's projects that wait on the client, oldest submission first. */
 export function tasksWaitingFor(works: Work[], contracts: Contract[]): Work[] {
     const ids = new Set(contracts.map((c) => c.id));
     return works

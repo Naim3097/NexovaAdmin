@@ -1,0 +1,190 @@
+{
+  "id": "cc412500-078b-465c-b702-e2d6ab336cd0",
+  "code": "CON-2026-0005",
+  "name": "Payright — brand growth",
+  "clientName": "Payright",
+  "accountManager": "Bob",
+  "status": "active",
+  "phases": [
+    {
+      "key": "kickoff",
+      "name": "Kickoff",
+      "summary": "Onboarding, brand audit, access, strategy sign-off.",
+      "startMonth": "2026-03",
+      "endMonth": "2026-03"
+    },
+    {
+      "key": "foundation",
+      "name": "Foundation",
+      "summary": "Brand kit, content pillars and account setup.",
+      "startMonth": "2026-03",
+      "endMonth": "2026-04"
+    },
+    {
+      "key": "production",
+      "name": "Production",
+      "summary": "Monthly statics, videos, campaigns and articles.",
+      "startMonth": "2026-03",
+      "endMonth": "2027-02"
+    },
+    {
+      "key": "review",
+      "name": "Review",
+      "summary": "Performance review, renewal proposal, next plan.",
+      "startMonth": "2027-02",
+      "endMonth": "2027-02"
+    }
+  ],
+  "requirements": [
+    {
+      "type": "static",
+      "name": "Instagram static",
+      "count": 8,
+      "per": "month",
+      "channel": "Instagram"
+    },
+    {
+      "type": "video",
+      "name": "Merchant video",
+      "count": 2,
+      "per": "month",
+      "channel": "Instagram"
+    },
+    {
+      "type": "seo",
+      "name": "Blog article",
+      "count": 2,
+      "per": "month",
+      "channel": "Blog"
+    },
+    {
+      "type": "campaign",
+      "name": "Meta lead-gen: merchant sign-ups",
+      "count": 1,
+      "per": "month",
+      "channel": "Meta"
+    },
+    {
+      "type": "custom",
+      "name": "Monthly growth review",
+      "count": 1,
+      "per": "month",
+      "channel": "Call"
+    },
+    {
+      "type": "custom",
+      "name": "Monthly performance report",
+      "count": 1,
+      "per": "month",
+      "channel": "Report"
+    },
+    {
+      "type": "website",
+      "name": "Landing page update",
+      "count": 1,
+      "per": "month",
+      "channel": "Website"
+    }
+  ],
+  "crew": {
+    "dm": "Bob",
+    "creative": "Bob",
+    "dev": "Zafran",
+    "am": "Bob"
+  },
+  "handover": null,
+  "templateName": "Scale",
+  "stage": "delivering",
+  "startDate": "2026-03-01",
+  "endDate": "2027-02-28",
+  "reference": "PR-GROW-01",
+  "quotationId": null,
+  "valueMyr": 90000,
+  "signedAt": "2026-02-25",
+  "signedBy": "Client director",
+  "fileUrl": "https://drive.example.com/contracts/signed.pdf",
+  "terms": "Twelve months: 8 statics, 2 merchant videos and 2 SEO articles a month, one Meta merchant lead-gen campaign, a landing page update, a monthly report and growth review.",
+  "billing": {
+    "cadence": "monthly",
+    "amountMyr": 7500,
+    "invoiceDay": 2
+  },
+  "notes": "",
+  "renewalStatus": "",
+  "costs": [
+    {
+      "id": "8294f072-4d07-417f-992e-a4b497927fad",
+      "label": "Canva Teams + scheduling tool — Nov",
+      "kind": "software",
+      "amountMyr": 220,
+      "date": "2026-11-03",
+      "addedBy": "Bob"
+    },
+    {
+      "id": "936dcd2c-4161-4b44-b802-5b5f5f465233",
+      "label": "Canva Teams + scheduling tool — Oct",
+      "kind": "software",
+      "amountMyr": 220,
+      "date": "2026-10-03",
+      "addedBy": "Bob"
+    },
+    {
+      "id": "a2683859-fb96-412c-96a4-88696083be98",
+      "label": "Canva Teams + scheduling tool — Sept",
+      "kind": "software",
+      "amountMyr": 220,
+      "date": "2026-09-03",
+      "addedBy": "Bob"
+    },
+    {
+      "id": "e6b8a708-c80d-4bae-b06f-04d3d5f6cef2",
+      "label": "Canva Teams + scheduling tool — Aug",
+      "kind": "software",
+      "amountMyr": 220,
+      "date": "2026-08-03",
+      "addedBy": "Bob"
+    },
+    {
+      "id": "b811875c-8691-484c-8058-7de96ea7e4d1",
+      "label": "Canva Teams + scheduling tool — Jul",
+      "kind": "software",
+      "amountMyr": 220,
+      "date": "2026-07-03",
+      "addedBy": "Bob"
+    },
+    {
+      "id": "10f9ca7f-e30f-4881-91a8-0555b7987fd0",
+      "label": "Canva Teams + scheduling tool — Jun",
+      "kind": "software",
+      "amountMyr": 220,
+      "date": "2026-06-03",
+      "addedBy": "Bob"
+    },
+    {
+      "id": "cbd0d28e-3f2b-4ffe-a054-3252a09e27b0",
+      "label": "Canva Teams + scheduling tool — May",
+      "kind": "software",
+      "amountMyr": 220,
+      "date": "2026-05-03",
+      "addedBy": "Bob"
+    },
+    {
+      "id": "8bae31f7-c217-46ad-92e2-b18aba187ba7",
+      "label": "Canva Teams + scheduling tool — Apr",
+      "kind": "software",
+      "amountMyr": 220,
+      "date": "2026-04-03",
+      "addedBy": "Bob"
+    },
+    {
+      "id": "ab0fc7f3-64f0-4357-b3f7-0a8aaf7c2367",
+      "label": "Canva Teams + scheduling tool — Mar",
+      "kind": "software",
+      "amountMyr": 220,
+      "date": "2026-03-03",
+      "addedBy": "Bob"
+    }
+  ],
+  "createdAt": "2026-02-25T06:27:03.731Z",
+  "updatedAt": "2026-02-25T06:27:03.731Z"
+}

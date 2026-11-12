@@ -1,0 +1,22 @@
+{
+  "id": "cf2f131b-0417-4c2f-8b84-7364c33bc766",
+  "name": "Lim Mei Yee",
+  "company": "Klinik Pergigian Senyum",
+  "email": "klinik-pergigian-senyum@example.com",
+  "phone": "",
+  "source": "website",
+  "sourceCampaignId": null,
+  "interestedIn": "Local SEO, Google Business Profile",
+  "estValueMyr": 10800,
+  "status": "qualified",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Yusuf",
+  "score": 58,
+  "autoIntake": false,
+  "lostReason": "",
+  "lostNote": "",
+  "createdAt": "2026-10-18T06:27:03.731Z",
+  "updatedAt": "2026-11-02T06:27:03.731Z"
+}

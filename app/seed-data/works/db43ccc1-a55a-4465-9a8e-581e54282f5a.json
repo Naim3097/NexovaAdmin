@@ -1,0 +1,52 @@
+{
+  "id": "db43ccc1-a55a-4465-9a8e-581e54282f5a",
+  "contractId": "be8d2563-6668-4eca-8ae3-f93933ff08cb",
+  "clientName": "Baitul Irfan",
+  "accountManager": "Bob",
+  "plannerLineId": "req:static:2027-01:1:3",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Poster: Wakaf one brick, RM 50",
+  "channel": "Facebook",
+  "month": "2027-01",
+  "phaseKey": "drives",
+  "phaseName": "Monthly drives",
+  "dueDate": "2027-01-13",
+  "defaultDueDate": "2027-01-13",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 1.75
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "68deb6dc-45c9-4954-b504-6266d073dfd7"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-07-29T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.720Z"
+}

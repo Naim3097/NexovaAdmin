@@ -18,7 +18,7 @@ import { listWorks } from "@/lib/data/works";
 import { getActingMember } from "@/lib/auth";
 import { seesEverything, visibleClients } from "@/lib/scope";
 import { clientJobStatus, todayKey } from "@/lib/contracts/helpers";
-import { JobBadge } from "@/app/(admin)/contracts/ui";
+import { JobBadge } from "@/app/(admin)/projects/ui";
 import { NewButton, NewSection, newFormHref } from "@/components/new-button";
 
 export const dynamic = "force-dynamic";
@@ -32,7 +32,7 @@ export default async function SettingsClientsPage({ searchParams }: { searchPara
         listWorks(),
         getActingMember(sp.as),
     ]);
-    // A user sees only the clients of the contracts they are on; managers (or nobody picked) see all.
+    // A user sees only the clients of the projects they are on; managers (or nobody picked) see all.
     const clients = visibleClients(member, allClients, contracts, works);
     const scoped = !seesEverything(member);
     const today = todayKey();
@@ -50,9 +50,9 @@ export default async function SettingsClientsPage({ searchParams }: { searchPara
                     <h1 className="mt-1 text-2xl font-semibold md:text-3xl">Clients</h1>
                     <p className="text-sm text-muted-foreground">
                         {clients.length} record{clients.length === 1 ? "" : "s"}
-                        {scoped ? " — the clients of the contracts you are on" : ""}; the badge says whether we have a signed contract with them — see{" "}
-                        <Link href="/contracts" className="underline">
-                            Contracts
+                        {scoped ? " — the clients of the projects you are on" : ""}; the badge says whether we have a signed contract with them — see{" "}
+                        <Link href="/projects" className="underline">
+                            Projects
                         </Link>
                         .
                     </p>
@@ -124,14 +124,17 @@ export default async function SettingsClientsPage({ searchParams }: { searchPara
                                 className="flex flex-col gap-2 p-4 md:flex-row md:items-center md:justify-between"
                             >
                                 <div className="min-w-0 flex-1">
-                                    <Link
-                                        href={`/settings/clients/${c.id}`}
-                                        className="font-medium hover:underline"
-                                    >
-                                        {c.name}
-                                    </Link>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <Link
+                                            href={`/settings/clients/${c.id}`}
+                                            className="font-medium hover:underline"
+                                        >
+                                            {c.name}
+                                        </Link>
+                                        {c.internal ? <Badge variant="outline">internal</Badge> : null}
+                                    </div>
                                     <p className="truncate text-xs text-muted-foreground">
-                                        Account manager: {c.accountManager || "no owner"}
+                                        Deal owner: {c.dealOwner || "none"}
                                         {c.contactName ? ` · ${c.contactName}` : ""}
                                         {c.contactEmail ? ` · ${c.contactEmail}` : ""}
                                     </p>
@@ -142,15 +145,15 @@ export default async function SettingsClientsPage({ searchParams }: { searchPara
                                             .reduce((s, i) => s + computeTotals(i).total, 0);
                                         return (
                                             <p className="text-xs text-muted-foreground tabular-nums">
-                                                {my.length} contract{my.length === 1 ? "" : "s"} · {my.filter((x) => x.signedAt).length} signed ·{" "}
-                                                {my.filter((x) => x.status === "active").length} active · paid RM {Math.round(paid).toLocaleString("en-MY")} to date
+                                                {my.length} project{my.length === 1 ? "" : "s"} · {my.filter((x) => x.signedAt).length} signed ·{" "}
+                                                {my.filter((x) => x.status === "active").length} active{c.internal ? " · internal, no billing" : ` · paid RM ${Math.round(paid).toLocaleString("en-MY")} to date`}
                                             </p>
                                         );
                                     })()}
                                 </div>
                                 <div className="flex flex-wrap items-center gap-2">
                                     {c.status !== "churned" ? (
-                                        <Link href={`/contracts?client=${encodeURIComponent(c.name)}`}>
+                                        <Link href={`/projects?client=${encodeURIComponent(c.name)}`}>
                                             <JobBadge job={clientJobStatus(c.name, contracts, today)} />
                                         </Link>
                                     ) : null}

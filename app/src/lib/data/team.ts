@@ -12,19 +12,19 @@ export {
     SYSTEM_ROLE_LABEL,
     FUNCTIONS,
     FUNCTION_LABEL,
-    RESERVED_KEYS,
-    RESERVED_LABEL,
     DEFAULT_HOURS_BY_TYPE,
     DEFAULT_WEEKLY_HOURS,
     isSystemRole,
     isFunction,
-    isReservedKey,
+    legacyFunction,
+    normalizeSetAside,
+    setAsideWeekly,
     roundHours,
     deliveryWeeklyHours,
     normalizeTeamMember,
     buildTeamMember,
 } from "@/lib/dev-store/team";
-export type { TeamMember, TeamRole, SystemRole, TeamFunction, ReservedKey, CreateTeamMemberInput } from "@/lib/dev-store/team";
+export type { TeamMember, TeamRole, SystemRole, TeamFunction, SetAside, CreateTeamMemberInput } from "@/lib/dev-store/team";
 
 type TeamMember = devTeam.TeamMember;
 type TeamRole = devTeam.TeamRole;
@@ -39,7 +39,8 @@ function rowToMember(row: TeamMemberRow): TeamMember {
     return devTeam.normalizeTeamMember({
         id: row.id,
         name: row.name,
-        role: row.role as TeamRole,
+        role: row.role,
+        category: row.category as TeamMember["category"],
         email: row.email,
         phone: row.phone,
         skills: row.skills,
@@ -49,9 +50,10 @@ function rowToMember(row: TeamMemberRow): TeamMember {
         systemRoles: (row.system_roles ?? []) as TeamMember["systemRoles"],
         functions: (row.functions ?? []).filter(devTeam.isFunction),
         weeklyHours: Number(row.weekly_hours),
-        reservedHours: (row.reserved_hours ?? {}) as TeamMember["reservedHours"],
+        setAside: devTeam.normalizeSetAside(row.set_aside),
         hoursByType: (row.hours_by_type ?? {}) as TeamMember["hoursByType"],
         costRateMyr: Number(row.cost_rate_myr),
+        daysOff: devTeam.normalizeDaysOff(row.days_off),
         createdAt: row.created_at,
         updatedAt: row.updated_at,
     });
@@ -62,12 +64,14 @@ function memberToInsert(m: TeamMember): TeamInsert {
         id: m.id,
         name: m.name,
         role: m.role,
+        category: m.category,
         system_roles: m.systemRoles,
         functions: m.functions,
         weekly_hours: m.weeklyHours,
-        reserved_hours: m.reservedHours,
+        set_aside: m.setAside,
         hours_by_type: m.hoursByType,
         cost_rate_myr: m.costRateMyr,
+        days_off: m.daysOff,
         email: m.email,
         phone: m.phone,
         skills: m.skills,
@@ -83,6 +87,7 @@ function patchToUpdate(patch: UpdatePatch): TeamUpdate {
     const out: TeamUpdate = {};
     if (patch.name !== undefined) out.name = patch.name;
     if (patch.role !== undefined) out.role = patch.role;
+    if (patch.category !== undefined) out.category = patch.category;
     if (patch.email !== undefined) out.email = patch.email;
     if (patch.phone !== undefined) out.phone = patch.phone;
     if (patch.skills !== undefined) out.skills = patch.skills;
@@ -92,9 +97,10 @@ function patchToUpdate(patch: UpdatePatch): TeamUpdate {
     if (patch.systemRoles !== undefined) out.system_roles = patch.systemRoles;
     if (patch.functions !== undefined) out.functions = patch.functions;
     if (patch.weeklyHours !== undefined) out.weekly_hours = patch.weeklyHours;
-    if (patch.reservedHours !== undefined) out.reserved_hours = patch.reservedHours;
+    if (patch.setAside !== undefined) out.set_aside = patch.setAside;
     if (patch.hoursByType !== undefined) out.hours_by_type = patch.hoursByType;
     if (patch.costRateMyr !== undefined) out.cost_rate_myr = patch.costRateMyr;
+    if (patch.daysOff !== undefined) out.days_off = patch.daysOff;
     if (patch.updatedAt !== undefined) out.updated_at = patch.updatedAt;
     return out;
 }

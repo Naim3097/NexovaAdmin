@@ -1,0 +1,52 @@
+{
+  "id": "89d8f9d5-b249-47d9-8de7-703e9c4ef90d",
+  "contractId": "8dc8c820-cc95-428e-9a8f-6630adbd3fc9",
+  "clientName": "LeanX",
+  "accountManager": "Bob",
+  "plannerLineId": "req:static:2026-10:0:2",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Static: Merchant of the month",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-07",
+  "defaultDueDate": "2026-10-07",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 1.75
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "1fe97f5f-448a-4062-96ac-b0e388cfb86f"
+  },
+  "startedAt": "2026-10-01T06:27:03.731Z",
+  "submittedAt": "2026-10-05T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/89d8f9d5",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Bob)",
+    "at": "2026-10-06T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-06T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2025-12-22T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.336Z"
+}

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
-import { LayoutGrid, UserRound, X } from "lucide-react";
+import { LayoutGrid, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -227,28 +227,6 @@ export function MobileNav({
                                 </div>
                             </div>
                         ))}
-                        {/* Everyone has a profile; it is not part of any role's section. */}
-                        <div>
-                            <p className="pb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/60">
-                                You
-                            </p>
-                            <div className="grid grid-cols-3 gap-2">
-                                <Link
-                                    href="/profile"
-                                    onClick={() => setMoreOpen(false)}
-                                    aria-current={isActive(pathname, "/profile") ? "page" : undefined}
-                                    className={cn(
-                                        "relative flex flex-col items-center gap-1.5 rounded-xl border p-3 text-center text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                                        isActive(pathname, "/profile")
-                                            ? "border-primary/40 bg-primary/10 text-primary"
-                                            : "border-border/60 bg-card text-muted-foreground shadow-xs hover:bg-accent hover:text-foreground",
-                                    )}
-                                >
-                                    <UserRound className="size-5" aria-hidden="true" />
-                                    Profile
-                                </Link>
-                            </div>
-                        </div>
                     </div>
                 </div>
             ) : null}

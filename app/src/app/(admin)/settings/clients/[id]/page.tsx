@@ -13,7 +13,7 @@ import { listContracts } from "@/lib/data/contracts";
 import { listCampaigns } from "@/lib/data/campaigns";
 import { clientJobStatus, endsInDays, hasEnded, summarizeWorks, todayKey, worksFor } from "@/lib/contracts/helpers";
 import { isOpen } from "@/lib/works/helpers";
-import { ContractStatusBadge, JobBadge, cadenceLabel, fmtMyr } from "@/app/(admin)/contracts/ui";
+import { ContractStatusBadge, JobBadge, cadenceLabel, fmtMyr } from "@/app/(admin)/projects/ui";
 import { fmtMyrShort } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,21 +27,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import {
-    deleteClientAction,
-    generateContentPlanAction,
-    updateClientAction,
-} from "@/lib/clients/actions";
+import { deleteClientAction, updateClientAction } from "@/lib/clients/actions";
+import { agoLabel } from "@/lib/dashboard/clients";
+import { CheckInForm } from "./check-in-form";
 import { ClientInviteForm } from "./client-invite-form";
 import { ContentBulkList } from "./content-bulk-list";
+import { RenewalSelect } from "./renewal-select";
 
 export const dynamic = "force-dynamic";
-
-/** Current month as 'YYYY-MM' for the plan-generation default. */
-function currentMonth() {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-}
 
 function eq(a: string | undefined | null, b: string) {
     return (a ?? "").trim().toLowerCase() === b.trim().toLowerCase();
@@ -70,7 +63,7 @@ export default async function ClientDetailPage({
             listCampaigns(),
             getActingMember(sp.as),
         ]);
-    // A user opens only the clients of the contracts they are on.
+    // A user opens only the clients of the projects they are on.
     if (!canOpenClient(member, client, contracts, works)) redirect("/settings/clients");
     const today = todayKey();
     const job = clientJobStatus(client.name, contracts, today);
@@ -92,11 +85,6 @@ export default async function ClientDetailPage({
         (c) => c.status !== "posted" && c.status !== "archived",
     ).length;
 
-    const thisMonth = currentMonth();
-    const planThisMonth = myContent.filter(
-        (c) => c.origin === "plan" && c.planMonth === thisMonth,
-    );
-
     return (
         <div className="space-y-6">
             <div>
@@ -107,11 +95,12 @@ export default async function ClientDetailPage({
                     Clients
                 </Link>
                 <div className="mt-1 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                    <h1 className="text-2xl font-semibold md:text-3xl">
+                    <h1 className="flex flex-wrap items-center gap-2 text-2xl font-semibold md:text-3xl">
                         {client.name}
+                        {client.internal ? <Badge variant="outline">internal</Badge> : null}
                     </h1>
                     <div className="flex flex-wrap items-center gap-2">
-                    <Link href={`/contracts?client=${encodeURIComponent(client.name)}`}>
+                    <Link href={`/projects?client=${encodeURIComponent(client.name)}`}>
                         <JobBadge job={job} />
                     </Link>
                     <Badge
@@ -129,9 +118,9 @@ export default async function ClientDetailPage({
                     </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                    Account manager:{" "}
-                    <span className={client.accountManager ? "font-medium text-foreground" : ""}>
-                        {client.accountManager || "no owner"}
+                    Deal owner:{" "}
+                    <span className={client.dealOwner ? "font-medium text-foreground" : ""}>
+                        {client.dealOwner || "none"}
                     </span>
                     {client.website ? (
                         <>
@@ -149,13 +138,13 @@ export default async function ClientDetailPage({
                 </p>
             </div>
 
-            {/* Aggregate KPIs */}
-            <div className="grid gap-3 md:grid-cols-5">
+            {/* Aggregate KPIs — internal clients (our own company) have no billing, so no money tile. */}
+            <div className={`grid gap-3 ${client.internal ? "md:grid-cols-4" : "md:grid-cols-5"}`}>
                 {[
                     {
                         label: "Contract",
                         value: job.label,
-                        href: `/contracts?client=${encodeURIComponent(client.name)}`,
+                        href: `/projects?client=${encodeURIComponent(client.name)}`,
                     },
                     {
                         label: "Leads",
@@ -172,11 +161,15 @@ export default async function ClientDetailPage({
                         value: String(openContent),
                         href: "/content",
                     },
-                    {
-                        label: "Paid / Billed",
-                        value: `${fmtMyrShort(paid)} / ${fmtMyrShort(billed)}`,
-                        href: "/invoices",
-                    },
+                    ...(client.internal
+                        ? []
+                        : [
+                              {
+                                  label: "Paid / Billed",
+                                  value: `${fmtMyrShort(paid)} / ${fmtMyrShort(billed)}`,
+                                  href: "/invoices",
+                              },
+                          ]),
                 ].map((k) => (
                     <Link
                         href={k.href}
@@ -188,6 +181,27 @@ export default async function ClientDetailPage({
                     </Link>
                 ))}
             </div>
+
+            {/* Last check-in — the relationship pulse the Clients tab reads; our own company has none. */}
+            {!client.internal ? (
+                <section className="space-y-4 rounded-lg border bg-card p-4 md:p-6">
+                    <div>
+                        <h2 className="text-sm font-medium">Last check-in</h2>
+                        {client.lastCheckInAt ? (
+                            <>
+                                <p className="mt-1 text-sm tabular-nums">
+                                    {client.lastCheckInAt}
+                                    <span className="text-xs text-muted-foreground"> · {agoLabel(client.lastCheckInAt, today)}</span>
+                                </p>
+                                {client.lastCheckInNote ? <p className="text-xs text-muted-foreground">{client.lastCheckInNote}</p> : null}
+                            </>
+                        ) : (
+                            <p className="mt-1 text-sm text-muted-foreground">No check-in logged.</p>
+                        )}
+                    </div>
+                    <CheckInForm clientId={client.id} today={today} />
+                </section>
+            ) : null}
 
             {/* Edit form */}
             <form
@@ -217,16 +231,16 @@ export default async function ClientDetailPage({
                         </Select>
                     </div>
                     <div className="space-y-1.5">
-                        <Label className="text-sm">Account manager</Label>
+                        <Label className="text-sm">Deal owner</Label>
                         <Select
-                            name="accountManager"
-                            defaultValue={client.accountManager || "none"}
+                            name="dealOwner"
+                            defaultValue={client.dealOwner || "none"}
                         >
                             <SelectTrigger className="h-10">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="none">— No owner —</SelectItem>
+                                <SelectItem value="none">— none —</SelectItem>
                                 {team
                                     .filter((m) => m.active)
                                     .map((m) => (
@@ -237,7 +251,7 @@ export default async function ClientDetailPage({
                             </SelectContent>
                         </Select>
                         <p className="text-xs text-muted-foreground">
-                            Single point of contact who owns updates, sign-offs and renewals.
+                            Who closed the deal. Each project has its own account manager.
                         </p>
                     </div>
                     <div className="space-y-1.5">
@@ -291,61 +305,6 @@ export default async function ClientDetailPage({
                             and quote for this client.
                         </p>
                     </div>
-                    <div className="md:col-span-2">
-                        <p className="text-sm font-medium">Service package</p>
-                        <p className="text-xs text-muted-foreground">
-                            The retainer is charged in full each month; extras
-                            bill on top.
-                        </p>
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Package name</Label>
-                        <Input
-                            name="packageName"
-                            defaultValue={client.packageName}
-                            placeholder="e.g. Growth"
-                        />
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Package renews on</Label>
-                        <Input
-                            name="packageRenewsOn"
-                            type="date"
-                            defaultValue={client.packageRenewsOn}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                            Telegram heads-up at 30 days, 7 days and on the day.
-                        </p>
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">
-                            Monthly retainer (MYR)
-                        </Label>
-                        <Input
-                            name="monthlyRetainerMyr"
-                            type="number"
-                            min={0}
-                            step="0.01"
-                            defaultValue={client.monthlyRetainerMyr}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                            Fixed monthly fee, e.g. 5500.
-                        </p>
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">
-                            Included content / month
-                        </Label>
-                        <Input
-                            name="monthlyContentQuota"
-                            type="number"
-                            min={0}
-                            defaultValue={client.monthlyContentQuota}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                            Content items the retainer covers per month.
-                        </p>
-                    </div>
                     <div className="space-y-1.5">
                         <Label className="text-sm">Revision limit</Label>
                         <Input
@@ -355,37 +314,7 @@ export default async function ClientDetailPage({
                             defaultValue={client.contentRevisionLimit}
                         />
                         <p className="text-xs text-muted-foreground">
-                            Feedback cycles allowed per content item.
-                        </p>
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">
-                            Extra content price (MYR)
-                        </Label>
-                        <Input
-                            name="extraContentPrice"
-                            type="number"
-                            min={0}
-                            step="0.01"
-                            defaultValue={client.extraContentPrice}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                            Charged per content item beyond the monthly quota.
-                        </p>
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">
-                            Extra revision price (MYR)
-                        </Label>
-                        <Input
-                            name="extraRevisionPrice"
-                            type="number"
-                            min={0}
-                            step="0.01"
-                            defaultValue={client.extraRevisionPrice}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                            Charged per revision beyond the limit.
+                            Feedback rounds the client gets per content item; what they are owed lives on their projects.
                         </p>
                     </div>
                 </div>
@@ -393,54 +322,25 @@ export default async function ClientDetailPage({
                     <Label className="text-sm">Internal notes</Label>
                     <Textarea name="notes" defaultValue={client.notes} rows={4} />
                 </div>
+                {client.internal ? (
+                    <p className="text-xs text-muted-foreground">
+                        Our own company: internal projects, no contract and no billing.
+                    </p>
+                ) : null}
                 <div className="flex justify-end">
                     <Button type="submit">Save</Button>
                 </div>
             </form>
 
-            {/* Content plan & client portal */}
+            {/* Client portal */}
             <section className="space-y-4 rounded-lg border bg-card p-4 md:p-6">
                 <div>
-                    <h2 className="text-sm font-medium">
-                        Content plan & portal
-                    </h2>
+                    <h2 className="text-sm font-medium">Client portal</h2>
                     <p className="text-xs text-muted-foreground">
-                        Generate this client&apos;s monthly content from their
-                        quota, and issue a portal link for review.
+                        Where the client reviews content and approves tasks.
                     </p>
                 </div>
 
-                {/* Generate this month's plan */}
-                <form
-                    action={generateContentPlanAction}
-                    className="flex flex-col gap-3 sm:flex-row sm:items-end"
-                >
-                    <input type="hidden" name="id" value={client.id} />
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Plan month</Label>
-                        <Input
-                            name="month"
-                            type="month"
-                            defaultValue={thisMonth}
-                            className="w-44"
-                        />
-                    </div>
-                    <Button
-                        type="submit"
-                        disabled={client.monthlyContentQuota <= 0}
-                    >
-                        Generate plan ({client.monthlyContentQuota})
-                    </Button>
-                    <p className="text-xs text-muted-foreground sm:pb-2">
-                        {planThisMonth.length > 0
-                            ? `${planThisMonth.length} planned item(s) for ${thisMonth}.`
-                            : client.monthlyContentQuota <= 0
-                                ? "Set a monthly quota above first."
-                                : "No plan generated for this month yet."}
-                    </p>
-                </form>
-
-                {/* Portal login */}
                 <ClientInviteForm
                     clientId={client.id}
                     defaultEmail={client.contactEmail}
@@ -468,7 +368,7 @@ export default async function ClientDetailPage({
                 </Section>
             ) : null}
 
-            <Section title={`Contracts (${myContracts.length})`}>
+            <Section title={`Projects (${myContracts.length})`}>
                 {myContracts.map((c) => {
                     const w = summarizeWorks(worksFor(c, { works, content, campaigns }), today);
                     const days = endsInDays(c, today);
@@ -476,7 +376,7 @@ export default async function ClientDetailPage({
                         <li key={c.id} className="flex flex-col gap-1 p-3 md:flex-row md:items-center md:justify-between">
                             <div className="min-w-0">
                                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                                    <Link href={`/contracts/${c.id}`} className="hover:underline">
+                                    <Link href={`/projects/${c.id}`} className="hover:underline">
                                         {c.name}
                                     </Link>
                                     <span className="text-xs text-muted-foreground">{c.code}</span>
@@ -494,7 +394,7 @@ export default async function ClientDetailPage({
                                     {c.endDate ? ` → ${c.endDate}` : " → rolling"} · {cadenceLabel(c.billing.cadence)}
                                     {c.billing.amountMyr ? ` ${fmtMyr(c.billing.amountMyr)}` : ""}
                                     {c.valueMyr ? ` · value ${fmtMyr(c.valueMyr)}` : ""} ·{" "}
-                                    <Link href={`/contracts/${c.id}#works`} className="hover:underline">
+                                    <Link href={`/projects/${c.id}#works`} className="hover:underline">
                                         {w.tasks} task{w.tasks === 1 ? "" : "s"}
                                     </Link>{" "}
                                     · {w.tasksDone} done
@@ -505,18 +405,20 @@ export default async function ClientDetailPage({
                                     {w.campaigns === 1 ? "" : "s"}
                                 </p>
                             </div>
+                            {/* A fixed-term active project asks where its renewal stands. */}
+                            {!client.internal && c.status === "active" && c.endDate ? <RenewalSelect contractId={c.id} value={c.renewalStatus} /> : null}
                         </li>
                     );
                 })}
                 <li className="p-3">
                     <Link
-                        href={`/contracts/new?client=${encodeURIComponent(client.name)}`}
+                        href={`/projects/new?client=${encodeURIComponent(client.name)}`}
                         className="text-xs font-medium underline"
                     >
-                        + New contract
+                        + New project
                     </Link>
                     {myContracts.length === 0 ? (
-                        <span className="ml-2 text-xs text-muted-foreground">No contract yet — nothing is promised to this client.</span>
+                        <span className="ml-2 text-xs text-muted-foreground">No project yet — nothing is promised to this client.</span>
                     ) : null}
                 </li>
             </Section>
@@ -592,7 +494,7 @@ export default async function ClientDetailPage({
                             Delete client profile
                         </p>
                         <p className="text-xs text-muted-foreground">
-                            Removes this record only; leads, contracts, tasks and invoices keep the name.
+                            Removes this record only; leads, projects, tasks and invoices keep the name.
                         </p>
                     </div>
                     <Button type="submit" variant="destructive">

@@ -1,0 +1,52 @@
+{
+  "id": "506e5125-eaf6-4854-aba0-dcfe1d44e4df",
+  "contractId": "0e0938d5-dcab-4d66-ab19-02e5220e078c",
+  "clientName": "Zakat Selangor",
+  "accountManager": "Hakim",
+  "plannerLineId": "req:static:2026-11:2:2",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Infographic: Pay with your e-wallet",
+  "channel": "Instagram",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-12",
+  "defaultDueDate": "2026-11-12",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "pending_approval",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Izzad",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "464d0013-9fd7-48aa-b1cf-d6171d1696dd"
+  },
+  "startedAt": "2026-11-06T06:27:03.731Z",
+  "submittedAt": "2026-11-10T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/506e5125",
+    "note": "Ready for review."
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-06-03T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.778Z"
+}

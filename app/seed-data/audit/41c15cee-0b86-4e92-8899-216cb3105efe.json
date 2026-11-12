@@ -1,0 +1,16 @@
+{
+  "id": "41c15cee-0b86-4e92-8899-216cb3105efe",
+  "at": "2026-11-11T07:16:54.774Z",
+  "entity": "work",
+  "entityId": "a757b535-6140-4698-b4f0-30ca01c0b81e",
+  "kind": "status",
+  "summary": "Reel: A day with a merchant: not started → in progress",
+  "actor": "Syafiq",
+  "changes": [
+    {
+      "field": "status",
+      "before": "not_started",
+      "after": "in_progress"
+    }
+  ]
+}

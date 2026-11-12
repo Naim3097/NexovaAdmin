@@ -1,0 +1,52 @@
+{
+  "id": "17d272c2-e28e-44eb-9ae5-5c44065bd8f9",
+  "contractId": "6d1e4aab-758f-42fd-9862-f8590788625b",
+  "clientName": "Tropicor",
+  "accountManager": "Danisy",
+  "plannerLineId": "req:campaign:2027-01:0:2",
+  "addendumVersion": 0,
+  "type": "campaign",
+  "title": "Meta campaign: Lookalike prospecting",
+  "channel": "Meta",
+  "month": "2027-01",
+  "phaseKey": "optimise",
+  "phaseName": "Optimise",
+  "dueDate": "2027-01-21",
+  "defaultDueDate": "2027-01-21",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dm",
+      "member": "Danisy",
+      "pct": 100,
+      "hours": 6
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "campaign",
+    "id": "c9a9c314-a60b-413c-b069-e33417e008c0"
+  },
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-09-29T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.073Z"
+}

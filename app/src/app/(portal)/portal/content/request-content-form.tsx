@@ -10,7 +10,6 @@ import {
     type PortalCreateState,
 } from "@/lib/portal/actions";
 import { ReferenceUploader } from "@/components/reference-uploader";
-import { fmtMyr } from "@/lib/format";
 
 const initial: PortalCreateState = { ok: false };
 
@@ -18,18 +17,17 @@ const initial: PortalCreateState = { ok: false };
  * Client content request with per-visual quota math shown up front:
  * a single post = 1 visual; a carousel = several. Picking Carousel reveals a
  * visuals stepper, and the live line shows exactly how many visuals remain in
- * the plan and how many (if any) will be chargeable — before submitting.
+ * the plan and how many (if any) go beyond it — before submitting. The plan
+ * is what the client's active projects promise a month.
  */
 export function RequestContentForm({
     quota = 0,
     used = 0,
-    extraPrice = 0,
 }: {
-    /** Monthly visual quota (0 = no cap). */
+    /** Monthly visual quota from the client's projects (0 = no cap). */
     quota?: number;
     /** Visuals already used this month. */
     used?: number;
-    extraPrice?: number;
 }) {
     const [state, formAction, pending] = useActionState(
         portalCreateContentAction,
@@ -96,16 +94,16 @@ export function RequestContentForm({
                         <input type="hidden" name="visualCount" value={1} />
                     )}
                 </div>
-                {/* Live quota math — no billing surprises */}
+                {/* Live quota math — no surprises */}
                 {quota > 0 ? (
                     chargeable > 0 ? (
                         <p className="rounded-md border border-amber-400/40 bg-amber-50 p-2 text-xs text-amber-800">
                             This uses <strong>{requested}</strong> visual
                             {requested === 1 ? "" : "s"} — {remaining} left in
-                            your plan, so <strong>{chargeable}</strong> will be
-                            chargeable at{" "}
-                            <strong>{fmtMyr(extraPrice)}</strong> each.
-                            Submitting means you agree to the charge.
+                            your plan, so <strong>{chargeable}</strong>{" "}
+                            {chargeable === 1 ? "is" : "are"} beyond it. Your
+                            account manager will confirm any charge before work
+                            starts.
                         </p>
                     ) : (
                         <p className="text-xs text-muted-foreground">

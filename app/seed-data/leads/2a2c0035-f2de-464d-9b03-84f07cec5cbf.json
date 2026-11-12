@@ -1,0 +1,22 @@
+{
+  "id": "2a2c0035-f2de-464d-9b03-84f07cec5cbf",
+  "name": "Nur Ayu Kamal",
+  "company": "Butik Nur Ayu",
+  "email": "butik-nur-ayu@example.com",
+  "phone": "",
+  "source": "instagram",
+  "sourceCampaignId": null,
+  "interestedIn": "Social media management",
+  "estValueMyr": 6000,
+  "status": "lost",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Yusuf",
+  "score": 40,
+  "autoIntake": false,
+  "lostReason": "price",
+  "lostNote": "Went with a freelancer at half our monthly fee.",
+  "createdAt": "2026-09-25T06:27:03.731Z",
+  "updatedAt": "2026-10-23T06:27:03.731Z"
+}

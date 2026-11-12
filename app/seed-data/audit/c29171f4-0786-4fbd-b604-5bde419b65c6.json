@@ -1,0 +1,16 @@
+{
+  "id": "c29171f4-0786-4fbd-b604-5bde419b65c6",
+  "at": "2026-11-11T08:43:01.718Z",
+  "entity": "contract",
+  "entityId": "302f9605-53ff-4eff-b1d1-4a5c68ad16b5",
+  "kind": "status",
+  "summary": "Stage: created → signed · signed 2026-11-11 · 60 tasks generated · Awareness post on Instagram · 4/wk · Blog article · 2/mo · Website · once · Viral issue post · once",
+  "actor": "Aina",
+  "changes": [
+    {
+      "field": "stage",
+      "before": "created",
+      "after": "signed"
+    }
+  ]
+}

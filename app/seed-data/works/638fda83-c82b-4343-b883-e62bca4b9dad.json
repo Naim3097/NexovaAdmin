@@ -1,0 +1,52 @@
+{
+  "id": "638fda83-c82b-4343-b883-e62bca4b9dad",
+  "contractId": "01149f98-ad2c-41a5-a4f9-10b85c31d526",
+  "clientName": "Leanis Solution Sdn Bhd",
+  "accountManager": "Bob",
+  "plannerLineId": "req:static:2026-10:0:1",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Static: Webinar invite",
+  "channel": "LinkedIn",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-01",
+  "defaultDueDate": "2026-10-01",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 1.75
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "98d671aa-a7cc-4c93-8e9d-4ccb70513ff3"
+  },
+  "startedAt": "2026-09-25T06:27:03.731Z",
+  "submittedAt": "2026-09-29T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/638fda83",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Bob)",
+    "at": "2026-09-30T06:27:03.731Z"
+  },
+  "completedAt": "2026-09-30T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-08-27T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.507Z"
+}

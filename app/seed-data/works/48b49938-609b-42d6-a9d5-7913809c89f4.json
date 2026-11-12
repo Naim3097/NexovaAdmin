@@ -1,0 +1,49 @@
+{
+  "id": "48b49938-609b-42d6-a9d5-7913809c89f4",
+  "contractId": "be8d2563-6668-4eca-8ae3-f93933ff08cb",
+  "clientName": "Baitul Irfan",
+  "accountManager": "Bob",
+  "plannerLineId": "req:custom:2027-01:3:1",
+  "addendumVersion": 0,
+  "type": "custom",
+  "title": "Donor update report · Jan",
+  "channel": "Report",
+  "month": "2027-01",
+  "phaseKey": "drives",
+  "phaseName": "Monthly drives",
+  "dueDate": "2027-01-14",
+  "defaultDueDate": "2027-01-14",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "am",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 1.5
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": null,
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-07-29T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.728Z"
+}

@@ -1,0 +1,52 @@
+{
+  "id": "ad2115d8-93ee-495f-87aa-483f00939802",
+  "contractId": "8dc8c820-cc95-428e-9a8f-6630adbd3fc9",
+  "clientName": "LeanX",
+  "accountManager": "Bob",
+  "plannerLineId": "req:static:2026-10:0:8",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Static: Product update",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-28",
+  "defaultDueDate": "2026-10-28",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 1.75
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "4d405a37-138a-4b39-8215-2abc6a712e42"
+  },
+  "startedAt": "2026-10-22T06:27:03.731Z",
+  "submittedAt": "2026-10-26T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/ad2115d8",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Bob)",
+    "at": "2026-10-27T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-27T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2025-12-22T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.343Z"
+}

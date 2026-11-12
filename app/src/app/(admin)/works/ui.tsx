@@ -1,5 +1,5 @@
 /**
- * Shared bits for the task pages, the contract board, the Website section and
+ * Shared bits for the task pages, the project board, the Website section and
  * the calendar. Server components only.
  */
 import Link from "next/link";
@@ -17,7 +17,7 @@ import {
     type Approver,
     type LineType,
     type Seat,
-} from "@/lib/data/planners";
+} from "@/lib/planners/vocab";
 import { cn } from "@/lib/utils";
 
 export const STATUS_CLASS: Record<TaskStatus, string> = {
@@ -35,11 +35,11 @@ export const STATUS_DOT: Record<TaskStatus, string> = {
 };
 
 export const TYPE_CLASS: Record<LineType, string> = {
-    post: "bg-pink-500/15 text-pink-700 dark:text-pink-400",
     campaign: "bg-orange-500/15 text-orange-700 dark:text-orange-400",
+    static: "bg-pink-500/15 text-pink-700 dark:text-pink-400",
+    video: "bg-violet-500/15 text-violet-700 dark:text-violet-400",
     seo: "bg-teal-500/15 text-teal-700 dark:text-teal-400",
     website: "bg-indigo-500/15 text-indigo-700 dark:text-indigo-400",
-    branding: "bg-violet-500/15 text-violet-700 dark:text-violet-400",
     custom: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
 };
 

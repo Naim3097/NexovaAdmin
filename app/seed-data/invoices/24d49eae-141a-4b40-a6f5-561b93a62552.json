@@ -1,0 +1,31 @@
+{
+  "id": "24d49eae-141a-4b40-a6f5-561b93a62552",
+  "number": "INV-2026-0044",
+  "clientName": "Zakat Selangor",
+  "contractId": "0e0938d5-dcab-4d66-ab19-02e5220e078c",
+  "status": "sent",
+  "issueDate": "2026-11-02",
+  "dueDate": "2026-11-16",
+  "items": [
+    {
+      "id": "cb070dc9-07f0-457b-b853-0823852eec8a",
+      "description": "Zakat Selangor — Gen Z awareness — 2026-11",
+      "details": "CON-2026-0008",
+      "quantity": 1,
+      "unitPriceMyr": 10000
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "createdAt": "2026-11-02T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.668Z",
+  "paidAt": null,
+  "paymentProvider": null,
+  "paymentLink": null,
+  "paymentExternalId": null,
+  "paymentMeta": {},
+  "paymentLinkCreatedAt": null
+}

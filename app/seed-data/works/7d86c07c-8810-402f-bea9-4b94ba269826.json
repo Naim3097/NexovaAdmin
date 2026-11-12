@@ -1,0 +1,52 @@
+{
+  "id": "7d86c07c-8810-402f-bea9-4b94ba269826",
+  "contractId": "767be1f1-c1f8-4d74-84db-0b4537e896a4",
+  "clientName": "Dr Kartini",
+  "accountManager": "Hakim",
+  "plannerLineId": "req:video:2026-11:1:1",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "TikTok: The 30-second sunscreen guide",
+  "channel": "Instagram",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-05",
+  "defaultDueDate": "2026-11-05",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Izzad",
+      "pct": 100,
+      "hours": 6
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "c14f9be2-998c-4697-b781-d603cb5fcec7"
+  },
+  "startedAt": "2026-10-30T06:27:03.731Z",
+  "submittedAt": "2026-11-03T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/7d86c07c",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Hakim)",
+    "at": "2026-11-04T06:27:03.731Z"
+  },
+  "completedAt": "2026-11-04T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-05-28T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.400Z"
+}

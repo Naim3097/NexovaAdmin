@@ -1,0 +1,52 @@
+{
+  "id": "18d90f61-fb61-4cb1-a8bb-ec50eda46f7f",
+  "contractId": "cc412500-078b-465c-b702-e2d6ab336cd0",
+  "clientName": "Payright",
+  "accountManager": "Bob",
+  "plannerLineId": "req:static:2026-10:0:8",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Static: New — instant settlement",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-28",
+  "defaultDueDate": "2026-10-28",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 1.75
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "6408441f-42fd-42b9-a24f-91e073e8ffab"
+  },
+  "startedAt": "2026-10-22T06:27:03.731Z",
+  "submittedAt": "2026-10-26T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/18d90f61",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Bob)",
+    "at": "2026-10-27T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-27T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-02-25T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.154Z"
+}

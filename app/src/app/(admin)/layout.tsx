@@ -1,4 +1,5 @@
 import { isMockup } from "@/lib/dev-store/root";
+import { BackButton } from "@/components/back-button";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
@@ -9,7 +10,6 @@ import {
     CalendarDays,
     ClipboardCheck,
     ClipboardList,
-    FileBarChart,
     FileText,
     Globe,
     KanbanSquare,
@@ -27,14 +27,15 @@ import {
     type LucideIcon,
 } from "lucide-react";
 import {
-    getAccessLevel,
     getActingMember,
     getCurrentClient,
     getCurrentTeamMember,
     getCurrentUser,
 } from "@/lib/auth";
+import { listContracts } from "@/lib/data/contracts";
 import { FUNCTION_LABEL, listTeamMembers, type TeamMember } from "@/lib/data/team";
-import { SYSTEM_ROLE_LABEL, canSee, functionsOf, hasFunction, hasRole, homeFor, isManager, rolesOf } from "@/lib/roles";
+import { SYSTEM_ROLE_LABEL, canSee, functionsOf, homeFor, isManager, rolesOf } from "@/lib/roles";
+import { isAccountManager } from "@/lib/scope";
 import { clearActingMemberAction, setActingMemberAction } from "@/lib/team/acting";
 import { Logo } from "@/components/logo";
 import { ClientNameDatalist } from "@/components/client-name-datalist";
@@ -56,11 +57,11 @@ const DEV_BYPASS =
 type NavDef = { href: string; label: string; icon: LucideIcon };
 
 /**
- * Overview is five entries at most. The Dashboard (managers, and the sales /
- * finance / account-manager duties) carries the Team, Money and Activity tabs
- * that used to be /management, /finance and /activity; those paths redirect
- * into it. My accounts shows for the account-manager duty and managers.
- * `canSee` decides both, in `navFor`.
+ * Every entry runs through `canSee` in `navFor`. The Dashboard is management's
+ * (it carries the Team, Money and Activity tabs that used to be /management,
+ * /finance and /activity; those paths redirect into it). My accounts shows
+ * only for someone who is the account manager of at least one project — that
+ * follows from the projects, not from a duty.
  */
 const SECTIONS: { label: string; items: NavDef[] }[] = [
     {
@@ -71,6 +72,7 @@ const SECTIONS: { label: string; items: NavDef[] }[] = [
             { href: "/my-clients", label: "My accounts", icon: Briefcase },
             { href: "/calendar", label: "Calendar", icon: CalendarDays },
             { href: "/notifications", label: "Inbox", icon: Bell },
+            { href: "/profile", label: "Profile", icon: UserRound },
         ],
     },
     {
@@ -81,11 +83,11 @@ const SECTIONS: { label: string; items: NavDef[] }[] = [
         ],
     },
     {
-        label: "Client Management",
+        label: "Client management",
         items: [
             { href: "/onboarding", label: "Onboarding", icon: ClipboardList },
             { href: "/settings/clients", label: "Clients", icon: Building2 },
-            { href: "/contracts", label: "Contracts", icon: ClipboardCheck },
+            { href: "/projects", label: "Projects", icon: ClipboardCheck },
             { href: "/reports", label: "Reports", icon: BarChart3 },
         ],
     },
@@ -108,7 +110,7 @@ const SECTIONS: { label: string; items: NavDef[] }[] = [
         ],
     },
     {
-        label: "Admin",
+        label: "Setup",
         items: [
             { href: "/team", label: "Team", icon: UserCog },
             { href: "/settings", label: "Settings", icon: Settings },
@@ -116,44 +118,24 @@ const SECTIONS: { label: string; items: NavDef[] }[] = [
     },
 ];
 
-/**
- * Non-admins don't get the financial Reports hub; they get the two surfaces
- * they can use instead. (The hub page is guarded by requireAdminAccess.)
- */
-const REPORT_SURFACES: NavDef[] = [
-    { href: "/reports/weekly", label: "Weekly updates", icon: BarChart3 },
-    { href: "/reports/client", label: "Client reports", icon: FileBarChart },
-];
-
 const TAB = {
     dashboard: { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     myWork: { href: "/my-work", label: "My tasks", icon: ListChecks },
     myClients: { href: "/my-clients", label: "My accounts", icon: Briefcase },
     calendar: { href: "/calendar", label: "Calendar", icon: CalendarDays },
-    leads: { href: "/leads", label: "Leads", icon: Users },
-    pipeline: { href: "/pipeline", label: "Pipeline", icon: KanbanSquare },
-    contracts: { href: "/contracts", label: "Contracts", icon: ClipboardCheck },
-    works: { href: "/works", label: "Tasks", icon: ListChecks },
-    invoices: { href: "/invoices", label: "Invoices", icon: Receipt },
-    quotes: { href: "/quotes", label: "Quotes", icon: ScrollText },
+    contracts: { href: "/projects", label: "Projects", icon: ClipboardCheck },
 } satisfies Record<string, NavDef>;
 
-/** Nobody resolved (bypass, nothing picked): the manager's set. */
-const TABS_ALL: NavDef[] = [TAB.dashboard, TAB.myWork, TAB.contracts];
-
 /**
- * Bottom tabs: the three pages the member's biggest hat uses most, in the
- * order managers → account manager → sales → finance → plain user. "More"
- * (every other page) is appended by the nav, and `navFor` still runs each
- * set through `canSee`.
+ * Bottom tabs: the three pages this person uses most. Managers (and nobody
+ * resolved) get the Dashboard; an account manager their accounts; everyone
+ * else their tasks, projects and calendar. "More" (every other page) is
+ * appended by the nav, and `navFor` still runs each set through `canSee`.
  */
-function tabsFor(member: TeamMember | null): NavDef[] {
-    if (!member) return TABS_ALL;
-    if (isManager(member)) return [TAB.dashboard, TAB.myWork, TAB.contracts];
-    if (hasFunction(member, "account_manager")) return [TAB.myClients, TAB.myWork, TAB.contracts];
-    if (hasFunction(member, "sales")) return [TAB.dashboard, TAB.pipeline, TAB.leads];
-    if (hasFunction(member, "finance")) return [TAB.dashboard, TAB.invoices, TAB.quotes];
-    return [TAB.myWork, TAB.calendar, TAB.works];
+function tabsFor(member: TeamMember | null, accountManager: boolean): NavDef[] {
+    if (isManager(member)) return accountManager ? [TAB.dashboard, TAB.myClients, TAB.myWork, TAB.contracts] : [TAB.dashboard, TAB.myWork, TAB.contracts];
+    if (accountManager) return [TAB.myClients, TAB.myWork, TAB.contracts];
+    return [TAB.myWork, TAB.contracts, TAB.calendar];
 }
 
 function toItem({ href, label, icon: Icon }: NavDef): NavItem {
@@ -163,18 +145,16 @@ function toItem({ href, label, icon: Icon }: NavDef): NavItem {
 /**
  * Sections and tabs for this member. `member` null means "no one resolved" —
  * under the bypass with nothing picked, or a login not linked to a member row
- * yet — and shows everything so nobody is ever locked out of the nav.
+ * yet — and `canSee` then shows everything so nobody is ever locked out of
+ * the nav. My accounts needs a project the person is the AM of.
  */
-function navFor(member: TeamMember | null, isAdmin: boolean) {
-    const visible = (href: string) => !member || canSee(member, href);
+function navFor(member: TeamMember | null, accountManager: boolean) {
+    const visible = (href: string) => (href === "/my-clients" ? accountManager : canSee(member, href));
     const sections: NavSection[] = SECTIONS.map((sec) => ({
         label: sec.label,
-        items: sec.items
-            .flatMap((i) => (i.href === "/reports" && !isAdmin ? REPORT_SURFACES : [i]))
-            .filter((i) => visible(i.href))
-            .map(toItem),
+        items: sec.items.filter((i) => visible(i.href)).map(toItem),
     })).filter((s) => s.items.length > 0);
-    const tabs: NavItem[] = tabsFor(member)
+    const tabs: NavItem[] = tabsFor(member, accountManager)
         .filter((i) => visible(i.href))
         .map(toItem);
     return { sections, tabs };
@@ -201,24 +181,22 @@ export default async function AdminLayout({
     // is what stops a client account from reaching agency data.)
     const client = await getCurrentClient();
     if (client) redirect("/portal");
-    const [member, linked, unread, access, freshLeads] = await Promise.all([
+    const [member, linked, unread, contracts, freshLeads] = await Promise.all([
         // The linked member, or under the bypass whoever the sidebar picked.
         getActingMember(),
         getCurrentTeamMember(),
         unreadCount().catch(() => 0),
-        getAccessLevel(),
+        // My accounts shows only for the account manager of at least one project.
+        listContracts().catch(() => []),
         // Unattended auto-intake leads — drives the neon "new" count on the
         // Leads nav item until every one of them has been acted on.
         listLeads()
             .then((ls) => ls.filter((l) => l.autoIntake).length)
             .catch(() => 0),
     ]);
-    // "Acting as" under the bypass follows the picked person's roles so the
-    // simulation is honest; a real login keeps the legacy level (bootstrap
-    // rule included); nobody picked = the bypass user stays admin.
-    const simulated = Boolean(member) && !linked;
-    const isAdmin = simulated ? hasRole(member, "admin") : access === "admin";
-    const { sections, tabs } = navFor(member, isAdmin);
+    // My accounts shows for whoever runs at least one project; with nobody picked
+    // under the dev bypass it stays visible so the mock-up can be walked through.
+    const { sections, tabs } = navFor(member, !member || isAccountManager(member, contracts));
     // The logo: managers (and nobody resolved) land on the Dashboard, users on My tasks.
     const home = homeFor(member);
     // The picker only needs the team when nobody is picked yet.
@@ -303,13 +281,6 @@ export default async function AdminLayout({
                                 </form>
                             )
                         ) : null}
-                        <Link
-                            href="/profile"
-                            className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        >
-                            <UserRound className="size-3.5" aria-hidden="true" />
-                            Profile
-                        </Link>
                         <div className="flex items-center gap-2.5 rounded-xl bg-muted/60 p-2.5">
                             <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-gradient text-xs font-semibold text-white shadow-sm">
                                 {initial}
@@ -366,6 +337,7 @@ export default async function AdminLayout({
                     </div>
                 ) : null}
                 <div className="mx-auto w-full max-w-6xl motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300">
+                    <BackButton className="mb-3 -ml-1.5" />
                     {children}
                 </div>
                 {/* Shared datalists used by autocomplete inputs across forms */}

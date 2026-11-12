@@ -1,0 +1,31 @@
+{
+  "id": "39eba522-24f8-4d84-b3c7-8c52f6763fad",
+  "number": "INV-2026-0020",
+  "clientName": "Payright",
+  "contractId": "cc412500-078b-465c-b702-e2d6ab336cd0",
+  "status": "paid",
+  "issueDate": "2026-07-02",
+  "dueDate": "2026-07-16",
+  "items": [
+    {
+      "id": "8b639b2f-e3bf-41c5-a2b5-a1a28b700dab",
+      "description": "Payright — brand growth — 2026-07",
+      "details": "CON-2026-0005",
+      "quantity": 1,
+      "unitPriceMyr": 7500
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "createdAt": "2026-07-02T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.393Z",
+  "paidAt": "2026-07-07T06:27:03.731Z",
+  "paymentProvider": null,
+  "paymentLink": null,
+  "paymentExternalId": null,
+  "paymentMeta": {},
+  "paymentLinkCreatedAt": null
+}

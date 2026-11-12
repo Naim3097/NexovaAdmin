@@ -1,0 +1,31 @@
+{
+  "id": "be423daa-649c-46ff-8cc7-16eb090df352",
+  "number": "QUO-2026-0007",
+  "clientName": "Sekolah Tahfiz Al-Hikmah",
+  "status": "draft",
+  "issueDate": "2026-11-11",
+  "validUntil": "2026-12-11",
+  "items": [
+    {
+      "id": "5d34c877-28c8-41d6-8c57-ab668cdeddb8",
+      "description": "Donation website and Meta ads setup",
+      "details": "",
+      "quantity": 1,
+      "unitPriceMyr": 14000
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "subject": "Donation website and Meta ads setup",
+  "scopeIncludes": "",
+  "exclusions": "",
+  "terms": "",
+  "showAcceptance": true,
+  "convertedInvoiceId": null,
+  "createdAt": "2026-11-11T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.244Z",
+  "acceptedAt": null
+}

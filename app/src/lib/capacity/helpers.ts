@@ -7,10 +7,11 @@
  * then simply: hours on the tasks due in a period vs. the hours the person
  * has available in that period. Approval / waiting time is never counted.
  */
-import type { LineType } from "@/lib/data/planners";
+import type { LineType } from "@/lib/planners/vocab";
 import type { TeamMember } from "@/lib/data/team";
 import type { Work, WorkShare } from "@/lib/data/works";
-import { DEFAULT_HOURS_BY_TYPE, deliveryWeeklyHours, roundHours } from "@/lib/dev-store/team";
+import { isHoliday } from "@/lib/calendar/holidays";
+import { DEFAULT_HOURS_BY_TYPE, deliveryWeeklyHours, roundHours, setAsideWeekly } from "@/lib/team/hours";
 
 export const HOUR_STEP = 0.25;
 
@@ -29,19 +30,20 @@ function weekday(ymd: string): number {
     return new Date(`${ymd}T00:00:00Z`).getUTCDay();
 }
 
-/** True on Friday, Saturday and Sunday. */
+/** True on Friday, Saturday, Sunday and Kuala Lumpur public holidays. */
 export function isOffDay(ymd: string): boolean {
-    return /^\d{4}-\d{2}-\d{2}$/.test(ymd) ? !WORK_DAYS.includes(weekday(ymd)) : false;
+    return /^\d{4}-\d{2}-\d{2}$/.test(ymd) ? !WORK_DAYS.includes(weekday(ymd)) || isHoliday(ymd) : false;
 }
 
-/** Working days (Mon–Thu) in a month "YYYY-MM". */
+/** Working days (Mon–Thu, public holidays out) in a month "YYYY-MM". */
 export function workingDaysInMonth(month: string): number {
     const [y, m] = month.split("-").map(Number);
     if (!y || !m) return Math.round(AVG_WORK_DAYS_PER_MONTH);
     const days = new Date(Date.UTC(y, m, 0)).getUTCDate();
     let n = 0;
     for (let d = 1; d <= days; d += 1) {
-        if (WORK_DAYS.includes(new Date(Date.UTC(y, m - 1, d)).getUTCDay())) n += 1;
+        const date = new Date(Date.UTC(y, m - 1, d));
+        if (WORK_DAYS.includes(date.getUTCDay()) && !isHoliday(date.toISOString().slice(0, 10))) n += 1;
     }
     return n;
 }
@@ -127,24 +129,26 @@ function workDays(month?: string): number {
 
 /**
  * Delivery hours available in a month: (hours/week − set aside) spread over
- * the four working days, times the working days that month actually has.
+ * the four working days, times the working days that month actually has,
+ * less the days the person is off that month.
  */
-export function monthlyAvailable(member: Pick<TeamMember, "weeklyHours" | "reservedHours">, month?: string): number {
+export function monthlyAvailable(member: Pick<TeamMember, "weeklyHours" | "setAside"> & { daysOff?: Record<string, number> }, month?: string): number {
     const perDay = deliveryWeeklyHours(member) / WORK_DAYS.length;
-    return Math.round(perDay * workDays(month) * 4) / 4;
+    const off = month ? (member.daysOff?.[month] ?? 0) : 0;
+    return Math.round(perDay * Math.max(0, workDays(month) - off) * 4) / 4;
 }
 
-/** Hours per month the reserved hats take (for the overhead view). */
-export function monthlyReserved(member: Pick<TeamMember, "reservedHours">, month?: string): number {
-    const weekly = Object.values(member.reservedHours ?? {}).reduce((s, h) => s + (h || 0), 0);
+/** Hours per month the set-aside rows take (for the overhead view). */
+export function monthlyReserved(member: Pick<TeamMember, "setAside">, month?: string): number {
+    const weekly = setAsideWeekly(member);
     return Math.round((weekly / WORK_DAYS.length) * workDays(month) * 4) / 4;
 }
 
-/** Hours `member` carries on tasks due on an off day in `month` (work scheduled outside Mon–Thu). */
+/** Hours `member` carries on tasks planned for an off day in `month` (work scheduled outside Mon–Thu). */
 export function offDayHours(member: Pick<TeamMember, "name">, works: Work[], month: string): number {
     return roundHours(
         works
-            .filter((w) => w.month === month && isOffDay(w.dueDate))
+            .filter((w) => w.month === month && isOffDay(w.plannedDate || w.dueDate))
             .reduce((sum, w) => sum + shareHours(w, member.name), 0),
     );
 }
@@ -178,7 +182,7 @@ export function loadFor(member: TeamMember, works: Work[], month: string): Load 
         const h = shareHours(w, member.name);
         planned += h;
         if (w.status === "completed") done += h;
-        if (isOffDay(w.dueDate)) offDay += h;
+        if (isOffDay(w.plannedDate || w.dueDate)) offDay += h;
     }
     const available = member.active ? monthlyAvailable(member, month) : 0;
     const ratio = available > 0 ? planned / available : planned > 0 ? Infinity : 0;

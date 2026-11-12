@@ -16,7 +16,8 @@ import {
     requestChanges,
     visualsUsed,
 } from "@/lib/data/content";
-import { getContractById } from "@/lib/data/contracts";
+import { getContractById, listContracts } from "@/lib/data/contracts";
+import { clientContentQuota } from "@/lib/clients/quota";
 import { getWorkById, updateWork } from "@/lib/data/works";
 import { recordAudit } from "@/lib/data/audit";
 import { notify } from "@/lib/data/notifications";
@@ -129,8 +130,9 @@ export async function portalCreateContentAction(
 
     const month = currentMonth();
 
-    // Quota counts VISUALS (carousel = several, single = 1). Going over is
-    // ALLOWED but billable per extra visual (0 quota = no cap).
+    // Quota counts VISUALS (carousel = several, single = 1) and comes from the
+    // client's active projects. Going over is ALLOWED; the item is flagged as
+    // beyond the plan so the account manager can agree a charge (0 = no cap).
     const rawVisuals = Number(formData.get("visualCount") ?? 1);
     const visualCount =
         Number.isFinite(rawVisuals) && rawVisuals >= 1
@@ -138,12 +140,10 @@ export async function portalCreateContentAction(
             : 1;
 
     let chargeableVisuals = 0;
-    if (client.monthlyContentQuota > 0) {
+    const quota = clientContentQuota(client.name, await listContracts());
+    if (quota > 0) {
         const used = visualsUsed(await listContentPosts(), client.name, month);
-        chargeableVisuals = Math.max(
-            0,
-            used + visualCount - client.monthlyContentQuota,
-        );
+        chargeableVisuals = Math.max(0, used + visualCount - quota);
     }
     const billable = chargeableVisuals > 0;
 
@@ -163,7 +163,7 @@ export async function portalCreateContentAction(
     return {
         ok: true,
         message: billable
-            ? `Request submitted. ${chargeableVisuals} visual${chargeableVisuals === 1 ? " is" : "s are"} beyond your plan — chargeable at MYR ${client.extraContentPrice.toFixed(2)} each.`
+            ? `Request submitted. ${chargeableVisuals} visual${chargeableVisuals === 1 ? " is" : "s are"} beyond your plan — your account manager will confirm any charge.`
             : "Request submitted — we'll get on it.",
     };
 }
@@ -174,7 +174,7 @@ export async function portalCreateContentAction(
 // ---------------------------------------------------------------------------
 
 /**
- * Confirm the acting client owns this task (through its contract) and that it
+ * Confirm the acting client owns this task (through its project) and that it
  * is actually waiting on them. Anything else is silently ignored — the portal
  * never reveals whether a task id exists. The hidden `client` field is only
  * read under the dev bypass (see resolveActingClient).
@@ -204,8 +204,8 @@ function revalidateTask(id: string, contractId: string) {
     revalidatePath("/portal/approvals");
     revalidatePath(`/works/${id}`);
     revalidatePath("/works");
-    if (contractId) revalidatePath(`/contracts/${contractId}`);
-    revalidatePath("/contracts");
+    if (contractId) revalidatePath(`/projects/${contractId}`);
+    revalidatePath("/projects");
     revalidatePath("/dashboard");
     revalidatePath("/notifications");
 }
@@ -263,7 +263,7 @@ export async function requestTaskChangesAsClientAction(formData: FormData) {
     });
     // Same kind the internal review uses when a task goes back to the team.
     await notify({
-        kind: "work_requested",
+        kind: "work_changes_requested",
         title: `Changes requested by client: ${w.title}`,
         body: `${w.clientName} · ${w.month} · back to ${members(w).join(", ") || "the team"} — ${comment}`,
         link: `/works/${w.id}`,

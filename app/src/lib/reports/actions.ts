@@ -64,7 +64,7 @@ export async function generateReportInsightsAction(
         const result = await generateReportInsights({
             clientName,
             month,
-            packageName: report.billing.packageName,
+            projects: report.billing.projects,
             delivered: report.contentDelivered.map((p) => ({
                 title: p.title,
                 platform: p.platform,
@@ -99,9 +99,11 @@ export async function generateReportInsightsAction(
 }
 
 /**
- * Auto-build a DRAFT invoice for a client's month = fixed retainer + any
- * chargeable extras (extra content + extra revisions, priced from the client's
- * per-extra rates). Lands you on the draft invoice to review and send.
+ * Auto-build a DRAFT invoice for a client's month: the monthly billing of
+ * their active projects, one line. Work beyond the plan (extra visuals, extra
+ * revisions) is no longer priced on the client record, so it goes into the
+ * invoice notes as a reminder for the account manager to add a line by hand.
+ * Lands you on the draft invoice to review and send.
  */
 export async function createMonthlyInvoiceAction(formData: FormData) {
     const clientName = String(formData.get("client") ?? "").trim();
@@ -110,48 +112,34 @@ export async function createMonthlyInvoiceAction(formData: FormData) {
 
     const report = await buildClientMonthlyReport(clientName, month);
     const { billing, extras } = report;
+    if (billing.retainer <= 0) return;
 
-    const items: {
-        id: string;
-        description: string;
-        details: string;
-        quantity: number;
-        unitPriceMyr: number;
-    }[] = [];
-
-    if (billing.retainer > 0) {
-        items.push({
+    const items = [
+        {
             id: "",
-            details: "",
-            description: `${billing.packageName ? `${billing.packageName} ` : ""}monthly retainer — ${month}`,
+            details: billing.projects.join(", "),
+            description: `Monthly retainer — ${month}`,
             quantity: 1,
             unitPriceMyr: billing.retainer,
-        });
-    }
+        },
+    ];
+    const extraNotes: string[] = [];
     if (extras.contentCount > 0) {
-        items.push({
-            id: "",
-            details: "",
-            description: `Extra visuals beyond plan — ${month}`,
-            quantity: extras.contentCount,
-            unitPriceMyr: extras.contentPrice,
-        });
+        extraNotes.push(`${extras.contentCount} visual${extras.contentCount === 1 ? "" : "s"} beyond the monthly plan`);
     }
     if (extras.revisionCount > 0) {
-        items.push({
-            id: "",
-            details: "",
-            description: `Extra revisions beyond limit — ${month}`,
-            quantity: extras.revisionCount,
-            unitPriceMyr: extras.revisionPrice,
-        });
+        extraNotes.push(`${extras.revisionCount} revision${extras.revisionCount === 1 ? "" : "s"} beyond the limit`);
     }
-    if (items.length === 0) return;
 
     const inv = await createInvoice({ clientName });
     await updateInvoice(inv.id, {
         items,
-        notes: `${month} — retainer + extras. Auto-generated from the monthly report.`,
+        notes: [
+            `${month} — monthly billing of the active projects. Auto-generated from the monthly report.`,
+            extraNotes.length ? `Beyond the plan this month: ${extraNotes.join(" · ")} — add a line if these are chargeable.` : "",
+        ]
+            .filter(Boolean)
+            .join("\n"),
     });
 
     revalidatePath("/invoices");

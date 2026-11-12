@@ -1,0 +1,52 @@
+{
+  "id": "f3776d36-397c-4b4d-bc7b-35f9c07ed0b2",
+  "contractId": "0e0938d5-dcab-4d66-ab19-02e5220e078c",
+  "clientName": "Zakat Selangor",
+  "accountManager": "Hakim",
+  "plannerLineId": "req:static:2026-10:2:2",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Infographic: Fitrah vs harta",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-12",
+  "defaultDueDate": "2026-10-12",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Izzad",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "4d637408-0843-41c2-968d-07b3716e6519"
+  },
+  "startedAt": "2026-10-06T06:27:03.731Z",
+  "submittedAt": "2026-10-10T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/f3776d36",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Hakim)",
+    "at": "2026-10-11T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-11T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-06-03T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.762Z"
+}

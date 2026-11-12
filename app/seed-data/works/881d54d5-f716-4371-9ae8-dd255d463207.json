@@ -1,0 +1,49 @@
+{
+  "id": "881d54d5-f716-4371-9ae8-dd255d463207",
+  "contractId": "6b92fdc7-9df3-4571-a844-5bacb941cee6",
+  "clientName": "Kembara",
+  "accountManager": "Zafran",
+  "plannerLineId": "req:website:2026-10:0:3",
+  "addendumVersion": 0,
+  "type": "website",
+  "title": "Donation flow & payment gateway",
+  "channel": "Website",
+  "month": "2026-11",
+  "phaseKey": "build",
+  "phaseName": "Build",
+  "dueDate": "2026-11-19",
+  "defaultDueDate": "2026-11-19",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "in_progress",
+  "split": [
+    {
+      "seat": "dev",
+      "member": "Zafran",
+      "pct": 100,
+      "hours": 10
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": null,
+  "startedAt": "2026-11-06T06:27:03.731Z",
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-10-01T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.802Z"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "50a7404a-8407-416f-a31e-851cc5a513c8",
+  "name": "Meta campaign: merchant acquisition · Nov",
+  "clientName": "LeanX",
+  "contractId": "8dc8c820-cc95-428e-9a8f-6630adbd3fc9",
+  "platform": "meta",
+  "objective": "leads",
+  "status": "live",
+  "startDate": "2026-11-12",
+  "endDate": "",
+  "monthlyBudgetMyr": 1200,
+  "feeModel": "flat_plus_percent",
+  "flatFeeMyr": 800,
+  "percentFee": 10,
+  "externalId": "",
+  "landingUrl": "",
+  "notes": "",
+  "metrics": [],
+  "createdAt": "2026-11-12T06:27:05.230Z",
+  "updatedAt": "2026-11-12T06:27:06.252Z"
+}

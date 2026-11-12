@@ -1,0 +1,21 @@
+{
+  "id": "ddc0e3e3-179a-45b3-b8e7-695fd2056317",
+  "name": "Google Ads: Performance Max",
+  "clientName": "Tropicor",
+  "contractId": "6d1e4aab-758f-42fd-9862-f8590788625b",
+  "platform": "google",
+  "objective": "leads",
+  "status": "planning",
+  "startDate": "2027-01-07",
+  "endDate": "",
+  "monthlyBudgetMyr": 0,
+  "feeModel": "none",
+  "flatFeeMyr": 0,
+  "percentFee": 0,
+  "externalId": "",
+  "landingUrl": "",
+  "notes": "",
+  "metrics": [],
+  "createdAt": "2026-11-12T06:27:06.009Z",
+  "updatedAt": "2026-11-12T06:27:06.074Z"
+}

@@ -47,6 +47,8 @@ export type AgencyProfile = {
     defaultQuoteTerms: string;
     /** Default for whether new quotes print the acceptance/signature block. */
     defaultQuoteAcceptance: boolean;
+    /** Monthly sales target (MYR won) the Sales dashboard measures against; 0 = none. */
+    salesTargetMyr: number;
     updatedAt: string;
 };
 
@@ -73,6 +75,7 @@ export const DEFAULT_PROFILE: AgencyProfile = {
     logos: [],
     defaultQuoteTerms: "",
     defaultQuoteAcceptance: true,
+    salesTargetMyr: 0,
     updatedAt: new Date(0).toISOString(),
 };
 

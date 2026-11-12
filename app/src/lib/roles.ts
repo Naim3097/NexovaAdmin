@@ -1,10 +1,15 @@
 /**
  * Who sees what. Pure functions.
  *
- * SYSTEM ROLE (admin | management | user) = permissions. FUNCTIONS (account
- * manager, sales, finance) = duties an admin or manager hands to a user; they
- * add pages and work, never permissions. A user sees only what is assigned to
- * them (see src/lib/scope.ts); admin and management see everything.
+ * SYSTEM ROLE (admin | management | user) = permissions. Management sees
+ * everything; admin is management plus adding team members and deleting
+ * things. DUTIES (delivery | finance) open pages for a user: delivery is every
+ * page except the Dashboard and Finances, finance adds Finances. Being an
+ * account manager or a deal owner is not a duty: it follows from the projects
+ * and clients a person is set on.
+ *
+ * Nothing is scoped by assignment any more except the two personal pages, My
+ * tasks and My accounts; every other page shows everything and filters.
  */
 import type { SystemRole, TeamFunction, TeamMember } from "@/lib/data/team";
 
@@ -18,7 +23,7 @@ export function rolesOf(member: RoleLike | null | undefined): SystemRole[] {
 }
 
 export function functionsOf(member: RoleLike | null | undefined): TeamFunction[] {
-    return member?.functions ?? [];
+    return member?.functions?.length ? member.functions : ["delivery"];
 }
 
 export function hasRole(member: RoleLike | null | undefined, ...roles: SystemRole[]): boolean {
@@ -31,13 +36,23 @@ export function hasFunction(member: RoleLike | null | undefined, ...fns: TeamFun
     return fns.some((f) => mine.includes(f));
 }
 
-/** Admin or management: sees everything, assigns functions. */
+/** Admin or management: sees everything, hands out duties. Nobody resolved (dev bypass) counts as management. */
 export function isManager(member: RoleLike | null | undefined): boolean {
-    return hasRole(member, "admin", "management");
+    return !member || hasRole(member, "admin", "management");
+}
+
+/** Admin only: adds team members, deletes records. */
+export function isAdmin(member: RoleLike | null | undefined): boolean {
+    return !member || hasRole(member, "admin");
+}
+
+/** Finances (quotes, invoices, money): management and the finance duty. */
+export function seesFinance(member: RoleLike | null | undefined): boolean {
+    return isManager(member) || hasFunction(member, "finance");
 }
 
 /**
- * Landing: managers open the Dashboard (numbers, tabs); everyone else opens
+ * Landing: management opens the Dashboard (numbers, tabs); everyone else opens
  * My tasks. /home, /management, /finance and /activity redirect into these.
  */
 export const DASHBOARD = "/dashboard";
@@ -45,30 +60,38 @@ export const MY_TASKS = "/my-work";
 export const HOME_BY_ROLE: Record<SystemRole, string> = { admin: DASHBOARD, management: DASHBOARD, user: MY_TASKS };
 
 export function homeFor(member: RoleLike | null | undefined): string {
-    if (!member) return DASHBOARD;
     return isManager(member) ? DASHBOARD : MY_TASKS;
 }
 
-/** Routes every signed-in team member may open (scoped to their assignments for users). */
-const BASE_ROUTES = [
-    "/my-work", "/calendar", "/notifications",
-    "/settings/clients", "/contracts",
-    "/works", "/campaigns", "/content", "/seo", "/website", "/custom-tasks",
-    "/team", "/profile",
-] as const;
+/** Routes every signed-in team member may open. */
+const BASE_ROUTES = ["/my-work", "/my-clients", "/calendar", "/notifications", "/profile", "/settings", "/team"] as const;
 
-/** Extra routes a function unlocks (the Dashboard shows only that duty's tabs). */
+/** Routes a duty opens. */
 export const ROUTES_BY_FUNCTION: Record<TeamFunction, readonly string[]> = {
-    account_manager: ["/dashboard", "/my-clients", "/onboarding", "/reports", "/invoices", "/quotes"],
-    sales: ["/dashboard", "/pipeline", "/leads", "/quotes"],
-    finance: ["/dashboard", "/invoices", "/quotes", "/reports"],
+    delivery: [
+        "/projects",
+        "/works",
+        "/campaigns",
+        "/content",
+        "/seo",
+        "/website",
+        "/custom-tasks",
+        "/leads",
+        "/pipeline",
+        "/onboarding",
+        "/reports",
+        "/activity",
+    ],
+    finance: ["/finance", "/invoices", "/quotes", "/reports"],
 };
 
-/** Dashboard tabs. "all" shows every tab the member may see. */
-export const DASHBOARD_TABS = ["all", "delivery", "sales", "money", "team", "clients", "activity"] as const;
+/** Management only. */
+const MANAGER_ROUTES = ["/dashboard", "/settings/agency"] as const;
+
+/** Dashboard tabs, in order. Opens on Delivery; there is no "all". */
+export const DASHBOARD_TABS = ["delivery", "sales", "money", "team", "clients", "activity"] as const;
 export type DashboardTab = (typeof DASHBOARD_TABS)[number];
 export const DASHBOARD_TAB_LABEL: Record<DashboardTab, string> = {
-    all: "All",
     delivery: "Delivery",
     sales: "Sales",
     money: "Money",
@@ -76,34 +99,25 @@ export const DASHBOARD_TAB_LABEL: Record<DashboardTab, string> = {
     clients: "Clients",
     activity: "Activity",
 };
+export const DEFAULT_DASHBOARD_TAB: DashboardTab = "delivery";
 
-/** Which Dashboard tabs a member may open: managers all; duties their own slice. */
+/** The Dashboard is management's: every tab for them, none for anyone else. */
 export function dashboardTabsFor(member: RoleLike | null | undefined): DashboardTab[] {
-    if (!member || isManager(member)) return [...DASHBOARD_TABS];
-    const tabs = new Set<DashboardTab>(["all"]);
-    if (hasFunction(member, "account_manager")) ["delivery", "clients", "activity"].forEach((t) => tabs.add(t as DashboardTab));
-    if (hasFunction(member, "sales")) ["sales", "activity"].forEach((t) => tabs.add(t as DashboardTab));
-    if (hasFunction(member, "finance")) ["money", "activity"].forEach((t) => tabs.add(t as DashboardTab));
-    return DASHBOARD_TABS.filter((t) => tabs.has(t));
+    return isManager(member) ? [...DASHBOARD_TABS] : [];
 }
-
-/** Routes per system role. "*" = everything. */
-export const ROUTES_BY_ROLE: Record<SystemRole, readonly string[]> = {
-    admin: ["*"],
-    management: ["*"],
-    user: BASE_ROUTES,
-};
 
 function matches(allowed: readonly string[], href: string): boolean {
     for (const a of allowed) {
         if (a === "*") return true;
-        if (href === a || href.startsWith(`${a}/`)) return true;
+        if (href === a || href.startsWith(`${a}/`) || href.startsWith(`${a}?`)) return true;
     }
     return false;
 }
 
 export function canSee(member: RoleLike | null | undefined, href: string): boolean {
-    for (const r of rolesOf(member)) if (matches(ROUTES_BY_ROLE[r], href)) return true;
+    if (isManager(member)) return true;
+    if (matches(MANAGER_ROUTES, href)) return false;
+    if (matches(BASE_ROUTES, href)) return true;
     for (const f of functionsOf(member)) if (matches(ROUTES_BY_FUNCTION[f], href)) return true;
     return false;
 }

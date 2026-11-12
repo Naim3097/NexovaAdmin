@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getActingMember } from "@/lib/auth";
-import { hasFunction } from "@/lib/roles";
-import { seesFinance } from "@/lib/scope";
+import { canSee, homeFor } from "@/lib/roles";
 import { listSubmissions } from "@/lib/data/onboarding";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,9 +18,9 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function OnboardingListPage() {
-    // Managers, finance and account managers run onboarding.
+    // Onboarding: management and the delivery duty.
     const member = await getActingMember();
-    if (!seesFinance(member) && !hasFunction(member, "account_manager")) redirect("/home");
+    if (!canSee(member, "/onboarding")) redirect(homeFor(member));
     const submissions = await listSubmissions();
 
     return (

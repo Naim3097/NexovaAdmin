@@ -10,7 +10,8 @@ import {
     updateClient,
     type ClientStatus,
 } from "@/lib/data/clients";
-import { generateMonthlyPlan } from "@/lib/data/content";
+import { getContractById, updateContract } from "@/lib/data/contracts";
+import { normalizeRenewalStatus, renewalLabel } from "@/lib/contracts/renewal";
 import { recordAudit } from "@/lib/data/audit";
 import { createServiceClient } from "@/lib/supabase/server";
 
@@ -28,11 +29,10 @@ function asCount(v: FormDataEntryValue | null, fallback: number): number {
     return Math.min(n, 1000);
 }
 
-/** Parse a non-negative money amount (MYR) from a form field. */
-function asMoney(v: FormDataEntryValue | null): number {
-    const n = Number.parseFloat(String(v ?? ""));
-    if (!Number.isFinite(n) || n < 0) return 0;
-    return Math.round(n * 100) / 100;
+/** The deal-owner select sends "none" for nobody. */
+function asDealOwner(v: FormDataEntryValue | null): string {
+    const s = String(v ?? "").trim();
+    return s === "none" ? "" : s;
 }
 
 export async function createClientAction(formData: FormData) {
@@ -48,6 +48,7 @@ export async function createClientAction(formData: FormData) {
         website: String(formData.get("website") ?? "").trim(),
         industry: String(formData.get("industry") ?? "").trim(),
         notes: String(formData.get("notes") ?? "").trim(),
+        dealOwner: asDealOwner(formData.get("dealOwner")),
     });
     revalidatePath("/settings/clients");
     revalidateTag("clients", "max");
@@ -68,16 +69,7 @@ export async function updateClientAction(formData: FormData) {
         industry: String(formData.get("industry") ?? "").trim(),
         notes: String(formData.get("notes") ?? "").trim(),
         contentRevisionLimit: asCount(formData.get("contentRevisionLimit"), 3),
-        monthlyContentQuota: asCount(formData.get("monthlyContentQuota"), 0),
-        extraContentPrice: asMoney(formData.get("extraContentPrice")),
-        extraRevisionPrice: asMoney(formData.get("extraRevisionPrice")),
-        monthlyRetainerMyr: asMoney(formData.get("monthlyRetainerMyr")),
-        packageName: String(formData.get("packageName") ?? "").trim(),
-        packageRenewsOn: String(formData.get("packageRenewsOn") ?? "").trim(),
-        accountManager:
-            String(formData.get("accountManager") ?? "").trim() === "none"
-                ? ""
-                : String(formData.get("accountManager") ?? "").trim(),
+        dealOwner: asDealOwner(formData.get("dealOwner")),
     });
     revalidatePath(`/settings/clients/${id}`);
     revalidatePath("/settings/clients");
@@ -207,26 +199,6 @@ export async function revokeClientPortalAction(formData: FormData) {
     revalidateTag("clients", "max");
 }
 
-/**
- * Generate the client's content plan for a month from their monthly quota.
- * Idempotent per (client, month). Month defaults to the value the form sends.
- */
-export async function generateContentPlanAction(formData: FormData) {
-    const id = String(formData.get("id") ?? "");
-    const month = String(formData.get("month") ?? "").trim();
-    if (!id || !/^\d{4}-\d{2}$/.test(month)) return;
-    const client = await getClientById(id);
-    if (!client) return;
-    await generateMonthlyPlan({
-        clientName: client.name,
-        month,
-        quota: client.monthlyContentQuota,
-    });
-    revalidatePath(`/settings/clients/${id}`);
-    revalidatePath("/content");
-    revalidatePath("/content/calendar");
-}
-
 export async function deleteClientAction(formData: FormData) {
     const id = String(formData.get("id") ?? "");
     if (!id) return;
@@ -234,4 +206,61 @@ export async function deleteClientAction(formData: FormData) {
     revalidatePath("/settings/clients");
     revalidateTag("clients", "max");
     redirect("/settings/clients");
+}
+
+/** The small actions below answer the form at once instead of redirecting. */
+export type ActionResult = { ok: true } | { ok: false; reason: string };
+
+/**
+ * Log a check-in with the client: the day we last spoke and one line on what
+ * was said. Feeds the Clients tab's "last check-in" and its health rule, so
+ * the client page and the dashboard are refreshed together.
+ */
+export async function logCheckInAction(clientId: string, date: string, note: string): Promise<ActionResult> {
+    const id = String(clientId ?? "").trim();
+    const day = String(date ?? "").trim();
+    const text = String(note ?? "").trim().slice(0, 500);
+    if (!id) return { ok: false, reason: "Missing client." };
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return { ok: false, reason: "Pick the day of the check-in." };
+    if (day > new Date().toISOString().slice(0, 10)) return { ok: false, reason: "A check-in cannot be in the future." };
+    const client = await getClientById(id);
+    if (!client) return { ok: false, reason: "Client not found." };
+    await updateClient(id, { lastCheckInAt: day, lastCheckInNote: text });
+    await recordAudit({
+        entity: "client",
+        entityId: id,
+        kind: "update",
+        summary: `Check-in with ${client.name} on ${day}${text ? `: ${text}` : ""}`,
+    });
+    revalidatePath(`/settings/clients/${id}`);
+    revalidatePath("/settings/clients");
+    revalidatePath("/dashboard");
+    revalidateTag("clients", "max");
+    return { ok: true };
+}
+
+/**
+ * Where the renewal stands on a project nearing its end ("" = not discussed).
+ * Set from the client page; the Clients tab colours its renewal chips from it.
+ */
+export async function setRenewalStatusAction(contractId: string, status: string): Promise<ActionResult> {
+    const id = String(contractId ?? "").trim();
+    if (!id) return { ok: false, reason: "Missing project." };
+    const contract = await getContractById(id);
+    if (!contract) return { ok: false, reason: "Project not found." };
+    const next = normalizeRenewalStatus(status);
+    if (next === contract.renewalStatus) return { ok: true };
+    await updateContract(id, { renewalStatus: next });
+    await recordAudit({
+        entity: "contract",
+        entityId: id,
+        kind: "update",
+        summary: `Renewal on ${contract.code || contract.name}: ${renewalLabel(next)}`,
+    });
+    revalidatePath(`/projects/${id}`);
+    revalidatePath("/projects");
+    // Every client page lists its projects; the id of this one's client is not to hand.
+    revalidatePath("/settings/clients", "layout");
+    revalidatePath("/dashboard");
+    return { ok: true };
 }

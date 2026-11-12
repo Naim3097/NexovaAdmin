@@ -1,0 +1,22 @@
+{
+  "id": "10947e32-4bd6-475a-8f5e-1ebc503173e0",
+  "name": "LeanX contact",
+  "company": "LeanX",
+  "email": "leanx@example.com",
+  "phone": "",
+  "source": "referral",
+  "sourceCampaignId": null,
+  "interestedIn": "Social media, video, SEO, Meta ads",
+  "estValueMyr": 96000,
+  "status": "won",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Naim",
+  "score": 90,
+  "autoIntake": false,
+  "lostReason": "",
+  "lostNote": "",
+  "createdAt": "2025-11-22T06:27:03.731Z",
+  "updatedAt": "2025-12-22T06:27:03.731Z"
+}

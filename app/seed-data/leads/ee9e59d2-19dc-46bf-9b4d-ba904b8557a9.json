@@ -1,0 +1,22 @@
+{
+  "id": "ee9e59d2-19dc-46bf-9b4d-ba904b8557a9",
+  "name": "Tan Ah Seng",
+  "company": "Bengkel Kereta Ah Seng",
+  "email": "bengkel-kereta-ah-seng@example.com",
+  "phone": "",
+  "source": "facebook",
+  "sourceCampaignId": null,
+  "interestedIn": "Meta ads",
+  "estValueMyr": 4500,
+  "status": "contacted",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Yusuf",
+  "score": 45,
+  "autoIntake": false,
+  "lostReason": "",
+  "lostNote": "",
+  "createdAt": "2026-11-07T06:27:03.731Z",
+  "updatedAt": "2026-11-11T06:27:03.731Z"
+}

@@ -1,0 +1,31 @@
+{
+  "id": "c0e51019-78fa-4f64-891f-0f20ab23f8f1",
+  "number": "INV-2026-0002",
+  "clientName": "Dr Kartini",
+  "contractId": "767be1f1-c1f8-4d74-84db-0b4537e896a4",
+  "status": "paid",
+  "issueDate": "2026-07-02",
+  "dueDate": "2026-07-16",
+  "items": [
+    {
+      "id": "3fb879c9-f9ad-4995-8f43-64ee4208660d",
+      "description": "Dr Kartini — brand growth — 2026-07",
+      "details": "CON-2026-0001",
+      "quantity": 1,
+      "unitPriceMyr": 6000
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "createdAt": "2026-07-02T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:06.273Z",
+  "paidAt": "2026-07-10T06:27:03.731Z",
+  "paymentProvider": null,
+  "paymentLink": null,
+  "paymentExternalId": null,
+  "paymentMeta": {},
+  "paymentLinkCreatedAt": null
+}

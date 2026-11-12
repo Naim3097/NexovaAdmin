@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getActingMember, requireTeamAccess } from "@/lib/auth";
-import { hasFunction } from "@/lib/roles";
-import { seesFinance } from "@/lib/scope";
+import { canSee, homeFor } from "@/lib/roles";
 import { buildClientMonthlyReport } from "@/lib/reports";
 import { getAgencyProfile, formatAddress } from "@/lib/data/agency";
 import { type ContentPost } from "@/lib/data/content";
@@ -52,9 +51,9 @@ export default async function ClientMonthlyReportPage({
     params: Promise<{ client: string; month: string }>;
 }) {
     await requireTeamAccess();
-    // Reports: managers, finance and account managers.
+    // Reports: management and the delivery or finance duty.
     const member = await getActingMember();
-    if (!seesFinance(member) && !hasFunction(member, "account_manager")) redirect("/home");
+    if (!canSee(member, "/reports")) redirect(homeFor(member));
     const { client: clientRaw, month } = await params;
     if (!/^\d{4}-\d{2}$/.test(month)) notFound();
     const client = decodeURIComponent(clientRaw);
@@ -453,7 +452,7 @@ export default async function ClientMonthlyReportPage({
                                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                                         <p className="font-medium">
                                             <Link
-                                                href={`/contracts/${r.contract.id}`}
+                                                href={`/projects/${r.contract.id}`}
                                                 className="hover:underline"
                                             >
                                                 {r.name}
@@ -590,7 +589,7 @@ export default async function ClientMonthlyReportPage({
                     </section>
                 ) : null}
 
-                {/* Billing this month — retainer + extras */}
+                {/* Billing this month — the active projects' monthly billing */}
                 {report.billing.total > 0 ? (
                     <section className="space-y-3">
                         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -638,23 +637,21 @@ export default async function ClientMonthlyReportPage({
                                     {report.billing.retainer > 0 ? (
                                         <tr className="border-b last:border-b-0">
                                             <td className="px-3 py-2">
-                                                {report.billing.packageName
-                                                    ? `${report.billing.packageName} retainer`
-                                                    : "Monthly retainer"}
-                                                <span className="text-muted-foreground">
-                                                    {" "}
-                                                    ·{" "}
-                                                    {
-                                                        report.billing
-                                                            .deliveredContents
-                                                    }
-                                                    /
-                                                    {
-                                                        report.billing
-                                                            .includedContents
-                                                    }{" "}
-                                                    content delivered
-                                                </span>
+                                                Monthly retainer
+                                                {report.billing.projects.length > 0 ? (
+                                                    <span className="text-muted-foreground">
+                                                        {" "}
+                                                        · {report.billing.projects.join(", ")}
+                                                    </span>
+                                                ) : null}
+                                                {report.billing.includedContents > 0 ? (
+                                                    <span className="text-muted-foreground">
+                                                        {" "}
+                                                        · {report.billing.deliveredContents}/
+                                                        {report.billing.includedContents} content
+                                                        delivered
+                                                    </span>
+                                                ) : null}
                                             </td>
                                             <td className="px-3 py-2 text-right">
                                                 1
@@ -664,46 +661,6 @@ export default async function ClientMonthlyReportPage({
                                             </td>
                                             <td className="px-3 py-2 text-right">
                                                 {fmtMyr(report.billing.retainer)}
-                                            </td>
-                                        </tr>
-                                    ) : null}
-                                    {report.extras.contentCount > 0 ? (
-                                        <tr className="border-b last:border-b-0">
-                                            <td className="px-3 py-2">
-                                                Extra visuals (beyond plan)
-                                            </td>
-                                            <td className="px-3 py-2 text-right">
-                                                {report.extras.contentCount}
-                                            </td>
-                                            <td className="px-3 py-2 text-right">
-                                                {fmtMyr(
-                                                    report.extras.contentPrice,
-                                                )}
-                                            </td>
-                                            <td className="px-3 py-2 text-right">
-                                                {fmtMyr(
-                                                    report.extras.contentCharge,
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ) : null}
-                                    {report.extras.revisionCount > 0 ? (
-                                        <tr className="border-b last:border-b-0">
-                                            <td className="px-3 py-2">
-                                                Extra revisions (beyond limit)
-                                            </td>
-                                            <td className="px-3 py-2 text-right">
-                                                {report.extras.revisionCount}
-                                            </td>
-                                            <td className="px-3 py-2 text-right">
-                                                {fmtMyr(
-                                                    report.extras.revisionPrice,
-                                                )}
-                                            </td>
-                                            <td className="px-3 py-2 text-right">
-                                                {fmtMyr(
-                                                    report.extras.revisionCharge,
-                                                )}
                                             </td>
                                         </tr>
                                     ) : null}
@@ -718,6 +675,22 @@ export default async function ClientMonthlyReportPage({
                                 </tbody>
                             </table>
                         </div>
+                        {report.extras.contentCount > 0 || report.extras.revisionCount > 0 ? (
+                            <p className="text-xs text-muted-foreground">
+                                Beyond the plan this month:{" "}
+                                {[
+                                    report.extras.contentCount > 0
+                                        ? `${report.extras.contentCount} visual${report.extras.contentCount === 1 ? "" : "s"} over the monthly content`
+                                        : "",
+                                    report.extras.revisionCount > 0
+                                        ? `${report.extras.revisionCount} revision${report.extras.revisionCount === 1 ? "" : "s"} past the limit`
+                                        : "",
+                                ]
+                                    .filter(Boolean)
+                                    .join(" · ")}
+                                . Not priced here — agree any charge with the client and add it to the invoice.
+                            </p>
+                        ) : null}
                     </section>
                 ) : null}
 

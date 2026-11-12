@@ -1,0 +1,21 @@
+{
+  "id": "ba41e66f-a43f-4696-a348-dcab41f7e093",
+  "name": "Pak Long Kopitiam",
+  "status": "churned",
+  "dealOwner": "Naim",
+  "contactName": "Demo contact",
+  "contactEmail": "pak-long-kopitiam@example.com",
+  "contactPhone": "",
+  "billingAddress": "",
+  "website": "",
+  "industry": "Food & beverage",
+  "notes": "Past client: website and menu revamp.",
+  "contentRevisionLimit": 3,
+  "portalToken": "",
+  "userId": null,
+  "internal": false,
+  "lastCheckInAt": "2026-09-03",
+  "lastCheckInNote": "Project closed. Final invoice still unpaid; owner not answering.",
+  "createdAt": "2026-04-24T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.200Z"
+}

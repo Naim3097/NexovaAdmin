@@ -1,0 +1,16 @@
+{
+  "id": "70507367-a1f9-4731-a9f8-41ecbb57e440",
+  "at": "2026-11-11T07:17:46.752Z",
+  "entity": "work",
+  "entityId": "265c7003-2d47-42fa-815a-b14ae61803d3",
+  "kind": "status",
+  "summary": "Reel: Behind the scenes at Nexova: not started → in progress",
+  "actor": "Syafiq",
+  "changes": [
+    {
+      "field": "status",
+      "before": "not_started",
+      "after": "in_progress"
+    }
+  ]
+}

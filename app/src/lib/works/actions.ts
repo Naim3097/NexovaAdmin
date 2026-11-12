@@ -5,13 +5,14 @@ import { redirect } from "next/navigation";
 import { getCurrentTeamMember, getCurrentUser } from "@/lib/auth";
 import { createWork, deleteWork, getWorkById, listWorks, updateWork, type TaskStatus, type WorkShare } from "@/lib/data/works";
 import { getContractById } from "@/lib/data/contracts";
-import { isApprover, isLineType, isSeat, DEFAULT_SPLIT, SEAT_LABEL, type LineType } from "@/lib/data/planners";
+import { defaultApprover, isApprover, isLineType, isSeat, DEFAULT_SPLIT, SEAT_LABEL, type LineType } from "@/lib/data/planners";
 import { listTeamMembers, roundHours, type TeamMember } from "@/lib/data/team";
 import { withHours } from "@/lib/capacity/helpers";
 import { syncLinkedContent } from "@/lib/works/sync";
 import { recordAudit } from "@/lib/data/audit";
 import { notify } from "@/lib/data/notifications";
 import { applyDueDate, members, splitTotal } from "@/lib/works/helpers";
+import { WAITING_CLEARED } from "@/lib/works/transitions";
 
 function clean(v: FormDataEntryValue | null): string {
     return String(v ?? "").trim();
@@ -53,14 +54,13 @@ function revalidate(id?: string, contractId?: string) {
     if (id) revalidatePath(`/works/${id}`);
     revalidatePath("/calendar");
     revalidatePath("/custom-tasks");
-    revalidatePath("/contracts");
+    revalidatePath("/projects");
     if (contractId) {
-        revalidatePath(`/contracts/${contractId}`);
-        revalidatePath(`/contracts/${contractId}/document`);
+        revalidatePath(`/projects/${contractId}`);
+        revalidatePath(`/projects/${contractId}/document`);
     }
-    revalidatePath("/management");
-    revalidatePath("/management/work");
-    revalidatePath("/management/contracts");
+    revalidatePath("/my-work");
+    revalidatePath("/dashboard");
     revalidatePath("/notifications");
 }
 
@@ -97,7 +97,11 @@ function hoursFrom(shares: ShareInput[], previous: WorkShare[], team: TeamMember
 // Work (one task)
 // ---------------------------------------------------------------------------
 
-/** Add a task by hand under a contract (outside the planner: an extra, a fix, an ad-hoc ask). */
+/**
+ * Add a task by hand under a project from a form (the Website and Other tasks
+ * pages). The Tasks board adds through createTaskAction in quick-actions.ts,
+ * which checks the same things and also requires a signed or running project.
+ */
 export async function createWorkAction(formData: FormData) {
     const contractId = clean(formData.get("contractId"));
     const contract = contractId ? await getContractById(contractId) : null;
@@ -107,7 +111,7 @@ export async function createWorkAction(formData: FormData) {
     if (!contract || !isLineType(typeRaw) || !title || !/^\d{4}-\d{2}$/.test(month)) return;
     const dueDate = clean(formData.get("dueDate")) || `${month}-15`;
     const approverRaw = clean(formData.get("approver"));
-    // Forms may send the phase by key or by name; resolve against the contract phases.
+    // Forms may send the phase by key or by name; resolve against the project phases.
     const phaseIn = pick(formData.get("phaseKey")) || pick(formData.get("phaseName"));
     const phase = contract.phases.find((ph) => ph.key === phaseIn || ph.name === phaseIn);
     // Seats with nobody named fall to the account manager when the seat is "am".
@@ -124,7 +128,7 @@ export async function createWorkAction(formData: FormData) {
         phaseName: phase?.name ?? clean(formData.get("phaseName")),
         dueDate,
         split: hoursFrom(fillAm(splitFrom(formData) ?? DEFAULT_SPLIT[typeRaw].map((s) => ({ ...s, member: "" }))), [], await listTeamMembers(), typeRaw),
-        approver: isApprover(approverRaw) ? approverRaw : "am",
+        approver: isApprover(approverRaw) ? approverRaw : defaultApprover(typeRaw),
         milestone: clean(formData.get("milestone")) === "1",
         notes: clean(formData.get("notes")),
     });
@@ -164,7 +168,7 @@ export async function deleteWorkAction(formData: FormData) {
     await deleteWork(id);
     await recordAudit({ entity: "work", entityId: id, kind: "delete", summary: `Task deleted: ${w.title}`, actor: await actorName(formData) });
     revalidate(undefined, w.contractId);
-    redirect(`/contracts/${w.contractId}#works`);
+    redirect(`/projects/${w.contractId}#works`);
 }
 
 /** Who holds what share. Must add up to 100%. */
@@ -243,46 +247,6 @@ async function setStatus(
     return { w, actor };
 }
 
-/** Account manager sends the request to everyone holding a share. */
-export async function requestWorkAction(formData: FormData) {
-    const id = clean(formData.get("id"));
-    const w = id ? await getWorkById(id) : null;
-    if (!w || w.status === "completed") return;
-    const actor = await actorName(formData);
-    await updateWork(id, { requestedAt: new Date().toISOString() });
-    await notify({
-        kind: "work_requested",
-        title: `Requested: ${w.title}`,
-        body: `${w.clientName} · ${w.month} · due ${w.dueDate || "TBC"} · ${w.split.map((s) => `${s.member || SEAT_LABEL[s.seat]} ${s.pct}%`).join(" · ")} · from ${actor}`,
-        link: `/works/${w.id}`,
-    });
-    await recordAudit({ entity: "work", entityId: id, kind: "update", summary: `${w.title}: request sent to ${members(w).join(", ") || "the seats"}`, actor });
-    revalidate(id, w.contractId);
-}
-
-/** Send every not-started task of one month on a contract in one go. */
-export async function requestMonthAction(formData: FormData) {
-    const contractId = clean(formData.get("contractId"));
-    const month = clean(formData.get("month"));
-    if (!contractId || !/^\d{4}-\d{2}$/.test(month)) return;
-    const actor = await actorName(formData);
-    const now = new Date().toISOString();
-    const list = (await listWorks()).filter((w) => w.contractId === contractId && w.month === month && w.status === "not_started" && !w.requestedAt);
-    for (const w of list) {
-        await updateWork(w.id, { requestedAt: now });
-        await notify({
-            kind: "work_requested",
-            title: `Requested: ${w.title}`,
-            body: `${w.clientName} · ${w.month} · due ${w.dueDate || "TBC"} · ${w.split.map((s) => `${s.member || SEAT_LABEL[s.seat]} ${s.pct}%`).join(" · ")} · from ${actor}`,
-            link: `/works/${w.id}`,
-        });
-    }
-    if (list.length) {
-        await recordAudit({ entity: "contract", entityId: contractId, kind: "update", summary: `${month}: ${list.length} task request${list.length === 1 ? "" : "s"} sent`, actor });
-    }
-    revalidate(undefined, contractId);
-}
-
 export async function startWorkAction(formData: FormData) {
     await setStatus(formData, ["not_started"], "in_progress", (_a, now) => ({ startedAt: now }));
 }
@@ -310,11 +274,13 @@ export async function submitWorkAction(formData: FormData) {
     const url = clean(formData.get("url"));
     const note = clean(formData.get("note"));
     await applyOwnHours(id, await actorName(formData), formData.get("hours"));
+    // Handing it over ends whatever it was waiting on.
     if (w.approver === "none") {
         await setStatus(formData, ["not_started", "in_progress"], "completed", (_a, now) => ({
             completedAt: now,
             submittedAt: now,
             submission: { url, note },
+            ...WAITING_CLEARED,
         }));
         return;
     }
@@ -322,6 +288,7 @@ export async function submitWorkAction(formData: FormData) {
         submittedAt: now,
         submission: { url, note },
         review: { decision: null, note: "", by: "", at: null },
+        ...WAITING_CLEARED,
     }));
     if (!res) return;
     await notify({
@@ -343,6 +310,7 @@ export async function reviewWorkAction(formData: FormData) {
         const res = await setStatus(formData, ["pending_approval"], "completed", (actor, now) => ({
             completedAt: now,
             review: { decision: "approved", note, by: actor, at: now },
+            ...WAITING_CLEARED,
         }));
         if (!res) return;
         await syncLinkedContent(w, "approved", res.actor, note);
@@ -360,7 +328,7 @@ export async function reviewWorkAction(formData: FormData) {
     if (!res) return;
     await syncLinkedContent(w, "changes", res.actor, note);
     await notify({
-        kind: "work_requested",
+        kind: "work_changes_requested",
         title: `Changes requested: ${w.title}`,
         body: `${w.clientName} · back to ${members(w).join(", ") || "the team"}${note ? ` — ${note}` : ""}`,
         link: `/works/${w.id}`,
@@ -369,7 +337,7 @@ export async function reviewWorkAction(formData: FormData) {
 
 /** Account manager marks a task done regardless of where it is. */
 export async function completeWorkAction(formData: FormData) {
-    await setStatus(formData, ["not_started", "in_progress", "pending_approval"], "completed", (_a, now) => ({ completedAt: now }));
+    await setStatus(formData, ["not_started", "in_progress", "pending_approval"], "completed", (_a, now) => ({ completedAt: now, ...WAITING_CLEARED }));
 }
 
 export async function reopenWorkAction(formData: FormData) {

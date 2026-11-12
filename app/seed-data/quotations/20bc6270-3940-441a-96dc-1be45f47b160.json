@@ -1,0 +1,31 @@
+{
+  "id": "20bc6270-3940-441a-96dc-1be45f47b160",
+  "number": "QUO-2026-0006",
+  "clientName": "Kopi Tanah Tinggi",
+  "status": "sent",
+  "issueDate": "2026-10-31",
+  "validUntil": "2026-11-14",
+  "items": [
+    {
+      "id": "1a56622a-2326-44fe-8176-a111082961a8",
+      "description": "Social media and TikTok — 6 months",
+      "details": "",
+      "quantity": 1,
+      "unitPriceMyr": 21000
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "subject": "Social media and TikTok — 6 months",
+  "scopeIncludes": "",
+  "exclusions": "",
+  "terms": "",
+  "showAcceptance": true,
+  "convertedInvoiceId": null,
+  "createdAt": "2026-10-31T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.241Z",
+  "acceptedAt": null
+}

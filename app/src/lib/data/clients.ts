@@ -29,7 +29,7 @@ function rowToClient(row: ClientRow): Client {
         id: row.id,
         name: row.name,
         status: row.status as ClientStatus,
-        accountManager: row.account_manager ?? "",
+        dealOwner: row.deal_owner ?? "",
         contactName: row.contact_name,
         contactEmail: row.contact_email,
         contactPhone: row.contact_phone,
@@ -38,14 +38,11 @@ function rowToClient(row: ClientRow): Client {
         industry: row.industry,
         notes: row.notes,
         contentRevisionLimit: row.content_revision_limit,
-        monthlyContentQuota: row.monthly_content_quota,
         portalToken: row.portal_token,
         userId: row.user_id,
-        extraContentPrice: Number(row.extra_content_price),
-        extraRevisionPrice: Number(row.extra_revision_price),
-        monthlyRetainerMyr: Number(row.monthly_retainer_myr),
-        packageName: row.package_name,
-        packageRenewsOn: row.package_renews_on ?? "",
+        internal: row.internal ?? false,
+        lastCheckInAt: row.last_check_in_at ?? "",
+        lastCheckInNote: row.last_check_in_note ?? "",
         createdAt: row.created_at,
         updatedAt: row.updated_at,
     };
@@ -56,7 +53,7 @@ function clientToInsert(c: Client): ClientInsert {
         id: c.id,
         name: c.name,
         status: c.status,
-        account_manager: c.accountManager,
+        deal_owner: c.dealOwner,
         contact_name: c.contactName,
         contact_email: c.contactEmail,
         contact_phone: c.contactPhone,
@@ -65,14 +62,11 @@ function clientToInsert(c: Client): ClientInsert {
         industry: c.industry,
         notes: c.notes,
         content_revision_limit: c.contentRevisionLimit,
-        monthly_content_quota: c.monthlyContentQuota,
         portal_token: c.portalToken,
         user_id: c.userId,
-        extra_content_price: c.extraContentPrice,
-        extra_revision_price: c.extraRevisionPrice,
-        monthly_retainer_myr: c.monthlyRetainerMyr,
-        package_name: c.packageName,
-        package_renews_on: c.packageRenewsOn || null,
+        internal: c.internal,
+        last_check_in_at: c.lastCheckInAt || null,
+        last_check_in_note: c.lastCheckInNote,
         created_at: c.createdAt,
         updated_at: c.updatedAt,
     };
@@ -82,7 +76,7 @@ function patchToUpdate(patch: UpdatePatch): ClientUpdate {
     const out: ClientUpdate = {};
     if (patch.name !== undefined) out.name = patch.name;
     if (patch.status !== undefined) out.status = patch.status;
-    if (patch.accountManager !== undefined) out.account_manager = patch.accountManager;
+    if (patch.dealOwner !== undefined) out.deal_owner = patch.dealOwner;
     if (patch.contactName !== undefined) out.contact_name = patch.contactName;
     if (patch.contactEmail !== undefined)
         out.contact_email = patch.contactEmail;
@@ -95,19 +89,11 @@ function patchToUpdate(patch: UpdatePatch): ClientUpdate {
     if (patch.notes !== undefined) out.notes = patch.notes;
     if (patch.contentRevisionLimit !== undefined)
         out.content_revision_limit = patch.contentRevisionLimit;
-    if (patch.monthlyContentQuota !== undefined)
-        out.monthly_content_quota = patch.monthlyContentQuota;
     if (patch.portalToken !== undefined) out.portal_token = patch.portalToken;
     if (patch.userId !== undefined) out.user_id = patch.userId;
-    if (patch.extraContentPrice !== undefined)
-        out.extra_content_price = patch.extraContentPrice;
-    if (patch.extraRevisionPrice !== undefined)
-        out.extra_revision_price = patch.extraRevisionPrice;
-    if (patch.monthlyRetainerMyr !== undefined)
-        out.monthly_retainer_myr = patch.monthlyRetainerMyr;
-    if (patch.packageName !== undefined) out.package_name = patch.packageName;
-    if (patch.packageRenewsOn !== undefined)
-        out.package_renews_on = patch.packageRenewsOn || null;
+    if (patch.internal !== undefined) out.internal = patch.internal;
+    if (patch.lastCheckInAt !== undefined) out.last_check_in_at = patch.lastCheckInAt || null;
+    if (patch.lastCheckInNote !== undefined) out.last_check_in_note = patch.lastCheckInNote;
     if (patch.updatedAt !== undefined) out.updated_at = patch.updatedAt;
     return out;
 }
@@ -115,7 +101,7 @@ function patchToUpdate(patch: UpdatePatch): ClientUpdate {
 export async function createClient(input: {
     name: string;
     status?: ClientStatus;
-    accountManager?: string;
+    dealOwner?: string;
     contactName?: string;
     contactEmail?: string;
     contactPhone?: string;
@@ -124,14 +110,11 @@ export async function createClient(input: {
     industry?: string;
     notes?: string;
     contentRevisionLimit?: number;
-    monthlyContentQuota?: number;
     portalToken?: string;
     userId?: string | null;
-    extraContentPrice?: number;
-    extraRevisionPrice?: number;
-    monthlyRetainerMyr?: number;
-    packageName?: string;
-    packageRenewsOn?: string;
+    internal?: boolean;
+    lastCheckInAt?: string;
+    lastCheckInNote?: string;
 }): Promise<Client> {
     if (!isSupabaseEnabled("clients")) return devClients.createClient(input);
     const now = new Date().toISOString();
@@ -139,7 +122,7 @@ export async function createClient(input: {
         id: randomUUID(),
         name: input.name,
         status: input.status ?? "prospect",
-        accountManager: input.accountManager ?? "",
+        dealOwner: input.dealOwner ?? "",
         contactName: input.contactName ?? "",
         contactEmail: input.contactEmail ?? "",
         contactPhone: input.contactPhone ?? "",
@@ -148,14 +131,11 @@ export async function createClient(input: {
         industry: input.industry ?? "",
         notes: input.notes ?? "",
         contentRevisionLimit: input.contentRevisionLimit ?? 3,
-        monthlyContentQuota: input.monthlyContentQuota ?? 0,
         portalToken: input.portalToken ?? "",
         userId: input.userId ?? null,
-        extraContentPrice: input.extraContentPrice ?? 0,
-        extraRevisionPrice: input.extraRevisionPrice ?? 0,
-        monthlyRetainerMyr: input.monthlyRetainerMyr ?? 0,
-        packageName: input.packageName ?? "",
-        packageRenewsOn: input.packageRenewsOn ?? "",
+        internal: input.internal ?? false,
+        lastCheckInAt: input.lastCheckInAt ?? "",
+        lastCheckInNote: input.lastCheckInNote ?? "",
         createdAt: now,
         updatedAt: now,
     };

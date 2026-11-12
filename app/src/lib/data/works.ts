@@ -35,6 +35,7 @@ function rowToWork(row: WorkRow): Work {
         phaseName: row.phase_name,
         dueDate: row.due_date ?? "",
         defaultDueDate: row.default_due_date ?? "",
+        plannedDate: row.planned_date ?? "",
         adjustedBy: row.adjusted_by,
         adjustedAt: row.adjusted_at,
         status: row.status as Work["status"],
@@ -42,13 +43,14 @@ function rowToWork(row: WorkRow): Work {
         approver: row.approver as Work["approver"],
         milestone: row.milestone,
         linked: row.linked as Work["linked"],
-        requestedAt: row.requested_at,
         startedAt: row.started_at,
         submittedAt: row.submitted_at,
         submission: row.submission as Work["submission"],
         review: row.review as Work["review"],
         completedAt: row.completed_at,
         notes: row.notes,
+        waitingOn: row.waiting_on as Work["waitingOn"],
+        waitingSince: row.waiting_since,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
     });
@@ -70,6 +72,7 @@ function toInsert(w: Work): Insert {
         phase_name: w.phaseName,
         due_date: w.dueDate || null,
         default_due_date: w.defaultDueDate || null,
+        planned_date: w.plannedDate || null,
         adjusted_by: w.adjustedBy,
         adjusted_at: w.adjustedAt,
         status: w.status,
@@ -77,13 +80,14 @@ function toInsert(w: Work): Insert {
         approver: w.approver,
         milestone: w.milestone,
         linked: w.linked,
-        requested_at: w.requestedAt,
         started_at: w.startedAt,
         submitted_at: w.submittedAt,
         submission: w.submission,
         review: w.review,
         completed_at: w.completedAt,
         notes: w.notes,
+        waiting_on: w.waitingOn,
+        waiting_since: w.waitingSince,
         created_at: w.createdAt,
         updated_at: w.updatedAt,
     };
@@ -104,6 +108,7 @@ function patchToUpdate(patch: dev.WorkPatch): Update {
     if (patch.phaseName !== undefined) out.phase_name = patch.phaseName;
     if (patch.dueDate !== undefined) out.due_date = patch.dueDate || null;
     if (patch.defaultDueDate !== undefined) out.default_due_date = patch.defaultDueDate || null;
+    if (patch.plannedDate !== undefined) out.planned_date = patch.plannedDate || null;
     if (patch.adjustedBy !== undefined) out.adjusted_by = patch.adjustedBy;
     if (patch.adjustedAt !== undefined) out.adjusted_at = patch.adjustedAt;
     if (patch.status !== undefined) out.status = patch.status;
@@ -111,13 +116,14 @@ function patchToUpdate(patch: dev.WorkPatch): Update {
     if (patch.approver !== undefined) out.approver = patch.approver;
     if (patch.milestone !== undefined) out.milestone = patch.milestone;
     if (patch.linked !== undefined) out.linked = patch.linked;
-    if (patch.requestedAt !== undefined) out.requested_at = patch.requestedAt;
     if (patch.startedAt !== undefined) out.started_at = patch.startedAt;
     if (patch.submittedAt !== undefined) out.submitted_at = patch.submittedAt;
     if (patch.submission !== undefined) out.submission = patch.submission;
     if (patch.review !== undefined) out.review = patch.review;
     if (patch.completedAt !== undefined) out.completed_at = patch.completedAt;
     if (patch.notes !== undefined) out.notes = patch.notes;
+    if (patch.waitingOn !== undefined) out.waiting_on = patch.waitingOn;
+    if (patch.waitingSince !== undefined) out.waiting_since = patch.waitingSince;
     out.updated_at = patch.updatedAt ?? new Date().toISOString();
     return out;
 }

@@ -1,30 +1,28 @@
 "use client";
 
-import { useActionState } from "react";
+/**
+ * Invite a team member: name, email, job role and job category, plus access
+ * and duties. Picking a category resets the duties to what it starts with
+ * (Business support: finance only; everyone else: delivery); the boxes stay
+ * editable after that.
+ */
+import { useActionState, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { inviteTeamMemberAction, type InviteState } from "@/lib/team/actions";
+import { defaultFunctionsFor } from "@/lib/team/categories";
+import { JobFields } from "./job-fields";
 
 const initial: InviteState = { ok: false };
 
 type Option = { value: string; label: string; hint?: string };
 
 export function InviteForm({
-    roles,
     systemRoles,
     functions,
 }: {
-    /** Company roles (the job they do). */
-    roles: readonly string[];
     /** Permission sets (one per login), value + label, passed in because the role table is server-only. */
     systemRoles: ReadonlyArray<Option>;
     /** Duties (several allowed). */
@@ -34,6 +32,12 @@ export function InviteForm({
         inviteTeamMemberAction,
         initial,
     );
+    // Ticked duties; delivery until a category says otherwise.
+    const [duties, setDuties] = useState<string[]>(["delivery"]);
+
+    function toggle(value: string, on: boolean) {
+        setDuties((d) => (on ? [...new Set([...d, value])] : d.filter((v) => v !== value)));
+    }
 
     return (
         <div className="space-y-4 rounded-lg border bg-card p-4 md:p-6">
@@ -45,38 +49,26 @@ export function InviteForm({
             </div>
 
             <form action={formAction} className="space-y-4">
+                {/* Tells the server the duty boxes were shown, so none ticked means none. */}
+                <input type="hidden" name="functions_shown" value="1" />
                 <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-1.5">
-                        <Label className="text-sm">Name</Label>
-                        <Input name="name" required placeholder="e.g. Danis" />
+                        <Label className="text-sm" htmlFor="invite-name">Name</Label>
+                        <Input id="invite-name" name="name" required placeholder="e.g. Danis" />
                     </div>
                     <div className="space-y-1.5">
-                        <Label className="text-sm">Job</Label>
-                        <Select name="role" defaultValue="Other">
-                            <SelectTrigger className="h-10">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {roles.map((r) => (
-                                    <SelectItem key={r} value={r}>
-                                        {r}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <Label className="text-sm" htmlFor="invite-email">Email</Label>
+                        <Input id="invite-email" name="email" type="email" required />
+                    </div>
+                    <JobFields role="" required onCategoryChange={(c) => setDuties(defaultFunctionsFor(c))} />
+                    <div className="space-y-1.5">
+                        <Label className="text-sm" htmlFor="invite-phone">Phone</Label>
+                        <Input id="invite-phone" name="phone" type="tel" placeholder="+60..." />
                     </div>
                     <div className="space-y-1.5">
-                        <Label className="text-sm">Email</Label>
-                        <Input name="email" type="email" required />
+                        <Label className="text-sm" htmlFor="invite-skills">Skills (comma-separated)</Label>
+                        <Input id="invite-skills" name="skills" placeholder="React, Figma, Copywriting" />
                     </div>
-                    <div className="space-y-1.5">
-                        <Label className="text-sm">Phone</Label>
-                        <Input name="phone" type="tel" placeholder="+60..." />
-                    </div>
-                </div>
-                <div className="space-y-1.5">
-                    <Label className="text-sm">Skills (comma-separated)</Label>
-                    <Input name="skills" placeholder="React, Figma, Copywriting" />
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
                     <fieldset className="space-y-1.5">
@@ -96,7 +88,7 @@ export function InviteForm({
                             ))}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                            Admin and management see everything; a user sees only what is assigned to them.
+                            Admin and management see everything; a user sees the pages their duties open.
                         </p>
                     </fieldset>
                     <fieldset className="space-y-1.5">
@@ -108,6 +100,8 @@ export function InviteForm({
                                         type="checkbox"
                                         name="functions"
                                         value={f.value}
+                                        checked={duties.includes(f.value)}
+                                        onChange={(e) => toggle(f.value, e.target.checked)}
                                         className="size-4 rounded border-input"
                                     />
                                     {f.label}
@@ -115,7 +109,8 @@ export function InviteForm({
                             ))}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                            Each adds pages and work (pipeline, approvals, finance).
+                            Delivery opens the work pages; Finance opens quotes, invoices and reports. The job category sets a starting pick
+                            (Business support: Finance only).
                         </p>
                     </fieldset>
                 </div>

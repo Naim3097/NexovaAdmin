@@ -1,0 +1,37 @@
+{
+  "id": "1ccea4e6-8694-403b-90cb-758fc09a961a",
+  "name": "Zafran",
+  "role": "Head of Digital Infrastructure",
+  "category": "developer",
+  "email": "zafran@nexova.local",
+  "phone": "",
+  "skills": "web development, hosting, payment integrations",
+  "active": true,
+  "userId": null,
+  "accessLevel": "standard",
+  "systemRoles": [
+    "management"
+  ],
+  "functions": [
+    "delivery"
+  ],
+  "weeklyHours": 32,
+  "setAside": [
+    {
+      "label": "Management",
+      "hours": 6
+    }
+  ],
+  "hoursByType": {
+    "website": 10,
+    "custom": 2,
+    "static": 2,
+    "video": 5,
+    "campaign": 6,
+    "seo": 4
+  },
+  "costRateMyr": 110,
+  "daysOff": {},
+  "createdAt": "2026-11-12T06:27:04.170Z",
+  "updatedAt": "2026-11-12T06:27:04.170Z"
+}

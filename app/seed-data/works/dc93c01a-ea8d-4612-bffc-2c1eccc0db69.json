@@ -1,0 +1,49 @@
+{
+  "id": "dc93c01a-ea8d-4612-bffc-2c1eccc0db69",
+  "contractId": "6b92fdc7-9df3-4571-a844-5bacb941cee6",
+  "clientName": "Kembara",
+  "accountManager": "Zafran",
+  "plannerLineId": "req:website:2026-10:0:1",
+  "addendumVersion": 0,
+  "type": "website",
+  "title": "Discovery & sitemap",
+  "channel": "Website",
+  "month": "2026-10",
+  "phaseKey": "discovery",
+  "phaseName": "Discovery",
+  "dueDate": "2026-10-08",
+  "defaultDueDate": "2026-10-08",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "dev",
+      "member": "Zafran",
+      "pct": 100,
+      "hours": 10
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": null,
+  "startedAt": "2026-10-02T06:27:03.731Z",
+  "submittedAt": "2026-10-06T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/dc93c01a",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Zafran",
+    "at": "2026-10-07T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-07T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-10-01T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.799Z"
+}

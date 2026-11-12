@@ -31,7 +31,8 @@ export type ReportInsightsResult = z.infer<typeof ReportInsightsSchema>;
 export type ReportInsightsInput = {
     clientName: string;
     month: string; // YYYY-MM
-    packageName: string;
+    /** Names of the client's active projects (the engagement, in their words). */
+    projects: string[];
     delivered: {
         title: string;
         platform: string;
@@ -48,6 +49,7 @@ export type ReportInsightsInput = {
         clicks: number;
         leads: number;
     }[];
+    /** Work beyond the plan this month (counts; not priced here). */
     extras: { contentCount: number; revisionCount: number };
 };
 
@@ -64,11 +66,11 @@ export async function generateReportInsights(
     const digest = {
         client: input.clientName,
         month: input.month,
-        package: input.packageName,
+        projects: input.projects,
         deliveredCount: input.delivered.length,
         delivered: input.delivered,
         adCampaigns: input.campaigns,
-        chargeableExtras: input.extras,
+        beyondPlan: input.extras,
     };
 
     const prompt = [

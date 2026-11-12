@@ -5,6 +5,8 @@ import {
     type ContentPost,
 } from "@/lib/data/content";
 import { listClients } from "@/lib/data/clients";
+import { listContracts } from "@/lib/data/contracts";
+import { clientContentQuota } from "@/lib/clients/quota";
 import { ContentCard } from "@/components/content-card";
 
 export const dynamic = "force-dynamic";
@@ -29,9 +31,10 @@ export default async function ContentBoardPage({
     searchParams: Promise<{ client?: string; month?: string }>;
 }) {
     const { client: clientParam, month: monthParam } = await searchParams;
-    const [posts, clients] = await Promise.all([
+    const [posts, clients, contracts] = await Promise.all([
         listContentPosts(),
         listClients(),
+        listContracts(),
     ]);
 
     const clientNames = clients.map((c) => c.name);
@@ -59,9 +62,9 @@ export default async function ContentBoardPage({
         .filter((p) => p.planMonth === selectedMonth)
         .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
 
-    // Per-visual quota meter for the selected client + month.
-    const clientRec = clients.find((c) => eq(c.name, selectedClient));
-    const quota = clientRec?.monthlyContentQuota ?? 0;
+    // Per-visual quota meter for the selected client + month: the content a
+    // month their active projects promise.
+    const quota = clientContentQuota(selectedClient, contracts);
     const used = visualsUsed(posts, selectedClient, selectedMonth);
     const over = quota > 0 ? Math.max(0, used - quota) : 0;
 
@@ -155,7 +158,7 @@ export default async function ContentBoardPage({
                                     }
                                 >
                                     {used}/{quota}
-                                    {over > 0 ? ` · ${over} over (billable)` : ""}
+                                    {over > 0 ? ` · ${over} beyond the plan` : ""}
                                 </span>
                             </div>
                             <div className="h-1.5 overflow-hidden rounded-full bg-muted">

@@ -1,0 +1,75 @@
+{
+  "id": "2348b36a-307c-4367-8518-2abd835a923f",
+  "name": "Scale",
+  "description": "Full engine: more posts, a campaign a month, search, and a brand refresh up front.",
+  "months": 6,
+  "requirements": [
+    {
+      "type": "static",
+      "name": "Instagram static",
+      "count": 8,
+      "per": "month",
+      "channel": "Instagram"
+    },
+    {
+      "type": "video",
+      "name": "Instagram reel",
+      "count": 4,
+      "per": "month",
+      "channel": "Instagram"
+    },
+    {
+      "type": "campaign",
+      "name": "Lead-gen campaign",
+      "count": 1,
+      "per": "month",
+      "channel": "Meta"
+    },
+    {
+      "type": "seo",
+      "name": "Blog article",
+      "count": 2,
+      "per": "month",
+      "channel": "Blog"
+    },
+    {
+      "type": "custom",
+      "name": "Brand refresh",
+      "count": 1,
+      "per": "once",
+      "channel": "Brand"
+    }
+  ],
+  "phases": [
+    {
+      "key": "kickoff",
+      "name": "Kickoff",
+      "summary": "Onboarding, brand audit, access, strategy sign-off.",
+      "fromMonth": 1,
+      "months": 1
+    },
+    {
+      "key": "foundation",
+      "name": "Foundation",
+      "summary": "Brand refresh and account setup.",
+      "fromMonth": 1,
+      "months": 2
+    },
+    {
+      "key": "production",
+      "name": "Production",
+      "summary": "Monthly posts, campaigns and articles.",
+      "fromMonth": 1,
+      "months": 6
+    },
+    {
+      "key": "review",
+      "name": "Review",
+      "summary": "Performance review, renewal proposal, next plan.",
+      "fromMonth": 6,
+      "months": 1
+    }
+  ],
+  "createdAt": "2026-11-12T06:27:04.165Z",
+  "updatedAt": "2026-11-12T06:27:04.165Z"
+}

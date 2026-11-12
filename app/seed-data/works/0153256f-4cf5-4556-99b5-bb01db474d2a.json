@@ -1,0 +1,52 @@
+{
+  "id": "0153256f-4cf5-4556-99b5-bb01db474d2a",
+  "contractId": "767be1f1-c1f8-4d74-84db-0b4537e896a4",
+  "clientName": "Dr Kartini",
+  "accountManager": "Hakim",
+  "plannerLineId": "req:video:2026-11:1:2",
+  "addendumVersion": 0,
+  "type": "video",
+  "title": "Reel: Patient Q&A — psoriasis",
+  "channel": "TikTok",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-12",
+  "defaultDueDate": "2026-11-12",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "pending_approval",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Izzad",
+      "pct": 100,
+      "hours": 6
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "737e8bc7-297c-4620-9e74-8623e275adca"
+  },
+  "startedAt": "2026-11-05T06:27:03.731Z",
+  "submittedAt": "2026-11-09T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/0153256f",
+    "note": "Ready for review."
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-05-28T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.401Z"
+}

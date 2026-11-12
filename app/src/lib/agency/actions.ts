@@ -2,15 +2,22 @@
 
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
+import { getActingMember } from "@/lib/auth";
 import {
     type AgencyProfile,
     getAgencyProfile,
     updateAgencyProfile,
 } from "@/lib/data/agency";
 import type { BrandLogo } from "@/lib/dev-store/agency";
+import { isManager } from "@/lib/roles";
 
 function asStr(v: FormDataEntryValue | null): string {
     return typeof v === "string" ? v.trim() : "";
+}
+
+/** The agency profile (and its logos) is management's; everyone else's submit is ignored. */
+async function allowed(): Promise<boolean> {
+    return isManager(await getActingMember());
 }
 
 function revalidateDocs() {
@@ -21,6 +28,7 @@ function revalidateDocs() {
 }
 
 export async function updateAgencyProfileAction(formData: FormData) {
+    if (!(await allowed())) return;
     const patch: Partial<Omit<AgencyProfile, "updatedAt">> = {
         legalName: asStr(formData.get("legalName")),
         displayName: asStr(formData.get("displayName")),
@@ -42,6 +50,7 @@ export async function updateAgencyProfileAction(formData: FormData) {
         defaultQuoteTerms: asStr(formData.get("defaultQuoteTerms")),
         defaultQuoteAcceptance:
             String(formData.get("defaultQuoteAcceptance") ?? "") === "on",
+        salesTargetMyr: Math.max(0, Math.round(Number(formData.get("salesTargetMyr")) || 0)),
     };
     await updateAgencyProfile(patch);
     revalidateDocs();
@@ -54,6 +63,7 @@ export async function updateAgencyProfileAction(formData: FormData) {
 const MAX_LOGO_CHARS = 700_000; // ~500 KB image after base64 inflation
 
 export async function addAgencyLogoAction(formData: FormData) {
+    if (!(await allowed())) return;
     const dataUrl = asStr(formData.get("dataUrl"));
     const name = asStr(formData.get("name")) || "Logo";
     if (!dataUrl.startsWith("data:image/")) return;
@@ -71,6 +81,7 @@ export async function addAgencyLogoAction(formData: FormData) {
 }
 
 export async function selectAgencyLogoAction(formData: FormData) {
+    if (!(await allowed())) return;
     const logoId = asStr(formData.get("logoId"));
     if (!logoId) return;
     const profile = await getAgencyProfile();
@@ -81,6 +92,7 @@ export async function selectAgencyLogoAction(formData: FormData) {
 }
 
 export async function deleteAgencyLogoAction(formData: FormData) {
+    if (!(await allowed())) return;
     const logoId = asStr(formData.get("logoId"));
     if (!logoId) return;
     const profile = await getAgencyProfile();
@@ -96,6 +108,7 @@ export async function deleteAgencyLogoAction(formData: FormData) {
 }
 
 export async function clearAgencyLogoAction() {
+    if (!(await allowed())) return;
     await updateAgencyProfile({ logoUrl: "" });
     revalidateDocs();
 }

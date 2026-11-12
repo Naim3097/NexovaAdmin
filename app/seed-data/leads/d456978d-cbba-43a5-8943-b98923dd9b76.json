@@ -1,0 +1,22 @@
+{
+  "id": "d456978d-cbba-43a5-8943-b98923dd9b76",
+  "name": "Zakat Selangor contact",
+  "company": "Zakat Selangor",
+  "email": "zakat-selangor@example.com",
+  "phone": "",
+  "source": "event",
+  "sourceCampaignId": null,
+  "interestedIn": "TikTok and Reels for Gen Z, awareness campaign",
+  "estValueMyr": 120000,
+  "status": "won",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Naim",
+  "score": 92,
+  "autoIntake": false,
+  "lostReason": "",
+  "lostNote": "",
+  "createdAt": "2026-04-19T06:27:03.731Z",
+  "updatedAt": "2026-06-03T06:27:03.731Z"
+}

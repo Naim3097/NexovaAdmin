@@ -9,7 +9,7 @@
  *
  * Scopes (no implication between them — a key lists every scope it needs):
  *   - "read"        pure internal reads, no external calls, no mutations.
- *   - "write"       mutates internal Nexova state (contract tasks, content, billing).
+ *   - "write"       mutates internal Nexova state (project tasks, content, billing).
  *   - "outbound"    contacts external parties / real-world effects: payment
  *                   links, AI/LLM calls, payment provider reads, team Telegram
  *                   blasts, client-facing content review.
@@ -73,7 +73,7 @@ export const TOOL_SCOPES: Record<string, Scope> = {
     // --- client email (separate scope; not granted to the agent) -----------
     "email.sendOnboardingLink": "email",
     // --- destructive / irreversible (HUMAN APPROVAL REQUIRED) --------------
-    // (Contracts and their tasks have no delete tool at all.)
+    // (Projects and their tasks have no delete tool at all.)
     "content.delete": "destructive",
 };
 

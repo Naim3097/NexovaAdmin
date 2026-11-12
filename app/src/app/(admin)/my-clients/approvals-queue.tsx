@@ -1,6 +1,6 @@
 /**
- * Approvals queue — every task awaiting approval on my contracts, oldest
- * first, with the one-click Approve the contract page's "This week" panel
+ * Approvals queue — every task awaiting approval on my projects, oldest
+ * first, with the one-click Approve the project page's "This week" panel
  * uses. A client that approves offline is recorded here by the account
  * manager ("Client approved"); changes go through the task page.
  */
@@ -53,7 +53,7 @@ export function ApprovalsQueue({
                                         {c ? (
                                             <>
                                                 {" · "}
-                                                <Link href={`/contracts/${c.id}${asQ}`} className="hover:underline">
+                                                <Link href={`/projects/${c.id}${asQ}`} className="hover:underline">
                                                     {c.code}
                                                 </Link>
                                             </>

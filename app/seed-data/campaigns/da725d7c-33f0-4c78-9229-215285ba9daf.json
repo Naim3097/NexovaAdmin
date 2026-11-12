@@ -1,0 +1,21 @@
+{
+  "id": "da725d7c-33f0-4c78-9229-215285ba9daf",
+  "name": "Google Ads: Shopping — best sellers",
+  "clientName": "Tropicor",
+  "contractId": "6d1e4aab-758f-42fd-9862-f8590788625b",
+  "platform": "google",
+  "objective": "leads",
+  "status": "planning",
+  "startDate": "2026-12-21",
+  "endDate": "",
+  "monthlyBudgetMyr": 0,
+  "feeModel": "none",
+  "flatFeeMyr": 0,
+  "percentFee": 0,
+  "externalId": "",
+  "landingUrl": "",
+  "notes": "",
+  "metrics": [],
+  "createdAt": "2026-11-12T06:27:05.995Z",
+  "updatedAt": "2026-11-12T06:27:06.065Z"
+}

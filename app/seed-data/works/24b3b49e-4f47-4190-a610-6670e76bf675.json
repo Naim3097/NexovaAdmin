@@ -1,0 +1,52 @@
+{
+  "id": "24b3b49e-4f47-4190-a610-6670e76bf675",
+  "contractId": "767be1f1-c1f8-4d74-84db-0b4537e896a4",
+  "clientName": "Dr Kartini",
+  "accountManager": "Hakim",
+  "plannerLineId": "req:static:2026-11:0:1",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Carousel: Pigmentation in Malaysian skin",
+  "channel": "Instagram",
+  "month": "2026-11",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-11-04",
+  "defaultDueDate": "2026-11-04",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Hakim",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "1b46b92f-3e9f-4db1-91af-a27aed0ec096"
+  },
+  "startedAt": "2026-10-29T06:27:03.731Z",
+  "submittedAt": "2026-11-02T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/24b3b49e",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Hakim)",
+    "at": "2026-11-03T06:27:03.731Z"
+  },
+  "completedAt": "2026-11-03T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-05-28T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.397Z"
+}

@@ -60,7 +60,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                 <div>
                     <h1 className="text-2xl font-semibold md:text-3xl">Leads</h1>
                     <p className="text-sm text-muted-foreground">
-                        Track new interest and turn it into contracts.
+                        Track new interest and turn it into projects.
                     </p>
                 </div>
                 <NewButton href={newHref}>+ New lead</NewButton>

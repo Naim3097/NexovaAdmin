@@ -1,10 +1,10 @@
 /**
- * Management metrics — CONTRACTS view: which clients we actually have a job
- * with, whether each contract is in order (signed, invoiced, not past its
- * end), what work runs under it, which work runs with NO contract, and which
+ * Management metrics — PROJECTS view: which clients we actually have a job
+ * with, whether each project is in order (signed, invoiced, not past its
+ * end), what work runs under it, which work runs with NO project, and which
  * payments haven't arrived.
  *
- * Pure functions over contracts, clients, work and invoices. No I/O.
+ * Pure functions over projects, clients, work and invoices. No I/O.
  */
 import type { Contract } from "@/lib/data/contracts";
 import type { Client } from "@/lib/data/clients";
@@ -58,10 +58,11 @@ export type ClientJobRow = {
     id: string;
     name: string;
     status: string;
-    accountManager: string;
+    /** Who closed the deal; the projects under `job` carry their own AM. */
+    dealOwner: string;
     job: JobStatus;
     activeContracts: number;
-    /** Content / campaigns that are live for this client but sit under no contract. */
+    /** Content / campaigns that are live for this client but sit under no project. */
     unlinkedWork: number;
     href: string;
 };
@@ -140,7 +141,7 @@ export function buildContractsSnapshot(input: ContractsInput, today: string = to
     const { contracts, clients, invoices, works, content, campaigns } = input;
     const active = contracts.filter((c) => c.status === "active");
 
-    // ---- Per contract
+    // ---- Per project
     const rows: ContractRow[] = contracts
         .filter((c) => c.status !== "cancelled")
         .map((c) => {
@@ -179,7 +180,7 @@ export function buildContractsSnapshot(input: ContractsInput, today: string = to
                 note = `${overdueInvoices} invoice${overdueInvoices === 1 ? "" : "s"} overdue`;
             } else if (work.tasks + work.content + work.campaigns === 0) {
                 health = "amber";
-                note = "No tasks under this contract yet";
+                note = "No tasks under this project yet";
             } else if (work.overdueTasks > 0) {
                 health = "amber";
                 note = `${work.overdueTasks} task${work.overdueTasks === 1 ? "" : "s"} overdue`;
@@ -213,12 +214,12 @@ export function buildContractsSnapshot(input: ContractsInput, today: string = to
                 endsInDays: ending,
                 health,
                 note,
-                href: `/contracts/${c.id}`,
+                href: `/projects/${c.id}`,
             };
         })
         .sort((a, b) => HEALTH_RANK[a.health] - HEALTH_RANK[b.health] || a.clientName.localeCompare(b.clientName) || a.name.localeCompare(b.name));
 
-    // ---- Work with no contract (live work on clients we service)
+    // ---- Work with no project (live work on clients we service)
     const unlinked: UnlinkedWork[] = [];
     const clientStatus = new Map(clients.map((c) => [c.name, c.status]));
     const servicing = (name: string) => clientStatus.get(name) === "active" || clientStatus.get(name) === "paused";
@@ -255,7 +256,7 @@ export function buildContractsSnapshot(input: ContractsInput, today: string = to
                 id: c.id,
                 name: c.name,
                 status: c.status,
-                accountManager: c.accountManager,
+                dealOwner: c.dealOwner,
                 job,
                 activeContracts: job.active.length,
                 unlinkedWork: unlinkedByClient.get(c.name) ?? 0,
@@ -276,7 +277,7 @@ export function buildContractsSnapshot(input: ContractsInput, today: string = to
             name: c.name,
             clientName: c.clientName,
             accountManager: c.accountManager,
-            href: `/contracts/${c.id}?tab=setup#setup`,
+            href: `/projects/${c.id}?tab=money#terms`,
         };
         if (!hasTerms(c)) {
             issues.push({ ...base, kind: "no_terms", severity: "red", detail: "No reference, value or signed copy on file" });
@@ -293,7 +294,7 @@ export function buildContractsSnapshot(input: ContractsInput, today: string = to
         if (ended !== null) {
             issues.push({
                 ...base,
-                href: `/contracts/${c.id}`,
+                href: `/projects/${c.id}`,
                 kind: "ended",
                 severity: "red",
                 detail: `Ended ${c.endDate} (${ended}d ago) · complete it, extend, or renew`,
@@ -301,7 +302,7 @@ export function buildContractsSnapshot(input: ContractsInput, today: string = to
         } else if (ending !== null && ending <= CONTRACT_ENDING_SOON_DAYS) {
             issues.push({
                 ...base,
-                href: `/contracts/${c.id}`,
+                href: `/projects/${c.id}`,
                 kind: "ending",
                 severity: "amber",
                 detail: `Ends ${c.endDate} (in ${ending}d) · line up the renewal`,

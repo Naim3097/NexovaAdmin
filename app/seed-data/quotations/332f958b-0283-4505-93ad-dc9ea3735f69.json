@@ -1,0 +1,31 @@
+{
+  "id": "332f958b-0283-4505-93ad-dc9ea3735f69",
+  "number": "QUO-2026-0004",
+  "clientName": "Enfrasys",
+  "status": "accepted",
+  "issueDate": "2026-10-26",
+  "validUntil": "2026-11-09",
+  "items": [
+    {
+      "id": "b7254043-2c77-41c4-9d3b-e5dff1df5432",
+      "description": "Content creation retainer — 6 months",
+      "details": "",
+      "quantity": 1,
+      "unitPriceMyr": 33000
+    }
+  ],
+  "taxRatePct": 6,
+  "notes": "",
+  "billToAddress": "",
+  "paymentDetails": "",
+  "logoChoice": "",
+  "subject": "Content creation retainer — 6 months",
+  "scopeIncludes": "",
+  "exclusions": "",
+  "terms": "",
+  "showAcceptance": true,
+  "convertedInvoiceId": null,
+  "createdAt": "2026-10-26T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.237Z",
+  "acceptedAt": "2026-11-02T06:27:03.731Z"
+}

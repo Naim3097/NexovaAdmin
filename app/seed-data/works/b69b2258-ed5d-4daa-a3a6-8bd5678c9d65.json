@@ -1,0 +1,52 @@
+{
+  "id": "b69b2258-ed5d-4daa-a3a6-8bd5678c9d65",
+  "contractId": "cc412500-078b-465c-b702-e2d6ab336cd0",
+  "clientName": "Payright",
+  "accountManager": "Bob",
+  "plannerLineId": "req:static:2026-10:0:4",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Static: Q&A from the inbox",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-14",
+  "defaultDueDate": "2026-10-14",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Bob",
+      "pct": 100,
+      "hours": 1.75
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "4166de41-2d9d-4dca-aca9-31231c96c041"
+  },
+  "startedAt": "2026-10-08T06:27:03.731Z",
+  "submittedAt": "2026-10-12T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/b69b2258",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Bob)",
+    "at": "2026-10-13T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-13T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-02-25T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.150Z"
+}

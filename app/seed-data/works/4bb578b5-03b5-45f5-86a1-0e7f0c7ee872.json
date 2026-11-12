@@ -1,0 +1,52 @@
+{
+  "id": "4bb578b5-03b5-45f5-86a1-0e7f0c7ee872",
+  "contractId": "649c59c0-6455-4332-a82e-30eda362c9c0",
+  "clientName": "LeanX Digital",
+  "accountManager": "Yusuf",
+  "plannerLineId": "req:static:2026-10:1:3",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "LinkedIn: Case study — Zakat for Gen Z",
+  "channel": "LinkedIn",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-19",
+  "defaultDueDate": "2026-10-19",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Naim",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "1238ebff-0a42-4dda-a761-73add8d8254c"
+  },
+  "startedAt": "2026-10-13T06:27:03.731Z",
+  "submittedAt": "2026-10-17T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/4bb578b5",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Yusuf",
+    "at": "2026-10-18T06:27:03.731Z"
+  },
+  "completedAt": "2026-10-18T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-07-01T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.925Z"
+}

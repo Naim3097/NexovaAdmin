@@ -1,0 +1,22 @@
+{
+  "id": "05bf0eb2-3f7f-4df5-af44-9864c8ab9ccf",
+  "name": "Enfrasys contact",
+  "company": "Enfrasys",
+  "email": "enfrasys@example.com",
+  "phone": "",
+  "source": "linkedin",
+  "sourceCampaignId": null,
+  "interestedIn": "LinkedIn content, explainer videos",
+  "estValueMyr": 33000,
+  "status": "won",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Naim",
+  "score": 84,
+  "autoIntake": false,
+  "lostReason": "",
+  "lostNote": "",
+  "createdAt": "2026-10-15T06:27:03.731Z",
+  "updatedAt": "2026-11-03T06:27:03.731Z"
+}

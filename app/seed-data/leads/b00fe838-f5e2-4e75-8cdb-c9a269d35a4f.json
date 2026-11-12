@@ -1,0 +1,22 @@
+{
+  "id": "b00fe838-f5e2-4e75-8cdb-c9a269d35a4f",
+  "name": "Faizal Hamdan",
+  "company": "Kopi Tanah Tinggi",
+  "email": "kopi-tanah-tinggi@example.com",
+  "phone": "",
+  "source": "cold_outreach",
+  "sourceCampaignId": null,
+  "interestedIn": "Social media, TikTok",
+  "estValueMyr": 21000,
+  "status": "proposal",
+  "billingAddress": "",
+  "notes": "",
+  "onboardingSubmissionId": null,
+  "assignedTo": "Yusuf",
+  "score": 66,
+  "autoIntake": false,
+  "lostReason": "",
+  "lostNote": "",
+  "createdAt": "2026-10-13T06:27:03.731Z",
+  "updatedAt": "2026-10-31T06:27:03.731Z"
+}

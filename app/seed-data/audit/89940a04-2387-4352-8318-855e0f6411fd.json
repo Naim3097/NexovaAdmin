@@ -1,0 +1,16 @@
+{
+  "id": "89940a04-2387-4352-8318-855e0f6411fd",
+  "at": "2026-11-11T07:17:49.306Z",
+  "entity": "work",
+  "entityId": "265c7003-2d47-42fa-815a-b14ae61803d3",
+  "kind": "status",
+  "summary": "Reel: Behind the scenes at Nexova: undo · back to not started",
+  "actor": "Syafiq",
+  "changes": [
+    {
+      "field": "status",
+      "before": "in_progress",
+      "after": "not_started"
+    }
+  ]
+}

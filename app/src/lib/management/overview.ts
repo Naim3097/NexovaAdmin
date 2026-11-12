@@ -1,9 +1,9 @@
 /**
  * Management OVERVIEW — the management team's landing page.
  *
- * Six numbers (pipeline, contracts, tasks, review, cash, capacity), one row
+ * Six numbers (pipeline, projects, tasks, review, cash, capacity), one row
  * per job group (By team), and ONE ranked Attention list that mixes
- * contracts at risk, people over capacity, task shares with no owner and
+ * projects at risk, people over capacity, task shares with no owner and
  * invoices long overdue. Pure functions, no I/O.
  */
 import type { TeamMember } from "@/lib/data/team";
@@ -12,7 +12,7 @@ import type { Invoice } from "@/lib/data/invoices";
 import { computeTotals } from "@/lib/data/invoices";
 import type { Lead } from "@/lib/data/leads";
 import type { Work } from "@/lib/data/works";
-import { SEAT_LABEL, SEAT_ROLES, SEAT_SHORT } from "@/lib/data/planners";
+import { SEAT_CATEGORIES, SEAT_LABEL, SEAT_SHORT } from "@/lib/data/planners";
 import { fmtHours, loadFor, type Load } from "@/lib/capacity/helpers";
 import { fmtMyrShort } from "@/lib/format";
 import { roundHours } from "@/lib/dev-store/team";
@@ -50,7 +50,7 @@ export type DecisionKind =
 export type Decision = {
     kind: DecisionKind;
     severity: "red" | "amber";
-    /** What is at stake, e.g. the contract or the person. */
+    /** What is at stake, e.g. the project or the person. */
     title: string;
     /** Why it is on the list. */
     reason: string;
@@ -70,7 +70,7 @@ export type TeamKey = "content" | "creative" | "dev" | "seo" | "ads" | "am";
 
 /**
  * One row of the By team table. Delivery groups count the tasks their
- * people hold a share of; account managers count the tasks on the contracts
+ * people hold a share of; account managers count the tasks on the projects
  * they run, and `inReview` is the approvals waiting on them.
  */
 export type TeamRow = {
@@ -101,12 +101,11 @@ export type TeamRow = {
     href: string;
 };
 
+/** Teams by job category; account managers are whoever runs a project. */
 const TEAM_GROUPS: ReadonlyArray<{ key: TeamKey; label: string; roles: readonly string[] }> = [
-    { key: "content", label: "Content", roles: ["Content"] },
-    { key: "creative", label: "Creative", roles: ["UI/UX"] },
-    { key: "dev", label: "Dev", roles: ["Frontend", "Backend"] },
-    { key: "seo", label: "SEO", roles: ["SEO"] },
-    { key: "ads", label: "Ads", roles: ["Ads"] },
+    { key: "content", label: "Digital marketing", roles: ["dm"] },
+    { key: "creative", label: "Creative", roles: ["creative"] },
+    { key: "dev", label: "Dev", roles: ["developer"] },
     { key: "am", label: "Account managers", roles: [] },
 ];
 
@@ -148,7 +147,7 @@ export type OverviewSnapshot = {
     };
     contracts: {
         active: number;
-        /** Sum of `valueMyr` on active contracts. */
+        /** Sum of `valueMyr` on active projects. */
         totalValueMyr: number;
         unsigned: number;
     };
@@ -183,6 +182,8 @@ export type OverviewSnapshot = {
     decisions: Decision[];
     /** How many decisions were cut by MAX_DECISIONS. */
     moreDecisions: number;
+    /** Every decision, ranked the same way (`decisions` is its first MAX_DECISIONS), for a "Show all". */
+    allDecisions: Decision[];
 };
 
 export type OverviewInput = {
@@ -226,7 +227,7 @@ function hasRenewal(c: Contract, contracts: Contract[]): boolean {
 /**
  * The By team table: what each job group must do, from the open tasks and
  * the month's hours. Delivery groups own the tasks their people hold a share
- * of; account managers own the contracts they run and the approvals waiting
+ * of; account managers own the projects they run and the approvals waiting
  * on them. `health` is the colour of `next`.
  */
 function buildTeamRows(team: TeamMember[], works: Work[], month: string, today: string): TeamRow[] {
@@ -234,11 +235,13 @@ function buildTeamRows(team: TeamMember[], works: Work[], month: string, today: 
     const weekEnd = shiftYmd(today, WEEK_DAYS);
     const nextMonth = addMonths(month, 1);
     const nextName = monthName(nextMonth);
+    // Account managers are whoever runs a project, not a duty.
+    const amNames = new Set(works.map((w) => w.accountManager).filter(Boolean));
     return TEAM_GROUPS.map((g) => {
         const isAm = g.key === "am";
-        const people = team.filter((m) => (isAm ? m.functions.includes("account_manager") : g.roles.includes(m.role)));
+        const people = team.filter((m) => (isAm ? amNames.has(m.name) : g.roles.includes(m.category)));
         const names = new Set(people.map((m) => m.name));
-        const seats = isAm ? ["am" as const] : (Object.keys(SEAT_ROLES) as Array<keyof typeof SEAT_ROLES>).filter((s) => SEAT_ROLES[s][0] === g.roles[0]);
+        const seats = isAm ? ["am" as const] : (Object.keys(SEAT_CATEGORIES) as Array<keyof typeof SEAT_CATEGORIES>).filter((s) => SEAT_CATEGORIES[s][0] === g.roles[0]);
         const mine = openWorks.filter((w) =>
             isAm ? names.has(w.accountManager) : w.split.some((s) => s.pct > 0 && names.has(s.member)),
         );
@@ -278,7 +281,7 @@ function buildTeamRows(team: TeamMember[], works: Work[], month: string, today: 
             ? `/works?approval=1`
             : overdue > 0
               ? `/works?overdue=1`
-              : `/management/team?month=${month}`;
+              : `/dashboard?tab=team&month=${month}`;
 
         return {
             key: g.key,
@@ -313,7 +316,7 @@ export function buildOverviewSnapshot(input: OverviewInput, today: string = toda
     const won90 = leads.filter((l) => l.status === "won" && l.updatedAt.slice(0, 10) >= ninetyAgo).length;
     const lost90 = leads.filter((l) => l.status === "lost" && l.updatedAt.slice(0, 10) >= ninetyAgo).length;
 
-    // ---- Contracts
+    // ---- Projects
     const active = contracts.filter((c) => c.status === "active");
 
     // ---- Delivery
@@ -384,7 +387,7 @@ export function buildOverviewSnapshot(input: OverviewInput, today: string = toda
                 short: `${c.clientName} ${c.code}: unsigned, ${mine.length > 0 ? `${n(mine.length, "task")} running` : "not started"}`,
                 owner,
                 nextStep: "Get the signature, or pause the work until it lands",
-                href: `/contracts/${c.id}?tab=setup`,
+                href: `/projects/${c.id}?tab=money#terms`,
                 score: 60 + (mine.length > 0 ? 10 : 0),
             });
         }
@@ -398,7 +401,7 @@ export function buildOverviewSnapshot(input: OverviewInput, today: string = toda
                 short: `${c.clientName} ${c.code}: ends in ${ending}d, no renewal`,
                 owner,
                 nextStep: "Decide: renewal proposal, extension, or close it out",
-                href: `/contracts/${c.id}`,
+                href: `/projects/${c.id}`,
                 score: 40 + (CONTRACT_ENDING_SOON_DAYS - ending),
             });
         }
@@ -413,7 +416,7 @@ export function buildOverviewSnapshot(input: OverviewInput, today: string = toda
             short: `${x.member.name}: over capacity by ${fmtHours(over)} ${inMonth}`,
             owner: "",
             nextStep: "Move a task or a share to someone with hours, or re-date it",
-            href: `/management/team?month=${month}`,
+            href: `/team/${x.member.id}`,
             score: 80 + Math.min(over, 40) / 2,
         });
     }
@@ -496,5 +499,6 @@ export function buildOverviewSnapshot(input: OverviewInput, today: string = toda
         teams: buildTeamRows(activeTeam, works, month, today),
         decisions: decisions.slice(0, MAX_DECISIONS),
         moreDecisions: Math.max(0, decisions.length - MAX_DECISIONS),
+        allDecisions: decisions,
     };
 }

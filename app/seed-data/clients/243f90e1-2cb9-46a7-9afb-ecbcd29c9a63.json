@@ -1,0 +1,21 @@
+{
+  "id": "243f90e1-2cb9-46a7-9afb-ecbcd29c9a63",
+  "name": "Dr Kartini",
+  "status": "active",
+  "dealOwner": "Naim",
+  "contactName": "Demo contact",
+  "contactEmail": "dr-kartini@example.com",
+  "contactPhone": "",
+  "billingAddress": "",
+  "website": "",
+  "industry": "Healthcare (dermatology)",
+  "notes": "Growing Dr Kartini's brand as a dermatologist consultant, with advocacy on animal rights.",
+  "contentRevisionLimit": 3,
+  "portalToken": "",
+  "userId": null,
+  "internal": false,
+  "lastCheckInAt": "2026-11-02",
+  "lastCheckInNote": "Renewal call: wants to keep the advocacy series and asked for a 12-month price.",
+  "createdAt": "2026-05-28T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.184Z"
+}

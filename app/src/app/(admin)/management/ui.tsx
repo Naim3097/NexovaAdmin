@@ -77,17 +77,33 @@ export function plural(n: number, one: string, many = `${one}s`): string {
  * next three. A selected month outside that range is added so the dropdown
  * never shows a month the page does not. This month is first, so the
  * dropdown reads as unfiltered when it is picked.
+ *
+ * `opts.allTime` (opt-in, the Dashboard) adds an "All time" option last, with
+ * the value ALL_TIME_OPTION (`?month=all`); other callers see no change.
  */
-export function monthOptions(selected: string, today: string, basePath: string, hrefFor?: (month: string) => string): SelectNavOption[] {
+export function monthOptions(
+    selected: string,
+    today: string,
+    basePath: string,
+    hrefFor?: (month: string) => string,
+    opts?: { allTime?: boolean },
+): SelectNavOption[] {
     const current = today.slice(0, 7);
+    const link = (m: string) => (hrefFor ? hrefFor(m) : monthHref(basePath, m, current));
     const months = [0, -1, 1, 2, 3].map((d) => addMonths(current, d));
-    if (!months.includes(selected)) months.push(selected);
-    return months.map((m) => ({
+    const isAll = Boolean(opts?.allTime) && selected === ALL_TIME_OPTION;
+    if (!isAll && !months.includes(selected)) months.push(selected);
+    const options = months.map((m) => ({
         value: m,
         label: m === current ? `${shortMonthLabel(m)} (now)` : shortMonthLabel(m),
-        href: hrefFor ? hrefFor(m) : monthHref(basePath, m, current),
+        href: link(m),
     }));
+    if (opts?.allTime) options.push({ value: ALL_TIME_OPTION, label: "All time", href: link(ALL_TIME_OPTION) });
+    return options;
 }
+
+/** The Month dropdown's "every month" value, `?month=all` (same string as the Dashboard's ALL_TIME). */
+export const ALL_TIME_OPTION = "all";
 
 /** The Month dropdown for the capacity views; picking a month reloads the page on it. */
 export function MonthSelect({
@@ -95,9 +111,10 @@ export function MonthSelect({
     today,
     basePath = "",
     hrefFor,
+    allTime = false,
     className,
 }: {
-    /** YYYY-MM being shown. */
+    /** YYYY-MM being shown, or ALL_TIME_OPTION when `allTime` is on. */
     selected: string;
     /** YYYY-MM-DD; its month is marked "now". */
     today: string;
@@ -105,9 +122,11 @@ export function MonthSelect({
     basePath?: string;
     /** Builds the link for a month when the page keeps other params in the URL (the Dashboard). */
     hrefFor?: (month: string) => string;
+    /** Offer "All time" as the last option (opt-in). */
+    allTime?: boolean;
     className?: string;
 }) {
-    return <SelectNav label="Month" value={selected} options={monthOptions(selected, today, basePath, hrefFor)} className={className} />;
+    return <SelectNav label="Month" value={selected} options={monthOptions(selected, today, basePath, hrefFor, { allTime })} className={className} />;
 }
 
 /**

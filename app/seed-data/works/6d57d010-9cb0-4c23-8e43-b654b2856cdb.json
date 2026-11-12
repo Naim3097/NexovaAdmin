@@ -1,0 +1,49 @@
+{
+  "id": "6d57d010-9cb0-4c23-8e43-b654b2856cdb",
+  "contractId": "6b92fdc7-9df3-4571-a844-5bacb941cee6",
+  "clientName": "Kembara",
+  "accountManager": "Zafran",
+  "plannerLineId": "req:website:2026-10:0:4",
+  "addendumVersion": 0,
+  "type": "website",
+  "title": "Campaign pages & CMS",
+  "channel": "Website",
+  "month": "2026-11",
+  "phaseKey": "build",
+  "phaseName": "Build",
+  "dueDate": "2026-11-24",
+  "defaultDueDate": "2026-11-24",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "not_started",
+  "split": [
+    {
+      "seat": "dev",
+      "member": "Zafran",
+      "pct": 100,
+      "hours": 10
+    }
+  ],
+  "approver": "am",
+  "milestone": false,
+  "linked": null,
+  "startedAt": null,
+  "submittedAt": null,
+  "submission": {
+    "url": "",
+    "note": ""
+  },
+  "review": {
+    "decision": null,
+    "note": "",
+    "by": "",
+    "at": null
+  },
+  "completedAt": null,
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-10-01T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:05.803Z"
+}

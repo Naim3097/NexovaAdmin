@@ -1,0 +1,21 @@
+{
+  "id": "d9621967-20e6-4517-a523-deeff9844204",
+  "name": "Meta campaign: Retargeting — cart abandoners",
+  "clientName": "Tropicor",
+  "contractId": "6d1e4aab-758f-42fd-9862-f8590788625b",
+  "platform": "meta",
+  "objective": "leads",
+  "status": "planning",
+  "startDate": "2026-12-21",
+  "endDate": "",
+  "monthlyBudgetMyr": 0,
+  "feeModel": "none",
+  "flatFeeMyr": 0,
+  "percentFee": 0,
+  "externalId": "",
+  "landingUrl": "",
+  "notes": "",
+  "metrics": [],
+  "createdAt": "2026-11-12T06:27:05.992Z",
+  "updatedAt": "2026-11-12T06:27:06.063Z"
+}

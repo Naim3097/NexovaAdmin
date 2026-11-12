@@ -1,0 +1,21 @@
+{
+  "id": "569f7fbf-9314-4b07-9f9b-750ae446be10",
+  "name": "Donation campaign: Year-end sadaqah appeal",
+  "clientName": "Baitul Irfan",
+  "contractId": "be8d2563-6668-4eca-8ae3-f93933ff08cb",
+  "platform": "meta",
+  "objective": "leads",
+  "status": "ended",
+  "startDate": "2026-10-08",
+  "endDate": "2026-10-08",
+  "monthlyBudgetMyr": 0,
+  "feeModel": "none",
+  "flatFeeMyr": 0,
+  "percentFee": 0,
+  "externalId": "",
+  "landingUrl": "",
+  "notes": "",
+  "metrics": [],
+  "createdAt": "2026-11-12T06:27:04.558Z",
+  "updatedAt": "2026-11-12T06:27:04.730Z"
+}

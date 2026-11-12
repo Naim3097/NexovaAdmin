@@ -152,38 +152,13 @@ export default async function PortalReportMonthPage({
                                     {report.billing.retainer > 0 ? (
                                         <tr className="border-b">
                                             <td className="px-3 py-2">
-                                                {report.billing.packageName
-                                                    ? `${report.billing.packageName} retainer`
-                                                    : "Monthly retainer"}
+                                                Monthly retainer
+                                                {report.billing.projects.length > 0
+                                                    ? ` · ${report.billing.projects.join(", ")}`
+                                                    : ""}
                                             </td>
                                             <td className="px-3 py-2 text-right">
                                                 {fmtMyr(report.billing.retainer)}
-                                            </td>
-                                        </tr>
-                                    ) : null}
-                                    {report.extras.contentCharge > 0 ? (
-                                        <tr className="border-b">
-                                            <td className="px-3 py-2">
-                                                Extra visuals ×{" "}
-                                                {report.extras.contentCount}
-                                            </td>
-                                            <td className="px-3 py-2 text-right">
-                                                {fmtMyr(
-                                                    report.extras.contentCharge,
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ) : null}
-                                    {report.extras.revisionCharge > 0 ? (
-                                        <tr className="border-b">
-                                            <td className="px-3 py-2">
-                                                Extra revisions ×{" "}
-                                                {report.extras.revisionCount}
-                                            </td>
-                                            <td className="px-3 py-2 text-right">
-                                                {fmtMyr(
-                                                    report.extras.revisionCharge,
-                                                )}
                                             </td>
                                         </tr>
                                     ) : null}
@@ -196,6 +171,22 @@ export default async function PortalReportMonthPage({
                                 </tbody>
                             </table>
                         </div>
+                        {report.extras.contentCount > 0 || report.extras.revisionCount > 0 ? (
+                            <p className="text-xs text-muted-foreground">
+                                Beyond your plan this month:{" "}
+                                {[
+                                    report.extras.contentCount > 0
+                                        ? `${report.extras.contentCount} extra visual${report.extras.contentCount === 1 ? "" : "s"}`
+                                        : "",
+                                    report.extras.revisionCount > 0
+                                        ? `${report.extras.revisionCount} extra revision${report.extras.revisionCount === 1 ? "" : "s"}`
+                                        : "",
+                                ]
+                                    .filter(Boolean)
+                                    .join(" · ")}
+                                . Your account manager will confirm any charge.
+                            </p>
+                        ) : null}
                     </section>
                 ) : null}
             </article>

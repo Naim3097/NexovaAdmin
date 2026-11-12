@@ -1,0 +1,52 @@
+{
+  "id": "063e7357-996e-4eb1-ba6b-fb977ef5e27c",
+  "contractId": "ee0609d4-3179-4475-8f59-8d96c5c3edb4",
+  "clientName": "Rouang",
+  "accountManager": "Izzad",
+  "plannerLineId": "req:static:2026-10:0:1",
+  "addendumVersion": 0,
+  "type": "static",
+  "title": "Carousel: Before & after — Bangsar condo",
+  "channel": "Instagram",
+  "month": "2026-10",
+  "phaseKey": "production",
+  "phaseName": "Production",
+  "dueDate": "2026-10-01",
+  "defaultDueDate": "2026-10-01",
+  "plannedDate": "",
+  "adjustedBy": "",
+  "adjustedAt": null,
+  "status": "completed",
+  "split": [
+    {
+      "seat": "creative",
+      "member": "Izzad",
+      "pct": 100,
+      "hours": 2
+    }
+  ],
+  "approver": "client",
+  "milestone": false,
+  "linked": {
+    "kind": "content",
+    "id": "e2d3f79e-bf8b-4ed7-8ec3-9bc914421ef0"
+  },
+  "startedAt": "2026-09-25T06:27:03.731Z",
+  "submittedAt": "2026-09-29T06:27:03.731Z",
+  "submission": {
+    "url": "https://drive.example.com/work/063e7357",
+    "note": "Final version attached."
+  },
+  "review": {
+    "decision": "approved",
+    "note": "",
+    "by": "Client (via Izzad)",
+    "at": "2026-09-30T06:27:03.731Z"
+  },
+  "completedAt": "2026-09-30T06:27:03.731Z",
+  "notes": "",
+  "waitingOn": "",
+  "waitingSince": null,
+  "createdAt": "2026-06-26T06:27:03.731Z",
+  "updatedAt": "2026-11-12T06:27:04.531Z"
+}
