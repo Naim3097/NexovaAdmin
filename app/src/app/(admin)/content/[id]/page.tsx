@@ -10,7 +10,15 @@ import {
 } from "@/lib/data/content";
 import { listClients } from "@/lib/data/clients";
 import { listContracts } from "@/lib/data/contracts";
-import { clientContentQuota } from "@/lib/clients/quota";
+import {
+    CONTENT_KIND_LABEL,
+    CONTENT_KIND_TASK,
+    contentKind,
+    kindContentQuota,
+    kindHref,
+    linkedTaskTypes,
+    postsOfKind,
+} from "@/lib/content/kind";
 import { listTeamMembers } from "@/lib/data/team";
 import { listWorks } from "@/lib/data/works";
 import { TASK_STATUS_LABEL } from "@/lib/works/helpers";
@@ -54,6 +62,8 @@ export default async function ContentDetailPage({
     ]);
     // The project task this post is the work for, if it came from a planner line.
     const task = works.find((w) => w.linked?.kind === "content" && w.linked.id === post.id);
+    // Static or video: decides the back link, the quota and where Delete lands.
+    const kind = contentKind(post, task?.type);
     const contractOptions = contracts.filter(
         (c) => c.id === post.contractId || (c.clientName === post.clientName && (c.status === "active" || c.status === "draft")),
     );
@@ -63,12 +73,17 @@ export default async function ContentDetailPage({
     );
     const revisionLimit = client?.contentRevisionLimit ?? 3;
     // Per-visual quota context for the Type/Visuals control (exclude this
-    // post). The quota is the content a month the client's active projects promise.
-    const quota = clientContentQuota(post.clientName, contracts);
+    // post). The quota is the posts of this kind a month the client's active
+    // projects promise, so it reads the same as the kind's board.
+    const quota = kindContentQuota(post.clientName, contracts, kind);
     const quotaMonth =
         post.planMonth || new Date().toISOString().slice(0, 7);
     const usedByOthers = visualsUsed(
-        allPosts.filter((p) => p.id !== post.id),
+        postsOfKind(
+            allPosts.filter((p) => p.id !== post.id),
+            kind,
+            linkedTaskTypes(works),
+        ),
         post.clientName,
         quotaMonth,
     );
@@ -85,10 +100,13 @@ export default async function ContentDetailPage({
         <div className="space-y-6">
             <div>
                 <Link
-                    href="/content/board"
+                    href={kindHref(kind, "board", {
+                        client: post.clientName,
+                        month: post.planMonth,
+                    })}
                     className="text-sm text-muted-foreground hover:underline"
                 >
-                    ← Back to board
+                    ← {CONTENT_KIND_LABEL[kind]} board
                 </Link>
                 <div className="mt-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                     <h1 className="text-2xl font-semibold md:text-3xl">
@@ -97,7 +115,7 @@ export default async function ContentDetailPage({
                     <StatusLights post={post} showCaption />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                    {post.clientName} · {post.platform} · {post.type}
+                    {CONTENT_KIND_TASK[kind]} · {post.clientName} · {post.platform} · {post.type}
                     {post.draftNumber ? ` · ${post.draftNumber}` : ""}
                 </p>
                 {task ? (
@@ -297,6 +315,8 @@ export default async function ContentDetailPage({
             <section className="flex items-center justify-end rounded-lg border bg-card p-4 md:p-6">
                 <form action={deleteContentPostAction}>
                     <input type="hidden" name="id" value={post.id} />
+                    {/* Back to this kind's list after deleting. */}
+                    <input type="hidden" name="kind" value={kind} />
                     <Button type="submit" variant="destructive">
                         Delete
                     </Button>

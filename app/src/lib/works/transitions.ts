@@ -6,11 +6,37 @@
  * The rules are the ones the task page already lives by: anyone on the task
  * starts and submits it; the account manager (or management) approves,
  * sends it back or marks it done regardless; reopening is open to all.
+ * Adding a task (the project page's "New task") has its rule here too, so the
+ * page that shows the button and the action that saves agree.
  */
+import type { Contract } from "@/lib/data/contracts";
 import type { TaskStatus, Work } from "@/lib/data/works";
 
 /** Who is acting. An empty name (nobody picked under the dev bypass) acts as management. */
 export type Actor = { name: string; manager: boolean };
+
+const same = (a: string, b: string) => Boolean(a.trim()) && a.trim().toLowerCase() === b.trim().toLowerCase();
+
+/** A project takes new tasks only while it is signed or running (not a draft, not closed or cancelled). */
+export function takesTasks(c: Pick<Contract, "stage" | "status">): boolean {
+    return (c.stage === "signed" || c.stage === "delivering") && c.status !== "completed" && c.status !== "cancelled";
+}
+
+/**
+ * May add a task to this project: management, its account manager, and
+ * anyone already working on it (a share on any of its tasks, or a seat in
+ * its crew). `works` may be every task; only this project's count.
+ */
+export function canAddTask(
+    c: Pick<Contract, "id" | "accountManager" | "crew">,
+    works: ReadonlyArray<Pick<Work, "contractId" | "split">>,
+    actor: Actor,
+): boolean {
+    if (!actor.name || actor.manager) return true;
+    if (same(actor.name, c.accountManager)) return true;
+    if (Object.values(c.crew).some((n) => typeof n === "string" && same(actor.name, n))) return true;
+    return works.some((w) => w.contractId === c.id && w.split.some((s) => same(actor.name, s.member)));
+}
 
 export function isAccountManagerOf(w: Pick<Work, "accountManager">, actor: Actor): boolean {
     return !actor.name || actor.manager || w.accountManager === actor.name;

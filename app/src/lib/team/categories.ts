@@ -1,6 +1,6 @@
 /**
  * Job category: what kind of work a person does in Nexops. It maps people to
- * task seats (a DM holds campaigns and SEO, Creative holds statics and videos,
+ * task seats (a DM holds campaigns and SEO, Creative holds static and video posts,
  * a Developer holds website work) and to duties (Business Support handles
  * quotes, contracts, invoices and onboarding, so it carries the finance duty
  * and no delivery capacity). The job ROLE ("Chief Executive Officer") is free
@@ -33,7 +33,7 @@ export const CATEGORY_SHORT: Record<TeamCategory, string> = {
 export const CATEGORY_MATCHES: Record<TeamCategory, string> = {
     closer: "other work and account management",
     dm: "campaigns and SEO",
-    creative: "statics and videos",
+    creative: "static posts and video posts",
     developer: "website work",
     am: "other work and account management",
     business_support: "no task seats: quotes, contracts, invoices and onboarding",

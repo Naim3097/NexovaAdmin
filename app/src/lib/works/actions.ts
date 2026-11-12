@@ -8,6 +8,7 @@ import { getContractById } from "@/lib/data/contracts";
 import { defaultApprover, isApprover, isLineType, isSeat, DEFAULT_SPLIT, SEAT_LABEL, type LineType } from "@/lib/data/planners";
 import { listTeamMembers, roundHours, type TeamMember } from "@/lib/data/team";
 import { withHours } from "@/lib/capacity/helpers";
+import { createLinkedItem } from "@/lib/contracts/generate";
 import { syncLinkedContent } from "@/lib/works/sync";
 import { recordAudit } from "@/lib/data/audit";
 import { notify } from "@/lib/data/notifications";
@@ -98,9 +99,11 @@ function hoursFrom(shares: ShareInput[], previous: WorkShare[], team: TeamMember
 // ---------------------------------------------------------------------------
 
 /**
- * Add a task by hand under a project from a form (the Website and Other tasks
- * pages). The Tasks board adds through createTaskAction in quick-actions.ts,
- * which checks the same things and also requires a signed or running project.
+ * Add a task under a project from a FormData form. Kept for internal use
+ * only: no Delivery page renders a form for it. People add tasks on the
+ * project page through createTaskAction in quick-actions.ts, which also
+ * checks who may add and requires a signed or running project. Like the
+ * generator, a post / campaign / article task gets its linked record.
  */
 export async function createWorkAction(formData: FormData) {
     const contractId = clean(formData.get("contractId"));
@@ -116,7 +119,7 @@ export async function createWorkAction(formData: FormData) {
     const phase = contract.phases.find((ph) => ph.key === phaseIn || ph.name === phaseIn);
     // Seats with nobody named fall to the account manager when the seat is "am".
     const fillAm = (list: ShareInput[]) => list.map((s) => (s.seat === "am" && !s.member ? { ...s, member: contract.accountManager } : s));
-    const w = await createWork({
+    const created = await createWork({
         contractId,
         clientName: contract.clientName,
         accountManager: contract.accountManager,
@@ -132,6 +135,8 @@ export async function createWorkAction(formData: FormData) {
         milestone: clean(formData.get("milestone")) === "1",
         notes: clean(formData.get("notes")),
     });
+    const linked = await createLinkedItem(created);
+    const w = linked ? await updateWork(created.id, { linked }) : created;
     await recordAudit({
         entity: "work",
         entityId: w.id,

@@ -6,18 +6,15 @@
  * The list, board, toolbar and header live in ./task-list, ./task-board and
  * ./toolbar so My tasks renders the very same markup.
  *
- * Tasks are added here and only here, by hand: the "+" on the board's To do
- * column (./new-task-dialog). `?new=<project id>` opens it on that project.
+ * Nothing is created here: new tasks start on a project page ("New task", or
+ * the deliverables). This page lists, filters and edits.
  * Two narrowing params ride beside the shared filter row: `?waiting=` (blocked
  * on the client or on us) and `?unassigned=1` (open tasks with an open seat).
  */
 import Link from "next/link";
 import { getActingMember, getCurrentTeamMember, requireTeamAccess } from "@/lib/auth";
 import { listWorks, type Work } from "@/lib/data/works";
-import { isSigned, listContracts } from "@/lib/data/contracts";
-import { listClients } from "@/lib/data/clients";
-import { isInternal } from "@/lib/clients/internal";
-import { visibleContracts } from "@/lib/scope";
+import { listContracts } from "@/lib/data/contracts";
 import { deliveryWeeklyHours, listTeamMembers } from "@/lib/data/team";
 import { WORK_DAYS, findMember, fmtHours } from "@/lib/capacity/helpers";
 import { actorOf } from "@/lib/works/actor";
@@ -27,7 +24,6 @@ import { applyFilter, filterQuery, hasOpenSeat, isFiltered, parseFilter } from "
 import { WAITING_ON_LABEL, normalizeWaitingOn } from "@/lib/works/waiting";
 import { CalendarGrid } from "@/app/(admin)/calendar/grid";
 import { TaskBoard } from "./task-board";
-import type { NewTaskProject, NewTaskSetup } from "./new-task-dialog";
 import { TaskEmpty, TaskList, TaskSummary, phaseOrderOf, phaseSections } from "./task-list";
 import { CalendarNav, TaskHeader, TaskToolbar, parseView, type GroupOption } from "./toolbar";
 import { ActingAs } from "./ui";
@@ -50,10 +46,9 @@ const GROUPS: GroupOption[] = [
 export default async function WorksPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
     await requireTeamAccess();
     const sp = await searchParams;
-    const [works, contracts, clientRecords, team, linked, member] = await Promise.all([
+    const [works, contracts, team, linked, member] = await Promise.all([
         listWorks(),
         listContracts(),
-        listClients(),
         listTeamMembers(),
         getCurrentTeamMember(),
         getActingMember(one(sp, "as") || undefined),
@@ -103,38 +98,21 @@ export default async function WorksPage({ searchParams }: { searchParams: Promis
     const scopeMember = filter.member ? findMember(team, filter.member) : undefined;
     const perDay = scopeMember ? deliveryWeeklyHours(scopeMember) / WORK_DAYS.length : undefined;
 
-    // ---- The board's To do "+": signed or running projects (internal ones included), grouped by client in the dialog.
-    const openProjects = visibleContracts(member, contracts, works).filter(
-        (c) => isSigned(c) && c.stage !== "completed" && c.status !== "cancelled" && c.status !== "completed",
-    );
-    const newTaskProjects: NewTaskProject[] = openProjects
-        .map((c) => ({
-            id: c.id,
-            code: c.code,
-            name: c.name,
-            clientName: c.clientName,
-            internal: isInternal(c, clientRecords),
-            crew: { ...c.crew, am: c.crew.am || c.accountManager || undefined },
-        }))
-        .sort((a, b) => a.clientName.localeCompare(b.clientName) || a.name.localeCompare(b.name));
-    // `?new=<project id>` (a project page's "Add task") opens the dialog on it; else the Client filter's first project.
-    const newFor = one(sp, "new");
-    const newTask: NewTaskSetup = {
-        projects: newTaskProjects,
-        members: names,
-        defaultProjectId: newTaskProjects.find((p) => p.id === newFor)?.id ?? newTaskProjects.find((p) => p.clientName === filter.client)?.id,
-        openOnLoad: view === "board" && newTaskProjects.some((p) => p.id === newFor),
-        today,
-    };
-
     return (
         <div className="space-y-6">
             <TaskHeader
                 title="Tasks"
                 subtitle={
-                    view === "board"
-                        ? "Every task under every project, with who owns it. Add a task with the + on To do."
-                        : "Every task under every project, by month, with who owns it."
+                    <>
+                        {view === "board" ? "Every task under every project, with who owns it." : "Every task under every project, by month, with who owns it."}
+                        <span className="mt-0.5 block text-xs">
+                            New items start as a task on a{" "}
+                            <Link href={`/projects${asQ}`} className="underline">
+                                project
+                            </Link>
+                            .
+                        </span>
+                    </>
                 }
             />
 
@@ -194,23 +172,22 @@ export default async function WorksPage({ searchParams }: { searchParams: Promis
                     />
                     <CalendarGrid year={calYear} month={calMonth} items={calItems} today={today} actor={actor} asParam={as || undefined} tasks={calTasks} perDay={perDay} />
                 </div>
-            ) : view === "board" ? (
-                // The board shows even when empty: its To do "+" is where tasks are added.
-                <>
-                    {filtered.length > 0 ? <TaskSummary works={filtered} today={today} /> : null}
-                    <TaskBoard works={filtered} today={today} asQ={asQ} actor={actor} asParam={as || undefined} newTask={newTask} />
-                </>
             ) : filtered.length === 0 ? (
                 <TaskEmpty
                     filtered={isFiltered(filter) || Boolean(waiting) || unassigned}
                     clearHref={`/works${filterQuery({}, { ...keep, waiting: undefined, unassigned: undefined })}`}
                 >
-                    No tasks yet. They appear when a project is signed, or add one with the + on the{" "}
-                    <Link href={href({ view: "board", cm: undefined })} className="underline">
-                        board
+                    No tasks yet. They appear when a project is signed. New items start as a task on a{" "}
+                    <Link href={`/projects${asQ}`} className="underline">
+                        project
                     </Link>
                     .
                 </TaskEmpty>
+            ) : view === "board" ? (
+                <>
+                    <TaskSummary works={filtered} today={today} />
+                    <TaskBoard works={filtered} today={today} asQ={asQ} actor={actor} asParam={as || undefined} />
+                </>
             ) : (
                 <>
                     <TaskSummary works={filtered} today={today} />

@@ -3,7 +3,7 @@
 /**
  * Job fields: the job ROLE people read ("Chief Executive Officer", free text
  * with suggestions) and the job CATEGORY the app reads to match a person to
- * task seats (DM: campaigns and SEO, Creative: statics and videos, …). Two
+ * task seats (DM: campaigns and SEO, Creative: static and video posts, …). Two
  * grid cells, so the parent form lays them out. Posts `role` and `category`;
  * a read-only category posts nothing, so the server keeps the stored one.
  * Used on the invite form, a member's Team page and the Profile.

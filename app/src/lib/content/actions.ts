@@ -20,6 +20,12 @@ import {
     type ContentType,
 } from "@/lib/data/content";
 import { saveContentAsset } from "@/lib/storage/content-assets";
+import { CONTENT_KINDS, CONTENT_KIND_PATH, CONTENT_VIEWS, isContentKind, kindHref } from "@/lib/content/kind";
+
+/** Every view of both Delivery content pages (Static posts, Video posts). */
+function revalidateContentPages() {
+    for (const kind of CONTENT_KINDS) for (const view of CONTENT_VIEWS) revalidatePath(kindHref(kind, view));
+}
 
 function asPlatform(v: FormDataEntryValue | null): ContentPlatform {
     const s = String(v ?? "");
@@ -66,8 +72,7 @@ export async function createContentPostAction(formData: FormData) {
         notes: String(formData.get("notes") ?? "").trim(),
         assignee: assigneeStr(formData.get("assignee")),
     });
-    revalidatePath("/content");
-    revalidatePath("/content/calendar");
+    revalidateContentPages();
     revalidatePath("/dashboard");
     redirect(`/content/${post.id}`);
 }
@@ -105,8 +110,7 @@ export async function updateContentPostAction(formData: FormData) {
     }
     await updateContentPost(id, patch);
     revalidatePath(`/content/${id}`);
-    revalidatePath("/content");
-    revalidatePath("/content/calendar");
+    revalidateContentPages();
 }
 
 export async function setContentStatusAction(formData: FormData) {
@@ -114,8 +118,7 @@ export async function setContentStatusAction(formData: FormData) {
     if (!id) return;
     await setContentStatus(id, asStatus(formData.get("status")));
     revalidatePath(`/content/${id}`);
-    revalidatePath("/content");
-    revalidatePath("/content/calendar");
+    revalidateContentPages();
     revalidatePath("/dashboard");
 }
 
@@ -160,7 +163,7 @@ export async function submitDraftAction(formData: FormData) {
         caption: String(formData.get("caption") ?? "").trim(),
     });
     revalidatePath(`/content/${id}`);
-    revalidatePath("/content");
+    revalidateContentPages();
     revalidatePath("/dashboard");
 }
 
@@ -168,10 +171,11 @@ export async function deleteContentPostAction(formData: FormData) {
     const id = String(formData.get("id") ?? "");
     if (!id) return;
     await deleteContentPost(id);
-    revalidatePath("/content");
-    revalidatePath("/content/calendar");
+    revalidateContentPages();
     revalidatePath("/dashboard");
-    redirect("/content");
+    // Back to the list of the kind it was on (the detail page sends it).
+    const kind = formData.get("kind");
+    redirect(CONTENT_KIND_PATH[isContentKind(kind) ? kind : "static"]);
 }
 
 /**
@@ -186,7 +190,6 @@ export async function bulkDeleteContentAction(formData: FormData) {
     }
     const clientId = String(formData.get("clientId") ?? "");
     if (clientId) revalidatePath(`/settings/clients/${clientId}`);
-    revalidatePath("/content");
-    revalidatePath("/content/calendar");
+    revalidateContentPages();
     revalidatePath("/dashboard");
 }

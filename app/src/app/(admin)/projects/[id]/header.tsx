@@ -1,8 +1,9 @@
 /**
  * Project page header: name, the one stage chip, who/when, the health strip
  * ("15/77 tasks · 4 overdue · 4 in review · next milestone … · next invoice …"),
- * the everyday actions (Agreement, Mark signed / Approve, Add task, which
- * opens the Tasks board's add dialog on this project) and the tab row.
+ * the everyday actions (Agreement, Mark signed / Approve, New task, which
+ * opens the add dialog on this project for its account manager, management
+ * and the people already on it) and the tab row.
  * Always visible above the tabs. Tasks are visible to their owners as soon as
  * they exist, so there is nothing to "brief".
  * An internal project gets no Contract tab and no "missing info" chip (it has
@@ -19,6 +20,7 @@ import { ActingAs } from "@/app/(admin)/works/ui";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PendingButton } from "@/components/pending-button";
+import { NewTaskButton } from "@/components/new-task-dialog";
 import { cn } from "@/lib/utils";
 import { StageBadge, requirementsLabel } from "../ui";
 import { TABS, type ContractView } from "./shared";
@@ -166,12 +168,8 @@ export function ContractHeader({ v }: { v: ContractView }) {
                             </PendingButton>
                         </form>
                     ) : null}
-                    {/* Tasks are added on the Tasks board; this opens its add dialog on this project. */}
-                    {v.signed && c.stage !== "completed" && c.status !== "cancelled" ? (
-                        <Button size="sm" nativeButton={false} render={<Link href={v.newTaskHref} title="Opens the Tasks board with this project picked" />}>
-                            Add task
-                        </Button>
-                    ) : null}
+                    {/* Tasks are added here, on the project: its AM, management and the people already on it. */}
+                    {v.canAddTask ? <NewTaskButton project={v.newTaskProject} members={v.memberNames} today={today} asParam={v.asParam} /> : null}
                 </div>
             </div>
         </header>

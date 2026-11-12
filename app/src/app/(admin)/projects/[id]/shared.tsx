@@ -15,6 +15,8 @@ import type { TeamMember } from "@/lib/data/team";
 import type { Work } from "@/lib/data/works";
 import { NO_PHASE, isOverdue, monthsOf, nextDue, nextMonth, phasesOf, progress, todayKey } from "@/lib/works/helpers";
 import { actorOf } from "@/lib/works/actor";
+import { canAddTask as mayAddTask, takesTasks } from "@/lib/works/transitions";
+import type { NewTaskProject } from "@/components/new-task-dialog";
 import { applyFilter, filterQuery, parseFilter, withDefaultMember, type WorkFilter } from "@/lib/works/filter";
 import { invoiceItems, parseMonth, taskItems, ymOf } from "@/lib/works/calendar";
 import { WORK_DAYS, findMember } from "@/lib/capacity/helpers";
@@ -170,10 +172,6 @@ export function deriveView({ c, contracts, clients, team, invoices, quotations, 
     /** A link to a tab, keeping the view state and the filter. */
     const tabHref = (t: Tab, extra: Record<string, string | undefined> = {}, anchor = "") =>
         `${base}${filterQuery(filter, { ...keep, ...extra, tab: t === "work" ? undefined : t })}${anchor}`;
-    /** The Tasks board with this client picked: where extra tasks are added (its To do "+"). */
-    const boardHref = `/works${filterQuery({ client: c.clientName }, { view: "board", as: asParam })}`;
-    /** The same board with the add dialog open on this project (the header's "Add task"). */
-    const newTaskHref = `/works${filterQuery({ client: c.clientName }, { view: "board", new: c.id, as: asParam })}`;
     /** Jump to the Tasks tab grouped by phase with this phase selected (a key, a stray name, or NO_PHASE). */
     const phaseHref = (phase: string) => href({ tab: undefined, group: "phase", wm: undefined }, { ...filter, phase });
 
@@ -215,6 +213,18 @@ export function deriveView({ c, contracts, clients, team, invoices, quotations, 
     /** The gate: tasks and crew exist only once the contract is signed (or the brief approved). */
     const signed = isSigned(c);
 
+    // ---- New task (header and Tasks tab): the project's AM, management and the people already on it, while it is signed or running.
+    const takesNewTasks = signed && takesTasks(c);
+    const canAddTask = takesNewTasks && mayAddTask(c, cWorks, actorOf(member));
+    const newTaskProject: NewTaskProject = {
+        id: c.id,
+        code: c.code,
+        name: c.name,
+        clientName: c.clientName,
+        startDate: c.startDate,
+        crew: { ...c.crew, am: c.crew.am || c.accountManager || undefined },
+    };
+
     return {
         c,
         client,
@@ -229,8 +239,9 @@ export function deriveView({ c, contracts, clients, team, invoices, quotations, 
         activeTeam,
         memberNames,
         tab,
-        boardHref,
-        newTaskHref,
+        takesNewTasks,
+        canAddTask,
+        newTaskProject,
         error,
         actor,
         asParam,

@@ -37,8 +37,8 @@ export const OUTLOOK_AHEAD = 2;
 /** Task types in plain words, for the Hours by task type bars. */
 export const TYPE_LABEL: Record<LineType, string> = {
     campaign: "Campaigns",
-    static: "Static images",
-    video: "Videos",
+    static: "Static posts",
+    video: "Video posts",
     seo: "SEO",
     website: "Website",
     custom: "Other",

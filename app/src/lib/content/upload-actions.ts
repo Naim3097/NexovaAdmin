@@ -111,7 +111,8 @@ export async function submitDraftFromStorageAction(input: {
     }
 
     revalidatePath(`/content/${id}`);
-    revalidatePath("/content");
+    revalidatePath("/static-posts", "layout");
+    revalidatePath("/video-posts", "layout");
     revalidatePath("/dashboard");
     return { ok: true };
 }

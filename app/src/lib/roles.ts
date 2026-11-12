@@ -73,6 +73,8 @@ export const ROUTES_BY_FUNCTION: Record<TeamFunction, readonly string[]> = {
         "/works",
         "/campaigns",
         "/content",
+        "/static-posts",
+        "/video-posts",
         "/seo",
         "/website",
         "/custom-tasks",

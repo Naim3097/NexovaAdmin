@@ -21,6 +21,12 @@ import {
 } from "@/lib/data/reads";
 import { listContracts, listWorks } from "@/lib/data/reads";
 import { primaryMember } from "@/lib/works/helpers";
+import { contentKind, kindHref } from "@/lib/content/kind";
+
+/** The calendar of the post kind (Static posts or Video posts). */
+function contentCalendar(c: { type: Parameters<typeof contentKind>[0]["type"] }): string {
+    return kindHref(contentKind(c), "calendar");
+}
 
 export const ACTIVITY_ENTITIES = [
     "lead",
@@ -280,7 +286,7 @@ export async function listActivity(): Promise<ActivityEvent[]> {
             title: `Content scheduled: ${c.title}`,
             detail: `${c.platform} · ${c.scheduledFor}${c.scheduledTime ? ` ${c.scheduledTime}` : ""
                 }`,
-            href: `/content/calendar`,
+            href: contentCalendar(c),
             amountMyr: 0,
             actor: c.assignee ?? "",
         });
@@ -293,7 +299,7 @@ export async function listActivity(): Promise<ActivityEvent[]> {
                 kind: "content.posted",
                 title: `Content posted: ${c.title}`,
                 detail: `${c.platform}`,
-                href: `/content/calendar`,
+                href: contentCalendar(c),
                 amountMyr: 0,
                 actor: c.assignee ?? "",
             });

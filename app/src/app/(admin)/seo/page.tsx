@@ -1,29 +1,19 @@
+/**
+ * SEO articles: the brief → published pipeline, one column per stage.
+ * Nothing is created here: an article starts as an SEO article task on a
+ * project, which makes its record.
+ */
 import Link from "next/link";
 import {
     SEO_STAGES,
     listSeoArticles,
     type SeoStage,
 } from "@/lib/data/seo-articles";
-import { listClients } from "@/lib/data/clients";
 import { listContracts } from "@/lib/data/contracts";
-import { listTeamMembers } from "@/lib/data/team";
 import { listWorks } from "@/lib/data/works";
 import { getActingMember } from "@/lib/auth";
-import { seesEverything, visibleClients, visibleContracts } from "@/lib/scope";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { seesEverything, visibleContracts } from "@/lib/scope";
 import { Badge } from "@/components/ui/badge";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { createSeoArticleAction } from "@/lib/seo-articles/actions";
-import { NewSection } from "@/components/new-button";
 
 export const dynamic = "force-dynamic";
 
@@ -50,12 +40,11 @@ const STAGE_TONE: Record<
 
 const norm = (s: string) => s.trim().toLowerCase();
 
-export default async function SeoPage({ searchParams }: { searchParams: Promise<{ as?: string; new?: string }> }) {
+export default async function SeoPage({ searchParams }: { searchParams: Promise<{ as?: string }> }) {
     const sp = await searchParams;
-    const [allArticles, allClients, team, contracts, works, member] = await Promise.all([
+    const asQ = sp.as ? `?as=${encodeURIComponent(sp.as)}` : "";
+    const [allArticles, contracts, works, member] = await Promise.all([
         listSeoArticles(),
-        listClients(),
-        listTeamMembers(),
         listContracts(),
         listWorks(),
         getActingMember(sp.as),
@@ -63,7 +52,6 @@ export default async function SeoPage({ searchParams }: { searchParams: Promise<
     // Articles carry only a client name: a user sees those of the clients whose projects they are on.
     const myClientNames = new Set(visibleContracts(member, contracts, works).map((c) => norm(c.clientName)));
     const articles = seesEverything(member) ? allArticles : allArticles.filter((a) => myClientNames.has(norm(a.clientName)));
-    const clients = visibleClients(member, allClients, contracts, works);
     const grouped = new Map<SeoStage, typeof articles>();
     for (const s of SEO_STAGES) grouped.set(s, []);
     for (const a of articles) grouped.get(a.stage)?.push(a);
@@ -78,106 +66,25 @@ export default async function SeoPage({ searchParams }: { searchParams: Promise<
                     <p className="text-sm text-muted-foreground">
                         Brief → outline → draft → review → published, kept apart from the social calendar.
                     </p>
-                    <p className="text-xs text-muted-foreground">Items come from project tasks. The account manager adds them on the project.</p>
+                    <p className="text-xs text-muted-foreground">
+                        New items start as a task on a{" "}
+                        <Link href={`/projects${asQ}`} className="underline">
+                            project
+                        </Link>
+                        .
+                    </p>
                 </div>
             </div>
 
-            {/* Add form, folded until the button above opens it */}
-            <NewSection open={sp.new === "1"} title="New article brief">
-                <form action={createSeoArticleAction} className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <div className="space-y-1.5 md:col-span-2">
-                            <Label className="text-sm">Working title</Label>
-                            <Input
-                                name="title"
-                                required
-                                placeholder='e.g. "Best web design agency in Kuala Lumpur"'
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">Client</Label>
-                            <Input
-                                name="clientName"
-                                list="clients-datalist"
-                                defaultValue="Nexov"
-                                placeholder="Nexov"
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">Owner</Label>
-                            <Select name="assignee" defaultValue="none">
-                                <SelectTrigger className="h-10">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="none">No owner</SelectItem>
-                                    {team
-                                        .filter((m) => m.active)
-                                        .map((m) => (
-                                            <SelectItem key={m.id} value={m.name}>
-                                                {m.name} ({m.role})
-                                            </SelectItem>
-                                        ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">Target keyword</Label>
-                            <Input
-                                name="targetKeyword"
-                                placeholder="e.g. seo agency malaysia"
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">
-                                Secondary keywords (comma-separated)
-                            </Label>
-                            <Input
-                                name="secondaryKeywords"
-                                placeholder="local seo, search engine optimization"
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">Search intent</Label>
-                            <Input
-                                name="searchIntent"
-                                placeholder="informational | commercial | transactional"
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">Target word count</Label>
-                            <Input
-                                name="targetWordCount"
-                                type="number"
-                                min={0}
-                                step={100}
-                                placeholder="1500"
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">Target publish date</Label>
-                            <Input name="targetDate" type="date" />
-                        </div>
-                        <div className="space-y-1.5 md:col-span-2">
-                            <Label className="text-sm">Brief / angle</Label>
-                            <Textarea
-                                name="brief"
-                                rows={3}
-                                placeholder="What angle, why now, internal links to include, anything important about tone or format."
-                            />
-                        </div>
-                    </div>
-                    <div className="flex justify-end">
-                        <Button type="submit">Create brief</Button>
-                    </div>
-                    {/* Datalist used by clientName autocomplete */}
-                    <datalist id="clients-datalist">
-                        {clients.map((c) => (
-                            <option key={c.id} value={c.name} />
-                        ))}
-                    </datalist>
-                </form>
-            </NewSection>
+            {articles.length === 0 ? (
+                <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
+                    No articles yet. New items start as a task on a{" "}
+                    <Link href={`/projects${asQ}`} className="underline">
+                        project
+                    </Link>
+                    .
+                </div>
+            ) : null}
 
             {/* Pipeline */}
             <div className="grid gap-4 lg:grid-cols-3">

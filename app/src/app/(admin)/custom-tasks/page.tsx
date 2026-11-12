@@ -1,10 +1,14 @@
+/**
+ * Other tasks: every one-off task (type `custom`) under a project, as a list
+ * by month or phase, or a board by status. Lists, filters and links to each
+ * task; nothing is created here: an other task starts on a project.
+ */
 import Link from "next/link";
 import { getAccessLevel, getActingMember, getCurrentTeamMember, requireTeamAccess } from "@/lib/auth";
 import { listWorks, type Work } from "@/lib/data/works";
 import { listContracts } from "@/lib/data/contracts";
 import { listTeamMembers } from "@/lib/data/team";
 import { visibleContracts, visibleWorks } from "@/lib/scope";
-import { APPROVERS, APPROVER_LABEL } from "@/lib/data/planners";
 import {
     TASK_STATUS_LABEL,
     TASK_STATUS_ORDER,
@@ -19,23 +23,10 @@ import {
     todayKey,
 } from "@/lib/works/helpers";
 import { applyFilter, filterQuery, isFiltered, parseFilter, withDefaultMember } from "@/lib/works/filter";
-import { createWorkAction } from "@/lib/works/actions";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { SelectNav } from "@/components/select-nav";
 import { cn } from "@/lib/utils";
 import { FilterRow } from "@/app/(admin)/works/filter-bar";
 import { ActingAs, DueLabel, STATUS_DOT, SplitLabel, TaskStatusBadge, WorkCard } from "@/app/(admin)/works/ui";
-import { NewSection } from "@/components/new-button";
 
 export const dynamic = "force-dynamic";
 
@@ -66,14 +57,12 @@ export default async function CustomTasksPage({ searchParams }: { searchParams: 
     // A user sees only the tasks they own a part of or must sign off; managers (or nobody picked) see all.
     const contracts = visibleContracts(member, allContracts, allWorks);
     const today = todayKey();
-    const thisMonth = today.slice(0, 7);
     const view = one(sp, "view") === "board" ? "board" : "list";
     const group = one(sp, "group") === "phase" ? "phase" : "month";
     // The acting member: the linked login wins; otherwise the `?as=` pick (DEV_AUTH_BYPASS), else the acting-as cookie.
     const as = linked ? "" : one(sp, "as");
     const me = member?.name ?? as;
     const asQ = as ? `?as=${encodeURIComponent(as)}` : "";
-    const asField = as ? <input type="hidden" name="as" value={as} /> : null;
     const activeTeam = team.filter((m) => m.active);
     const names = activeTeam.map((m) => m.name);
 
@@ -86,8 +75,6 @@ export default async function CustomTasksPage({ searchParams }: { searchParams: 
         as: as || undefined,
     };
     const href = (f: typeof filter, extra: Record<string, string | undefined> = {}) => `/custom-tasks${filterQuery(f, { ...keep, ...extra })}`;
-    // The folded add form opens on `?new=1`.
-    const openNew = one(sp, "new") === "1";
 
     const phases = [...new Set(works.map((w) => w.phaseName).filter(Boolean))].sort();
     const clients = [...new Set(works.map((w) => w.clientName).filter(Boolean))].sort();
@@ -104,12 +91,6 @@ export default async function CustomTasksPage({ searchParams }: { searchParams: 
             ? [...groupByPhase(filtered, []).entries()].map(([name, list]) => ({ key: name, label: name, works: byDue(list) }))
             : [...groupByMonth(filtered).entries()].map(([m, list]) => ({ key: m || "none", label: m ? monthLabel(m) : "No month", works: byDue(list) }));
 
-    const activeContracts = contracts.filter((c) => c.status === "active");
-    // Phase suggestions for the add form: every phase on an active project, plus any name already used here.
-    const phaseOptions = [
-        ...new Set([...activeContracts.flatMap((c) => c.phases.map((ph) => ph.name)), ...works.map((w) => w.phaseName)].filter(Boolean)),
-    ].sort();
-
     const viewOptions = [
         { value: "list", label: "List", href: href(filter, { view: undefined }) },
         { value: "board", label: "Board", href: href(filter, { view: "board" }) },
@@ -125,7 +106,13 @@ export default async function CustomTasksPage({ searchParams }: { searchParams: 
                 <div>
                     <h1 className="text-2xl font-semibold md:text-3xl">Other tasks</h1>
                     <p className="text-sm text-muted-foreground">One-off work under a project: workshops, strategy calls, audits, sprints.</p>
-                    <p className="text-xs text-muted-foreground">Items come from project tasks. The account manager adds them on the project.</p>
+                    <p className="text-xs text-muted-foreground">
+                        New items start as a task on a{" "}
+                        <Link href={`/projects${asQ}`} className="underline">
+                            project
+                        </Link>
+                        .
+                    </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                     <Link href={`/works${filterQuery({ type: "custom" }, { as: as || undefined })}`} className="text-sm font-medium underline">
@@ -133,97 +120,6 @@ export default async function CustomTasksPage({ searchParams }: { searchParams: 
                     </Link>
                 </div>
             </div>
-
-            {/* Add form, folded until the button above opens it */}
-            <NewSection open={openNew} title="New task">
-                <form action={createWorkAction} className="space-y-4">
-                    <input type="hidden" name="type" value="custom" />
-                    <input type="hidden" name="back" value={`/custom-tasks${asQ}`} />
-                    {/* Other tasks default to the account-manager role at 100%; pick the owner below or assign later on the task. */}
-                    <input type="hidden" name="seat_1" value="am" />
-                    <input type="hidden" name="pct_1" value="100" />
-                    {asField}
-                    <p className="text-xs text-muted-foreground">A one-off outside the plan: a workshop, a call, an audit, a sprint.</p>
-                    <div className="grid gap-4 md:grid-cols-3">
-                        <div className="space-y-1.5 md:col-span-2">
-                            <Label className="text-sm">Project</Label>
-                            <Select name="contractId" required>
-                                <SelectTrigger className="h-10 w-full">
-                                    <SelectValue placeholder={activeContracts.length ? "Pick a project" : "No active projects"} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {activeContracts.map((c) => (
-                                        <SelectItem key={c.id} value={c.id}>
-                                            {c.code} · {c.clientName} · {c.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">Owner</Label>
-                            <Select name="member_1" defaultValue="none">
-                                <SelectTrigger className="h-10 w-full">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="none">— nobody yet —</SelectItem>
-                                    {activeTeam.map((m) => (
-                                        <SelectItem key={m.id} value={m.name}>
-                                            {m.name} ({m.role})
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-1.5 md:col-span-2">
-                            <Label className="text-sm">Title</Label>
-                            <Input name="title" required placeholder="e.g. Brand strategy workshop" />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">Phase</Label>
-                            <Input name="phaseName" list="custom-task-phases" placeholder="Kickoff, Production…" />
-                            <datalist id="custom-task-phases">
-                                {phaseOptions.map((p) => (
-                                    <option key={p} value={p} />
-                                ))}
-                            </datalist>
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">Month</Label>
-                            <Input name="month" type="month" defaultValue={thisMonth} required />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">Due date (blank = 15th)</Label>
-                            <Input name="dueDate" type="date" />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">Sign-off</Label>
-                            <Select name="approver" defaultValue="am">
-                                <SelectTrigger className="h-10 w-full">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {APPROVERS.map((a) => (
-                                        <SelectItem key={a} value={a}>
-                                            {APPROVER_LABEL[a]}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-1.5 md:col-span-3">
-                            <Label className="text-sm">Notes</Label>
-                            <Textarea name="notes" rows={2} placeholder="What the task covers, who the client contact is, what done looks like…" />
-                        </div>
-                    </div>
-                    <div className="flex justify-end">
-                        <Button type="submit" disabled={activeContracts.length === 0}>
-                            Add task
-                        </Button>
-                    </div>
-                </form>
-            </NewSection>
 
             <ActingAs
                 members={activeTeam}
@@ -263,7 +159,7 @@ export default async function CustomTasksPage({ searchParams }: { searchParams: 
                         </>
                     ) : (
                         <>
-                            No other tasks yet. They come from the extra lines of a project; the account manager adds them on the{" "}
+                            No other tasks yet. New items start as a task on a{" "}
                             <Link href={`/projects${asQ}`} className="underline">
                                 project
                             </Link>

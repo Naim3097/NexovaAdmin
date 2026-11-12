@@ -98,7 +98,8 @@ function revalidate(id?: string) {
     revalidatePath("/projects");
     if (id) revalidatePath(`/projects/${id}`);
     revalidatePath("/settings/clients");
-    revalidatePath("/content");
+    revalidatePath("/static-posts", "layout");
+    revalidatePath("/video-posts", "layout");
     revalidatePath("/campaigns");
     revalidatePath("/invoices");
     revalidatePath("/pipeline");

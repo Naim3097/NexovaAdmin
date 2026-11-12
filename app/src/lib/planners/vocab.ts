@@ -10,7 +10,7 @@ import type { TeamCategory } from "@/lib/team/categories";
 // ---------------------------------------------------------------------------
 
 /**
- * What one deliverable row / task is. Static image and Video both land on the
+ * What one deliverable row / task is. Static post and Video post both land on the
  * content calendar; they are separate types because a video takes far longer
  * and often a different person, so hours and capacity need the split.
  */
@@ -18,16 +18,16 @@ export const LINE_TYPES = ["campaign", "static", "video", "seo", "website", "cus
 export type LineType = (typeof LINE_TYPES)[number];
 export const LINE_TYPE_LABEL: Record<LineType, string> = {
     campaign: "Campaign",
-    static: "Static image",
-    video: "Video",
+    static: "Static post",
+    video: "Video post",
     seo: "SEO article",
     website: "Website item",
     custom: "Other task",
 };
 export const LINE_TYPE_SHORT: Record<LineType, string> = {
     campaign: "Campaign",
-    static: "Static",
-    video: "Video",
+    static: "Static post",
+    video: "Video post",
     seo: "SEO",
     website: "Website",
     custom: "Other",
@@ -35,8 +35,8 @@ export const LINE_TYPE_SHORT: Record<LineType, string> = {
 /** Plural words for counts ("12 statics · 2 campaigns"). */
 export const LINE_TYPE_WORDS: Record<LineType, [string, string]> = {
     campaign: ["campaign", "campaigns"],
-    static: ["static image", "static images"],
-    video: ["video", "videos"],
+    static: ["static post", "static posts"],
+    video: ["video post", "video posts"],
     seo: ["SEO article", "SEO articles"],
     website: ["website item", "website items"],
     custom: ["other task", "other tasks"],

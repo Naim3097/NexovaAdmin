@@ -4,8 +4,8 @@
  * date. Drag a card to another column to move it; the columns this person
  * may not move it to grey out while it is lifted. A click on the title opens
  * the quick edit, "↗" opens the task page. Moves show at once and the server
- * catches up on refresh; the toast's Undo puts the card back. Where the page
- * passes `newTask` (the Tasks page), the To do column's "+" adds a task.
+ * catches up on refresh; the toast's Undo puts the card back. Nothing is
+ * added here: new tasks start on the project page ("New task").
  *
  * Keyboard: focus a card, Space or Enter lifts it, the arrow keys jump it
  * from column to column, Space or Enter drops it, Escape cancels.
@@ -37,7 +37,6 @@ import { moveTaskAction, undoMoveAction } from "@/lib/works/quick-actions";
 import { allowedMoves, type Actor } from "@/lib/works/transitions";
 import { cn } from "@/lib/utils";
 import { BoardCard, OverlayCard } from "./board-card";
-import { NewTaskButton, type NewTaskSetup } from "./new-task-dialog";
 import { toastUndo } from "./quick-edit";
 import { byDue } from "./task-list";
 import { STATUS_DOT } from "./ui";
@@ -52,8 +51,6 @@ export type TaskBoardProps = {
     asParam?: string;
     /** Off on a project page, where every card is the same client. */
     showClient?: boolean;
-    /** The projects and people for the To do column's "+"; without it there is no "+". */
-    newTask?: NewTaskSetup;
 };
 
 /**
@@ -106,7 +103,7 @@ const columnCoordinates: KeyboardCoordinateGetter = (event, { context: { collisi
     return undefined;
 };
 
-export function TaskBoard({ works, today, asQ, actor, asParam, showClient = true, newTask }: TaskBoardProps) {
+export function TaskBoard({ works, today, asQ, actor, asParam, showClient = true }: TaskBoardProps) {
     const router = useRouter();
     const [overrides, setOverrides] = useState<Record<string, Override>>({});
     const [lifted, setLifted] = useState<Lifted | null>(null);
@@ -195,13 +192,7 @@ export function TaskBoard({ works, today, asQ, actor, asParam, showClient = true
         >
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                 {TASK_STATUS_ORDER.map((s) => (
-                    <Column
-                        key={s}
-                        status={s}
-                        count={columns[s].length}
-                        lifted={lifted}
-                        action={s === "not_started" && newTask ? <NewTaskButton setup={newTask} asParam={asParam} /> : null}
-                    >
+                    <Column key={s} status={s} count={columns[s].length} lifted={lifted}>
                         {columns[s].length === 0 ? (
                             lifted && lifted.allowed.includes(s) ? (
                                 <div className="m-1 rounded-md border border-dashed border-primary/40 px-2 py-4 text-center text-xs text-muted-foreground">drop here</div>
@@ -223,18 +214,16 @@ export function TaskBoard({ works, today, asQ, actor, asParam, showClient = true
     );
 }
 
-/** One status column: a drop target, greyed out while a card it may not take is lifted. `action` sits at the right of its header (To do's "+"). */
+/** One status column: a drop target, greyed out while a card it may not take is lifted. */
 function Column({
     status,
     count,
     lifted,
-    action,
     children,
 }: {
     status: TaskStatus;
     count: number;
     lifted: Lifted | null;
-    action?: React.ReactNode;
     children: React.ReactNode;
 }) {
     const allowed = Boolean(lifted?.allowed.includes(status));
@@ -255,7 +244,6 @@ function Column({
                 <span className={cn("inline-block size-2 rounded-full", STATUS_DOT[status])} />
                 {TASK_STATUS_LABEL[status]}
                 <span className="text-muted-foreground tabular-nums">{count}</span>
-                {action}
             </div>
             {children}
         </div>

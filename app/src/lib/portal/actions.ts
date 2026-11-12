@@ -83,7 +83,8 @@ export async function portalApproveAction(formData: FormData) {
     revalidatePath("/portal/approvals");
     revalidatePath("/works");
     revalidatePath("/portal/content");
-    revalidatePath("/content");
+    revalidatePath("/static-posts", "layout");
+    revalidatePath("/video-posts", "layout");
     revalidatePath("/dashboard");
 }
 
@@ -101,7 +102,8 @@ export async function portalRequestChangesAction(formData: FormData) {
     revalidatePath("/portal/approvals");
     revalidatePath("/works");
     revalidatePath("/portal/content");
-    revalidatePath("/content");
+    revalidatePath("/static-posts", "layout");
+    revalidatePath("/video-posts", "layout");
     revalidatePath("/dashboard");
 }
 
@@ -158,7 +160,8 @@ export async function portalCreateContentAction(
     });
 
     revalidatePath("/portal/content");
-    revalidatePath("/content");
+    revalidatePath("/static-posts", "layout");
+    revalidatePath("/video-posts", "layout");
     revalidatePath("/dashboard");
     return {
         ok: true,

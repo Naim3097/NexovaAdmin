@@ -1,33 +1,18 @@
+/**
+ * Campaigns: every ad campaign, filtered by client, with lifetime spend and
+ * the leads it brought into the CRM. Nothing is created here: a campaign
+ * starts as a Campaign task on a project, which makes its record.
+ */
 import Link from "next/link";
-import {
-    CAMPAIGN_FEE_MODELS,
-    CAMPAIGN_OBJECTIVES,
-    CAMPAIGN_PLATFORMS,
-    computeManagementFee,
-    listCampaigns,
-    totalsFor,
-    type CampaignStatus,
-} from "@/lib/data/campaigns";
+import { computeManagementFee, listCampaigns, totalsFor, type CampaignStatus } from "@/lib/data/campaigns";
 import { listLeads } from "@/lib/data/leads";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { createCampaignAction } from "@/lib/campaigns/actions";
 import { listContracts } from "@/lib/data/contracts";
 import { listWorks } from "@/lib/data/works";
 import { getActingMember } from "@/lib/auth";
 import { assignedContractIds, seesEverything, visibleContracts } from "@/lib/scope";
 import { fmtMyr, fmtMyrShort } from "@/lib/format";
 import { SelectNav } from "@/components/select-nav";
-import { NewSection } from "@/components/new-button";
 
 export const dynamic = "force-dynamic";
 
@@ -46,9 +31,10 @@ const STATUS_VARIANT: Record<
 export default async function CampaignsPage({
     searchParams,
 }: {
-    searchParams: Promise<{ client?: string; as?: string; new?: string }>;
+    searchParams: Promise<{ client?: string; as?: string }>;
 }) {
-    const { client: clientFilter = "", as, new: openNew } = await searchParams;
+    const { client: clientFilter = "", as } = await searchParams;
+    const asQ = as ? `?as=${encodeURIComponent(as)}` : "";
     const [everyCampaign, leads, allContracts, works, member] = await Promise.all([
         listCampaigns(),
         listLeads(),
@@ -63,7 +49,6 @@ export default async function CampaignsPage({
     const allCampaigns = seesEverything(member)
         ? everyCampaign
         : everyCampaign.filter((c) => (c.contractId && myContractIds.has(c.contractId)) || myClientNames.has(norm(c.clientName)));
-    const openContracts = contracts.filter((c) => c.status === "active" || c.status === "draft");
     const campaigns = clientFilter
         ? allCampaigns.filter((c) => c.clientName === clientFilter)
         : allCampaigns;
@@ -82,7 +67,6 @@ export default async function CampaignsPage({
         { spend: 0, leads: 0 },
     );
     const crmAttributed = leads.filter((l) => l.sourceCampaignId).length;
-    const today = new Date().toISOString().slice(0, 10);
 
     return (
         <div className="space-y-6">
@@ -90,9 +74,15 @@ export default async function CampaignsPage({
                 <div>
                     <h1 className="text-2xl font-semibold md:text-3xl">Campaigns</h1>
                     <p className="text-sm text-muted-foreground">
-                        Entered by hand until the Meta, Google and TikTok APIs unfreeze.
+                        Results entered by hand until the Meta, Google and TikTok APIs unfreeze.
                     </p>
-                    <p className="text-xs text-muted-foreground">Items come from project tasks. The account manager adds them on the project.</p>
+                    <p className="text-xs text-muted-foreground">
+                        New items start as a task on a{" "}
+                        <Link href={`/projects${asQ}`} className="underline">
+                            project
+                        </Link>
+                        .
+                    </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                     <Link href="/campaigns/clients" className="text-sm font-medium underline">
@@ -100,149 +90,6 @@ export default async function CampaignsPage({
                     </Link>
                 </div>
             </div>
-
-            {/* Add form, folded until the button above opens it */}
-            <NewSection open={openNew === "1"} title="New campaign">
-                <form action={createCampaignAction} className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">Name</Label>
-                            <Input
-                                name="name"
-                                required
-                                placeholder="e.g. Q2 Lead Gen — Meta"
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">Client</Label>
-                            <Input
-                                name="clientName"
-                                list="clients-datalist"
-                                required
-                                defaultValue="Nexov"
-                                placeholder="Nexov for in-house"
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">Project (optional)</Label>
-                            <Select name="contractId" defaultValue={"none"}>
-                                <SelectTrigger className="h-10">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="none">— none —</SelectItem>
-                                    {openContracts.map((c) => (
-                                        <SelectItem key={c.id} value={c.id}>
-                                            {c.clientName} · {c.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">Platform</Label>
-                            <Select name="platform" defaultValue="meta">
-                                <SelectTrigger className="h-10">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {CAMPAIGN_PLATFORMS.map((p) => (
-                                        <SelectItem key={p} value={p}>
-                                            {p}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">Objective</Label>
-                            <Select name="objective" defaultValue="leads">
-                                <SelectTrigger className="h-10">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {CAMPAIGN_OBJECTIVES.map((o) => (
-                                        <SelectItem key={o} value={o}>
-                                            {o}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">Start date</Label>
-                            <Input
-                                name="startDate"
-                                type="date"
-                                defaultValue={today}
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">End date (optional)</Label>
-                            <Input name="endDate" type="date" />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">Monthly budget (MYR)</Label>
-                            <Input
-                                name="monthlyBudgetMyr"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                defaultValue="0"
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">Fee model</Label>
-                            <Select name="feeModel" defaultValue="none">
-                                <SelectTrigger className="h-10">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {CAMPAIGN_FEE_MODELS.map((f) => (
-                                        <SelectItem key={f} value={f}>
-                                            {f.replace(/_/g, " ")}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">Flat fee (MYR / month)</Label>
-                            <Input
-                                name="flatFeeMyr"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                defaultValue="0"
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">Percent fee (% of spend)</Label>
-                            <Input
-                                name="percentFee"
-                                type="number"
-                                min="0"
-                                step="0.1"
-                                defaultValue="0"
-                            />
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label className="text-sm">External ID (optional)</Label>
-                            <Input
-                                name="externalId"
-                                placeholder="Meta campaign id (for future API sync)"
-                            />
-                        </div>
-                        <div className="space-y-1.5 md:col-span-2">
-                            <Label className="text-sm">Landing URL</Label>
-                            <Input name="landingUrl" type="url" placeholder="https://" />
-                        </div>
-                    </div>
-                    <div className="flex justify-end">
-                        <Button type="submit">Add campaign</Button>
-                    </div>
-                </form>
-            </NewSection>
 
             {/* Filters */}
             <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -293,7 +140,11 @@ export default async function CampaignsPage({
                 </div>
                 {campaigns.length === 0 ? (
                     <p className="p-6 text-sm text-muted-foreground">
-                        No campaigns yet.
+                        No campaigns yet. New items start as a task on a{" "}
+                        <Link href={`/projects${asQ}`} className="underline">
+                            project
+                        </Link>
+                        .
                     </p>
                 ) : (
                     <ul className="divide-y">

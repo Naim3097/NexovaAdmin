@@ -159,7 +159,7 @@ export default async function ClientDetailPage({
                     {
                         label: "Open content",
                         value: String(openContent),
-                        href: "/content",
+                        href: `/static-posts?client=${encodeURIComponent(client.name)}`,
                     },
                     ...(client.internal
                         ? []

@@ -1,8 +1,9 @@
 "use server";
 /**
- * The small, direct task edits the board, the calendar and the quick-edit
- * pop-up make: add a task (the board's To do "+"), move a card to another
- * status, plan a day, set hours, move the deadline, and undo a move. Plain arguments in, a result out, so a
+ * The small, direct task edits the project page, the board, the calendar and
+ * the quick-edit pop-up make: add a task (the project page's "New task"), move
+ * a card to another status, plan a day, set hours, move the deadline, and undo
+ * a move. Plain arguments in, a result out, so a
  * client component can update optimistically and offer Undo in a toast.
  *
  * The rules live in transitions.ts and are the same ones the task page uses.
@@ -14,15 +15,29 @@ import { getActingMember } from "@/lib/auth";
 import { recordAudit } from "@/lib/data/audit";
 import { notify } from "@/lib/data/notifications";
 import { listTeamMembers, roundHours } from "@/lib/data/team";
-import { createWork, getWorkById, listWorks, updateWork, type TaskStatus, type Work } from "@/lib/data/works";
-import { getContractById, isSigned } from "@/lib/data/contracts";
+import { createWork, getWorkById, listWorks, updateWork, type LinkedKind, type TaskStatus, type Work } from "@/lib/data/works";
+import { getContractById } from "@/lib/data/contracts";
 import { DEFAULT_SPLIT, LINE_TYPE_LABEL, defaultApprover, isLineType } from "@/lib/data/planners";
 import { phaseForMonth } from "@/lib/planners/helpers";
 import { findMember, withHours } from "@/lib/capacity/helpers";
-import { canSee, isManager } from "@/lib/roles";
+import { isManager } from "@/lib/roles";
+import { createLinkedItem } from "@/lib/contracts/generate";
+import { DEFAULT_CHANNEL } from "@/lib/contracts/requirements";
 import { TASK_STATUS_ORDER, applyDueDate, isOpen, plannedDay } from "@/lib/works/helpers";
 import { syncLinkedContent } from "@/lib/works/sync";
-import { WAITING_CLEARED, allowedMoves, canPlan, canSetDeadline, canSetWaiting, endsWaiting, isAccountManagerOf, moveLabel, type Actor } from "@/lib/works/transitions";
+import {
+    WAITING_CLEARED,
+    allowedMoves,
+    canAddTask,
+    canPlan,
+    canSetDeadline,
+    canSetWaiting,
+    endsWaiting,
+    isAccountManagerOf,
+    moveLabel,
+    takesTasks,
+    type Actor,
+} from "@/lib/works/transitions";
 import { WAITING_ON_LABEL, isWaitingOn, normalizeWaitingOn, type WaitingOn } from "@/lib/works/waiting";
 
 export type QuickResult<T extends object = object> = ({ ok: true } & T) | { ok: false; reason: string };
@@ -49,16 +64,18 @@ function revalidateTask(id: string, contractId: string) {
 const pretty = (s: TaskStatus) => s.replace(/_/g, " ");
 
 // ---------------------------------------------------------------------------
-// New task (the board's To do "+")
+// New task (the project page's "New task")
 // ---------------------------------------------------------------------------
 
 /**
- * Add one task under a project from the board. The same checks as the
- * project form's createWorkAction (a known project, a task type, a title, a
- * month), plus the gate: only a signed or running project takes tasks. The
- * month and phase follow the due date; the type's default seats are filled
- * from the project crew, the first one with `owner` when it is given (""
- * leaves that seat open). Sign-off is the type's default.
+ * Add one task under a project from its page. Only the project's account
+ * manager, management and the people already on the project may add
+ * (canAddTask), and only to a signed or running project (takesTasks); the
+ * due date may not fall before the project starts. The month and phase
+ * follow the due date; the type's default seats are filled from the project
+ * crew, the first one with `owner` when it is given ("" leaves that seat
+ * open). Sign-off is the type's default. A Static post, Video post, Campaign
+ * or SEO article task also gets the record it is done in, as generated tasks do.
  */
 export async function createTaskAction(input: {
     contractId: string;
@@ -70,17 +87,21 @@ export async function createTaskAction(input: {
     as?: string;
 }): Promise<QuickResult<{ id: string; title: string }>> {
     const member = await getActingMember(input.as || undefined);
-    if (member && !canSee(member, "/works")) return { ok: false, reason: "You cannot add tasks" };
     const c = input.contractId ? await getContractById(input.contractId) : null;
     if (!c) return { ok: false, reason: "Project not found" };
-    if (!isSigned(c) || c.stage === "completed" || c.status === "cancelled" || c.status === "completed") {
+    if (!takesTasks(c)) {
         return { ok: false, reason: `${c.name} is not signed or running, so it takes no tasks` };
+    }
+    const actor: Actor = { name: member?.name ?? "", manager: !member || isManager(member) };
+    if (!canAddTask(c, await listWorks(), actor)) {
+        return { ok: false, reason: `Only ${c.accountManager || "the account manager"}, management or the people on ${c.name} add tasks to it` };
     }
     const type = input.type;
     if (!isLineType(type)) return { ok: false, reason: "Pick a task type" };
     const title = String(input.title ?? "").trim().slice(0, 200);
     if (!title) return { ok: false, reason: "Give the task a title" };
     if (!YMD.test(input.dueDate)) return { ok: false, reason: "Pick a due date" };
+    if (c.startDate && input.dueDate < c.startDate) return { ok: false, reason: `Due before the project starts (${c.startDate})` };
     const month = input.dueDate.slice(0, 7);
 
     const team = await listTeamMembers();
@@ -102,12 +123,13 @@ export async function createTaskAction(input: {
         type,
     );
     const phase = phaseForMonth(c, month);
-    const w = await createWork({
+    const created = await createWork({
         contractId: c.id,
         clientName: c.clientName,
         accountManager: c.accountManager,
         type,
         title,
+        channel: DEFAULT_CHANNEL[type],
         month,
         phaseKey: phase?.key ?? "",
         phaseName: phase?.name ?? "",
@@ -115,18 +137,29 @@ export async function createTaskAction(input: {
         split,
         approver: defaultApprover(type),
     });
+    // The post / campaign / article the task is done in, linked the way the generator links it.
+    const linked = await createLinkedItem(created);
+    const w = linked ? await updateWork(created.id, { linked }) : created;
     const by = member?.name || input.as || "Team";
     await recordAudit({
         entity: "work",
         entityId: w.id,
         kind: "create",
-        summary: `Task added on the board: ${w.title} (${LINE_TYPE_LABEL[type]}, due ${w.dueDate}) under ${c.code}`,
+        summary: `Task added on the project: ${w.title} (${LINE_TYPE_LABEL[type]}, due ${w.dueDate}) under ${c.code}`,
         actor: by,
     });
     revalidateTask(w.id, c.id);
     revalidatePath(`/projects/${c.id}/document`);
+    if (linked) for (const p of LINKED_PAGES[linked.kind]) revalidatePath(p);
     return { ok: true, id: w.id, title: w.title };
 }
+
+/** The Delivery pages that list each kind of linked record. */
+const LINKED_PAGES: Record<LinkedKind, string[]> = {
+    content: ["/content", "/static-posts", "/video-posts"],
+    campaign: ["/campaigns"],
+    seo: ["/seo"],
+};
 
 // ---------------------------------------------------------------------------
 // Status

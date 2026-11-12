@@ -2,8 +2,9 @@
  * The Tasks section (#works): the filter, then dropdowns for View (Board |
  * Calendar | List), Group (Month | Phase) and the Month or Phase in view,
  * "+ Add <month>" (tasks added from the deliverables on the Plan tab). Extra
- * tasks are added on the Tasks board (/works), which the line at the foot
- * links to with this client picked. The account manager's workspace.
+ * tasks are added with "New task" at the foot (and in the header), shown to
+ * the account manager, management and the people already on the project.
+ * The account manager's workspace.
  */
 import Link from "next/link";
 import { actorOf } from "@/lib/works/actor";
@@ -18,6 +19,7 @@ import { CalendarGrid } from "@/app/(admin)/calendar/grid";
 import { Button } from "@/components/ui/button";
 import { PendingButton } from "@/components/pending-button";
 import { SelectNav } from "@/components/select-nav";
+import { NewTaskButton } from "@/components/new-task-dialog";
 import { shortMonth, sortTasks, type ContractView } from "./shared";
 
 export function TasksSection({ v }: { v: ContractView }) {
@@ -57,7 +59,9 @@ export function TasksSection({ v }: { v: ContractView }) {
         scoped,
         p,
         calItems,
-        boardHref,
+        canAddTask,
+        takesNewTasks,
+        newTaskProject,
         requirements,
         nextGenMonth,
         generatedMonths,
@@ -205,6 +209,8 @@ export function TasksSection({ v }: { v: ContractView }) {
                             </Link>
                             , then add the first month here.
                         </>
+                    ) : canAddTask ? (
+                        "Add the first month above, or one task with New task."
                     ) : (
                         "Add the first month above."
                     )}
@@ -287,14 +293,22 @@ export function TasksSection({ v }: { v: ContractView }) {
                 </div>
             )}
 
-            {/* New tasks: the deliverables make them; anything extra is added on the Tasks board. */}
-            <p className="mt-4 text-xs text-muted-foreground">
-                New tasks come from the deliverables, or{" "}
-                <Link href={boardHref} className="font-medium underline">
-                    add one on the board
-                </Link>
-                .
-            </p>
+            {/* New tasks: the deliverables make them; anything extra is added here, on the project. */}
+            <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                {canAddTask ? (
+                    <>
+                        <span>New tasks come from the deliverables, or add one here:</span>
+                        <NewTaskButton project={newTaskProject} members={memberNames} today={today} asParam={asParam} variant="outline" />
+                    </>
+                ) : takesNewTasks ? (
+                    <span>
+                        New tasks come from the deliverables. {c.accountManager || "The account manager"}, management or the people on this project add extra
+                        ones here.
+                    </span>
+                ) : (
+                    <span>New tasks come from the deliverables. A closed project takes no new tasks.</span>
+                )}
+            </div>
         </section>
     );
 }
